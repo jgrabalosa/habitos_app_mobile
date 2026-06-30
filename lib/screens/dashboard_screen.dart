@@ -52,9 +52,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  Future<void> _completar(int habitoId) async {
+Future<void> _completar(int habitoId) async {
     if (_completados[habitoId] == true) return;
-    await ApiService.completarHabito(habitoId);
+
+    final notaController = TextEditingController();
+    final nota = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Completar hábito'),
+        content: TextField(
+          controller: notaController,
+          decoration: const InputDecoration(
+            labelText: 'Nota (opcional)',
+            hintText: '¿Cómo te ha ido?',
+            border: OutlineInputBorder(),
+          ),
+          maxLines: 3,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, null),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, notaController.text.trim()),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4a6cf7)),
+            child: const Text('Completar', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (nota == null) return; // Canceló
+
+    await ApiService.completarHabito(habitoId, nota: nota);
     setState(() { _completados[habitoId] = true; });
   }
 

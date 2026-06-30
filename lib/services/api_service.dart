@@ -132,12 +132,12 @@ class ApiService {
     return false;
   }
 
-  static Future<void> completarHabito(int habitoId) async {
+static Future<void> completarHabito(int habitoId, {String nota = ''}) async {
     final headers = await getHeaders();
     await http.post(
       Uri.parse('$baseUrl/registros/completar/$habitoId'),
       headers: headers,
-      body: jsonEncode({'nota': ''}),
+      body: jsonEncode({'nota': nota}),
     );
   }
 
