@@ -3,6 +3,7 @@ import '../services/api_service.dart';
 import '../models/habito.dart';
 import 'login_screen.dart';
 import 'habito_screen.dart';
+import 'habito_detalle_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -154,43 +155,61 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-    Widget _habitoCard(Habito h) {
-      final completado = _completados[h.habitoId] ?? false;
-      return Card(
-        margin: const EdgeInsets.only(bottom: 8),
-        child: ListTile(
-          onTap: () async {
-            final result = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => HabitoScreen(usuarioId: _usuarioId, habito: h),
-              ),
-            );
-            if (result == true) _cargarHabitos();
-          },
-          leading: Icon(
-            completado ? Icons.check_circle : Icons.radio_button_unchecked,
-            color: completado ? Colors.green : Colors.grey,
-            size: 32,
-          ),
-          title: Text(h.nombre,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                decoration: completado ? TextDecoration.lineThrough : null,
-                color: completado ? Colors.grey : Colors.black,
-              )),
-          subtitle: h.categoriaNombre != null ? Text(h.categoriaNombre!) : null,
-          trailing: completado
-              ? const Text('✅', style: TextStyle(fontSize: 20))
-              : ElevatedButton(
-                  onPressed: () => _completar(h.habitoId),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4a6cf7),
-                  ),
-                  child: const Text('Completar',
-                      style: TextStyle(color: Colors.white)),
-                ),
+Widget _habitoCard(Habito h) {
+    final completado = _completados[h.habitoId] ?? false;
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        onTap: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => HabitoDetalleScreen(habitoId: h.habitoId),
+            ),
+          );
+          if (result == true) _cargarHabitos();
+        },
+        leading: Icon(
+          completado ? Icons.check_circle : Icons.radio_button_unchecked,
+          color: completado ? Colors.green : Colors.grey,
+          size: 32,
         ),
-      );
-    }
+        title: Text(h.nombre,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              decoration: completado ? TextDecoration.lineThrough : null,
+              color: completado ? Colors.grey : Colors.black,
+            )),
+        subtitle: h.categoriaNombre != null ? Text(h.categoriaNombre!) : null,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (!completado)
+              ElevatedButton(
+                onPressed: () => _completar(h.habitoId),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4a6cf7),
+                ),
+                child: const Text('Completar',
+                    style: TextStyle(color: Colors.white)),
+              )
+            else
+              const Text('✅', style: TextStyle(fontSize: 20)),
+            IconButton(
+              icon: const Icon(Icons.edit, size: 20, color: Colors.grey),
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => HabitoScreen(usuarioId: _usuarioId, habito: h),
+                  ),
+                );
+                if (result == true) _cargarHabitos();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
   }

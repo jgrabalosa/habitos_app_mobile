@@ -87,7 +87,7 @@ class ApiService {
     }
   }
 
-  // ── Hábitos ────────────────────────────────────────────
+// ── Hábitos ────────────────────────────────────────────
   static Future<List<Habito>> getHabitosActivos(int usuarioId) async {
     final headers = await getHeaders();
     final response = await http.get(
@@ -100,6 +100,21 @@ class ApiService {
       return data.map((json) => Habito.fromJson(json)).toList();
     } else {
       throw Exception('Error al cargar hábitos');
+    }
+  }
+
+  static Future<Map<String, dynamic>> getHabitoDetalle(int habitoId, {String? mes}) async {
+    final headers = await getHeaders();
+    final mesParam = mes != null ? '?mes=$mes' : '';
+    final response = await http.get(
+      Uri.parse('$baseUrl/habitos/$habitoId/detalle$mesParam'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Error al cargar el detalle del hábito');
     }
   }
 
