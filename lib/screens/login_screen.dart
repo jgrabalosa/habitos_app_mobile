@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'dashboard_screen.dart';
 
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -14,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _contrasenaController = TextEditingController();
   bool _isLogin = true;
   bool _loading = false;
+  bool _obscurePassword = true;
   String? _error;
 
   // ── Login ──────────────────────────────────────────────
@@ -161,10 +163,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         // Contraseña
                         TextField(
                           controller: _contrasenaController,
-                          obscureText: true,
-                          decoration: const InputDecoration(
+                          obscureText: _obscurePassword,
+                          decoration: InputDecoration(
                             labelText: 'Contraseña',
-                            border: OutlineInputBorder(),
+                            border: const OutlineInputBorder(),
+                            suffixIcon: IconButton(
+                              icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
+                              onPressed: () => setState(() { _obscurePassword = !_obscurePassword; }),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
