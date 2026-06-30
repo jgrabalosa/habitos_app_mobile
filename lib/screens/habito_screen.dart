@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../models/habito.dart';
 
 class HabitoScreen extends StatefulWidget {
   final int usuarioId;
-  const HabitoScreen({super.key, required this.usuarioId});
+  final Habito? habito;
+  const HabitoScreen({super.key, required this.usuarioId, this.habito});
 
   @override
   State<HabitoScreen> createState() => _HabitoScreenState();
@@ -17,26 +19,81 @@ class _HabitoScreenState extends State<HabitoScreen> {
   bool _loading = false;
   String? _error;
 
-  Future<void> _crear() async {
+  bool get _esEdicion => widget.habito != null;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_esEdicion) {
+      _nombreController.text = widget.habito!.nombre;
+      _descripcionController.text = widget.habito!.descripcion ?? '';
+      _frecuencia = widget.habito!.frecuencia;
+      _meta = widget.habito!.meta;
+    }
+  }
+
+  Future<void> _guardar() async {
     if (_nombreController.text.isEmpty) {
       setState(() { _error = 'El nombre es obligatorio'; });
       return;
     }
     setState(() { _loading = true; _error = null; });
     try {
-      await ApiService.crearHabito(
-        _nombreController.text,
-        _descripcionController.text,
-        _frecuencia,
-        _meta,
-        widget.usuarioId,
-        null,
-      );
+      if (_esEdicion) {
+        await ApiService.actualizarHabito(
+          widget.habito!.habitoId,
+          _nombreController.text,
+          _descripcionController.text,
+          _frecuencia,
+          _meta,
+          widget.usuarioId,
+          null,
+        );
+      } else {
+        await ApiService.crearHabito(
+          _nombreController.text,
+          _descripcionController.text,
+          _frecuencia,
+          _meta,
+          widget.usuarioId,
+          null,
+        );
+      }
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
-      setState(() { _error = 'Error al crear el hábito'; });
+      setState(() { _error = _esEdicion ? 'Error al actualizar el hábito' : 'Error al crear el hábito'; });
     } finally {
       setState(() { _loading = false; });
+    }
+  }
+
+  Future<void> _eliminar() async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Eliminar hábito'),
+        content: const Text('¿Seguro que quieres eliminar este hábito? Esta acción no se puede deshacer.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar == true) {
+      setState(() { _loading = true; });
+      try {
+        await ApiService.eliminarHabito(widget.habito!.habitoId);
+        if (mounted) Navigator.pop(context, true);
+      } catch (e) {
+        setState(() { _error = 'Error al eliminar el hábito'; _loading = false; });
+      }
     }
   }
 
@@ -45,7 +102,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F5),
       appBar: AppBar(
-        title: const Text('Nuevo hábito'),
+        title: Text(_esEdicion ? 'Editar hábito' : 'Nuevo hábito'),
         backgroundColor: Colors.white,
         elevation: 1,
       ),
@@ -108,17 +165,32 @@ class _HabitoScreenState extends State<HabitoScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _loading ? null : _crear,
+                    onPressed: _loading ? null : _guardar,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF4a6cf7),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     child: _loading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('Crear hábito',
-                            style: TextStyle(color: Colors.white, fontSize: 16)),
+                        : Text(_esEdicion ? 'Actualizar hábito' : 'Crear hábito',
+                            style: const TextStyle(color: Colors.white, fontSize: 16)),
                   ),
                 ),
+                if (_esEdicion) ...[
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: _loading ? null : _eliminar,
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.red),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text('Eliminar hábito',
+                          style: TextStyle(color: Colors.red, fontSize: 16)),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

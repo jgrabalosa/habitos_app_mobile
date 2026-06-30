@@ -145,4 +145,37 @@ class ApiService {
       body: jsonEncode(body),
     );
   }
+    static Future<void> actualizarHabito(int habitoId, String nombre, String descripcion,
+      String frecuencia, int meta, int usuarioId, int? categoriaId) async {
+    final headers = await getHeaders();
+    final body = {
+      'nombre': nombre,
+      'descripcion': descripcion,
+      'frecuencia': frecuencia,
+      'meta': meta,
+      'propietario': {'usuarioId': usuarioId},
+    };
+    if (categoriaId != null) {
+      body['tipo'] = {'categoriaId': categoriaId};
+    }
+    final response = await http.put(
+      Uri.parse('$baseUrl/habitos/$habitoId'),
+      headers: headers,
+      body: jsonEncode(body),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Error al actualizar el hábito');
+    }
+  }
+
+  static Future<void> eliminarHabito(int habitoId) async {
+    final headers = await getHeaders();
+    final response = await http.delete(
+      Uri.parse('$baseUrl/habitos/$habitoId'),
+      headers: headers,
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Error al eliminar el hábito');
+    }
+  }
 }

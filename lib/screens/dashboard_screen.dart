@@ -154,34 +154,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _habitoCard(Habito h) {
-    final completado = _completados[h.habitoId] ?? false;
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: Icon(
-          completado ? Icons.check_circle : Icons.radio_button_unchecked,
-          color: completado ? Colors.green : Colors.grey,
-          size: 32,
-        ),
-        title: Text(h.nombre,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              decoration: completado ? TextDecoration.lineThrough : null,
-              color: completado ? Colors.grey : Colors.black,
-            )),
-        subtitle: h.categoriaNombre != null ? Text(h.categoriaNombre!) : null,
-        trailing: completado
-            ? const Text('✅', style: TextStyle(fontSize: 20))
-            : ElevatedButton(
-                onPressed: () => _completar(h.habitoId),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4a6cf7),
-                ),
-                child: const Text('Completar',
-                    style: TextStyle(color: Colors.white)),
+    Widget _habitoCard(Habito h) {
+      final completado = _completados[h.habitoId] ?? false;
+      return Card(
+        margin: const EdgeInsets.only(bottom: 8),
+        child: ListTile(
+          onTap: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => HabitoScreen(usuarioId: _usuarioId, habito: h),
               ),
-      ),
-    );
+            );
+            if (result == true) _cargarHabitos();
+          },
+          leading: Icon(
+            completado ? Icons.check_circle : Icons.radio_button_unchecked,
+            color: completado ? Colors.green : Colors.grey,
+            size: 32,
+          ),
+          title: Text(h.nombre,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                decoration: completado ? TextDecoration.lineThrough : null,
+                color: completado ? Colors.grey : Colors.black,
+              )),
+          subtitle: h.categoriaNombre != null ? Text(h.categoriaNombre!) : null,
+          trailing: completado
+              ? const Text('✅', style: TextStyle(fontSize: 20))
+              : ElevatedButton(
+                  onPressed: () => _completar(h.habitoId),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4a6cf7),
+                  ),
+                  child: const Text('Completar',
+                      style: TextStyle(color: Colors.white)),
+                ),
+        ),
+      );
+    }
   }
-}
