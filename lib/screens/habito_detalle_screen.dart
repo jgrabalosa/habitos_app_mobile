@@ -181,7 +181,7 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     );
   }
 
-  Widget _buildUltimosRegistros() {
+Widget _buildUltimosRegistros() {
     final List<dynamic> registros = _detalle!['ultimosRegistros'];
 
     return Card(
@@ -215,6 +215,10 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                           r['completado'] ? Icons.check_circle : Icons.cancel,
                           color: r['completado'] ? Colors.green : Colors.grey,
                         ),
+                        IconButton(
+                          icon: const Icon(Icons.edit, size: 18, color: Colors.grey),
+                          onPressed: () => _editarNota(r['registroId'], r['nota'] ?? ''),
+                        ),
                       ],
                     ),
                   )),
@@ -222,5 +226,43 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _editarNota(int registroId, String notaActual) async {
+    final controller = TextEditingController(text: notaActual);
+    final nuevaNota = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Editar nota'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(border: OutlineInputBorder()),
+          maxLines: 3,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, null),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
+    );
+
+    if (nuevaNota == null) return;
+
+    try {
+      await ApiService.actualizarNotaRegistro(registroId, nuevaNota);
+      _cargarDetalle();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error al actualizar la nota')),
+        );
+      }
+    }
   }
 }

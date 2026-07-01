@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/usuario.dart';
 import '../models/habito.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class ApiService {
   static const String baseUrl = 'https://habitos-app-production.up.railway.app/api';
@@ -110,6 +111,7 @@ class ApiService {
       Uri.parse('$baseUrl/habitos/$habitoId/detalle$mesParam'),
       headers: headers,
     );
+    
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
@@ -117,6 +119,19 @@ class ApiService {
       throw Exception('Error al cargar el detalle del hábito');
     }
   }
+  
+  static Future<void> actualizarNotaRegistro(int registroId, String nota) async {
+    final headers = await getHeaders();
+    final response = await http.put(
+      Uri.parse('$baseUrl/registros/$registroId/nota'),
+      headers: headers,
+      body: jsonEncode({'nota': nota}),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Error al actualizar la nota');
+    }
+  }
+
 
   static Future<bool> estaCompletadoHoy(int habitoId) async {
     final headers = await getHeaders();
@@ -193,4 +208,30 @@ static Future<void> completarHabito(int habitoId, {String nota = ''}) async {
       throw Exception('Error al eliminar el hábito');
     }
   }
+  static Future<void> loginConGoogle() async {
+  final GoogleSignIn googleSignIn = GoogleSignIn(
+    serverClientId: '177339814167-fdtmn2i1s6aeg1agrqtikq066opib8ce.apps.googleusercontent.com',
+  );
+
+  final GoogleSignInAccount? account = await googleSignIn.signIn();
+  if (account == null) return;
+
+  final GoogleSignInAuthentication auth = await account.authentication;
+  final String? idToken = auth.idToken;
+  if (idToken == null) throw Exception('No se obtuvo el token de Google');
+
+  final response = await http.post(
+    Uri.parse('$baseUrl/usuarios/login-google'),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({'idToken': idToken}),
+  );
+
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+    await saveToken(data['token']);
+    await saveUsuario(Usuario.fromJson(data));
+  } else {
+    throw Exception(response.body);
+  }
+}
 }

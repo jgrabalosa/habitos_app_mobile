@@ -65,6 +65,24 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // ── Login con Google ───────────────────────────────────
+  Future<void> _loginConGoogle() async {
+    setState(() { _loading = true; _error = null; });
+    try {
+      await ApiService.loginConGoogle();
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        );
+      }
+    } catch (e) {
+      setState(() { _error = e.toString().replaceAll('Exception: ', ''); });
+    } finally {
+      setState(() { _loading = false; });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -128,6 +146,30 @@ class _LoginScreenState extends State<LoginScreen> {
                           ],
                         ),
                         const SizedBox(height: 24),
+
+                        // Botón Google
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: _loading ? null : _loginConGoogle,
+                            icon: const Text('G', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red)),
+                            label: const Text('Continuar con Google'),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        const Row(children: [
+                          Expanded(child: Divider()),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8),
+                            child: Text('o', style: TextStyle(color: Colors.grey)),
+                          ),
+                          Expanded(child: Divider()),
+                        ]),
+                        const SizedBox(height: 12),
 
                         // Campos registro
                         if (!_isLogin) ...[
