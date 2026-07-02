@@ -1,4 +1,4 @@
-package com.example.habitos_app_mobile
+package com.joaquim.habitosapp
 
 import io.flutter.embedding.android.FlutterActivity
 

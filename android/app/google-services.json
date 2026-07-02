@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1086143132391",
+    "project_id": "habitos-app-5a054",
+    "storage_bucket": "habitos-app-5a054.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1086143132391:android:eb1b693230398c80d9a842",
+        "android_client_info": {
+          "package_name": "com.joaquim.habitosapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGmMP8HYz9_j3faNtQyLSpq8yy5W7yvCY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

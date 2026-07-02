@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'dashboard_screen.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 
 class LoginScreen extends StatefulWidget {
@@ -18,6 +19,24 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   String? _error;
 
+  Future<void> _registrarNotificaciones(int usuarioId) async {
+    try {
+      final messaging = FirebaseMessaging.instance;
+
+      NotificationSettings settings = await messaging.requestPermission();
+
+      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+        final String? token = await messaging.getToken();
+        if (token != null) {
+          await ApiService.actualizarFcmToken(usuarioId, token);
+        }
+      }
+    } catch (e) {
+      // No bloqueamos el login si falla el registro de notificaciones
+      print('Error al registrar notificaciones: $e');
+    }
+  }
+
   // ── Login ──────────────────────────────────────────────
   Future<void> _login() async {
     setState(() { _loading = true; _error = null; });
@@ -28,6 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       await ApiService.saveToken(usuario.token);
       await ApiService.saveUsuario(usuario);
+      await _registrarNotificaciones(usuario.usuarioId);
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -70,6 +90,10 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() { _loading = true; _error = null; });
     try {
       await ApiService.loginConGoogle();
+      final usuarioLocal = await ApiService.getUsuarioLocal();
+      if (usuarioLocal != null && usuarioLocal['usuarioId'] != null) {
+        await _registrarNotificaciones(usuarioLocal['usuarioId']);
+      }
       if (mounted) {
         Navigator.pushReplacement(
           context,

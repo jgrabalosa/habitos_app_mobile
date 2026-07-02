@@ -147,12 +147,28 @@ class ApiService {
     return false;
   }
 
-static Future<void> completarHabito(int habitoId, {String nota = ''}) async {
+static Future<List<String>> completarHabito(int habitoId, {String nota = ''}) async {
     final headers = await getHeaders();
-    await http.post(
+    final response = await http.post(
       Uri.parse('$baseUrl/registros/completar/$habitoId'),
       headers: headers,
       body: jsonEncode({'nota': nota}),
+    );
+
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      final List<dynamic> logros = data['logrosOtorgados'] ?? [];
+      return logros.cast<String>();
+    } else {
+      throw Exception('Error al completar el hábito');
+    }
+  }
+
+  static Future<void> registrarInteraccionResena(int usuarioId) async {
+    final headers = await getHeaders();
+    await http.post(
+      Uri.parse('$baseUrl/gamificacion/resena/$usuarioId'),
+      headers: headers,
     );
   }
 
@@ -234,4 +250,16 @@ static Future<void> completarHabito(int habitoId, {String nota = ''}) async {
     throw Exception(response.body);
   }
 }
+// ── Notificaciones ─────────────────────────────────────
+  static Future<void> actualizarFcmToken(int usuarioId, String fcmToken) async {
+    final headers = await getHeaders();
+    final response = await http.put(
+      Uri.parse('$baseUrl/usuarios/$usuarioId/fcm-token'),
+      headers: headers,
+      body: jsonEncode({'fcmToken': fcmToken}),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Error al actualizar el token de notificaciones');
+    }
+  }
 }

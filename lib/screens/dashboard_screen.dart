@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:in_app_review/in_app_review.dart';
 import '../services/api_service.dart';
 import '../models/habito.dart';
 import 'login_screen.dart';
@@ -85,8 +86,24 @@ Future<void> _completar(int habitoId) async {
 
     if (nota == null) return; // Canceló
 
-    await ApiService.completarHabito(habitoId, nota: nota);
+    final logrosOtorgados = await ApiService.completarHabito(habitoId, nota: nota);
     setState(() { _completados[habitoId] = true; });
+
+    if (logrosOtorgados.contains('RACHA_3')) {
+      _solicitarResena();
+    }
+  }
+
+  Future<void> _solicitarResena() async {
+    try {
+      final InAppReview inAppReview = InAppReview.instance;
+      if (await inAppReview.isAvailable()) {
+        await inAppReview.requestReview();
+        await ApiService.registrarInteraccionResena(_usuarioId);
+      }
+    } catch (e) {
+      // Si falla, no bloqueamos nada — simplemente no se registra el logro
+    }
   }
 
   Future<void> _logout() async {
