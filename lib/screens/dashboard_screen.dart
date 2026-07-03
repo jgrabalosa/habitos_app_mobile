@@ -5,6 +5,7 @@ import '../models/habito.dart';
 import 'login_screen.dart';
 import 'habito_screen.dart';
 import 'habito_detalle_screen.dart';
+import 'logros_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -130,6 +131,15 @@ Future<void> _completar(int habitoId) async {
         title: Text('Hola, $_nombre 👋',
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.emoji_events, color: Color(0xFF4a6cf7)),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => LogrosScreen(usuarioId: _usuarioId)),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.grey),
             onPressed: _logout,

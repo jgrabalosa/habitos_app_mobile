@@ -172,6 +172,50 @@ static Future<List<String>> completarHabito(int habitoId, {String nota = ''}) as
     );
   }
 
+  // ── Gamificación ───────────────────────────────────────
+  static Future<int> getSaldoPuntos(int usuarioId) async {
+    final headers = await getHeaders();
+    final response = await http.get(
+      Uri.parse('$baseUrl/gamificacion/saldo/$usuarioId'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['saldo'];
+    } else {
+      throw Exception('Error al cargar el saldo');
+    }
+  }
+
+  static Future<List<dynamic>> getCatalogoLogros() async {
+    final headers = await getHeaders();
+    final response = await http.get(
+      Uri.parse('$baseUrl/gamificacion/logros/catalogo'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Error al cargar el catálogo de logros');
+    }
+  }
+
+  static Future<List<dynamic>> getLogrosUsuario(int usuarioId) async {
+    final headers = await getHeaders();
+    final response = await http.get(
+      Uri.parse('$baseUrl/gamificacion/logros/usuario/$usuarioId'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Error al cargar los logros del usuario');
+    }
+  }
+
   static Future<void> crearHabito(String nombre, String descripcion,
       String frecuencia, int meta, int usuarioId, int? categoriaId) async {
     final headers = await getHeaders();
@@ -262,4 +306,6 @@ static Future<List<String>> completarHabito(int habitoId, {String nota = ''}) as
       throw Exception('Error al actualizar el token de notificaciones');
     }
   }
+
+  
 }

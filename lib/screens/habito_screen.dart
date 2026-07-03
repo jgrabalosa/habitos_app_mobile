@@ -137,7 +137,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                     labelText: 'Frecuencia',
                     border: OutlineInputBorder(),
                   ),
-                  items: ['DIARIO', 'SEMANAL', 'MENSUAL']
+                  items: ['DIARIO', 'SEMANAL',]
                       .map((f) => DropdownMenuItem(value: f, child: Text(f)))
                       .toList(),
                   onChanged: (v) => setState(() { _frecuencia = v!; }),
