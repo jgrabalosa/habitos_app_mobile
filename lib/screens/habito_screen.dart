@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../services/analytics_service.dart';
 import '../models/habito.dart';
 
 class HabitoScreen extends StatefulWidget {
@@ -12,6 +13,17 @@ class HabitoScreen extends StatefulWidget {
 }
 
 class _HabitoScreenState extends State<HabitoScreen> {
+  static const List<Map<String, dynamic>> _plantillas = [
+    {'emoji': '💧', 'nombre': 'Beber agua', 'frecuencia': 'DIARIO', 'meta': 4},
+    {'emoji': '📖', 'nombre': 'Leer 20 min', 'frecuencia': 'DIARIO', 'meta': 1},
+    {'emoji': '🏃', 'nombre': 'Ejercicio', 'frecuencia': 'SEMANAL', 'meta': 3},
+    {'emoji': '🧘', 'nombre': 'Meditar', 'frecuencia': 'DIARIO', 'meta': 1},
+    {'emoji': '😴', 'nombre': 'Dormir 8h', 'frecuencia': 'DIARIO', 'meta': 1},
+    {'emoji': '🚶', 'nombre': 'Caminar', 'frecuencia': 'DIARIO', 'meta': 1},
+    {'emoji': '📓', 'nombre': 'Escribir diario', 'frecuencia': 'DIARIO', 'meta': 1},
+    {'emoji': '🧹', 'nombre': 'Limpiar casa', 'frecuencia': 'SEMANAL', 'meta': 2},
+  ];
+
   final _nombreController = TextEditingController();
   final _descripcionController = TextEditingController();
   String _frecuencia = 'DIARIO';
@@ -30,6 +42,14 @@ class _HabitoScreenState extends State<HabitoScreen> {
       _frecuencia = widget.habito!.frecuencia;
       _meta = widget.habito!.meta;
     }
+  }
+
+  void _aplicarPlantilla(Map<String, dynamic> plantilla) {
+    setState(() {
+      _nombreController.text = plantilla['nombre'];
+      _frecuencia = plantilla['frecuencia'];
+      _meta = plantilla['meta'];
+    });
   }
 
   Future<void> _guardar() async {
@@ -55,6 +75,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
       );
       if (confirmar != true) return;
     }
+
     if (_nombreController.text.isEmpty) {
       setState(() { _error = 'El nombre es obligatorio'; });
       return;
@@ -80,6 +101,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
           widget.usuarioId,
           null,
         );
+        await AnalyticsService.habitoCreado(_frecuencia);
       }
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
@@ -122,21 +144,40 @@ class _HabitoScreenState extends State<HabitoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F2F5),
       appBar: AppBar(
         title: Text(_esEdicion ? 'Editar hábito' : 'Nuevo hábito'),
-        backgroundColor: Colors.white,
-        elevation: 1,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (!_esEdicion) ...[
+                  const Text('Empieza rápido (opcional)',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 40,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _plantillas.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 8),
+                      itemBuilder: (context, i) {
+                        final p = _plantillas[i];
+                        return ActionChip(
+                          avatar: Text(p['emoji'], style: const TextStyle(fontSize: 14)),
+                          label: Text(p['nombre']),
+                          onPressed: () => _aplicarPlantilla(p),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 TextField(
                   controller: _nombreController,
                   decoration: const InputDecoration(
@@ -159,7 +200,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                     labelText: 'Frecuencia',
                     border: OutlineInputBorder(),
                   ),
-                  items: ['DIARIO', 'SEMANAL',]
+                  items: ['DIARIO', 'SEMANAL']
                       .map((f) => DropdownMenuItem(value: f, child: Text(f)))
                       .toList(),
                   onChanged: (v) => setState(() { _frecuencia = v!; }),
@@ -188,14 +229,9 @@ class _HabitoScreenState extends State<HabitoScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _loading ? null : _guardar,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4a6cf7),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
                     child: _loading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : Text(_esEdicion ? 'Actualizar hábito' : 'Crear hábito',
-                            style: const TextStyle(color: Colors.white, fontSize: 16)),
+                        : Text(_esEdicion ? 'Actualizar hábito' : 'Crear hábito'),
                   ),
                 ),
                 if (_esEdicion) ...[

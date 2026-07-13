@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'dashboard_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'habito_screen.dart';
+import '../services/analytics_service.dart';
 
 
 class LoginScreen extends StatefulWidget {
@@ -47,6 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       await ApiService.saveToken(usuario.token);
       await ApiService.saveUsuario(usuario);
+      await AnalyticsService.login(usuario.usuarioId);
       await _registrarNotificaciones(usuario.usuarioId);
       if (mounted) {
         Navigator.pushReplacement(
@@ -65,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _nombreController = TextEditingController();
   final _usernameController = TextEditingController();
 
-  Future<void> _registro() async {
+Future<void> _registro() async {
     setState(() { _loading = true; _error = null; });
     try {
       await ApiService.registro(
@@ -74,10 +77,23 @@ class _LoginScreenState extends State<LoginScreen> {
         _emailController.text,
         _contrasenaController.text,
       );
-      setState(() { _isLogin = true; _error = null; });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('¡Cuenta creada! Ya puedes iniciar sesión.')),
+
+      // Auto-login tras registrarse, para poder ir directo a crear el primer hábito
+      final usuario = await ApiService.login(
+        _emailController.text,
+        _contrasenaController.text,
       );
+      await ApiService.saveToken(usuario.token);
+      await ApiService.saveUsuario(usuario);
+      await AnalyticsService.registro(usuario.usuarioId);
+      await _registrarNotificaciones(usuario.usuarioId);
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => HabitoScreen(usuarioId: usuario.usuarioId)),
+        );
+      }
     } catch (e) {
       setState(() { _error = e.toString().replaceAll('Exception: ', ''); });
     } finally {

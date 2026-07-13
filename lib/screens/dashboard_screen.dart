@@ -8,6 +8,7 @@ import 'login_screen.dart';
 import 'habito_screen.dart';
 import 'habito_detalle_screen.dart';
 import 'logros_screen.dart';
+import '../services/analytics_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -106,6 +107,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (nota == null) return; // Canceló
 
     final logrosOtorgados = await ApiService.completarHabito(habitoId, nota: nota);
+    final habito = _habitos.firstWhere((h) => h.habitoId == habitoId);
+    await AnalyticsService.habitoCompletado(habito.frecuencia);
 
     // Feedback háptico + animación
     HapticFeedback.mediumImpact();
