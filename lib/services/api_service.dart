@@ -147,6 +147,34 @@ class ApiService {
     return false;
   }
 
+  static Future<Map<String, dynamic>> getProgresoHoy(int habitoId) async {
+    final headers = await getHeaders();
+    final response = await http.get(
+      Uri.parse('$baseUrl/registros/habito/$habitoId/hoy'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Error al cargar el progreso');
+    }
+  }
+
+  static Future<List<dynamic>> getRegistrosHabito(int habitoId) async {
+    final headers = await getHeaders();
+    final response = await http.get(
+      Uri.parse('$baseUrl/registros/habito/$habitoId'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Error al cargar los registros');
+    }
+  }
+
 static Future<List<String>> completarHabito(int habitoId, {String nota = ''}) async {
     final headers = await getHeaders();
     final response = await http.post(

@@ -33,6 +33,28 @@ class _HabitoScreenState extends State<HabitoScreen> {
   }
 
   Future<void> _guardar() async {
+    if (widget.habito != null && _frecuencia != widget.habito!.frecuencia) {
+      final confirmar = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('¿Cambiar la frecuencia?'),
+          content: const Text(
+              'Cambiar la frecuencia reiniciará tu racha actual a 0.\n'
+              'Tu mejor racha se conserva.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Continuar'),
+            ),
+          ],
+        ),
+      );
+      if (confirmar != true) return;
+    }
     if (_nombreController.text.isEmpty) {
       setState(() { _error = 'El nombre es obligatorio'; });
       return;

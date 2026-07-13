@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../theme/app_theme.dart';
 
 class HabitoDetalleScreen extends StatefulWidget {
   final int habitoId;
@@ -55,10 +56,8 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F2F5),
       appBar: AppBar(
         title: Text(_detalle != null ? _detalle!['nombre'] : 'Detalle'),
-        backgroundColor: Colors.white,
         elevation: 1,
       ),
       body: _loading
@@ -73,6 +72,7 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                     _buildHeatmap(),
                     const SizedBox(height: 16),
                     _buildUltimosRegistros(),
+                    const SizedBox(height: 48),
                   ],
                 ),
     );
@@ -159,17 +159,22 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                 final dia = heatmap[index - diaSemana];
                 final fecha = DateTime.parse(dia['fecha']);
                 final completado = dia['completado'] as bool;
+                final esHoy = dia['fecha'] ==
+                    DateTime.now().toIso8601String().split('T')[0];
+                final t = tokens(context);
                 return Container(
                   decoration: BoxDecoration(
-                    color: completado ? Colors.green : Colors.grey[300],
-                    borderRadius: BorderRadius.circular(4),
+                    color: completado ? t.success : t.surface2,
+                    borderRadius: BorderRadius.circular(8),
+                    border: esHoy ? Border.all(color: t.primary, width: 2) : null,
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     '${fecha.day}',
                     style: TextStyle(
                       fontSize: 10,
-                      color: completado ? Colors.white : Colors.grey[600],
+                      fontWeight: completado ? FontWeight.bold : FontWeight.normal,
+                      color: completado ? Colors.white : t.textMuted,
                     ),
                   ),
                 );

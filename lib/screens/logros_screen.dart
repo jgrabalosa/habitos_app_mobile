@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../theme/app_theme.dart';
 
 class LogrosScreen extends StatefulWidget {
   final int usuarioId;
@@ -14,6 +15,14 @@ class _LogrosScreenState extends State<LogrosScreen> {
   int _saldo = 0;
   List<dynamic> _catalogo = [];
   Set<int> _idsConseguidos = {};
+
+  static const iconosCategoria = {
+    'Inicio': '🌱',
+    'Constancia': '🔥',
+    'Volumen': '📊',
+    'Variedad': '🎨',
+    'Exploración': '🧭',
+  };
 
   @override
   void initState() {
@@ -42,13 +51,13 @@ class _LogrosScreenState extends State<LogrosScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = tokens(context);
+    final total = _catalogo.length;
+    final conseguidos = _idsConseguidos.length;
+    final pct = total > 0 ? conseguidos / total : 0.0;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F2F5),
-      appBar: AppBar(
-        title: const Text('Mis Logros'),
-        backgroundColor: Colors.white,
-        elevation: 1,
-      ),
+      appBar: AppBar(title: const Text('Mis Logros')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -56,48 +65,80 @@ class _LogrosScreenState extends State<LogrosScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  _saldoCard(),
+                  // Saldo
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Icon(Icons.monetization_on, color: t.points, size: 40),
+                          const SizedBox(height: 8),
+                          Text('$_saldo',
+                              style: TextStyle(
+                                  fontSize: 28, fontWeight: FontWeight.w800, color: t.text)),
+                          Text('puntos', style: TextStyle(color: t.textMuted)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Progreso global
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('$conseguidos de $total logros',
+                                  style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
+                              Text('${(pct * 100).round()}%',
+                                  style: TextStyle(color: t.textMuted)),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(999),
+                            child: LinearProgressIndicator(
+                              value: pct,
+                              minHeight: 10,
+                              backgroundColor: t.surface2,
+                              valueColor: AlwaysStoppedAnimation(t.points),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 16),
-                  const Text('Logros',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('Logros',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: t.text)),
                   const SizedBox(height: 8),
-                  ..._catalogo.map((logro) => _logroCard(logro)),
+                  ..._catalogo.map((logro) => _logroCard(logro, t)),
                 ],
               ),
             ),
     );
   }
 
-  Widget _saldoCard() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            const Icon(Icons.monetization_on, color: Colors.amber, size: 40),
-            const SizedBox(height: 8),
-            Text('$_saldo',
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-            const Text('puntos', style: TextStyle(color: Colors.grey)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _logroCard(dynamic logro) {
+  Widget _logroCard(dynamic logro, TokensContextuales t) {
     final conseguido = _idsConseguidos.contains(logro['logroId']);
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Opacity(
-        opacity: conseguido ? 1.0 : 0.5,
+    final icono = iconosCategoria[logro['categoria']] ?? '⭐';
+    return Opacity(
+      opacity: conseguido ? 1.0 : 0.5,
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 8),
         child: ListTile(
           leading: Text(conseguido ? '🏆' : '🔒', style: const TextStyle(fontSize: 24)),
-          title: Text(logro['nombre'], style: const TextStyle(fontWeight: FontWeight.bold)),
-          subtitle: Text('${logro['descripcion']}\n${logro['categoria']} · ${logro['nivel']}'),
+          title: Text('$icono ${logro['nombre']}',
+              style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
+          subtitle: Text(
+              '${logro['descripcion']}\n${logro['categoria']} · ${logro['nivel']}',
+              style: TextStyle(color: t.textMuted)),
           isThreeLine: true,
-          trailing: Text('+${logro['puntos']} pts',
-              style: const TextStyle(color: Colors.grey)),
+          trailing: Text('+${logro['puntos']} pts', style: TextStyle(color: t.textMuted)),
         ),
       ),
     );

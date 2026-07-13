@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:in_app_review/in_app_review.dart';
 import '../services/api_service.dart';
 import '../models/habito.dart';
+import '../theme/app_theme.dart';
 import 'login_screen.dart';
 import 'habito_screen.dart';
 import 'habito_detalle_screen.dart';
@@ -16,10 +18,14 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   List<Habito> _habitos = [];
-  Map<int, bool> _completados = {};
+  final Map<int, Map<String, dynamic>> _progreso = {}; // habitoId -> {completadoHoy, completadosPeriodo, meta}
+  final Map<int, Set<String>> _fechasCompletadas = {}; // habitoId -> fechas ISO (mini-heatmap)
   bool _loading = true;
   String _nombre = '';
   int _usuarioId = 0;
+  int? _animandoId;
+
+  static const nombresFrecuencia = {'DIARIO': 'Diario', 'SEMANAL': 'Semanal'};
 
   @override
   void initState() {
@@ -40,13 +46,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _cargarHabitos() async {
     try {
       final habitos = await ApiService.getHabitosActivos(_usuarioId);
-      final Map<int, bool> completados = {};
       for (var h in habitos) {
-        completados[h.habitoId] = await ApiService.estaCompletadoHoy(h.habitoId);
+        _progreso[h.habitoId] = await ApiService.getProgresoHoy(h.habitoId);
+        try {
+          final registros = await ApiService.getRegistrosHabito(h.habitoId);
+          _fechasCompletadas[h.habitoId] = registros
+              .where((r) => r['completado'] == true)
+              .map<String>((r) => r['fecha'] as String)
+              .toSet();
+        } catch (_) {
+          _fechasCompletadas[h.habitoId] = {};
+        }
       }
       setState(() {
         _habitos = habitos;
-        _completados = completados;
         _loading = false;
       });
     } catch (e) {
@@ -54,9 +67,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-Future<void> _completar(int habitoId) async {
-    if (_completados[habitoId] == true) return;
+  bool _estaHecho(Habito h) {
+    final p = _progreso[h.habitoId];
+    if (p == null) return false;
+    if (h.frecuencia == 'DIARIO') {
+      return (p['completadosPeriodo'] ?? 0) >= (p['meta'] ?? 1);
+    }
+    return p['completadoHoy'] == true;
+  }
 
+  Future<void> _completar(int habitoId) async {
     final notaController = TextEditingController();
     final nota = await showDialog<String>(
       context: context,
@@ -67,7 +87,6 @@ Future<void> _completar(int habitoId) async {
           decoration: const InputDecoration(
             labelText: 'Nota (opcional)',
             hintText: '¿Cómo te ha ido?',
-            border: OutlineInputBorder(),
           ),
           maxLines: 3,
         ),
@@ -78,8 +97,7 @@ Future<void> _completar(int habitoId) async {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, notaController.text.trim()),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4a6cf7)),
-            child: const Text('Completar', style: TextStyle(color: Colors.white)),
+            child: const Text('Completar'),
           ),
         ],
       ),
@@ -88,10 +106,62 @@ Future<void> _completar(int habitoId) async {
     if (nota == null) return; // Canceló
 
     final logrosOtorgados = await ApiService.completarHabito(habitoId, nota: nota);
-    setState(() { _completados[habitoId] = true; });
 
+    // Feedback háptico + animación
+    HapticFeedback.mediumImpact();
+    setState(() { _animandoId = habitoId; });
+
+    // Refrescar datos de ese hábito
+    _progreso[habitoId] = await ApiService.getProgresoHoy(habitoId);
+    _fechasCompletadas[habitoId]?.add(DateTime.now().toIso8601String().split('T')[0]);
+
+    await Future.delayed(const Duration(milliseconds: 450));
+    setState(() { _animandoId = null; });
+
+    if (logrosOtorgados.isNotEmpty) {
+      _mostrarCelebraciones(logrosOtorgados);
+    }
     if (logrosOtorgados.contains('RACHA_3')) {
       _solicitarResena();
+    }
+  }
+
+  Future<void> _mostrarCelebraciones(List<String> codigos) async {
+    Map<String, String> nombres = {};
+    try {
+      final catalogo = await ApiService.getCatalogoLogros();
+      for (var l in catalogo) {
+        nombres[l['codigo']] = l['nombre'];
+      }
+    } catch (_) {}
+
+    for (final codigo in codigos) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(milliseconds: 2500),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          content: Row(
+            children: [
+              const Text('🏆', style: TextStyle(fontSize: 24)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('¡Logro desbloqueado!',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text(nombres[codigo] ?? codigo),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      await Future.delayed(const Duration(milliseconds: 2800));
     }
   }
 
@@ -103,7 +173,7 @@ Future<void> _completar(int habitoId) async {
         await ApiService.registrarInteraccionResena(_usuarioId);
       }
     } catch (e) {
-      // Si falla, no bloqueamos nada — simplemente no se registra el logro
+      // Si falla, no bloqueamos nada
     }
   }
 
@@ -119,20 +189,18 @@ Future<void> _completar(int habitoId) async {
 
   @override
   Widget build(BuildContext context) {
-    final total = _habitos.length;
-    final completados = _completados.values.where((v) => v).length;
-    final pendientes = total - completados;
+    final t = tokens(context);
+    final pendientes = _habitos.where((h) => !_estaHecho(h)).toList();
+    final completados = _habitos.where(_estaHecho).toList();
+    final esOscuro = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F2F5),
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
         title: Text('Hola, $_nombre 👋',
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.emoji_events, color: Color(0xFF4a6cf7)),
+            icon: Icon(Icons.emoji_events, color: t.points),
             onPressed: () {
               Navigator.push(
                 context,
@@ -141,9 +209,13 @@ Future<void> _completar(int habitoId) async {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.grey),
+            icon: Icon(esOscuro ? Icons.light_mode : Icons.dark_mode, color: t.textMuted),
+            onPressed: () => alternarTema(context),
+          ),
+          IconButton(
+            icon: Icon(Icons.logout, color: t.textMuted),
             onPressed: _logout,
-          )
+          ),
         ],
       ),
       body: _loading
@@ -153,34 +225,44 @@ Future<void> _completar(int habitoId) async {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  // Estadísticas
-                  Row(
-                    children: [
-                      _statCard('Total', total.toString(), Colors.blue),
-                      const SizedBox(width: 8),
-                      _statCard('Completados', completados.toString(), Colors.green),
-                      const SizedBox(width: 8),
-                      _statCard('Pendientes', pendientes.toString(), Colors.orange),
-                    ],
-                  ),
+                  Text('Hoy', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: t.text)),
+                  Text(_fechaDeHoy(), style: TextStyle(fontSize: 13, color: t.textMuted)),
                   const SizedBox(height: 16),
-                  const Text('Hábitos de hoy',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
                   if (_habitos.isEmpty)
-                    const Card(
-                      child: Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Center(child: Text('No tienes hábitos activos')),
-                      ),
-                    )
-                  else
-                    ..._habitos.map((h) => _habitoCard(h)),
+                    _emptyState(t)
+                  else ...[
+                    if (pendientes.isEmpty)
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            children: [
+                              const Text('🎉', style: TextStyle(fontSize: 28)),
+                              const SizedBox(height: 4),
+                              Text('¡Todo hecho por hoy!',
+                                  style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
+                              Text('Disfruta el resto del día.',
+                                  style: TextStyle(fontSize: 12, color: t.textMuted)),
+                            ],
+                          ),
+                        ),
+                      )
+                    else
+                      ...pendientes.map((h) => _habitoCard(h, false, t)),
+                    if (completados.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Text('COMPLETADOS',
+                          style: TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w800,
+                              letterSpacing: 1, color: t.textMuted)),
+                      const SizedBox(height: 8),
+                      ...completados.map((h) => _habitoCard(h, true, t)),
+                    ],
+                  ],
                 ],
               ),
             ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF4a6cf7),
         onPressed: () async {
           final result = await Navigator.push(
             context,
@@ -190,84 +272,175 @@ Future<void> _completar(int habitoId) async {
           );
           if (result == true) _cargarHabitos();
         },
-        child: const Icon(Icons.add, color: Colors.white),
+        child: const Icon(Icons.add),
       ),
     );
   }
 
-  Widget _statCard(String label, String value, Color color) {
-    return Expanded(
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            children: [
-              Text(value,
-                  style: TextStyle(
-                      fontSize: 24, fontWeight: FontWeight.bold, color: color)),
-              Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-            ],
-          ),
-        ),
-      ),
-    );
+  String _fechaDeHoy() {
+    const dias = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+    const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    final hoy = DateTime.now();
+    return '${dias[hoy.weekday - 1]}, ${hoy.day} de ${meses[hoy.month - 1]}';
   }
 
-Widget _habitoCard(Habito h) {
-    final completado = _completados[h.habitoId] ?? false;
+  Widget _emptyState(TokensContextuales t) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        onTap: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => HabitoDetalleScreen(habitoId: h.habitoId),
-            ),
-          );
-          if (result == true) _cargarHabitos();
-        },
-        leading: Icon(
-          completado ? Icons.check_circle : Icons.radio_button_unchecked,
-          color: completado ? Colors.green : Colors.grey,
-          size: 32,
-        ),
-        title: Text(h.nombre,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              decoration: completado ? TextDecoration.lineThrough : null,
-              color: completado ? Colors.grey : Colors.black,
-            )),
-        subtitle: h.categoriaNombre != null ? Text(h.categoriaNombre!) : null,
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
           children: [
-            if (!completado)
-              ElevatedButton(
-                onPressed: () => _completar(h.habitoId),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4a6cf7),
-                ),
-                child: const Text('Completar',
-                    style: TextStyle(color: Colors.white)),
-              )
-            else
-              const Text('✅', style: TextStyle(fontSize: 20)),
-            IconButton(
-              icon: const Icon(Icons.edit, size: 20, color: Colors.grey),
+            Icon(Icons.spa, size: 48, color: t.success),
+            const SizedBox(height: 12),
+            Text('Tu primer hábito te espera',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: t.text)),
+            const SizedBox(height: 4),
+            Text(
+              'Los grandes cambios empiezan con un paso pequeño. Crea tu primer hábito y empieza tu racha hoy.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, color: t.textMuted),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
               onPressed: () async {
                 final result = await Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => HabitoScreen(usuarioId: _usuarioId, habito: h),
-                  ),
+                  MaterialPageRoute(builder: (_) => HabitoScreen(usuarioId: _usuarioId)),
                 );
                 if (result == true) _cargarHabitos();
               },
+              icon: const Icon(Icons.add),
+              label: const Text('Crear mi primer hábito'),
             ),
           ],
         ),
       ),
     );
   }
+
+  Widget _habitoCard(Habito h, bool hecho, TokensContextuales t) {
+    final p = _progreso[h.habitoId] ?? {'completadosPeriodo': 0, 'meta': 1};
+    final frec = nombresFrecuencia[h.frecuencia] ?? h.frecuencia;
+    final animando = _animandoId == h.habitoId;
+
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 400),
+      opacity: animando ? 0.25 : (hecho ? 0.72 : 1.0),
+      child: AnimatedSlide(
+        duration: const Duration(milliseconds: 400),
+        offset: animando ? const Offset(0.06, 0) : Offset.zero,
+        child: Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => HabitoDetalleScreen(habitoId: h.habitoId),
+                ),
+              );
+              if (result == true) _cargarHabitos();
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(h.nombre,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              decoration: hecho ? TextDecoration.lineThrough : null,
+                              color: hecho ? t.textMuted : t.text,
+                            )),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: t.primary.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text('$frec · ${p['completadosPeriodo']}/${p['meta']}',
+                            style: TextStyle(
+                                fontSize: 11, fontWeight: FontWeight.w700, color: t.primary)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  _miniHeatmap(h.habitoId, t),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      if (!hecho)
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _completar(h.habitoId),
+                            icon: const Icon(Icons.check, size: 18),
+                            label: const Text('Completar'),
+                          ),
+                        )
+                      else
+                        Expanded(
+                          child: Container(
+                            height: 40,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: t.success.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(Icons.check_circle, color: t.success),
+                          ),
+                        ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: Icon(Icons.edit, size: 20, color: t.textMuted),
+                        onPressed: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => HabitoScreen(usuarioId: _usuarioId, habito: h),
+                            ),
+                          );
+                          if (result == true) _cargarHabitos();
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
+
+  Widget _miniHeatmap(int habitoId, TokensContextuales t) {
+    final fechas = _fechasCompletadas[habitoId] ?? {};
+    final hoy = DateTime.now();
+    return Wrap(
+      spacing: 3,
+      runSpacing: 3,
+      children: List.generate(28, (i) {
+        final d = hoy.subtract(Duration(days: 27 - i));
+        final iso = d.toIso8601String().split('T')[0];
+        final lleno = fechas.contains(iso);
+        final esHoy = i == 27;
+        return Container(
+          width: 9,
+          height: 9,
+          decoration: BoxDecoration(
+            color: lleno ? t.success : t.surface2,
+            borderRadius: BorderRadius.circular(2.5),
+            border: esHoy ? Border.all(color: t.primary, width: 1.5) : null,
+          ),
+        );
+      }),
+    );
+  }
+}
