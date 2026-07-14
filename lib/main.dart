@@ -21,7 +21,7 @@ class HabitosApp extends StatelessWidget {
       valueListenable: temaNotifier,
       builder: (context, modo, _) {
         return MaterialApp(
-          title: 'HábitosApp',
+          title: 'Norday Hábitos',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light,
           darkTheme: AppTheme.dark,

@@ -137,7 +137,7 @@ Future<void> _registro() async {
                 // Logo
                 const Icon(Icons.check_circle, size: 72, color: Color(0xFF4a6cf7)),
                 const SizedBox(height: 12),
-                const Text('HábitosApp',
+                const Text('Norday Hábitos',
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
                 const Text('Construye hábitos, transforma tu vida',
                   style: TextStyle(color: Colors.grey)),
