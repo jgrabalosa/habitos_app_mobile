@@ -91,7 +91,7 @@ Future<void> _registro() async {
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => HabitoScreen(usuarioId: usuario.usuarioId)),
+          MaterialPageRoute(builder: (_) => const DashboardScreen()),
         );
       }
     } catch (e) {
