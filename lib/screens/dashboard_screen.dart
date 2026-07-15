@@ -9,6 +9,7 @@ import 'habito_screen.dart';
 import 'habito_detalle_screen.dart';
 import 'logros_screen.dart';
 import '../services/analytics_service.dart';
+import '../services/celebracion_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -133,51 +134,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     setState(() { _animandoId = null; });
 
     if (logrosOtorgados.isNotEmpty) {
-      _mostrarCelebraciones(logrosOtorgados);
+      CelebracionService.mostrar(logrosOtorgados);
     }
     if (logrosOtorgados.contains('RACHA_3')) {
       _solicitarResena();
     }
   }
 
-  Future<void> _mostrarCelebraciones(List<String> codigos) async {
-    Map<String, String> nombres = {};
-    try {
-      final catalogo = await ApiService.getCatalogoLogros();
-      for (var l in catalogo) {
-        nombres[l['codigo']] = l['nombre'];
-      }
-    } catch (_) {}
-
-    for (final codigo in codigos) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(milliseconds: 2500),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          content: Row(
-            children: [
-              const Text('🏆', style: TextStyle(fontSize: 24)),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('¡Logro desbloqueado!',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    Text(nombres[codigo] ?? codigo),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-      await Future.delayed(const Duration(milliseconds: 2800));
-    }
-  }
 
   Future<void> _solicitarResena() async {
     try {

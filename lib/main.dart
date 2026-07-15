@@ -5,6 +5,8 @@ import 'theme/app_theme.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -21,6 +23,7 @@ class HabitosApp extends StatelessWidget {
       valueListenable: temaNotifier,
       builder: (context, modo, _) {
         return MaterialApp(
+          navigatorKey: navigatorKey,
           title: 'Norday Hábitos',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light,
