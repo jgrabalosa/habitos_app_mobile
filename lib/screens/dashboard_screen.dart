@@ -106,7 +106,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (nota == null) return; // Canceló
 
-    final logrosOtorgados = await ApiService.completarHabito(habitoId, nota: nota);
+    List<String> logrosOtorgados;
+    try {
+      logrosOtorgados = await ApiService.completarHabito(habitoId, nota: nota);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sin conexión. Inténtalo de nuevo.')),
+        );
+      }
+      return;
+    }
+
     final habito = _habitos.firstWhere((h) => h.habitoId == habitoId);
     await AnalyticsService.habitoCompletado(habito.frecuencia);
 
