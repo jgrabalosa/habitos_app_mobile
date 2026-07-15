@@ -244,7 +244,7 @@ static Future<List<String>> completarHabito(int habitoId, {String nota = ''}) as
     }
   }
 
-  static Future<void> crearHabito(String nombre, String descripcion,
+static Future<List<String>> crearHabito(String nombre, String descripcion,
       String frecuencia, int meta, int usuarioId, int? categoriaId) async {
     final headers = await getHeaders();
     final body = {
@@ -257,11 +257,19 @@ static Future<List<String>> completarHabito(int habitoId, {String nota = ''}) as
     if (categoriaId != null) {
       body['tipo'] = {'categoriaId': categoriaId};
     }
-    await http.post(
+    final response = await http.post(
       Uri.parse('$baseUrl/habitos'),
       headers: headers,
       body: jsonEncode(body),
     );
+
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      final List<dynamic> logros = data['logrosOtorgados'] ?? [];
+      return logros.cast<String>();
+    } else {
+      throw Exception('Error al crear el hábito');
+    }
   }
     static Future<void> actualizarHabito(int habitoId, String nombre, String descripcion,
       String frecuencia, int meta, int usuarioId, int? categoriaId) async {

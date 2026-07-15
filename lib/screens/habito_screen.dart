@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/analytics_service.dart';
 import '../models/habito.dart';
+import '../services/celebracion_service.dart';
 
 class HabitoScreen extends StatefulWidget {
   final int usuarioId;
@@ -52,7 +53,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
     });
   }
 
-  Future<void> _guardar() async {
+Future<void> _guardar() async {
     if (widget.habito != null && _frecuencia != widget.habito!.frecuencia) {
       final confirmar = await showDialog<bool>(
         context: context,
@@ -92,8 +93,9 @@ class _HabitoScreenState extends State<HabitoScreen> {
           widget.usuarioId,
           null,
         );
+        if (mounted) Navigator.pop(context, true);
       } else {
-        await ApiService.crearHabito(
+        final logrosOtorgados = await ApiService.crearHabito(
           _nombreController.text,
           _descripcionController.text,
           _frecuencia,
@@ -102,8 +104,11 @@ class _HabitoScreenState extends State<HabitoScreen> {
           null,
         );
         await AnalyticsService.habitoCreado(_frecuencia);
+        if (mounted) Navigator.pop(context, true);
+        if (logrosOtorgados.isNotEmpty) {
+          CelebracionService.mostrar(logrosOtorgados);
+        }
       }
-      if (mounted) Navigator.pop(context, true);
     } catch (e) {
       setState(() { _error = _esEdicion ? 'Error al actualizar el hábito' : 'Error al crear el hábito'; });
     } finally {
