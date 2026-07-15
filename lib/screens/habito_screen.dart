@@ -161,7 +161,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                   const SizedBox(height: 8),
                   SizedBox(
-                    height: 40,
+                    height: 56,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: _plantillas.length,
@@ -169,8 +169,10 @@ class _HabitoScreenState extends State<HabitoScreen> {
                       itemBuilder: (context, i) {
                         final p = _plantillas[i];
                         return ActionChip(
-                          avatar: Text(p['emoji'], style: const TextStyle(fontSize: 14)),
+                          avatar: Text(p['emoji'], style: const TextStyle(fontSize: 16)),
                           label: Text(p['nombre']),
+                          labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                           onPressed: () => _aplicarPlantilla(p),
                         );
                       },
