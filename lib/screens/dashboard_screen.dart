@@ -69,13 +69,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  bool _estaHecho(Habito h) {
+bool _estaHecho(Habito h) {
     final p = _progreso[h.habitoId];
     if (p == null) return false;
-    if (h.frecuencia == 'DIARIO') {
-      return (p['completadosPeriodo'] ?? 0) >= (p['meta'] ?? 1);
-    }
-    return p['completadoHoy'] == true;
+    return (p['completadosPeriodo'] ?? 0) >= (p['meta'] ?? 1);
   }
 
   Future<void> _completar(int habitoId) async {
