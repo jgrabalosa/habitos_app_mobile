@@ -26,6 +26,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String _nombre = '';
   int _usuarioId = 0;
   int? _animandoId;
+  bool _yaPidioResena = false;
 
   static const nombresFrecuencia = {'DIARIO': 'Diario', 'SEMANAL': 'Semanal'};
 
@@ -43,6 +44,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _usuarioId = usuario['usuarioId'] ?? 0;
     });
     await _cargarHabitos();
+    await _cargarEstadoResena();
+  }
+
+  Future<void> _cargarEstadoResena() async {
+    try {
+      final logros = await ApiService.getLogrosUsuario(_usuarioId);
+      final yaPidio = logros.any((l) => l['logro']?['codigo'] == 'INTERACCION_RESENA');
+      setState(() { _yaPidioResena = yaPidio; });
+    } catch (_) {
+      // Si falla, dejamos _yaPidioResena en false (se volverá a intentar pedir)
+    }
   }
 
   Future<void> _cargarHabitos() async {
@@ -69,7 +81,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-bool _estaHecho(Habito h) {
+  bool _estaHecho(Habito h) {
     final p = _progreso[h.habitoId];
     if (p == null) return false;
     return (p['completadosPeriodo'] ?? 0) >= (p['meta'] ?? 1);
@@ -133,11 +145,10 @@ bool _estaHecho(Habito h) {
     if (logrosOtorgados.isNotEmpty) {
       CelebracionService.mostrar(logrosOtorgados);
     }
-    if (logrosOtorgados.contains('RACHA_3')) {
+    if (!_yaPidioResena) {
       _solicitarResena();
     }
   }
-
 
   Future<void> _solicitarResena() async {
     try {
@@ -145,6 +156,9 @@ bool _estaHecho(Habito h) {
       if (await inAppReview.isAvailable()) {
         await inAppReview.requestReview();
         await ApiService.registrarInteraccionResena(_usuarioId);
+        if (mounted) {
+          setState(() { _yaPidioResena = true; });
+        }
       }
     } catch (e) {
       // Si falla, no bloqueamos nada
