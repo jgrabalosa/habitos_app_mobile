@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/analytics_service.dart';
-import '../models/habito.dart';
 import '../services/celebracion_service.dart';
+import '../models/habito.dart';
 
 class HabitoScreen extends StatefulWidget {
   final int usuarioId;
@@ -32,6 +32,10 @@ class _HabitoScreenState extends State<HabitoScreen> {
   bool _loading = false;
   String? _error;
 
+  List<dynamic> _categorias = [];
+  int? _categoriaId;
+  bool _categoriasLoading = true;
+
   bool get _esEdicion => widget.habito != null;
 
   @override
@@ -42,6 +46,20 @@ class _HabitoScreenState extends State<HabitoScreen> {
       _descripcionController.text = widget.habito!.descripcion ?? '';
       _frecuencia = widget.habito!.frecuencia;
       _meta = widget.habito!.meta;
+      _categoriaId = widget.habito!.categoriaId;
+    }
+    _cargarCategorias();
+  }
+
+  Future<void> _cargarCategorias() async {
+    try {
+      final categorias = await ApiService.getCategoriasUsuario(widget.usuarioId);
+      setState(() {
+        _categorias = categorias;
+        _categoriasLoading = false;
+      });
+    } catch (e) {
+      setState(() { _categoriasLoading = false; });
     }
   }
 
@@ -53,7 +71,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
     });
   }
 
-Future<void> _guardar() async {
+  Future<void> _guardar() async {
     if (widget.habito != null && _frecuencia != widget.habito!.frecuencia) {
       final confirmar = await showDialog<bool>(
         context: context,
@@ -91,7 +109,7 @@ Future<void> _guardar() async {
           _frecuencia,
           _meta,
           widget.usuarioId,
-          null,
+          _categoriaId,
         );
         if (mounted) Navigator.pop(context, true);
       } else {
@@ -101,7 +119,7 @@ Future<void> _guardar() async {
           _frecuencia,
           _meta,
           widget.usuarioId,
-          null,
+          _categoriaId,
         );
         await AnalyticsService.habitoCreado(_frecuencia);
         if (mounted) Navigator.pop(context, true);
@@ -200,6 +218,30 @@ Future<void> _guardar() async {
                     border: OutlineInputBorder(),
                   ),
                 ),
+                const SizedBox(height: 12),
+                _categoriasLoading
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        child: LinearProgressIndicator(),
+                      )
+                    : DropdownButtonFormField<int?>(
+                        value: _categoriaId,
+                        decoration: const InputDecoration(
+                          labelText: 'Categoría (opcional)',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: [
+                          const DropdownMenuItem<int?>(
+                            value: null,
+                            child: Text('Sin categoría'),
+                          ),
+                          ..._categorias.map((c) => DropdownMenuItem<int?>(
+                                value: c['categoriaId'],
+                                child: Text('${c['icono'] ?? ''} ${c['nombre']}'.trim()),
+                              )),
+                        ],
+                        onChanged: (v) => setState(() { _categoriaId = v; }),
+                      ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: _frecuencia,

@@ -6,6 +6,7 @@ class Habito {
   final int meta;
   final bool activo;
   final String? categoriaNombre;
+  final int? categoriaId;
 
   Habito({
     required this.habitoId,
@@ -15,6 +16,7 @@ class Habito {
     required this.meta,
     required this.activo,
     this.categoriaNombre,
+    this.categoriaId,
   });
 
   factory Habito.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class Habito {
       meta: json['meta'] ?? 1,
       activo: json['activo'],
       categoriaNombre: json['tipo'] != null ? json['tipo']['nombre'] : null,
+      categoriaId: json['tipo'] != null ? json['tipo']['categoriaId'] : null,
     );
   }
 }

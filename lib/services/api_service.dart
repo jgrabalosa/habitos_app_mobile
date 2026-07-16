@@ -230,6 +230,19 @@ static Future<List<String>> completarHabito(int habitoId, {String nota = ''}) as
     }
   }
 
+  static Future<List<dynamic>> getCategoriasUsuario(int usuarioId) async {
+    final headers = await getHeaders();
+    final response = await http.get(
+      Uri.parse('$baseUrl/categorias/usuario/$usuarioId'),
+      headers: headers,
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Error al cargar las categorías');
+    }
+  }
+
   static Future<List<dynamic>> getLogrosUsuario(int usuarioId) async {
     final headers = await getHeaders();
     final response = await http.get(
