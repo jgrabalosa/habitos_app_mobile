@@ -4,7 +4,7 @@ import 'dashboard_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'habito_screen.dart';
 import '../services/analytics_service.dart';
-
+import 'package:permission_handler/permission_handler.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,8 +21,11 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   String? _error;
 
-  Future<void> _registrarNotificaciones(int usuarioId) async {
+ Future<void> _registrarNotificaciones(int usuarioId) async {
     try {
+      final status = await Permission.notification.request();
+      if (!status.isGranted) return;
+
       final messaging = FirebaseMessaging.instance;
 
       NotificationSettings settings = await messaging.requestPermission();
