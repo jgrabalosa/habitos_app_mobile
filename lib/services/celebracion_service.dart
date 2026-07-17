@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../main.dart';
 import 'api_service.dart';
 import 'package:lottie/lottie.dart';
+import 'sonido_service.dart';
 
 class CelebracionService {
   static bool _mostrando = false;
@@ -29,6 +30,7 @@ static Future<void> _procesarCola() async {
       final codigo = _cola.removeAt(0);
       final context = navigatorKey.currentContext;
       if (context == null) continue;
+      SonidoService.reproducir('logro');
 
       await showGeneralDialog(
         context: context,

@@ -12,6 +12,7 @@ import '../services/analytics_service.dart';
 import '../services/celebracion_service.dart';
 import 'perfil_screen.dart';
 import '../widgets/animacion_puntos.dart';
+import '../services/sonido_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -136,10 +137,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final habito = _habitos.firstWhere((h) => h.habitoId == habitoId);
     await AnalyticsService.habitoCompletado(habito.frecuencia);
 
-    // Feedback háptico + animación
+// Feedback háptico + sonido + animación
     HapticFeedback.mediumImpact();
-    setState(() { _animandoId = habitoId; });
-
+    SonidoService.reproducir('completar');
+    
     // Refrescar datos de ese hábito
     _progreso[habitoId] = await ApiService.getProgresoHoy(habitoId);
     _fechasCompletadas[habitoId]?.add(DateTime.now().toIso8601String().split('T')[0]);
