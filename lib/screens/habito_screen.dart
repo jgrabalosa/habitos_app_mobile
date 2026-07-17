@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../services/analytics_service.dart';
 import '../services/celebracion_service.dart';
@@ -259,12 +260,12 @@ class _HabitoScreenState extends State<HabitoScreen> {
                   children: [
                     const Text('Meta: '),
                     IconButton(
-                      icon: const Icon(Icons.remove),
+                      icon: const Icon(LucideIcons.minus),
                       onPressed: () => setState(() { if (_meta > 1) _meta--; }),
                     ),
                     Text('$_meta', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     IconButton(
-                      icon: const Icon(Icons.add),
+                      icon: const Icon(LucideIcons.plus),
                       onPressed: () => setState(() { _meta++; }),
                     ),
                   ],

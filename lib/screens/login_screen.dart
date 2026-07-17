@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+import '../theme/app_theme.dart';
 import '../services/api_service.dart';
 import 'dashboard_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -129,7 +131,7 @@ Future<void> _registro() async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F2F5),
+      backgroundColor: AppColors.bgLight,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -138,7 +140,7 @@ Future<void> _registro() async {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Logo
-                const Icon(Icons.check_circle, size: 72, color: Color(0xFF4a6cf7)),
+                const Icon(LucideIcons.circleCheck, size: 72, color: AppColors.primary),
                 const SizedBox(height: 12),
                 const Text('Norday Hábitos',
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
@@ -162,12 +164,12 @@ Future<void> _registro() async {
                                 child: Column(children: [
                                   Text('Iniciar sesión',
                                     style: TextStyle(
-                                      color: _isLogin ? const Color(0xFF4a6cf7) : Colors.grey,
+                                      color: _isLogin ? AppColors.primary : Colors.grey,
                                       fontWeight: _isLogin ? FontWeight.bold : FontWeight.normal,
                                     )),
                                   const SizedBox(height: 4),
                                   Container(height: 2,
-                                    color: _isLogin ? const Color(0xFF4a6cf7) : Colors.transparent),
+                                    color: _isLogin ? AppColors.primary : Colors.transparent),
                                 ]),
                               ),
                             ),
@@ -177,12 +179,12 @@ Future<void> _registro() async {
                                 child: Column(children: [
                                   Text('Registrarse',
                                     style: TextStyle(
-                                      color: !_isLogin ? const Color(0xFF4a6cf7) : Colors.grey,
+                                      color: !_isLogin ? AppColors.primary : Colors.grey,
                                       fontWeight: !_isLogin ? FontWeight.bold : FontWeight.normal,
                                     )),
                                   const SizedBox(height: 4),
                                   Container(height: 2,
-                                    color: !_isLogin ? const Color(0xFF4a6cf7) : Colors.transparent),
+                                    color: !_isLogin ? AppColors.primary : Colors.transparent),
                                 ]),
                               ),
                             ),
@@ -253,7 +255,7 @@ Future<void> _registro() async {
                             labelText: 'Contraseña',
                             border: const OutlineInputBorder(),
                             suffixIcon: IconButton(
-                              icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
+                              icon: Icon(_obscurePassword ? LucideIcons.eye : LucideIcons.eyeOff),
                               onPressed: () => setState(() { _obscurePassword = !_obscurePassword; }),
                             ),
                           ),
@@ -279,7 +281,7 @@ Future<void> _registro() async {
                           child: ElevatedButton(
                             onPressed: _loading ? null : (_isLogin ? _login : _registro),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF4a6cf7),
+                              backgroundColor: AppColors.primary,
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8)),

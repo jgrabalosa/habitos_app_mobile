@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 
@@ -71,7 +72,7 @@ class _LogrosScreenState extends State<LogrosScreen> {
                       padding: const EdgeInsets.all(20),
                       child: Column(
                         children: [
-                          Icon(Icons.monetization_on, color: t.points, size: 40),
+                          Icon(LucideIcons.coins, color: t.points, size: 40),
                           const SizedBox(height: 8),
                           Text('$_saldo',
                               style: TextStyle(

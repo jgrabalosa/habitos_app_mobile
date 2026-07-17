@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 
@@ -133,13 +134,13 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.chevron_left),
+                  icon: const Icon(LucideIcons.chevronLeft),
                   onPressed: () => _cambiarMes(-1),
                 ),
                 Text('${_nombresMeses[_mesActual.month - 1]} ${_mesActual.year}',
                     style: const TextStyle(fontWeight: FontWeight.bold)),
                 IconButton(
-                  icon: const Icon(Icons.chevron_right),
+                  icon: const Icon(LucideIcons.chevronRight),
                   onPressed: _esMesActual ? null : () => _cambiarMes(1),
                 ),
               ],
@@ -217,11 +218,11 @@ Widget _buildUltimosRegistros() {
                           ),
                         ),
                         Icon(
-                          r['completado'] ? Icons.check_circle : Icons.cancel,
+                          r['completado'] ? LucideIcons.circleCheck : LucideIcons.circleX,
                           color: r['completado'] ? Colors.green : Colors.grey,
                         ),
                         IconButton(
-                          icon: const Icon(Icons.edit, size: 18, color: Colors.grey),
+                          icon: const Icon(LucideIcons.pencil, size: 18, color: Colors.grey),
                           onPressed: () => _editarNota(r['registroId'], r['nota'] ?? ''),
                         ),
                       ],

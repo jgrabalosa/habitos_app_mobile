@@ -13,6 +13,7 @@ import '../services/celebracion_service.dart';
 import 'perfil_screen.dart';
 import '../widgets/animacion_puntos.dart';
 import '../services/sonido_service.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -119,7 +120,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (nota == null) return; // Canceló
 
-  List<String> logrosOtorgados;
+    List<String> logrosOtorgados;
     int puntosGanados;
     try {
       final resultado = await ApiService.completarHabito(habitoId, nota: nota);
@@ -137,10 +138,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final habito = _habitos.firstWhere((h) => h.habitoId == habitoId);
     await AnalyticsService.habitoCompletado(habito.frecuencia);
 
-// Feedback háptico + sonido + animación
+    // Feedback háptico + sonido + animación
     HapticFeedback.mediumImpact();
     SonidoService.reproducir('completar');
-    
+    setState(() { _animandoId = habitoId; }); // ← línea restaurada
+
     // Refrescar datos de ese hábito
     _progreso[habitoId] = await ApiService.getProgresoHoy(habitoId);
     _fechasCompletadas[habitoId]?.add(DateTime.now().toIso8601String().split('T')[0]);
@@ -148,7 +150,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await Future.delayed(const Duration(milliseconds: 450));
     setState(() { _animandoId = null; });
 
-// Secuencia: primero el logro (si hay), y al cerrarlo, los puntos
+    // Secuencia: primero el logro (si hay), y al cerrarlo, los puntos
     if (logrosOtorgados.isNotEmpty) {
       await CelebracionService.mostrar(logrosOtorgados);
     }
@@ -198,7 +200,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
-            icon: Icon(Icons.emoji_events, color: t.points),
+            icon: Icon(LucideIcons.trophy, color: t.points),
             onPressed: () {
               Navigator.push(
                 context,
@@ -207,11 +209,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             },
           ),
           IconButton(
-            icon: Icon(esOscuro ? Icons.light_mode : Icons.dark_mode, color: t.textMuted),
+            icon: Icon(esOscuro ? LucideIcons.sun : LucideIcons.moon, color: t.textMuted),
             onPressed: () => alternarTema(context),
           ),
-            PopupMenuButton<String>(
-            icon: Icon(Icons.menu, color: t.textMuted),
+          PopupMenuButton<String>(
+            icon: Icon(LucideIcons.menu, color: t.textMuted),
             onSelected: (valor) {
               if (valor == 'cuenta') {
                 Navigator.push(
@@ -229,7 +231,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 value: 'cuenta',
                 child: Row(
                   children: [
-                    Icon(Icons.person_outline, size: 20),
+                    Icon(LucideIcons.userRound, size: 20),
                     SizedBox(width: 12),
                     Text('Mi cuenta'),
                   ],
@@ -239,7 +241,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 value: 'logout',
                 child: Row(
                   children: [
-                    Icon(Icons.logout, size: 20),
+                    Icon(LucideIcons.logOut, size: 20),
                     SizedBox(width: 12),
                     Text('Cerrar sesión'),
                   ],
@@ -303,7 +305,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           );
           if (result == true) _cargarHabitos();
         },
-        child: const Icon(Icons.add),
+        child: const Icon(LucideIcons.plus),
       ),
     );
   }
@@ -322,7 +324,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            Icon(Icons.spa, size: 48, color: t.success),
+            Icon(LucideIcons.sprout, size: 48, color: t.success),
             const SizedBox(height: 12),
             Text('Tu primer hábito te espera',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: t.text)),
@@ -341,7 +343,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 );
                 if (result == true) _cargarHabitos();
               },
-              icon: const Icon(Icons.add),
+              icon: const Icon(LucideIcons.plus),
               label: const Text('Crear mi primer hábito'),
             ),
           ],
@@ -411,7 +413,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () => _completar(h.habitoId),
-                            icon: const Icon(Icons.check, size: 18),
+                            icon: const Icon(LucideIcons.check, size: 18),
                             label: const Text('Completar'),
                           ),
                         )
@@ -424,12 +426,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               color: t.success.withOpacity(0.15),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Icon(Icons.check_circle, color: t.success),
+                            child: Icon(LucideIcons.circleCheck, color: t.success),
                           ),
                         ),
                       const SizedBox(width: 8),
                       IconButton(
-                        icon: Icon(Icons.edit, size: 20, color: t.textMuted),
+                        icon: Icon(LucideIcons.pencil, size: 20, color: t.textMuted),
                         onPressed: () async {
                           final result = await Navigator.push(
                             context,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import 'login_screen.dart';
@@ -188,172 +189,174 @@ class _PerfilScreenState extends State<PerfilScreen> {
       ),
       body: _cargando
           ? const Center(child: CircularProgressIndicator())
-              : SafeArea(
+          : SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    TextFormField(
-                      controller: _nombreController,
-                      decoration: const InputDecoration(
-                        labelText: 'Nombre',
-                        prefixIcon: Icon(Icons.person_outline),
-                      ),
-                      validator: (v) => (v == null || v.trim().isEmpty)
-                          ? 'El nombre no puede estar vacío'
-                          : null,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _usernameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Nombre de usuario',
-                        prefixIcon: Icon(Icons.alternate_email),
-                      ),
-                      validator: (v) => (v == null || v.trim().isEmpty)
-                          ? 'El nombre de usuario no puede estar vacío'
-                          : null,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _emailController,
-                      enabled: !_esGoogle,
-                      decoration: InputDecoration(
-                        labelText: 'Email',
-                        prefixIcon: const Icon(Icons.email_outlined),
-                        helperText: _esGoogle
-                            ? 'Gestionado por tu cuenta de Google'
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      TextFormField(
+                        controller: _nombreController,
+                        decoration: const InputDecoration(
+                          labelText: 'Nombre',
+                          prefixIcon: Icon(LucideIcons.userRound),
+                        ),
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'El nombre no puede estar vacío'
                             : null,
                       ),
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) {
-                          return 'El email no puede estar vacío';
-                        }
-                        if (!v.contains('@') || !v.contains('.')) {
-                          return 'Introduce un email válido';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 32),
-                    FilledButton(
-                      onPressed: _guardando ? null : _guardar,
-                      child: _guardando
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text('Guardar cambios'),
-                    ),
-                    if (!_esGoogle) ...[
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _usernameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Nombre de usuario',
+                          prefixIcon: Icon(LucideIcons.atSign),
+                        ),
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'El nombre de usuario no puede estar vacío'
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _emailController,
+                        enabled: !_esGoogle,
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                          prefixIcon: const Icon(LucideIcons.mail),
+                          helperText: _esGoogle
+                              ? 'Gestionado por tu cuenta de Google'
+                              : null,
+                        ),
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return 'El email no puede estar vacío';
+                          }
+                          if (!v.contains('@') || !v.contains('.')) {
+                            return 'Introduce un email válido';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 32),
+                      FilledButton(
+                        onPressed: _guardando ? null : _guardar,
+                        child: _guardando
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Text('Guardar cambios'),
+                      ),
+                      if (!_esGoogle) ...[
+                        const SizedBox(height: 40),
+                        const Divider(),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Cambiar contraseña',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: t.textMuted,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Form(
+                          key: _formContrasenaKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              TextFormField(
+                                controller: _contrasenaActualController,
+                                obscureText: !_verContrasenas,
+                                decoration: const InputDecoration(
+                                  labelText: 'Contraseña actual',
+                                  prefixIcon: Icon(LucideIcons.lock),
+                                ),
+                                validator: (v) => (v == null || v.isEmpty)
+                                    ? 'Introduce tu contraseña actual'
+                                    : null,
+                              ),
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _contrasenaNuevaController,
+                                obscureText: !_verContrasenas,
+                                decoration: InputDecoration(
+                                  labelText: 'Nueva contraseña',
+                                  prefixIcon: const Icon(LucideIcons.keyRound),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(_verContrasenas
+                                        ? LucideIcons.eyeOff
+                                        : LucideIcons.eye),
+                                    onPressed: () => setState(() =>
+                                        _verContrasenas = !_verContrasenas),
+                                  ),
+                                ),
+                                validator: (v) {
+                                  if (v == null || v.isEmpty) {
+                                    return 'Introduce la nueva contraseña';
+                                  }
+                                  if (v.length < 6) {
+                                    return 'Mínimo 6 caracteres';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 24),
+                              OutlinedButton(
+                                onPressed: _cambiandoContrasena
+                                    ? null
+                                    : _cambiarContrasena,
+                                child: _cambiandoContrasena
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                            strokeWidth: 2),
+                                      )
+                                    : const Text('Cambiar contraseña'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 40),
                       const Divider(),
                       const SizedBox(height: 16),
-                      Text(
-                        'Cambiar contraseña',
+                      const Text(
+                        'Zona de peligro',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: t.textMuted,
+                          color: Colors.red,
                         ),
                       ),
                       const SizedBox(height: 16),
-                      Form(
-                        key: _formContrasenaKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            TextFormField(
-                              controller: _contrasenaActualController,
-                              obscureText: !_verContrasenas,
-                              decoration: const InputDecoration(
-                                labelText: 'Contraseña actual',
-                                prefixIcon: Icon(Icons.lock_outline),
-                              ),
-                              validator: (v) => (v == null || v.isEmpty)
-                                  ? 'Introduce tu contraseña actual'
-                                  : null,
-                            ),
-                            const SizedBox(height: 16),
-                            TextFormField(
-                              controller: _contrasenaNuevaController,
-                              obscureText: !_verContrasenas,
-                              decoration: InputDecoration(
-                                labelText: 'Nueva contraseña',
-                                prefixIcon: const Icon(Icons.lock_reset),
-                                suffixIcon: IconButton(
-                                  icon: Icon(_verContrasenas
-                                      ? Icons.visibility_off
-                                      : Icons.visibility),
-                                  onPressed: () => setState(
-                                      () => _verContrasenas = !_verContrasenas),
-                                ),
-                              ),
-                              validator: (v) {
-                                if (v == null || v.isEmpty) {
-                                  return 'Introduce la nueva contraseña';
-                                }
-                                if (v.length < 6) {
-                                  return 'Mínimo 6 caracteres';
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 24),
-                            OutlinedButton(
-                              onPressed: _cambiandoContrasena
-                                  ? null
-                                  : _cambiarContrasena,
-                              child: _cambiandoContrasena
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                          strokeWidth: 2),
-                                    )
-                                  : const Text('Cambiar contraseña'),
-                            ),
-                          ],
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.red,
+                          side: const BorderSide(color: Colors.red),
                         ),
+                        onPressed:
+                            _eliminando ? null : _confirmarEliminarCuenta,
+                        icon: _eliminando
+                            ? const SizedBox(
+                                height: 18,
+                                width: 18,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.red),
+                              )
+                            : const Icon(LucideIcons.trash2),
+                        label: const Text('Eliminar mi cuenta'),
                       ),
                     ],
-                    const SizedBox(height: 40),
-                    const Divider(),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Zona de peligro',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.red,
-                        side: const BorderSide(color: Colors.red),
-                      ),
-                      onPressed: _eliminando ? null : _confirmarEliminarCuenta,
-                      icon: _eliminando
-                          ? const SizedBox(
-                              height: 18,
-                              width: 18,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.red),
-                            )
-                          : const Icon(Icons.delete_forever),
-                      label: const Text('Eliminar mi cuenta'),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
-    )
     );
   }
 }
