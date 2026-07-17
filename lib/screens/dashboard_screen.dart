@@ -10,6 +10,7 @@ import 'habito_detalle_screen.dart';
 import 'logros_screen.dart';
 import '../services/analytics_service.dart';
 import '../services/celebracion_service.dart';
+import 'perfil_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -200,9 +201,42 @@ class _DashboardScreenState extends State<DashboardScreen> {
             icon: Icon(esOscuro ? Icons.light_mode : Icons.dark_mode, color: t.textMuted),
             onPressed: () => alternarTema(context),
           ),
-          IconButton(
-            icon: Icon(Icons.logout, color: t.textMuted),
-            onPressed: _logout,
+            PopupMenuButton<String>(
+            icon: Icon(Icons.menu, color: t.textMuted),
+            onSelected: (valor) {
+              if (valor == 'cuenta') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => PerfilScreen(usuarioId: _usuarioId),
+                  ),
+                );
+              } else if (valor == 'logout') {
+                _logout();
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'cuenta',
+                child: Row(
+                  children: [
+                    Icon(Icons.person_outline, size: 20),
+                    SizedBox(width: 12),
+                    Text('Mi cuenta'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.logout, size: 20),
+                    SizedBox(width: 12),
+                    Text('Cerrar sesión'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),

@@ -4,6 +4,7 @@ class Usuario {
   final String username;
   final String email;
   final String token;
+  final String proveedorAuth;
 
   Usuario({
     required this.usuarioId,
@@ -11,6 +12,7 @@ class Usuario {
     required this.username,
     required this.email,
     required this.token,
+    this.proveedorAuth = 'LOCAL',
   });
 
   factory Usuario.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class Usuario {
       username: json['username'],
       email: json['email'],
       token: json['token'],
+      proveedorAuth: json['proveedorAuth'] ?? 'LOCAL',
     );
   }
 }

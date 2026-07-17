@@ -25,6 +25,7 @@ class ApiService {
     await prefs.setString('nombre', usuario.nombre);
     await prefs.setString('username', usuario.username);
     await prefs.setString('email', usuario.email);
+    await prefs.setString('proveedorAuth', usuario.proveedorAuth);
   }
 
   static Future<Map<String, dynamic>?> getUsuarioLocal() async {
@@ -36,6 +37,7 @@ class ApiService {
       'nombre': prefs.getString('nombre'),
       'username': prefs.getString('username'),
       'email': prefs.getString('email'),
+      'proveedorAuth': prefs.getString('proveedorAuth') ?? 'LOCAL',
       'token': token,
     };
   }
@@ -86,6 +88,60 @@ class ApiService {
     if (response.statusCode != 201) {
       throw Exception(response.body);
     }
+  }
+  static Future<void> actualizarUsuario(
+      int usuarioId, String nombre, String username, String email) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/usuarios/$usuarioId'),
+      headers: await getHeaders(),
+      body: jsonEncode({
+        'nombre': nombre,
+        'username': username,
+        'email': email,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(response.body);
+    }
+    
+
+    // Actualizar también los datos guardados en local
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('nombre', nombre);
+    await prefs.setString('username', username);
+    await prefs.setString('email', email);
+  }
+
+  static Future<void> cambiarContrasena(
+      int usuarioId, String contrasenaActual, String contrasenaNueva) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/usuarios/$usuarioId/contrasena'),
+      headers: await getHeaders(),
+      body: jsonEncode({
+        'contrasenaActual': contrasenaActual,
+        'contrasenaNueva': contrasenaNueva,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(response.body);
+    }
+  }
+
+  static Future<void> eliminarUsuario(int usuarioId) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/usuarios/$usuarioId'),
+      headers: await getHeaders(),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(response.body);
+    }
+
+    // Cuenta eliminada: limpiar toda la sesión local
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
   }
 
 // ── Hábitos ────────────────────────────────────────────
