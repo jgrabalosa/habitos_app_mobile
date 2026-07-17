@@ -231,7 +231,8 @@ class ApiService {
     }
   }
 
-static Future<List<String>> completarHabito(int habitoId, {String nota = ''}) async {
+static Future<Map<String, dynamic>> completarHabito(int habitoId,
+      {String nota = ''}) async {
     final headers = await getHeaders();
     final response = await http.post(
       Uri.parse('$baseUrl/registros/completar/$habitoId'),
@@ -242,7 +243,10 @@ static Future<List<String>> completarHabito(int habitoId, {String nota = ''}) as
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
       final List<dynamic> logros = data['logrosOtorgados'] ?? [];
-      return logros.cast<String>();
+      return {
+        'logros': logros.cast<String>(),
+        'puntosGanados': data['puntosGanados'] ?? 0,
+      };
     } else {
       throw Exception('Error al completar el hábito');
     }

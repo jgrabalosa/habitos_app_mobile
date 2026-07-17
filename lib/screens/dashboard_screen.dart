@@ -11,6 +11,7 @@ import 'logros_screen.dart';
 import '../services/analytics_service.dart';
 import '../services/celebracion_service.dart';
 import 'perfil_screen.dart';
+import '../widgets/animacion_puntos.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -117,9 +118,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (nota == null) return; // Canceló
 
-    List<String> logrosOtorgados;
+  List<String> logrosOtorgados;
+    int puntosGanados;
     try {
-      logrosOtorgados = await ApiService.completarHabito(habitoId, nota: nota);
+      final resultado = await ApiService.completarHabito(habitoId, nota: nota);
+      logrosOtorgados = resultado['logros'];
+      puntosGanados = resultado['puntosGanados'];
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -143,8 +147,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await Future.delayed(const Duration(milliseconds: 450));
     setState(() { _animandoId = null; });
 
+// Secuencia: primero el logro (si hay), y al cerrarlo, los puntos
     if (logrosOtorgados.isNotEmpty) {
-      CelebracionService.mostrar(logrosOtorgados);
+      await CelebracionService.mostrar(logrosOtorgados);
+    }
+    if (puntosGanados > 0 && mounted) {
+      AnimacionPuntos.mostrar(context, puntosGanados);
     }
     if (!_yaPidioResena) {
       _solicitarResena();

@@ -20,6 +20,7 @@ dependencies:
   google_fonts: ^8.1.0
   firebase_analytics: ^12.4.3
   permission_handler: ^11.3.1
+  lottie: ^3.1.2
 
 dev_dependencies:
   flutter_test:
@@ -28,3 +29,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/animations/

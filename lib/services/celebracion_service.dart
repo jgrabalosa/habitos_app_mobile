@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
 import 'api_service.dart';
+import 'package:lottie/lottie.dart';
 
 class CelebracionService {
   static bool _mostrando = false;
@@ -15,7 +16,7 @@ class CelebracionService {
     _mostrando = false;
   }
 
-  static Future<void> _procesarCola() async {
+static Future<void> _procesarCola() async {
     Map<String, String> nombres = {};
     try {
       final catalogo = await ApiService.getCatalogoLogros();
@@ -38,14 +39,29 @@ class CelebracionService {
         pageBuilder: (context, anim1, anim2) => const SizedBox.shrink(),
         transitionBuilder: (context, anim, anim2, child) {
           final curved = CurvedAnimation(parent: anim, curve: Curves.easeOutBack);
-          return Transform.scale(
-            scale: curved.value,
-            child: Opacity(
-              opacity: anim.value.clamp(0.0, 1.0),
-              child: _CelebracionDialog(
-                nombre: nombres[codigo] ?? codigo,
+          return Stack(
+            children: [
+              // Diálogo del logro (debajo)
+              Transform.scale(
+                scale: curved.value,
+                child: Opacity(
+                  opacity: anim.value.clamp(0.0, 1.0),
+                  child: _CelebracionDialog(
+                    nombre: nombres[codigo] ?? codigo,
+                  ),
+                ),
               ),
-            ),
+              // Confeti a pantalla completa (encima, sin bloquear toques)
+              IgnorePointer(
+                child: SizedBox.expand(
+                  child: Lottie.asset(
+                    'assets/animations/confetti.json',
+                    fit: BoxFit.cover,
+                    repeat: false,
+                  ),
+                ),
+              ),
+            ],
           );
         },
       );
@@ -77,7 +93,22 @@ class _CelebracionDialog extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('🏆', style: TextStyle(fontSize: 56)),
+              SizedBox(
+                height: 140,
+                width: 140,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Lottie.asset(
+                      'assets/animations/confetti.json',
+                      height: 140,
+                      width: 140,
+                      repeat: false,
+                    ),
+                    const Text('🏆', style: TextStyle(fontSize: 56)),
+                  ],
+                ),
+              ),
               const SizedBox(height: 16),
               const Text('¡Logro desbloqueado!',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
