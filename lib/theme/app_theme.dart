@@ -42,6 +42,22 @@ class AppColors {
   static const textMutedDark = Color(0xFFA3B3C9); // gris azulado sobre noche
 }
 
+/// ── Escala de espaciado oficial (4/8/16/24) ──
+class AppSpacing {
+  static const double xs = 4;
+  static const double sm = 8;
+  static const double md = 16;
+  static const double lg = 24;
+}
+
+/// ── Radios oficiales (generosos, 16-24) ──
+class AppRadius {
+  static const double sm = 12; // inputs, botones
+  static const double md = 16; // chips, sheets
+  static const double lg = 20; // cards
+  static const double xl = 24; // overlays, diálogos
+}
+
 /// Colores que cambian según el tema — úsalos con tokens(context)
 class TokensContextuales {
   final Color primary, success, streak, points, bg, surface, surface2, text, textMuted;
@@ -124,20 +140,20 @@ class AppTheme {
         color: esOscuro ? AppColors.surfaceDark : AppColors.surfaceLight,
         elevation: 2,
         shadowColor: Colors.black.withOpacity(esOscuro ? 0.4 : 0.08),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: esOscuro ? AppColors.primaryDarkMode : AppColors.primary,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sm)),
           textStyle: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.sm)),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.sm),
           borderSide: BorderSide(
               color: esOscuro ? AppColors.primaryDarkMode : AppColors.primary, width: 2),
         ),
