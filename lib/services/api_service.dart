@@ -124,11 +124,43 @@ class ApiService {
       }),
     );
 
+    
+
     if (response.statusCode != 200) {
       throw Exception(response.body);
     }
   }
 
+// ── Recuperación de contraseña ─────────────────────────
+  static Future<void> solicitarCodigoRecuperacion(String email) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/usuarios/recuperar'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(response.body);
+    }
+  }
+
+  static Future<void> restablecerContrasena(
+      String email, String codigo, String contrasenaNueva) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/usuarios/restablecer'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': email,
+        'codigo': codigo,
+        'contrasenaNueva': contrasenaNueva,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(response.body);
+    }
+  }
+  
   static Future<void> eliminarUsuario(int usuarioId) async {
     final response = await http.delete(
       Uri.parse('$baseUrl/usuarios/$usuarioId'),
