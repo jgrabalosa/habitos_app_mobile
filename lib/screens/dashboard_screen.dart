@@ -14,6 +14,7 @@ import 'perfil_screen.dart';
 import '../widgets/animacion_puntos.dart';
 import '../services/sonido_service.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import '../widgets/valoracion_sheet.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -91,41 +92,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return (p['completadosPeriodo'] ?? 0) >= (p['meta'] ?? 1);
   }
 
-  Future<void> _completar(int habitoId) async {
-    final notaController = TextEditingController();
-    final nota = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Completar hábito'),
-        content: TextField(
-          controller: notaController,
-          decoration: const InputDecoration(
-            labelText: 'Nota (opcional)',
-            hintText: '¿Cómo te ha ido?',
-          ),
-          maxLines: 3,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, null),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, notaController.text.trim()),
-            child: const Text('Completar'),
-          ),
-        ],
-      ),
-    );
-
-    if (nota == null) return; // Canceló
-
+Future<void> _completar(int habitoId) async {
     List<String> logrosOtorgados;
     int puntosGanados;
+    int? registroId;
+    bool mostrarValoracion;
     try {
-      final resultado = await ApiService.completarHabito(habitoId, nota: nota);
+      final resultado = await ApiService.completarHabito(habitoId);
       logrosOtorgados = resultado['logros'];
       puntosGanados = resultado['puntosGanados'];
+      registroId = resultado['registroId'];
+      mostrarValoracion = resultado['mostrarValoracion'] ?? false;
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -141,7 +118,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // Feedback háptico + sonido + animación
     HapticFeedback.mediumImpact();
     SonidoService.reproducir('completar');
-    setState(() { _animandoId = habitoId; }); // ← línea restaurada
+    setState(() { _animandoId = habitoId; });
 
     // Refrescar datos de ese hábito
     _progreso[habitoId] = await ApiService.getProgresoHoy(habitoId);
@@ -150,13 +127,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await Future.delayed(const Duration(milliseconds: 450));
     setState(() { _animandoId = null; });
 
-    // Secuencia: primero el logro (si hay), y al cerrarlo, los puntos
+    // Secuencia: logro (si hay) → puntos → valoración (si toca)
     if (logrosOtorgados.isNotEmpty) {
       await CelebracionService.mostrar(logrosOtorgados);
     }
     if (puntosGanados > 0 && mounted) {
       AnimacionPuntos.mostrar(context, puntosGanados);
     }
+
+    if (mostrarValoracion && registroId != null && mounted) {
+      // Pequeña pausa para no pisar la animación de puntos
+      await Future.delayed(const Duration(milliseconds: 600));
+      if (!mounted) return;
+      final respuesta = await ValoracionSheet.mostrar(context);
+      if (respuesta != null) {
+        try {
+          final int? valoracion = respuesta['valoracion'];
+          final String? nota = respuesta['nota'];
+          if (valoracion != null) {
+            await ApiService.valorarRegistro(registroId, valoracion);
+          }
+          if (nota != null) {
+            await ApiService.actualizarNotaRegistro(registroId, nota);
+          }
+        } catch (e) {
+          // La valoración es opcional: si falla, no molestamos al usuario
+        }
+      }
+    }
+
     if (!_yaPidioResena) {
       _solicitarResena();
     }

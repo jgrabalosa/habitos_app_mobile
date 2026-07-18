@@ -278,9 +278,23 @@ static Future<Map<String, dynamic>> completarHabito(int habitoId,
       return {
         'logros': logros.cast<String>(),
         'puntosGanados': data['puntosGanados'] ?? 0,
+        'registroId': data['registroId'],
+        'mostrarValoracion': data['mostrarValoracion'] ?? false,
       };
     } else {
       throw Exception('Error al completar el hábito');
+    }
+  }
+
+  static Future<void> valorarRegistro(int registroId, int valoracion) async {
+    final headers = await getHeaders();
+    final response = await http.put(
+      Uri.parse('$baseUrl/registros/$registroId/valoracion'),
+      headers: headers,
+      body: jsonEncode({'valoracion': valoracion}),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Error al guardar la valoración');
     }
   }
 
