@@ -3,12 +3,11 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
 import 'dashboard_screen.dart';
-import 'recuperacion_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'habito_screen.dart';
 import '../services/analytics_service.dart';
 import 'package:permission_handler/permission_handler.dart';
-
+import 'recuperacion_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -262,7 +261,27 @@ Future<void> _registro() async {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
+
+                        // ¿Olvidaste tu contraseña?
+                        if (_isLogin)
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: _loading
+                                  ? null
+                                  : () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => const RecuperacionScreen(),
+                                        ),
+                                      );
+                                    },
+                              child: const Text('¿Olvidaste tu contraseña?'),
+                            ),
+                          )
+                        else
+                          const SizedBox(height: 16),
 
                         // Error
                         if (_error != null)
