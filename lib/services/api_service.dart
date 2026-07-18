@@ -192,6 +192,20 @@ class ApiService {
     }
   }
 
+  static Future<List<dynamic>> getDashboard(int usuarioId) async {
+    final headers = await getHeaders();
+    final response = await http.get(
+      Uri.parse('$baseUrl/habitos/usuario/$usuarioId/dashboard'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Error al cargar el dashboard');
+    }
+  }
+
   static Future<Map<String, dynamic>> getHabitoDetalle(int habitoId, {String? mes}) async {
     final headers = await getHeaders();
     final mesParam = mes != null ? '?mes=$mes' : '';

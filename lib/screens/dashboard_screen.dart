@@ -62,21 +62,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  Future<void> _cargarHabitos() async {
+Future<void> _cargarHabitos() async {
     try {
-      final habitos = await ApiService.getHabitosActivos(_usuarioId);
-      for (var h in habitos) {
-        _progreso[h.habitoId] = await ApiService.getProgresoHoy(h.habitoId);
-        try {
-          final registros = await ApiService.getRegistrosHabito(h.habitoId);
-          _fechasCompletadas[h.habitoId] = registros
-              .where((r) => r['completado'] == true)
-              .map<String>((r) => r['fecha'] as String)
-              .toSet();
-        } catch (_) {
-          _fechasCompletadas[h.habitoId] = {};
-        }
+      final dashboard = await ApiService.getDashboard(_usuarioId);
+
+      final habitos = <Habito>[];
+      for (var item in dashboard) {
+        final habito = Habito.fromJson(item['habito']);
+        habitos.add(habito);
+
+        _progreso[habito.habitoId] = {
+          'completadoHoy': item['completadoHoy'],
+          'completadosPeriodo': item['completadosPeriodo'],
+          'meta': habito.meta,
+        };
+
+        final List<dynamic> fechas = item['fechasCompletadas'] ?? [];
+        _fechasCompletadas[habito.habitoId] = fechas.cast<String>().toSet();
       }
+
       setState(() {
         _habitos = habitos;
         _loading = false;
@@ -103,7 +107,9 @@ Future<void> _completar(int habitoId) async {
       puntosGanados = resultado['puntosGanados'];
       registroId = resultado['registroId'];
       mostrarValoracion = resultado['mostrarValoracion'] ?? false;
-    } catch (e) {
+      print('DEBUG completar → registroId=$registroId, mostrarValoracion=$mostrarValoracion');
+    }
+     catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Sin conexión. Inténtalo de nuevo.')),
