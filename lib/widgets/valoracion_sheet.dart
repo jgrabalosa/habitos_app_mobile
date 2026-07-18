@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// Bottom sheet genérico de valoración post-acción.
 /// Devuelve un Map {'valoracion': int?, 'nota': String?} con lo que el
@@ -83,8 +84,8 @@ class _ValoracionSheetContentState extends State<_ValoracionSheetContent> {
                     iconSize: 40,
                     onPressed: () => _seleccionarEstrella(valor),
                     icon: Icon(
-                      marcada ? Icons.star_rounded : Icons.star_outline_rounded,
-                      color: marcada ? Colors.amber : Colors.grey,
+                      LucideIcons.star,
+                      color: marcada ? Colors.amber : Colors.grey.withOpacity(0.4),
                     ),
                   );
                 }),

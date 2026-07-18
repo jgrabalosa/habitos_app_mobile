@@ -69,6 +69,7 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                   padding: const EdgeInsets.all(16),
                   children: [
                     _buildStatCards(),
+                    _buildValoracionMedia(),
                     const SizedBox(height: 16),
                     _buildHeatmap(),
                     const SizedBox(height: 16),
@@ -94,6 +95,35 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                 : '-',
             'Este mes', Colors.orange),
       ],
+    );
+  }
+
+  Widget _buildValoracionMedia() {
+    final media = _detalle!['valoracionMedia'];
+    if (media == null) return const SizedBox.shrink();
+
+    final valor = (media as num).toDouble();
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(LucideIcons.star, color: Colors.amber, size: 20),
+              const SizedBox(width: 6),
+              Text(
+                valor.toStringAsFixed(1).replaceAll('.', ','),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(width: 6),
+              const Text('Satisfacción media',
+                  style: TextStyle(fontSize: 12, color: Colors.grey)),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -187,7 +217,7 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     );
   }
 
-Widget _buildUltimosRegistros() {
+  Widget _buildUltimosRegistros() {
     final List<dynamic> registros = _detalle!['ultimosRegistros'];
 
     return Card(
@@ -212,6 +242,16 @@ Widget _buildUltimosRegistros() {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(r['fecha'], style: const TextStyle(fontWeight: FontWeight.w600)),
+                              if (r['valoracion'] != null)
+                                Row(
+                                  children: List.generate(5, (i) => Icon(
+                                    LucideIcons.star,
+                                    size: 14,
+                                    color: i < (r['valoracion'] as int)
+                                        ? Colors.amber
+                                        : Colors.grey.withOpacity(0.3),
+                                  )),
+                                ),
                               if (r['nota'] != null && r['nota'].toString().isNotEmpty)
                                 Text(r['nota'], style: const TextStyle(fontSize: 12, color: Colors.grey)),
                             ],
