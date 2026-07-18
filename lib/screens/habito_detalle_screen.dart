@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
+import '../models/habito.dart';
 import '../theme/app_theme.dart';
+import 'habito_screen.dart';
 
 class HabitoDetalleScreen extends StatefulWidget {
   final int habitoId;
-  const HabitoDetalleScreen({super.key, required this.habitoId});
+  final int usuarioId;
+  const HabitoDetalleScreen({super.key, required this.habitoId, required this.usuarioId});
 
   @override
   State<HabitoDetalleScreen> createState() => _HabitoDetalleScreenState();
@@ -15,6 +18,7 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
   Map<String, dynamic>? _detalle;
   bool _loading = true;
   DateTime _mesActual = DateTime(DateTime.now().year, DateTime.now().month, 1);
+  Map<String, dynamic>? _diaSeleccionado; // día tocado en el heatmap (tooltip)
 
   final List<String> _nombresMeses = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -42,9 +46,30 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     }
   }
 
+  Future<void> _abrirEdicion() async {
+    try {
+      final Habito habito = await ApiService.getHabito(widget.habitoId);
+      if (!mounted) return;
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => HabitoScreen(usuarioId: widget.usuarioId, habito: habito),
+        ),
+      );
+      if (result == true) _cargarDetalle();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudo cargar el hábito')),
+        );
+      }
+    }
+  }
+
   void _cambiarMes(int direccion) {
     setState(() {
       _mesActual = DateTime(_mesActual.year, _mesActual.month + direccion, 1);
+      _diaSeleccionado = null;
     });
     _cargarDetalle();
   }
@@ -60,6 +85,13 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
       appBar: AppBar(
         title: Text(_detalle != null ? _detalle!['nombre'] : 'Detalle'),
         elevation: 1,
+        actions: [
+          IconButton(
+            icon: const Icon(LucideIcons.pencil),
+            tooltip: 'Editar hábito',
+            onPressed: _abrirEdicion,
+          ),
+        ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -151,9 +183,21 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
 
   Widget _buildHeatmap() {
     final List<dynamic> heatmap = _detalle!['heatmap'];
+    final int meta = _detalle!['meta'] ?? 1;
+    final bool esDiario = _detalle!['frecuencia'] == 'DIARIO';
+    final bool conNiveles = esDiario && meta > 1;
 
     final primerDia = DateTime.parse(heatmap[0]['fecha']);
     final diaSemana = (primerDia.weekday - 1); // Lunes = 0
+    final t = tokens(context);
+
+    Color colorDia(int veces) {
+      if (veces == 0) return t.surface2;
+      if (!conNiveles) return t.primary;
+      if (veces < meta) return t.primary.withOpacity(0.35);
+      if (veces == meta) return t.primary;
+      return AppColors.primaryDark; // superada
+    }
 
     return Card(
       child: Padding(
@@ -175,7 +219,21 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
+            // Etiquetas de días de la semana
+            Row(
+              children: ['L', 'M', 'X', 'J', 'V', 'S', 'D']
+                  .map((d) => Expanded(
+                        child: Text(d,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: t.textMuted)),
+                      ))
+                  .toList(),
+            ),
+            const SizedBox(height: 6),
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -188,33 +246,74 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
               itemBuilder: (context, index) {
                 if (index < diaSemana) return const SizedBox();
                 final dia = heatmap[index - diaSemana];
-                final fecha = DateTime.parse(dia['fecha']);
-                final completado = dia['completado'] as bool;
+                final int veces = dia['veces'] ?? (dia['completado'] == true ? 1 : 0);
                 final esHoy = dia['fecha'] ==
                     DateTime.now().toIso8601String().split('T')[0];
-                final t = tokens(context);
-                return Container(
-                  decoration: BoxDecoration(
-                    color: completado ? t.success : t.surface2,
-                    borderRadius: BorderRadius.circular(8),
-                    border: esHoy ? Border.all(color: t.primary, width: 2) : null,
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    '${fecha.day}',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: completado ? FontWeight.bold : FontWeight.normal,
-                      color: completado ? Colors.white : t.textMuted,
+                final seleccionado = _diaSeleccionado?['fecha'] == dia['fecha'];
+                return GestureDetector(
+                  onTap: () => setState(() {
+                    _diaSeleccionado = seleccionado ? null : dia;
+                  }),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: colorDia(veces),
+                      borderRadius: BorderRadius.circular(6),
+                      border: seleccionado
+                          ? Border.all(color: t.text, width: 2)
+                          : esHoy
+                              ? Border.all(color: t.primary, width: 2)
+                              : null,
                     ),
                   ),
                 );
               },
             ),
+            const SizedBox(height: 10),
+            // Info del día seleccionado (tooltip) o leyenda
+            if (_diaSeleccionado != null)
+              Text(
+                _infoDia(_diaSeleccionado!, meta, conNiveles),
+                style: TextStyle(
+                    fontSize: 12, fontWeight: FontWeight.w600, color: t.text),
+              )
+            else
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Menos ',
+                      style: TextStyle(fontSize: 10, color: t.textMuted)),
+                  ...[
+                    t.surface2,
+                    if (conNiveles) t.primary.withOpacity(0.35),
+                    t.primary,
+                    if (conNiveles) AppColors.primaryDark,
+                  ].map((c) => Container(
+                        width: 10,
+                        height: 10,
+                        margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                        decoration: BoxDecoration(
+                          color: c,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      )),
+                  Text(' Más',
+                      style: TextStyle(fontSize: 10, color: t.textMuted)),
+                ],
+              ),
           ],
         ),
       ),
     );
+  }
+
+  String _infoDia(Map<String, dynamic> dia, int meta, bool conNiveles) {
+    final fecha = DateTime.parse(dia['fecha']);
+    final int veces = dia['veces'] ?? (dia['completado'] == true ? 1 : 0);
+    final nombreMes = _nombresMeses[fecha.month - 1].toLowerCase();
+    final base = '${fecha.day} de $nombreMes';
+    if (veces == 0) return '$base · Sin completar';
+    if (conNiveles) return '$base · $veces/$meta';
+    return '$base · Completado';
   }
 
   Widget _buildUltimosRegistros() {

@@ -192,6 +192,20 @@ class ApiService {
     }
   }
 
+  static Future<Habito> getHabito(int habitoId) async {
+    final headers = await getHeaders();
+    final response = await http.get(
+      Uri.parse('$baseUrl/habitos/$habitoId'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      return Habito.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Error al cargar el hábito');
+    }
+  }
+
   static Future<List<dynamic>> getDashboard(int usuarioId) async {
     final headers = await getHeaders();
     final response = await http.get(
