@@ -8,7 +8,8 @@ import 'habito_screen.dart';
 class HabitoDetalleScreen extends StatefulWidget {
   final int habitoId;
   final int usuarioId;
-  const HabitoDetalleScreen({super.key, required this.habitoId, required this.usuarioId});
+  final String? nombre; // para el Hero: título visible desde el primer frame
+  const HabitoDetalleScreen({super.key, required this.habitoId, required this.usuarioId, this.nombre});
 
   @override
   State<HabitoDetalleScreen> createState() => _HabitoDetalleScreenState();
@@ -82,17 +83,28 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_detalle != null ? _detalle!['nombre'] : 'Detalle'),
-        elevation: 1,
-        actions: [
-          IconButton(
-            icon: const Icon(LucideIcons.pencil),
-            tooltip: 'Editar hábito',
-            onPressed: _abrirEdicion,
+appBar: AppBar(
+  // El Hero envuelve al condicional del texto
+title: Hero(
+          tag: 'habito-nombre-${widget.habitoId}',
+          child: Material(
+            color: Colors.transparent,
+            child: Text(
+              _detalle != null ? _detalle!['nombre'] : (widget.nombre ?? ''),
+              style: Theme.of(context).textTheme.titleLarge,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-        ],
-      ),
+        ),
+  elevation: 1,
+  actions: [
+    IconButton(
+      icon: const Icon(LucideIcons.pencil),
+      tooltip: 'Editar hábito',
+      onPressed: _abrirEdicion,
+    ),
+  ],
+),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _detalle == null
@@ -329,7 +341,26 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 8),
             if (registros.isEmpty)
-              const Text('Todavía no hay registros', style: TextStyle(color: Colors.grey))
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Column(
+                    children: [
+                      Icon(LucideIcons.calendarHeart,
+                          size: 36, color: tokens(context).textMuted),
+                      const SizedBox(height: 8),
+                      Text('Tu historia empieza hoy',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: tokens(context).text)),
+                      Text('Completa este hábito y aquí quedará el registro.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 12, color: tokens(context).textMuted)),
+                    ],
+                  ),
+                ),
+              )
             else
               ...registros.map((r) => Padding(
                     padding: const EdgeInsets.symmetric(vertical: 6),

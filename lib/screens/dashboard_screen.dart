@@ -16,6 +16,7 @@ import '../services/sonido_service.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../widgets/valoracion_sheet.dart';
 import '../widgets/check_circular.dart';
+import '../widgets/anillo_progreso.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -260,8 +261,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  Text('Hoy', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: t.text)),
-                  Text(_fechaDeHoy(), style: TextStyle(fontSize: 13, color: t.textMuted)),
+                 Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Hoy',
+                                style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w800,
+                                    color: t.text)),
+                            Text(_fechaDeHoy(),
+                                style:
+                                    TextStyle(fontSize: 13, color: t.textMuted)),
+                            if (_habitos.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                _fraseProgreso(completados.length, _habitos.length),
+                                style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: completados.length == _habitos.length
+                                        ? t.success
+                                        : t.textMuted),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      if (_habitos.isNotEmpty)
+                        AnilloProgreso(
+                          actual: completados.length,
+                          total: _habitos.length,
+                          color: t.primary,
+                          colorPista: t.surface2,
+                          colorTexto: t.text,
+                        ),
+                    ],
+                  ),
                   const SizedBox(height: 16),
                   if (_habitos.isEmpty)
                     _emptyState(t)
@@ -318,6 +356,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return '${dias[hoy.weekday - 1]}, ${hoy.day} de ${meses[hoy.month - 1]}';
   }
 
+  String _fraseProgreso(int hechos, int total) {
+    if (hechos == 0) return '¡Vamos a por el primero!';
+    if (hechos == total) return '¡Día perfecto! 🎉';
+    if (hechos / total >= 0.5) return 'Ya casi lo tienes';
+    return 'Buen ritmo, sigue así';
+  }
+
   Widget _emptyState(TokensContextuales t) {
     return Card(
       child: Padding(
@@ -367,8 +412,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => HabitoDetalleScreen(
-                    habitoId: h.habitoId, usuarioId: _usuarioId),
+               builder: (_) => HabitoDetalleScreen(
+                    habitoId: h.habitoId,
+                    usuarioId: _usuarioId,
+                    nombre: h.nombre),
               ),
             );
             _cargarHabitos();
@@ -384,14 +431,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Row(
                         children: [
                           Flexible(
-                            child: Text(h.nombre,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  decoration:
-                                      hecho ? TextDecoration.lineThrough : null,
-                                  color: hecho ? t.textMuted : t.text,
-                                )),
+                            child: Hero(
+                              tag: 'habito-nombre-${h.habitoId}',
+                              child: Material(
+                                color: Colors.transparent,
+                                child: Text(h.nombre,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      decoration: hecho
+                                          ? TextDecoration.lineThrough
+                                          : null,
+                                      color: hecho ? t.textMuted : t.text,
+                                    )),
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 8),
                           Container(
