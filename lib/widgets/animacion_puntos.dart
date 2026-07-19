@@ -98,27 +98,19 @@ class _PuntosFlotantesState extends State<_PuntosFlotantes>
                   opacity: _opacidad.value,
                   child: Material(
                     color: Colors.transparent,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 10),
-                      decoration: BoxDecoration(
+                    child: Text(
+                      widget.texto,
+                      style: TextStyle(
                         color: Colors.amber.shade600,
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.amber.shade600.withOpacity(0.4),
-                            blurRadius: 16,
-                            offset: const Offset(0, 4),
+                        fontSize: 32,
+                        fontWeight: FontWeight.w800,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withOpacity(0.25),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
                         ],
-                      ),
-                      child: Text(
-                        widget.texto,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800,
-                        ),
                       ),
                     ),
                   ),
