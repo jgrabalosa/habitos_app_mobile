@@ -59,7 +59,7 @@ static Future<void> _procesarCola() async {
                   child: Lottie.asset(
                     'assets/animations/confetti.json',
                     fit: BoxFit.cover,
-                    repeat: false,
+                    repeat: true,
                   ),
                 ),
               ),
@@ -105,7 +105,7 @@ class _CelebracionDialog extends StatelessWidget {
                       'assets/animations/confetti.json',
                       height: 140,
                       width: 140,
-                      repeat: false,
+                      repeat: true,
                     ),
                     const Text('🏆', style: TextStyle(fontSize: 56)),
                   ],

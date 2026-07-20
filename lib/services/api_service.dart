@@ -8,6 +8,9 @@ import 'package:google_sign_in/google_sign_in.dart';
 class ApiService {
   static const String baseUrl = 'https://habitos-app-production.up.railway.app/api';
 
+  // Cliente HTTP compartido: reutiliza la conexión TCP+TLS (keep-alive)
+  static final http.Client _client = http.Client();
+
   // ── Token ──────────────────────────────────────────────
   static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
@@ -58,7 +61,7 @@ class ApiService {
 
   // ── Usuarios ───────────────────────────────────────────
   static Future<Usuario> login(String email, String contrasena) async {
-    final response = await http.post(
+    final response = await _client.post(
       Uri.parse('$baseUrl/usuarios/login'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email, 'contrasena': contrasena}),
@@ -74,7 +77,7 @@ class ApiService {
 
   static Future<void> registro(String nombre, String username, 
                                 String email, String contrasena) async {
-    final response = await http.post(
+    final response = await _client.post(
       Uri.parse('$baseUrl/usuarios/registro'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
@@ -91,7 +94,7 @@ class ApiService {
   }
   static Future<void> actualizarUsuario(
       int usuarioId, String nombre, String username, String email) async {
-    final response = await http.put(
+    final response = await _client.put(
       Uri.parse('$baseUrl/usuarios/$usuarioId'),
       headers: await getHeaders(),
       body: jsonEncode({
@@ -115,7 +118,7 @@ class ApiService {
 
   static Future<void> cambiarContrasena(
       int usuarioId, String contrasenaActual, String contrasenaNueva) async {
-    final response = await http.put(
+    final response = await _client.put(
       Uri.parse('$baseUrl/usuarios/$usuarioId/contrasena'),
       headers: await getHeaders(),
       body: jsonEncode({
@@ -133,7 +136,7 @@ class ApiService {
 
 // ── Recuperación de contraseña ─────────────────────────
   static Future<void> solicitarCodigoRecuperacion(String email) async {
-    final response = await http.post(
+    final response = await _client.post(
       Uri.parse('$baseUrl/usuarios/recuperar'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email}),
@@ -146,7 +149,7 @@ class ApiService {
 
   static Future<void> restablecerContrasena(
       String email, String codigo, String contrasenaNueva) async {
-    final response = await http.post(
+    final response = await _client.post(
       Uri.parse('$baseUrl/usuarios/restablecer'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
@@ -162,7 +165,7 @@ class ApiService {
   }
   
   static Future<void> eliminarUsuario(int usuarioId) async {
-    final response = await http.delete(
+    final response = await _client.delete(
       Uri.parse('$baseUrl/usuarios/$usuarioId'),
       headers: await getHeaders(),
     );
@@ -179,7 +182,7 @@ class ApiService {
 // ── Hábitos ────────────────────────────────────────────
   static Future<List<Habito>> getHabitosActivos(int usuarioId) async {
     final headers = await getHeaders();
-    final response = await http.get(
+    final response = await _client.get(
       Uri.parse('$baseUrl/habitos/usuario/$usuarioId/activos'),
       headers: headers,
     );
@@ -194,7 +197,7 @@ class ApiService {
 
   static Future<Habito> getHabito(int habitoId) async {
     final headers = await getHeaders();
-    final response = await http.get(
+    final response = await _client.get(
       Uri.parse('$baseUrl/habitos/$habitoId'),
       headers: headers,
     );
@@ -208,7 +211,7 @@ class ApiService {
 
   static Future<List<dynamic>> getDashboard(int usuarioId) async {
     final headers = await getHeaders();
-    final response = await http.get(
+    final response = await _client.get(
       Uri.parse('$baseUrl/habitos/usuario/$usuarioId/dashboard'),
       headers: headers,
     );
@@ -223,7 +226,7 @@ class ApiService {
   static Future<Map<String, dynamic>> getHabitoDetalle(int habitoId, {String? mes}) async {
     final headers = await getHeaders();
     final mesParam = mes != null ? '?mes=$mes' : '';
-    final response = await http.get(
+    final response = await _client.get(
       Uri.parse('$baseUrl/habitos/$habitoId/detalle$mesParam'),
       headers: headers,
     );
@@ -238,7 +241,7 @@ class ApiService {
   
   static Future<void> actualizarNotaRegistro(int registroId, String nota) async {
     final headers = await getHeaders();
-    final response = await http.put(
+    final response = await _client.put(
       Uri.parse('$baseUrl/registros/$registroId/nota'),
       headers: headers,
       body: jsonEncode({'nota': nota}),
@@ -251,7 +254,7 @@ class ApiService {
 
   static Future<bool> estaCompletadoHoy(int habitoId) async {
     final headers = await getHeaders();
-    final response = await http.get(
+    final response = await _client.get(
       Uri.parse('$baseUrl/registros/habito/$habitoId/hoy'),
       headers: headers,
     );
@@ -265,7 +268,7 @@ class ApiService {
 
   static Future<Map<String, dynamic>> getProgresoHoy(int habitoId) async {
     final headers = await getHeaders();
-    final response = await http.get(
+    final response = await _client.get(
       Uri.parse('$baseUrl/registros/habito/$habitoId/hoy'),
       headers: headers,
     );
@@ -279,7 +282,7 @@ class ApiService {
 
   static Future<List<dynamic>> getRegistrosHabito(int habitoId) async {
     final headers = await getHeaders();
-    final response = await http.get(
+    final response = await _client.get(
       Uri.parse('$baseUrl/registros/habito/$habitoId'),
       headers: headers,
     );
@@ -294,7 +297,7 @@ class ApiService {
 static Future<Map<String, dynamic>> completarHabito(int habitoId,
       {String nota = ''}) async {
     final headers = await getHeaders();
-    final response = await http.post(
+    final response = await _client.post(
       Uri.parse('$baseUrl/registros/completar/$habitoId'),
       headers: headers,
       body: jsonEncode({'nota': nota}),
@@ -316,7 +319,7 @@ static Future<Map<String, dynamic>> completarHabito(int habitoId,
 
   static Future<void> valorarRegistro(int registroId, int valoracion) async {
     final headers = await getHeaders();
-    final response = await http.put(
+    final response = await _client.put(
       Uri.parse('$baseUrl/registros/$registroId/valoracion'),
       headers: headers,
       body: jsonEncode({'valoracion': valoracion}),
@@ -328,7 +331,7 @@ static Future<Map<String, dynamic>> completarHabito(int habitoId,
 
   static Future<void> registrarInteraccionResena(int usuarioId) async {
     final headers = await getHeaders();
-    await http.post(
+    await _client.post(
       Uri.parse('$baseUrl/gamificacion/resena/$usuarioId'),
       headers: headers,
     );
@@ -337,7 +340,7 @@ static Future<Map<String, dynamic>> completarHabito(int habitoId,
   // ── Gamificación ───────────────────────────────────────
   static Future<int> getSaldoPuntos(int usuarioId) async {
     final headers = await getHeaders();
-    final response = await http.get(
+    final response = await _client.get(
       Uri.parse('$baseUrl/gamificacion/saldo/$usuarioId'),
       headers: headers,
     );
@@ -352,7 +355,7 @@ static Future<Map<String, dynamic>> completarHabito(int habitoId,
 
   static Future<List<dynamic>> getCatalogoLogros() async {
     final headers = await getHeaders();
-    final response = await http.get(
+    final response = await _client.get(
       Uri.parse('$baseUrl/gamificacion/logros/catalogo'),
       headers: headers,
     );
@@ -366,7 +369,7 @@ static Future<Map<String, dynamic>> completarHabito(int habitoId,
 
   static Future<List<dynamic>> getCategoriasUsuario(int usuarioId) async {
     final headers = await getHeaders();
-    final response = await http.get(
+    final response = await _client.get(
       Uri.parse('$baseUrl/categorias/usuario/$usuarioId'),
       headers: headers,
     );
@@ -379,7 +382,7 @@ static Future<Map<String, dynamic>> completarHabito(int habitoId,
 
   static Future<List<dynamic>> getLogrosUsuario(int usuarioId) async {
     final headers = await getHeaders();
-    final response = await http.get(
+    final response = await _client.get(
       Uri.parse('$baseUrl/gamificacion/logros/usuario/$usuarioId'),
       headers: headers,
     );
@@ -404,7 +407,7 @@ static Future<List<String>> crearHabito(String nombre, String descripcion,
     if (categoriaId != null) {
       body['tipo'] = {'categoriaId': categoriaId};
     }
-    final response = await http.post(
+    final response = await _client.post(
       Uri.parse('$baseUrl/habitos'),
       headers: headers,
       body: jsonEncode(body),
@@ -431,7 +434,7 @@ static Future<List<String>> crearHabito(String nombre, String descripcion,
     if (categoriaId != null) {
       body['tipo'] = {'categoriaId': categoriaId};
     }
-    final response = await http.put(
+    final response = await _client.put(
       Uri.parse('$baseUrl/habitos/$habitoId'),
       headers: headers,
       body: jsonEncode(body),
@@ -443,7 +446,7 @@ static Future<List<String>> crearHabito(String nombre, String descripcion,
 
   static Future<void> eliminarHabito(int habitoId) async {
     final headers = await getHeaders();
-    final response = await http.delete(
+    final response = await _client.delete(
       Uri.parse('$baseUrl/habitos/$habitoId'),
       headers: headers,
     );
@@ -463,7 +466,7 @@ static Future<List<String>> crearHabito(String nombre, String descripcion,
   final String? idToken = auth.idToken;
   if (idToken == null) throw Exception('No se obtuvo el token de Google');
 
-  final response = await http.post(
+  final response = await _client.post(
     Uri.parse('$baseUrl/usuarios/login-google'),
     headers: {'Content-Type': 'application/json'},
     body: jsonEncode({'idToken': idToken}),
@@ -480,7 +483,7 @@ static Future<List<String>> crearHabito(String nombre, String descripcion,
 // ── Notificaciones ─────────────────────────────────────
   static Future<void> actualizarFcmToken(int usuarioId, String fcmToken) async {
     final headers = await getHeaders();
-    final response = await http.put(
+    final response = await _client.put(
       Uri.parse('$baseUrl/usuarios/$usuarioId/fcm-token'),
       headers: headers,
       body: jsonEncode({'fcmToken': fcmToken}),

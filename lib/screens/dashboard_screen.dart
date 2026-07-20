@@ -42,15 +42,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _cargarDatos();
   }
 
-  Future<void> _cargarDatos() async {
+Future<void> _cargarDatos() async {
     final usuario = await ApiService.getUsuarioLocal();
     if (usuario == null) return;
     setState(() {
       _nombre = usuario['nombre'] ?? '';
       _usuarioId = usuario['usuarioId'] ?? 0;
     });
-    await _cargarHabitos();
-    await _cargarEstadoResena();
+    // En paralelo: el estado de reseña no depende de los hábitos
+    await Future.wait([
+      _cargarHabitos(),
+      _cargarEstadoResena(),
+    ]);
   }
 
   Future<void> _cargarEstadoResena() async {
@@ -97,7 +100,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return (p['completadosPeriodo'] ?? 0) >= (p['meta'] ?? 1);
   }
 
-  Future<void> _completar(int habitoId) async {
+ Future<void> _completar(int habitoId) async {
     List<String> logrosOtorgados;
     int puntosGanados;
     int? registroId;
@@ -118,32 +121,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     final habito = _habitos.firstWhere((h) => h.habitoId == habitoId);
-    // Fire-and-forget: analytics no debe bloquear el feedback al usuario
+    // Analytics en segundo plano: no bloquea la celebración
     AnalyticsService.habitoCompletado(habito.frecuencia);
 
-    // Feedback háptico + sonido inmediatos
+    // Feedback háptico + sonido
     HapticFeedback.mediumImpact();
     SonidoService.reproducir('completar');
 
-    // Actualización local del progreso: el servidor ya confirmó el completado,
-    // así que incrementamos en memoria sin esperar otra llamada de red
+    // Actualización local inmediata (sin esperar al servidor)
     final p = _progreso[habitoId];
     if (p != null) {
-      _progreso[habitoId] = {
-        ...p,
-        'completadosPeriodo': (p['completadosPeriodo'] ?? 0) + 1,
-      };
+      p['completadoHoy'] = true;
+      p['completadosPeriodo'] = (p['completadosPeriodo'] ?? 0) + 1;
     }
     _fechasCompletadas[habitoId]?.add(DateTime.now().toIso8601String().split('T')[0]);
-
     setState(() {}); // el cambio de progreso dispara la animación del check
 
-    // Refresh real en segundo plano, por si el cálculo local difiere del servidor
-    ApiService.getProgresoHoy(habitoId).then((progreso) {
-      if (mounted) {
-        setState(() { _progreso[habitoId] = progreso; });
-      }
-    }).catchError((_) {}); // si falla, el valor local ya es correcto
+    // Sincronización real en segundo plano (por si el conteo local se desviara)
+    ApiService.getProgresoHoy(habitoId).then((prog) {
+      if (mounted) setState(() { _progreso[habitoId] = prog; });
+    }).catchError((_) {});
 
     await Future.delayed(const Duration(milliseconds: 400));
 
