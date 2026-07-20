@@ -118,18 +118,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     final habito = _habitos.firstWhere((h) => h.habitoId == habitoId);
-    await AnalyticsService.habitoCompletado(habito.frecuencia);
+    // Fire-and-forget: analytics no debe bloquear el feedback al usuario
+    AnalyticsService.habitoCompletado(habito.frecuencia);
 
-    // Feedback háptico + sonido
+    // Feedback háptico + sonido inmediatos
     HapticFeedback.mediumImpact();
     SonidoService.reproducir('completar');
 
-    // Refrescar datos de ese hábito
-    _progreso[habitoId] = await ApiService.getProgresoHoy(habitoId);
+    // Actualización local del progreso: el servidor ya confirmó el completado,
+    // así que incrementamos en memoria sin esperar otra llamada de red
+    final p = _progreso[habitoId];
+    if (p != null) {
+      _progreso[habitoId] = {
+        ...p,
+        'completadosPeriodo': (p['completadosPeriodo'] ?? 0) + 1,
+      };
+    }
     _fechasCompletadas[habitoId]?.add(DateTime.now().toIso8601String().split('T')[0]);
 
     setState(() {}); // el cambio de progreso dispara la animación del check
-    await Future.delayed(const Duration(milliseconds: 650));
+
+    // Refresh real en segundo plano, por si el cálculo local difiere del servidor
+    ApiService.getProgresoHoy(habitoId).then((progreso) {
+      if (mounted) {
+        setState(() { _progreso[habitoId] = progreso; });
+      }
+    }).catchError((_) {}); // si falla, el valor local ya es correcto
+
+    await Future.delayed(const Duration(milliseconds: 400));
 
     // Secuencia: logro (si hay) → puntos → valoración (si toca)
     if (logrosOtorgados.isNotEmpty) {
@@ -141,7 +157,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (mostrarValoracion && registroId != null && mounted) {
       // Pequeña pausa para no pisar la animación de puntos
-      await Future.delayed(const Duration(milliseconds: 600));
+      await Future.delayed(const Duration(milliseconds: 250));
       if (!mounted) return;
       final respuesta = await ValoracionSheet.mostrar(context);
       if (respuesta != null) {
@@ -259,7 +275,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           : RefreshIndicator(
               onRefresh: _cargarHabitos,
               child: ListView(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.fromLTRB(
+                    16, 16, 16, 96 + MediaQuery.of(context).padding.bottom),
                 children: [
                  Row(
                     children: [

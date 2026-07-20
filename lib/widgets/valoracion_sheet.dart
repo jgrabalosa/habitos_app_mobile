@@ -5,18 +5,26 @@ import '../theme/app_theme.dart';
 
 /// Diálogo genérico de valoración post-acción, centrado y con efecto cristal.
 /// Devuelve un Map {'valoracion': int?, 'nota': String?} con lo que el
-/// usuario haya elegido, o null si lo descartó sin interactuar.
+/// usuario haya elegido, o null si lo descartó sin guardar.
+/// Admite valores iniciales para modo edición.
 /// No conoce el dominio: quien lo invoca decide qué hacer con el resultado.
 /// Exportable a otras apps del ecosistema.
 class ValoracionSheet {
-  static Future<Map<String, dynamic>?> mostrar(BuildContext context) {
+  static Future<Map<String, dynamic>?> mostrar(
+    BuildContext context, {
+    int? valoracionInicial,
+    String? notaInicial,
+  }) {
     return showGeneralDialog<Map<String, dynamic>>(
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Valoración',
       barrierColor: Colors.black.withOpacity(0.25),
       transitionDuration: const Duration(milliseconds: 250),
-      pageBuilder: (context, _, __) => const _ValoracionDialogContent(),
+      pageBuilder: (context, _, __) => _ValoracionDialogContent(
+        valoracionInicial: valoracionInicial,
+        notaInicial: notaInicial,
+      ),
       transitionBuilder: (context, anim, _, child) {
         final curva = CurvedAnimation(parent: anim, curve: Curves.easeOutBack);
         return FadeTransition(
@@ -29,7 +37,10 @@ class ValoracionSheet {
 }
 
 class _ValoracionDialogContent extends StatefulWidget {
-  const _ValoracionDialogContent();
+  final int? valoracionInicial;
+  final String? notaInicial;
+
+  const _ValoracionDialogContent({this.valoracionInicial, this.notaInicial});
 
   @override
   State<_ValoracionDialogContent> createState() =>
@@ -38,8 +49,17 @@ class _ValoracionDialogContent extends StatefulWidget {
 
 class _ValoracionDialogContentState extends State<_ValoracionDialogContent> {
   int? _valoracion;
-  bool _notaAbierta = false;
-  final _notaController = TextEditingController();
+  late final TextEditingController _notaController;
+
+  bool get _esEdicion =>
+      widget.valoracionInicial != null || widget.notaInicial != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _valoracion = widget.valoracionInicial;
+    _notaController = TextEditingController(text: widget.notaInicial ?? '');
+  }
 
   @override
   void dispose() {
@@ -48,11 +68,10 @@ class _ValoracionDialogContentState extends State<_ValoracionDialogContent> {
   }
 
   void _seleccionarEstrella(int valor) {
-    setState(() { _valoracion = valor; });
-    // Si la nota no está abierta, un tap basta: guarda y cierra solo
-    if (!_notaAbierta) {
-      Navigator.pop(context, {'valoracion': valor, 'nota': null});
-    }
+    setState(() {
+      // Tocar la misma estrella otra vez la deselecciona
+      _valoracion = (_valoracion == valor) ? null : valor;
+    });
   }
 
   void _guardar() {
@@ -74,7 +93,7 @@ class _ValoracionDialogContentState extends State<_ValoracionDialogContent> {
           duration: const Duration(milliseconds: 200),
           // Cuando sube el teclado, el diálogo se desplaza hacia arriba
           padding: EdgeInsets.only(
-              left: 32, right: 32, bottom: teclado > 0 ? teclado : 0),
+              left: 24, right: 24, bottom: teclado > 0 ? teclado : 0),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(AppRadius.xl),
             child: BackdropFilter(
@@ -95,60 +114,58 @@ class _ValoracionDialogContentState extends State<_ValoracionDialogContent> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        '¿Cómo te sentiste?',
+                        _esEdicion ? 'Editar valoración' : '¿Cómo te sentiste?',
                         style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: t.text),
                       ),
                       const SizedBox(height: 12),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: List.generate(5, (i) {
-                          final valor = i + 1;
-                          final marcada =
-                              _valoracion != null && valor <= _valoracion!;
-                          return IconButton(
-                            iconSize: 36,
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            constraints: const BoxConstraints(),
-                            onPressed: () => _seleccionarEstrella(valor),
-                            icon: Icon(
-                              LucideIcons.star,
-                              color: marcada
-                                  ? Colors.amber
-                                  : t.textMuted.withOpacity(0.45),
-                            ),
-                          );
-                        }),
+                      // FittedBox: si la fila de estrellas no cabe,
+                      // se encoge en vez de desbordar (fix overflow 8.6px)
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: List.generate(5, (i) {
+                            final valor = i + 1;
+                            final marcada =
+                                _valoracion != null && valor <= _valoracion!;
+                            return IconButton(
+                              iconSize: 36,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 4),
+                              constraints: const BoxConstraints(),
+                              onPressed: () => _seleccionarEstrella(valor),
+                              icon: Icon(
+                                LucideIcons.star,
+                                color: marcada
+                                    ? Colors.amber
+                                    : t.textMuted.withOpacity(0.45),
+                              ),
+                            );
+                          }),
+                        ),
                       ),
-                      if (!_notaAbierta)
-                        TextButton(
-                          onPressed: () =>
-                              setState(() { _notaAbierta = true; }),
-                          child: const Text('añadir nota'),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _notaController,
+                        maxLines: 3,
+                        maxLength: 500,
+                        style: TextStyle(color: t.text),
+                        decoration: const InputDecoration(
+                          hintText: 'Añade una nota (opcional)',
+                          counterText: '',
                         ),
-                      if (_notaAbierta) ...[
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: _notaController,
-                          autofocus: true,
-                          maxLines: 3,
-                          maxLength: 500,
-                          style: TextStyle(color: t.text),
-                          decoration: const InputDecoration(
-                            hintText: '¿Cómo te ha ido?',
-                          ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _guardar,
+                          child: const Text('Guardar'),
                         ),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: _guardar,
-                            child: const Text('Guardar'),
-                          ),
-                        ),
-                      ],
+                      ),
                     ],
                   ),
                 ),

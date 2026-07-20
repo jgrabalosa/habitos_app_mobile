@@ -23,10 +23,10 @@ class AppColors {
   static const points = Color(0xFFF59E0B);
   static const danger = Color(0xFFEF4444);
 
-  // Light (fondos Gris Muy Claro / Blanco)
-  static const bgLight = grisMuyClaro;
-  static const surfaceLight = Color(0xFFFFFFFF);
-  static const surface2Light = grisClaro;
+  // Light (crudo frío: fondo un punto más oscuro, tarjetas en blanco roto)
+  static const bgLight = Color(0xFFE6ECF2);
+  static const surfaceLight = Color(0xFFF7F9FB);
+  static const surface2Light = Color(0xFFCFDAE6);
   static const textLight = azulNoche;
   static const textMutedLight = grisMedio;
 

@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../models/habito.dart';
 import '../theme/app_theme.dart';
 import 'habito_screen.dart';
+import '../widgets/valoracion_sheet.dart';
 
 class HabitoDetalleScreen extends StatefulWidget {
   final int habitoId;
@@ -393,7 +394,11 @@ title: Hero(
                         ),
                         IconButton(
                           icon: const Icon(LucideIcons.pencil, size: 18, color: Colors.grey),
-                          onPressed: () => _editarNota(r['registroId'], r['nota'] ?? ''),
+                          onPressed: () => _editarValoracion(
+                            r['registroId'],
+                            r['valoracion'] as int?,
+                            r['nota'] as String?,
+                          ),
                         ),
                       ],
                     ),
@@ -404,39 +409,34 @@ title: Hero(
     );
   }
 
-  Future<void> _editarNota(int registroId, String notaActual) async {
-    final controller = TextEditingController(text: notaActual);
-    final nuevaNota = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Editar nota'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(border: OutlineInputBorder()),
-          maxLines: 3,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, null),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: const Text('Guardar'),
-          ),
-        ],
-      ),
+ Future<void> _editarValoracion(
+      int registroId, int? valoracionActual, String? notaActual) async {
+    final respuesta = await ValoracionSheet.mostrar(
+      context,
+      valoracionInicial: valoracionActual,
+      notaInicial: notaActual,
     );
 
-    if (nuevaNota == null) return;
+    if (respuesta == null) return; // descartó sin guardar
 
     try {
-      await ApiService.actualizarNotaRegistro(registroId, nuevaNota);
+      final int? valoracion = respuesta['valoracion'];
+      final String? nota = respuesta['nota'];
+
+      // Solo se envía la valoración si hay una elegida
+      // (el backend no admite borrar una valoración existente)
+      if (valoracion != null && valoracion != valoracionActual) {
+        await ApiService.valorarRegistro(registroId, valoracion);
+      }
+      // La nota sí se puede vaciar: enviamos '' si la borró
+      if ((nota ?? '') != (notaActual ?? '')) {
+        await ApiService.actualizarNotaRegistro(registroId, nota ?? '');
+      }
       _cargarDetalle();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error al actualizar la nota')),
+          const SnackBar(content: Text('No se pudo guardar. Inténtalo de nuevo.')),
         );
       }
     }
