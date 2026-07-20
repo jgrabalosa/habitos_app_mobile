@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../services/analytics_service.dart';
 import '../services/celebracion_service.dart';
 import '../models/habito.dart';
+import '../theme/app_theme.dart';
 
 class HabitoScreen extends StatefulWidget {
   final int usuarioId;
@@ -18,7 +19,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
   static const List<Map<String, dynamic>> _plantillas = [
     {'emoji': '💧', 'nombre': 'Beber agua', 'frecuencia': 'DIARIO', 'meta': 4},
     {'emoji': '📖', 'nombre': 'Leer 20 min', 'frecuencia': 'DIARIO', 'meta': 1},
-    {'emoji': '🏃', 'nombre': 'Ejercicio', 'frecuencia': 'SEMANAL', 'meta': 3},
+    {'emoji': '🏃', 'nombre': 'Ejercicio', 'frecuencia': 'SEMANAL', 'meta': 3, 'dias': '2,4,6'},
     {'emoji': '🧘', 'nombre': 'Meditar', 'frecuencia': 'DIARIO', 'meta': 1},
     {'emoji': '😴', 'nombre': 'Dormir 8h', 'frecuencia': 'DIARIO', 'meta': 1},
     {'emoji': '🚶', 'nombre': 'Caminar', 'frecuencia': 'DIARIO', 'meta': 1},
@@ -26,10 +27,14 @@ class _HabitoScreenState extends State<HabitoScreen> {
     {'emoji': '🧹', 'nombre': 'Limpiar casa', 'frecuencia': 'SEMANAL', 'meta': 2},
   ];
 
+  // Etiquetas L-D en orden ISO (1=lunes .. 7=domingo)
+  static const List<String> _etiquetasDias = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+
   final _nombreController = TextEditingController();
   final _descripcionController = TextEditingController();
   String _frecuencia = 'DIARIO';
   int _meta = 1;
+  Set<int> _diasSeleccionados = {}; // días ISO elegidos (solo SEMANAL)
   bool _loading = false;
   String? _error;
 
@@ -38,6 +43,10 @@ class _HabitoScreenState extends State<HabitoScreen> {
   bool _categoriasLoading = true;
 
   bool get _esEdicion => widget.habito != null;
+
+  // Con días elegidos, la meta se deriva de ellos (un solo control)
+  bool get _metaDerivada =>
+      _frecuencia == 'SEMANAL' && _diasSeleccionados.isNotEmpty;
 
   @override
   void initState() {
@@ -48,6 +57,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
       _frecuencia = widget.habito!.frecuencia;
       _meta = widget.habito!.meta;
       _categoriaId = widget.habito!.categoriaId;
+      _diasSeleccionados = widget.habito!.diasPlanificados.toSet();
     }
     _cargarCategorias();
   }
@@ -69,6 +79,23 @@ class _HabitoScreenState extends State<HabitoScreen> {
       _nombreController.text = plantilla['nombre'];
       _frecuencia = plantilla['frecuencia'];
       _meta = plantilla['meta'];
+      _diasSeleccionados = plantilla['dias'] != null
+          ? (plantilla['dias'] as String).split(',').map(int.parse).toSet()
+          : {};
+    });
+  }
+
+  void _alternarDia(int dia) {
+    setState(() {
+      if (_diasSeleccionados.contains(dia)) {
+        _diasSeleccionados.remove(dia);
+      } else {
+        _diasSeleccionados.add(dia);
+      }
+      // Meta derivada: tantos días como haya marcados
+      if (_diasSeleccionados.isNotEmpty) {
+        _meta = _diasSeleccionados.length;
+      }
     });
   }
 
@@ -100,6 +127,14 @@ class _HabitoScreenState extends State<HabitoScreen> {
       setState(() { _error = 'El nombre es obligatorio'; });
       return;
     }
+
+    // Días solo si es SEMANAL y hay elegidos; null = semanal flexible o diario.
+    // Ordenados para un CSV estable ("2,4,6").
+    final String? diasSemana = _metaDerivada
+        ? (_diasSeleccionados.toList()..sort()).join(',')
+        : null;
+    final int meta = _metaDerivada ? _diasSeleccionados.length : _meta;
+
     setState(() { _loading = true; _error = null; });
     try {
       if (_esEdicion) {
@@ -108,9 +143,10 @@ class _HabitoScreenState extends State<HabitoScreen> {
           _nombreController.text,
           _descripcionController.text,
           _frecuencia,
-          _meta,
+          meta,
           widget.usuarioId,
           _categoriaId,
+          diasSemana: diasSemana,
         );
         if (mounted) Navigator.pop(context, true);
       } else {
@@ -118,9 +154,10 @@ class _HabitoScreenState extends State<HabitoScreen> {
           _nombreController.text,
           _descripcionController.text,
           _frecuencia,
-          _meta,
+          meta,
           widget.usuarioId,
           _categoriaId,
+          diasSemana: diasSemana,
         );
         await AnalyticsService.habitoCreado(_frecuencia);
         if (mounted) Navigator.pop(context, true);
@@ -165,8 +202,59 @@ class _HabitoScreenState extends State<HabitoScreen> {
     }
   }
 
+  Widget _selectorDias(TokensContextuales t) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Días de la semana (opcional)',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+        const SizedBox(height: 8),
+        Row(
+          children: List.generate(7, (i) {
+            final dia = i + 1;
+            final bool activo = _diasSeleccionados.contains(dia);
+            return Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(right: i < 6 ? 6 : 0),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(999),
+                  onTap: () => _alternarDia(dia),
+                  child: AspectRatio(
+                    aspectRatio: 1,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: activo ? t.primary : t.surface2,
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        _etiquetasDias[i],
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: activo ? Colors.white : t.textMuted,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          _diasSeleccionados.isEmpty
+              ? 'Sin días concretos: tú eliges cuándo, la meta marca cuántos.'
+              : 'Son tu guía: si un día no puedes, vale cualquier otro de la semana.',
+          style: TextStyle(fontSize: 12, color: t.textMuted),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final t = tokens(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(_esEdicion ? 'Editar hábito' : 'Nuevo hábito'),
@@ -206,6 +294,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                 ],
                 TextField(
                   controller: _nombreController,
+                  textCapitalization: TextCapitalization.sentences,
                   decoration: const InputDecoration(
                     labelText: 'Nombre del hábito',
                     border: OutlineInputBorder(),
@@ -214,6 +303,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                 const SizedBox(height: 12),
                 TextField(
                   controller: _descripcionController,
+                  textCapitalization: TextCapitalization.sentences,
                   decoration: const InputDecoration(
                     labelText: 'Descripción (opcional)',
                     border: OutlineInputBorder(),
@@ -255,21 +345,35 @@ class _HabitoScreenState extends State<HabitoScreen> {
                       .toList(),
                   onChanged: (v) => setState(() { _frecuencia = v!; }),
                 ),
+                if (_frecuencia == 'SEMANAL') ...[
+                  const SizedBox(height: 16),
+                  _selectorDias(t),
+                ],
                 const SizedBox(height: 12),
-                Row(
-                  children: [
-                    const Text('Meta: '),
-                    IconButton(
-                      icon: const Icon(LucideIcons.minus),
-                      onPressed: () => setState(() { if (_meta > 1) _meta--; }),
-                    ),
-                    Text('$_meta', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    IconButton(
-                      icon: const Icon(LucideIcons.plus),
-                      onPressed: () => setState(() { _meta++; }),
-                    ),
-                  ],
-                ),
+                if (_metaDerivada)
+                  Row(
+                    children: [
+                      const Text('Meta: '),
+                      Text('${_diasSeleccionados.length} días/semana',
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
+                    ],
+                  )
+                else
+                  Row(
+                    children: [
+                      const Text('Meta: '),
+                      IconButton(
+                        icon: const Icon(LucideIcons.minus),
+                        onPressed: () => setState(() { if (_meta > 1) _meta--; }),
+                      ),
+                      Text('$_meta', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      IconButton(
+                        icon: const Icon(LucideIcons.plus),
+                        onPressed: () => setState(() { _meta++; }),
+                      ),
+                    ],
+                  ),
                 if (_error != null) ...[
                   const SizedBox(height: 8),
                   Text(_error!, style: const TextStyle(color: Colors.red)),

@@ -199,6 +199,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     children: [
                       TextFormField(
                         controller: _nombreController,
+                        textCapitalization: TextCapitalization.words,
                         decoration: const InputDecoration(
                           labelText: 'Nombre',
                           prefixIcon: Icon(LucideIcons.userRound),

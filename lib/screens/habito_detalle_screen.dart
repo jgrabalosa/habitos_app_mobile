@@ -113,6 +113,7 @@ title: Hero(
               : ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
+                    _buildLineaFrecuencia(),
                     _buildStatCards(),
                     _buildValoracionMedia(),
                     const SizedBox(height: 16),
@@ -122,6 +123,44 @@ title: Hero(
                     const SizedBox(height: 48),
                   ],
                 ),
+    );
+  }
+
+  Widget _buildLineaFrecuencia() {
+    final t = tokens(context);
+    final bool esDiario = _detalle!['frecuencia'] == 'DIARIO';
+    final int meta = _detalle!['meta'] ?? 1;
+    final String? diasSemana = _detalle!['diasSemana'];
+
+    const etiquetas = ['L', 'M', 'X', 'J', 'V', 'S', 'D']; // 1=lunes..7=domingo
+
+    final String texto;
+    if (esDiario) {
+      texto = meta > 1 ? 'Diario · meta $meta/día' : 'Diario';
+    } else if (diasSemana != null && diasSemana.trim().isNotEmpty) {
+      // Semanal con días planificados: "Semanal · M · J · S"
+      final dias = diasSemana
+          .split(',')
+          .map((d) => etiquetas[int.parse(d.trim()) - 1])
+          .join(' · ');
+      texto = 'Semanal · $dias';
+    } else {
+      texto = meta > 1 ? 'Semanal · meta $meta/semana' : 'Semanal · 1 día/semana';
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Icon(LucideIcons.repeat, size: 14, color: t.textMuted),
+          const SizedBox(width: 6),
+          Text(texto,
+              style: TextStyle(
+                  fontSize: 13,
+                  color: t.textMuted,
+                  fontWeight: FontWeight.w500)),
+        ],
+      ),
     );
   }
 
@@ -135,10 +174,8 @@ title: Hero(
         _statCard('📊', _detalle!['totalCompletados'].toString(), 'Total', Colors.purple),
         const SizedBox(width: 8),
         _statCard('📅',
-            _detalle!['porcentajeMesActual'] != null
-                ? '${(_detalle!['porcentajeMesActual'] as num).round()}%'
-                : '-',
-            'Este mes', Colors.orange),
+            (_detalle!['completadosMesActual'] ?? 0).toString(),
+            _esMesActual ? 'Días este mes' : 'Días del mes', Colors.orange),
       ],
     );
   }

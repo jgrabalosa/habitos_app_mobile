@@ -221,6 +221,7 @@ Future<void> _registro() async {
                         if (!_isLogin) ...[
                           TextField(
                             controller: _nombreController,
+                            textCapitalization: TextCapitalization.words,
                             decoration: const InputDecoration(
                               labelText: 'Nombre',
                               border: OutlineInputBorder(),

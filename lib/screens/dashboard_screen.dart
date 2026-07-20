@@ -42,7 +42,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _cargarDatos();
   }
 
-Future<void> _cargarDatos() async {
+  Future<void> _cargarDatos() async {
     final usuario = await ApiService.getUsuarioLocal();
     if (usuario == null) return;
     setState(() {
@@ -97,14 +97,21 @@ Future<void> _cargarDatos() async {
   bool _estaHecho(Habito h) {
     final p = _progreso[h.habitoId];
     if (p == null) return false;
+    // Semanal: si ya se completó hoy, está hecho por hoy (el Dashboard es el resumen del día)
+    if (h.frecuencia == 'SEMANAL' && p['completadoHoy'] == true) return true;
     return (p['completadosPeriodo'] ?? 0) >= (p['meta'] ?? 1);
   }
 
- Future<void> _completar(int habitoId) async {
+  Future<void> _completar(int habitoId) async {
     List<String> logrosOtorgados;
     int puntosGanados;
     int? registroId;
     bool mostrarValoracion;
+    final habitoActual = _habitos.firstWhere((h) => h.habitoId == habitoId);
+    if (habitoActual.frecuencia == 'SEMANAL' &&
+        _progreso[habitoId]?['completadoHoy'] == true) {
+      return; // ya está hecho hoy: no se puede volver a completar
+    }
     try {
       final resultado = await ApiService.completarHabito(habitoId);
       logrosOtorgados = resultado['logros'];
@@ -120,9 +127,8 @@ Future<void> _cargarDatos() async {
       return;
     }
 
-    final habito = _habitos.firstWhere((h) => h.habitoId == habitoId);
     // Analytics en segundo plano: no bloquea la celebración
-    AnalyticsService.habitoCompletado(habito.frecuencia);
+    AnalyticsService.habitoCompletado(habitoActual.frecuencia);
 
     // Feedback háptico + sonido
     HapticFeedback.mediumImpact();
@@ -206,8 +212,27 @@ Future<void> _cargarDatos() async {
   @override
   Widget build(BuildContext context) {
     final t = tokens(context);
-    final pendientes = _habitos.where((h) => !_estaHecho(h)).toList();
-    final completados = _habitos.where(_estaHecho).toList();
+
+    // Reparto: diarios y semanales que tocan hoy → lista principal;
+    // semanales con días planificados que NO tocan hoy → "Esta semana"
+    final pendientes = <Habito>[];
+    final completados = <Habito>[];
+    final noTocaHoy = <Habito>[];
+    final hoyDia = DateTime.now().weekday; // 1=lunes..7=domingo, como diasPlanificados
+    for (final h in _habitos) {
+      if (_estaHecho(h)) {
+        completados.add(h);
+      } else if (h.frecuencia == 'SEMANAL' &&
+          h.diasPlanificados.isNotEmpty &&
+          !h.diasPlanificados.contains(hoyDia)) {
+        noTocaHoy.add(h);
+      } else {
+        pendientes.add(h);
+      }
+    }
+    // El resumen del día solo cuenta lo que toca hoy
+    final totalHoy = _habitos.length - noTocaHoy.length;
+
     final esOscuro = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -275,7 +300,7 @@ Future<void> _cargarDatos() async {
                 padding: EdgeInsets.fromLTRB(
                     16, 16, 16, 96 + MediaQuery.of(context).padding.bottom),
                 children: [
-                 Row(
+                  Row(
                     children: [
                       Expanded(
                         child: Column(
@@ -289,14 +314,14 @@ Future<void> _cargarDatos() async {
                             Text(_fechaDeHoy(),
                                 style:
                                     TextStyle(fontSize: 13, color: t.textMuted)),
-                            if (_habitos.isNotEmpty) ...[
+                            if (totalHoy > 0) ...[
                               const SizedBox(height: 4),
                               Text(
-                                _fraseProgreso(completados.length, _habitos.length),
+                                _fraseProgreso(completados.length, totalHoy),
                                 style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
-                                    color: completados.length == _habitos.length
+                                    color: completados.length == totalHoy
                                         ? t.success
                                         : t.textMuted),
                               ),
@@ -304,10 +329,10 @@ Future<void> _cargarDatos() async {
                           ],
                         ),
                       ),
-                      if (_habitos.isNotEmpty)
+                      if (totalHoy > 0)
                         AnilloProgreso(
                           actual: completados.length,
-                          total: _habitos.length,
+                          total: totalHoy,
                           color: t.primary,
                           colorPista: t.surface2,
                           colorTexto: t.text,
@@ -344,6 +369,29 @@ Future<void> _cargarDatos() async {
                               letterSpacing: 1, color: t.textMuted)),
                       const SizedBox(height: 8),
                       ...completados.map((h) => _habitoCard(h, true, t)),
+                    ],
+                    if (noTocaHoy.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Theme(
+                        // Sin las líneas divisorias por defecto del ExpansionTile
+                        data: Theme.of(context)
+                            .copyWith(dividerColor: Colors.transparent),
+                        child: ExpansionTile(
+                          tilePadding: EdgeInsets.zero,
+                          title: Text('ESTA SEMANA (${noTocaHoy.length})',
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1,
+                                  color: t.textMuted)),
+                          subtitle: Text('No tocan hoy, pero puedes adelantarlos',
+                              style:
+                                  TextStyle(fontSize: 11, color: t.textMuted)),
+                          children: noTocaHoy
+                              .map((h) => _habitoCard(h, false, t))
+                              .toList(),
+                        ),
+                      ),
                     ],
                   ],
                 ],
@@ -426,7 +474,7 @@ Future<void> _cargarDatos() async {
             await Navigator.push(
               context,
               MaterialPageRoute(
-               builder: (_) => HabitoDetalleScreen(
+                builder: (_) => HabitoDetalleScreen(
                     habitoId: h.habitoId,
                     usuarioId: _usuarioId,
                     nombre: h.nombre),
@@ -479,7 +527,7 @@ Future<void> _cargarDatos() async {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      _miniHeatmap(h.habitoId, t),
+                      _miniHeatmap(h, t),
                     ],
                   ),
                 ),
@@ -498,27 +546,88 @@ Future<void> _cargarDatos() async {
     );
   }
 
-  Widget _miniHeatmap(int habitoId, TokensContextuales t) {
-    final fechas = _fechasCompletadas[habitoId] ?? {};
+Widget _miniHeatmap(Habito h, TokensContextuales t) {
+    final fechas = _fechasCompletadas[h.habitoId] ?? {};
     final hoy = DateTime.now();
-    return Wrap(
-      spacing: 3,
-      runSpacing: 3,
-      children: List.generate(28, (i) {
-        final d = hoy.subtract(Duration(days: 27 - i));
-        final iso = d.toIso8601String().split('T')[0];
-        final lleno = fechas.contains(iso);
-        final esHoy = i == 27;
-        return Container(
-          width: 9,
-          height: 9,
-          decoration: BoxDecoration(
-            color: lleno ? t.success : t.surface2,
-            borderRadius: BorderRadius.circular(2.5),
-            border: esHoy ? Border.all(color: t.primary, width: 1.5) : null,
-          ),
-        );
-      }),
+    final bool esSemanal = h.frecuencia == 'SEMANAL';
+    final int meta = _progreso[h.habitoId]?['meta'] ?? 1;
+    final List<int> planificados = h.diasPlanificados;
+    final bool conPlan = esSemanal && planificados.isNotEmpty;
+
+    String iso(DateTime d) => d.toIso8601String().split('T')[0];
+
+    // ¿La semana (L-D) a la que pertenece este día alcanzó la meta?
+    bool semanaCumplida(DateTime dia) {
+      final lunes = dia.subtract(Duration(days: dia.weekday - 1));
+      int count = 0;
+      for (int i = 0; i < 7; i++) {
+        if (fechas.contains(iso(lunes.add(Duration(days: i))))) count++;
+      }
+      return count >= meta;
+    }
+
+    return Padding(
+      // Aire entre la heatmap y el check: la fila no llega al borde
+      padding: const EdgeInsets.only(right: 24),
+      child: Row(
+        children: List.generate(10, (i) {
+          final d = hoy.subtract(Duration(days: 9 - i));
+          final bool lleno = fechas.contains(iso(d));
+          final bool esHoy = i == 9;
+          final bool esDescanso =
+              conPlan && !lleno && !planificados.contains(d.weekday);
+
+          final Widget celda;
+          if (esDescanso) {
+            // Día de descanso: punto pequeño, visualmente menor
+            celda = Container(
+              decoration: esHoy
+                  ? BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      border: Border.all(color: t.primary, width: 1.5),
+                    )
+                  : null,
+              child: Center(
+                child: FractionallySizedBox(
+                  widthFactor: 0.38,
+                  heightFactor: 0.38,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: t.surface2,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          } else {
+            final Color color;
+            if (lleno) {
+              color = t.success;
+            } else if (esSemanal && semanaCumplida(d)) {
+              // Día vacío de una semana ganada: verde tenue, "no pasa nada"
+              color = t.success.withOpacity(0.18);
+            } else {
+              color = t.surface2;
+            }
+            celda = Container(
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(5),
+                border:
+                    esHoy ? Border.all(color: t.primary, width: 1.5) : null,
+              ),
+            );
+          }
+
+          return Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(right: i < 9 ? 5 : 0),
+              child: AspectRatio(aspectRatio: 1, child: celda),
+            ),
+          );
+        }),
+      ),
     );
   }
 }
