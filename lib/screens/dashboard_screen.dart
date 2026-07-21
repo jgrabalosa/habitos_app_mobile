@@ -219,7 +219,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // El resumen del día solo cuenta lo que toca hoy
     final totalHoy = _habitos.length - noTocaHoy.length;
 
-    return Stack(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final areaSize = constraints.biggest;
+        return Stack(
       children: [
         _loading
             ? const SkeletonLista(cantidad: 3, padding: EdgeInsets.fromLTRB(16, 16, 16, 96))
@@ -326,8 +329,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
           ),
-        if (!_loading && _usuarioId != 0) MiniMascota(usuarioId: _usuarioId),
+        if (!_loading && _usuarioId != 0)
+          MiniMascota(usuarioId: _usuarioId, areaSize: areaSize),
       ],
+    );
+      },
     );
   }
 

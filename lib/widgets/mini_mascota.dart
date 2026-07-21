@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
+import '../screens/mascota_screen.dart';
 import 'burbuja_flotante.dart';
 
 /// Traductor de dominio: convierte el estado genérico de la mascota
 /// (feliz/neutral/dormida) en una representación visual. Hoy es un
-/// placeholder emoji — cuando lleguen los assets de Rive, solo se
-/// sustituye `_iconoPara` por la animación real.
+/// placeholder emoji/Lottie de prueba — cuando lleguen los assets
+/// definitivos, solo se sustituye `_iconoPara` / el Lottie.asset.
 class MiniMascota extends StatefulWidget {
   final int usuarioId;
+  final Size areaSize;
 
-  const MiniMascota({super.key, required this.usuarioId});
+  const MiniMascota({super.key, required this.usuarioId, required this.areaSize});
 
   @override
   State<MiniMascota> createState() => _MiniMascotaState();
@@ -65,6 +68,10 @@ class _MiniMascotaState extends State<MiniMascota> {
     Future.delayed(const Duration(milliseconds: 200), () {
       if (mounted) setState(() => _rebotando = false);
     });
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => MascotaScreen(usuarioId: widget.usuarioId)),
+    ).then((_) => _inicializar()); // al volver, refresca el estado (pudo alimentarla)
   }
 
   @override
@@ -75,7 +82,9 @@ class _MiniMascotaState extends State<MiniMascota> {
 
     return BurbujaFlotante(
       storageKey: 'mini_mascota',
+      areaSize: widget.areaSize,
       onTap: _onTap,
+      minTopFraction: 0.5,
       child: AnimatedScale(
         scale: _rebotando ? 1.2 : 1.0,
         duration: const Duration(milliseconds: 200),
@@ -91,7 +100,9 @@ class _MiniMascotaState extends State<MiniMascota> {
             ],
           ),
           child: Center(
-            child: Text(_iconoPara(_estado), style: const TextStyle(fontSize: 32)),
+            child: _estado == 'feliz'
+                ? Lottie.asset('assets/animations/mascota_placeholder.json', width: 48, height: 48)
+                : Text(_iconoPara(_estado), style: const TextStyle(fontSize: 32)),
           ),
         ),
       ),

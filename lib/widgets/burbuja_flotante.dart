@@ -6,18 +6,27 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// imanta al borde lateral más cercano (izquierda/derecha) al soltarla,
 /// con su posición persistida en SharedPreferences (estilo burbujas Messenger).
 /// No conoce el contenido que envuelve ni su significado — solo la mecánica.
+///
+/// Importante: necesita el tamaño real del área donde vive (normalmente el
+/// tamaño del Stack que la contiene, NO el de toda la pantalla), porque un
+/// Stack casi siempre es más pequeño que la pantalla (AppBar, barra de
+/// navegación inferior, etc. quedan fuera de su `body`).
 class BurbujaFlotante extends StatefulWidget {
   final Widget child;
   final String storageKey; // clave única en SharedPreferences para la posición
+  final Size areaSize; // tamaño real del área contenedora (el Stack padre)
   final double size;
   final VoidCallback? onTap;
+  final double minTopFraction; // 0.0 = puede vivir en toda el área, 0.5 = solo mitad inferior
 
   const BurbujaFlotante({
     super.key,
     required this.child,
     required this.storageKey,
+    required this.areaSize,
     this.size = 64,
     this.onTap,
+    this.minTopFraction = 0.0,
   });
 
   @override
@@ -26,7 +35,6 @@ class BurbujaFlotante extends StatefulWidget {
 
 class _BurbujaFlotanteState extends State<BurbujaFlotante>
     with SingleTickerProviderStateMixin {
-  // Posición como fracción: _dx en [0,1] (0=izquierda, 1=derecha), _dy en [0,1] (0=arriba, 1=abajo)
   double _dx = 1.0;
   double _dy = 0.75;
   bool _cargada = false;
@@ -91,11 +99,10 @@ class _BurbujaFlotanteState extends State<BurbujaFlotante>
   Widget build(BuildContext context) {
     if (!_cargada) return const SizedBox.shrink();
 
-    final tamano = MediaQuery.of(context).size;
-    final safeBottom = MediaQuery.of(context).padding.bottom;
+    final tamano = widget.areaSize;
     const margen = 12.0;
-    final minY = margen;
-    final maxY = tamano.height - widget.size - safeBottom - margen - 80; // deja hueco para la barra de navegación
+    final minY = (tamano.height * widget.minTopFraction) + margen;
+    final maxY = tamano.height - widget.size - margen;
 
     final left = _dx * (tamano.width - widget.size - margen * 2) + margen;
     final top = _dy.clamp(0.0, 1.0) * (maxY - minY) + minY;

@@ -5,6 +5,7 @@ import '../theme/paletas_premium.dart';
 import '../theme/avatares.dart';
 import 'tienda_screen.dart';
 import '../widgets/skeleton.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class _Seccion {
   final String categoriaBackend;
@@ -175,6 +176,10 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
   Widget _seccionWidget(_Seccion seccion, List<dynamic> productos, TokensContextuales t) {
     final algunoPoseido = productos.any((p) => _inventario.containsKey(p['productoId']));
     final esAvatarSinElegir = seccion.categoriaBackend == 'Avatar' && !algunoPoseido;
+    // El tema Norday no es un Producto de la BD (es el tema de serie, gratis
+    // de nacimiento), así que se añade como una tarjeta extra al principio.
+    final esTema = seccion.categoriaBackend == 'Tema';
+    final itemCount = productos.length + (esTema ? 1 : 0);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -201,14 +206,101 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
               crossAxisSpacing: 8,
               childAspectRatio: 0.85,
             ),
-            itemCount: productos.length,
-            itemBuilder: (context, i) => esAvatarSinElegir
-                ? _tarjetaAvatarGratis(productos[i], t)
-                : _tarjetaProducto(productos[i], t),
+            itemCount: itemCount,
+            itemBuilder: (context, i) {
+              if (esTema && i == 0) return _tarjetaTemaNorday(t);
+              final idx = esTema ? i - 1 : i;
+              return esAvatarSinElegir
+                  ? _tarjetaAvatarGratis(productos[idx], t)
+                  : _tarjetaProducto(productos[idx], t);
+            },
           ),
         ],
       ),
     );
+  }
+
+  // Tarjeta especial del tema Norday (de serie, gratis): el icono sol/luna
+  // alterna claro/oscuro; el botón Equipar/Equipado decide si el tinte activo
+  // es el de Norday o el de un tema premium comprado.
+  Widget _tarjetaTemaNorday(TokensContextuales t) {
+    final esOscuro = Theme.of(context).brightness == Brightness.dark;
+    final esNordayActivo = temaPremiumNotifier.value == null;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () => alternarTema(context),
+                  child: Icon(esOscuro ? LucideIcons.moon : LucideIcons.sun,
+                      color: t.primary, size: 20),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text('Norday',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                _swatch(t.primary),
+                _swatch(t.success),
+                _swatch(t.points),
+              ],
+            ),
+            const Spacer(),
+            SizedBox(
+              width: double.infinity,
+              child: esNordayActivo
+                  ? Container(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      decoration: BoxDecoration(
+                        color: t.primary.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text('Equipado',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: t.primary, fontSize: 12, fontWeight: FontWeight.bold)),
+                    )
+                  : OutlinedButton(
+                      onPressed: _equiparNorday,
+                      child: const Text('Equipar'),
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Desequipa en backend el tema premium que estuviera activo (si lo hay) y
+  // vuelve al tinte Norday de serie.
+  Future<void> _equiparNorday() async {
+    final temaPremiumEquipado = _catalogo.firstWhere(
+      (p) => p['categoria'] == 'Tema' && _inventario[p['productoId']]?['equipado'] == true,
+      orElse: () => null,
+    );
+    setState(() => _procesando = -1);
+    try {
+      if (temaPremiumEquipado != null) {
+        await ApiService.desequiparProducto(widget.usuarioId, temaPremiumEquipado['productoId'] as int);
+      }
+      await guardarTemaPremiumEquipado(null);
+      await _cargarDatos();
+    } catch (e) {
+      _mostrarError(e);
+    } finally {
+      if (mounted) setState(() => _procesando = null);
+    }
   }
 
   Widget _ganchoTienda(String titulo, TokensContextuales t) {

@@ -8,6 +8,7 @@ import 'logros_screen.dart';
 import 'perfil_screen.dart';
 import 'login_screen.dart';
 import 'habitos_screen.dart';
+import 'mascota_screen.dart';
 import '../theme/avatares.dart';
 
 class HomeShell extends StatefulWidget {
@@ -23,7 +24,7 @@ class _HomeShellState extends State<HomeShell> {
   String _nombre = '';
   bool _loading = true;
 
-  static const _titulos = ['Hoy', 'Hábitos', 'Colección', 'Mascota'];
+  static const _titulos = ['Hoy', 'Hábitos', 'Colección'];
 
   @override
   void initState() {
@@ -58,7 +59,6 @@ class _HomeShellState extends State<HomeShell> {
     }
 
     final t = tokens(context);
-    final esOscuro = Theme.of(context).brightness == Brightness.dark;
 
     // Nota temporal: Colección sigue trayendo su propio AppBar
     // (doble AppBar visible) hasta el paso 3.
@@ -66,7 +66,6 @@ class _HomeShellState extends State<HomeShell> {
       const DashboardScreen(),
       HabitosScreen(usuarioId: _usuarioId),
       ColeccionScreen(usuarioId: _usuarioId),
-      const _MascotaPlaceholder(),
     ];
 
     return Scaffold(
@@ -100,8 +99,13 @@ class _HomeShellState extends State<HomeShell> {
             },
           ),
           IconButton(
-            icon: Icon(esOscuro ? LucideIcons.sun : LucideIcons.moon, color: t.textMuted),
-            onPressed: () => alternarTema(context),
+            icon: Icon(LucideIcons.pawPrint, color: t.textMuted),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => MascotaScreen(usuarioId: _usuarioId)),
+              );
+            },
           ),
           PopupMenuButton<String>(
             icon: Icon(LucideIcons.menu, color: t.textMuted),
@@ -151,21 +155,8 @@ class _HomeShellState extends State<HomeShell> {
           NavigationDestination(icon: Icon(LucideIcons.house), label: 'Hoy'),
           NavigationDestination(icon: Icon(LucideIcons.listChecks), label: 'Hábitos'),
           NavigationDestination(icon: Icon(LucideIcons.layoutGrid), label: 'Colección'),
-          NavigationDestination(icon: Icon(LucideIcons.pawPrint), label: 'Mascota'),
         ],
       ),
-    );
-  }
-}
-
-class _MascotaPlaceholder extends StatelessWidget {
-  const _MascotaPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    final t = tokens(context);
-    return Center(
-      child: Text('Próximamente 🐣', style: TextStyle(color: t.textMuted)),
     );
   }
 }
