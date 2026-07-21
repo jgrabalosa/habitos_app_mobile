@@ -3,8 +3,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'theme/app_theme.dart';
 import 'theme/paletas_premium.dart';
+import 'theme/avatares.dart';
 import 'screens/login_screen.dart';
-import 'screens/dashboard_screen.dart';
+import 'screens/home_shell.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -13,6 +14,7 @@ void main() async {
   await Firebase.initializeApp();
   await cargarTemaGuardado();
   await cargarTemaPremiumGuardado();
+  await cargarAvatarGuardado();
   runApp(const HabitosApp());
 }
 
@@ -66,8 +68,8 @@ class _SplashScreenState extends State<SplashScreen> {
         context,
         MaterialPageRoute(
           builder: (_) => token != null
-              ? const DashboardScreen()
-              : const LoginScreen(),
+            ? const HomeShell()
+            : const LoginScreen(),
         ),
       );
     }

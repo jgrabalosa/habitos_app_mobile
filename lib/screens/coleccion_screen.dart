@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../theme/paletas_premium.dart';
+import '../theme/avatares.dart';
 import 'tienda_screen.dart';
 
 class _Seccion {
@@ -13,6 +14,7 @@ class _Seccion {
 
 // Orden y nombres fijos de esta app — el motor (categoria en backend) sigue siendo genérico.
 const _seccionesConocidas = [
+  _Seccion('Avatar', 'Avatares', '🧑'),
   _Seccion('Protección', 'Consumibles', '🛡️'),
   _Seccion('Tema', 'Temas', '🎨'),
 ];
@@ -61,11 +63,18 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
     }
   }
 
-  Future<void> _equipar(int productoId, String? codigo) async {
+  // categoria: para saber qué caché de equipado actualizar (Tema/Avatar) sin
+  // pisar la de la otra — antes esto llamaba siempre a guardarTemaPremiumEquipado,
+  // lo que borraba el tema premium equipado al elegir un avatar.
+  Future<void> _equipar(int productoId, String? codigo, String categoria) async {
     setState(() => _procesando = productoId);
     try {
       await ApiService.equiparProducto(widget.usuarioId, productoId);
-      await guardarTemaPremiumEquipado(codigo);
+      if (categoria == 'Tema') {
+        await guardarTemaPremiumEquipado(codigo);
+      } else if (categoria == 'Avatar') {
+        await guardarAvatarEquipado(codigo);
+      }
       await _cargarDatos();
     } catch (e) {
       _mostrarError(e);
@@ -78,6 +87,22 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
     setState(() => _procesando = productoId);
     try {
       await ApiService.usarProducto(widget.usuarioId, productoId);
+      await _cargarDatos();
+    } catch (e) {
+      _mostrarError(e);
+    } finally {
+      if (mounted) setState(() => _procesando = null);
+    }
+  }
+
+  // Regla puente: elegir el primer avatar gratis (una sola vez, hasta que
+  // exista la pantalla de Bienvenida de Fase 4, que reutilizará esta lógica).
+  Future<void> _elegirAvatarGratis(int productoId, String? codigo) async {
+    setState(() => _procesando = productoId);
+    try {
+      await ApiService.otorgarProducto(widget.usuarioId, productoId);
+      await ApiService.equiparProducto(widget.usuarioId, productoId);
+      await guardarAvatarEquipado(codigo);
       await _cargarDatos();
     } catch (e) {
       _mostrarError(e);
@@ -113,43 +138,48 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
     final t = tokens(context);
 
     if (_loading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Center(child: CircularProgressIndicator());
     }
 
     final agrupado = _agruparPorCategoria();
     final categoriasConocidas = _seccionesConocidas.map((s) => s.categoriaBackend).toSet();
     final categoriasExtra = agrupado.keys.where((c) => !categoriasConocidas.contains(c));
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Colección')),
-      body: RefreshIndicator(
-        onRefresh: _cargarDatos,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            for (final seccion in _seccionesConocidas)
-              if (agrupado.containsKey(seccion.categoriaBackend))
-                _seccionWidget(seccion.titulo, seccion.emoji, agrupado[seccion.categoriaBackend]!, t),
-            for (final categoria in categoriasExtra)
-              _seccionWidget(categoria, '📦', agrupado[categoria]!, t),
-          ],
-        ),
+    return RefreshIndicator(
+      onRefresh: _cargarDatos,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          for (final seccion in _seccionesConocidas)
+            if (agrupado.containsKey(seccion.categoriaBackend))
+              _seccionWidget(seccion, agrupado[seccion.categoriaBackend]!, t),
+          for (final categoria in categoriasExtra)
+            _seccionWidget(_Seccion(categoria, categoria, '📦'), agrupado[categoria]!, t),
+        ],
       ),
     );
   }
 
-  Widget _seccionWidget(String titulo, String emoji, List<dynamic> productos, TokensContextuales t) {
+  Widget _seccionWidget(_Seccion seccion, List<dynamic> productos, TokensContextuales t) {
     final algunoPoseido = productos.any((p) => _inventario.containsKey(p['productoId']));
+    final esAvatarSinElegir = seccion.categoriaBackend == 'Avatar' && !algunoPoseido;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('$emoji $titulo',
+          Text('${seccion.emoji} ${seccion.titulo}',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: t.text)),
           const SizedBox(height: 8),
-          if (!algunoPoseido) _ganchoTienda(titulo, t),
+          if (esAvatarSinElegir)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text('Elige tu primer avatar gratis 👇',
+                  style: TextStyle(color: t.primary, fontWeight: FontWeight.w600)),
+            )
+          else if (!algunoPoseido)
+            _ganchoTienda(seccion.titulo, t),
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -160,7 +190,9 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
               childAspectRatio: 0.85,
             ),
             itemCount: productos.length,
-            itemBuilder: (context, i) => _tarjetaProducto(productos[i], t),
+            itemBuilder: (context, i) => esAvatarSinElegir
+                ? _tarjetaAvatarGratis(productos[i], t)
+                : _tarjetaProducto(productos[i], t),
           ),
         ],
       ),
@@ -178,19 +210,58 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
     );
   }
 
+  // Tarjeta especial mientras el usuario no tiene ningún avatar: tap = elegir
+  // ese como el gratis (no hay candado ni enlace a tienda todavía).
+  Widget _tarjetaAvatarGratis(dynamic producto, TokensContextuales t) {
+    final productoId = producto['productoId'] as int;
+    final codigo = producto['codigo'] as String?;
+    final info = codigo != null ? catalogoAvatares[codigo] : null;
+    final procesandoEste = _procesando == productoId;
+
+    return GestureDetector(
+      onTap: procesandoEste ? null : () => _elegirAvatarGratis(productoId, codigo),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (info != null)
+                CircleAvatar(radius: 28, backgroundColor: info.color.withOpacity(0.25),
+                    child: Text(info.emoji, style: const TextStyle(fontSize: 28)))
+              else
+                CircleAvatar(radius: 28, backgroundColor: t.surface2),
+              const SizedBox(height: 8),
+              Text(producto['nombre'], maxLines: 1, overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
+              const SizedBox(height: 4),
+              if (procesandoEste)
+                const SizedBox(width: 16, height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2))
+              else
+                Text('Elegir gratis', style: TextStyle(color: t.primary, fontSize: 12)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _tarjetaProducto(dynamic producto, TokensContextuales t) {
     final productoId = producto['productoId'] as int;
     final codigo = producto['codigo'] as String?;
     final tipo = producto['tipo'] as String;
+    final categoria = producto['categoria'] as String;
     final info = _inventario[productoId];
     final poseido = info != null;
     final equipado = info?['equipado'] == true;
     final cantidad = info?['cantidad'] ?? 0;
     final procesandoEste = _procesando == productoId;
-    final paleta = codigo != null ? catalogoPaletas[codigo] : null;
+    final paleta = categoria == 'Tema' && codigo != null ? catalogoPaletas[codigo] : null;
+    final avatarInfo = categoria == 'Avatar' && codigo != null ? catalogoAvatares[codigo] : null;
 
     if (!poseido) {
-      return _tarjetaBloqueada(producto, paleta, t);
+      return _tarjetaBloqueada(producto, paleta, avatarInfo, t);
     }
 
     return Card(
@@ -201,6 +272,11 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
           children: [
             Row(
               children: [
+                if (avatarInfo != null) ...[
+                  CircleAvatar(radius: 14, backgroundColor: avatarInfo.color.withOpacity(0.25),
+                      child: Text(avatarInfo.emoji, style: const TextStyle(fontSize: 14))),
+                  const SizedBox(width: 6),
+                ],
                 Expanded(
                   child: Text(producto['nombre'],
                       maxLines: 1,
@@ -230,7 +306,7 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       ),
                     )
-                  : _accionPoseido(productoId, tipo, equipado, cantidad, codigo, t),
+                  : _accionPoseido(productoId, tipo, equipado, cantidad, codigo, categoria, t),
             ),
           ],
         ),
@@ -239,7 +315,7 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
   }
 
   Widget _accionPoseido(int productoId, String tipo, bool equipado, int cantidad,
-      String? codigo, TokensContextuales t) {
+      String? codigo, String categoria, TokensContextuales t) {
     if (tipo == 'EQUIPABLE') {
       if (equipado) {
         return Container(
@@ -254,7 +330,7 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
         );
       }
       return OutlinedButton(
-        onPressed: () => _equipar(productoId, codigo),
+        onPressed: () => _equipar(productoId, codigo, categoria),
         child: const Text('Equipar'),
       );
     }
@@ -266,7 +342,7 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
     );
   }
 
-  Widget _tarjetaBloqueada(dynamic producto, Paleta? paleta, TokensContextuales t) {
+  Widget _tarjetaBloqueada(dynamic producto, Paleta? paleta, AvatarInfo? avatarInfo, TokensContextuales t) {
     return Opacity(
       opacity: 0.55,
       child: GestureDetector(
@@ -280,6 +356,12 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (avatarInfo != null) ...[
+                      CircleAvatar(radius: 14, backgroundColor: avatarInfo.color.withOpacity(0.2),
+                          child: Opacity(opacity: 0.5,
+                              child: Text(avatarInfo.emoji, style: const TextStyle(fontSize: 14)))),
+                      const SizedBox(height: 6),
+                    ],
                     Text(producto['nombre'],
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

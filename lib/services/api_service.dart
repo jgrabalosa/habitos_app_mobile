@@ -209,6 +209,46 @@ class ApiService {
     }
   }
 
+  static Future<List<Map<String, dynamic>>> getResumenHabitos(int usuarioId) async {
+    final headers = await getHeaders();
+    final response = await _client.get(
+      Uri.parse('$baseUrl/habitos/usuario/$usuarioId/resumen'),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((item) => {
+        'habito': Habito.fromJson(item['habito']),
+        'totalCompletados': item['totalCompletados'] ?? 0,
+      }).toList();
+    } else {
+      throw Exception('Error al cargar el resumen de hábitos');
+    }
+  }
+
+  static Future<void> activarHabito(int habitoId) async {
+    final headers = await getHeaders();
+    final response = await _client.patch(
+      Uri.parse('$baseUrl/habitos/$habitoId/activar'),
+      headers: headers,
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Error al activar el hábito');
+    }
+  }
+
+  static Future<void> desactivarHabito(int habitoId) async {
+    final headers = await getHeaders();
+    final response = await _client.patch(
+      Uri.parse('$baseUrl/habitos/$habitoId/desactivar'),
+      headers: headers,
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Error al desactivar el hábito');
+    }
+  }
+
   static Future<List<dynamic>> getDashboard(int usuarioId) async {
     final headers = await getHeaders();
     final response = await _client.get(
@@ -425,6 +465,17 @@ static Future<Map<String, dynamic>> completarHabito(int habitoId,
     final headers = await getHeaders();
     final response = await _client.post(
       Uri.parse('$baseUrl/gamificacion/productos/comprar/$usuarioId/$productoId'),
+      headers: headers,
+    );
+    if (response.statusCode != 200) {
+      throw Exception(response.body);
+    }
+  }
+
+  static Future<void> otorgarProducto(int usuarioId, int productoId) async {
+    final headers = await getHeaders();
+    final response = await _client.post(
+      Uri.parse('$baseUrl/gamificacion/productos/otorgar/$usuarioId/$productoId'),
       headers: headers,
     );
     if (response.statusCode != 200) {

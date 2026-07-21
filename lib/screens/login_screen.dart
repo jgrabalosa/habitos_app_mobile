@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
-import 'dashboard_screen.dart';
+import 'home_shell.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'habito_screen.dart';
 import '../services/analytics_service.dart';
@@ -60,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const DashboardScreen()),
+          MaterialPageRoute(builder: (_) => const HomeShell()),
         );
       }
     } catch (e) {
@@ -97,7 +97,7 @@ Future<void> _registro() async {
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const DashboardScreen()),
+          MaterialPageRoute(builder: (_) => const HomeShell()),
         );
       }
     } catch (e) {
@@ -119,7 +119,7 @@ Future<void> _registro() async {
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const DashboardScreen()),
+          MaterialPageRoute(builder: (_) => const HomeShell()),
         );
       }
     } catch (e) {

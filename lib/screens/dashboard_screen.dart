@@ -4,13 +4,9 @@ import 'package:in_app_review/in_app_review.dart';
 import '../services/api_service.dart';
 import '../models/habito.dart';
 import '../theme/app_theme.dart';
-import 'login_screen.dart';
-import 'habito_screen.dart';
 import 'habito_detalle_screen.dart';
-import 'logros_screen.dart';
 import '../services/analytics_service.dart';
 import '../services/celebracion_service.dart';
-import 'perfil_screen.dart';
 import '../widgets/animacion_puntos.dart';
 import '../services/sonido_service.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -30,7 +26,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final Map<int, Map<String, dynamic>> _progreso = {}; // habitoId -> {completadoHoy, completadosPeriodo, meta}
   final Map<int, Set<String>> _fechasCompletadas = {}; // habitoId -> fechas ISO (mini-heatmap)
   bool _loading = true;
-  String _nombre = '';
   int _usuarioId = 0;
   bool _yaPidioResena = false;
 
@@ -46,7 +41,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final usuario = await ApiService.getUsuarioLocal();
     if (usuario == null) return;
     setState(() {
-      _nombre = usuario['nombre'] ?? '';
       _usuarioId = usuario['usuarioId'] ?? 0;
     });
     // En paralelo: el estado de reseña no depende de los hábitos
@@ -199,16 +193,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  Future<void> _logout() async {
-    await ApiService.logout();
-    if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final t = tokens(context);
@@ -233,181 +217,111 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // El resumen del día solo cuenta lo que toca hoy
     final totalHoy = _habitos.length - noTocaHoy.length;
 
-    final esOscuro = Theme.of(context).brightness == Brightness.dark;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Hola, $_nombre 👋',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        actions: [
-          IconButton(
-            icon: Icon(LucideIcons.trophy, color: t.points),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => LogrosScreen(usuarioId: _usuarioId)),
-              );
-            },
-          ),
-          IconButton(
-            icon: Icon(esOscuro ? LucideIcons.sun : LucideIcons.moon, color: t.textMuted),
-            onPressed: () => alternarTema(context),
-          ),
-          PopupMenuButton<String>(
-            icon: Icon(LucideIcons.menu, color: t.textMuted),
-            onSelected: (valor) {
-              if (valor == 'cuenta') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => PerfilScreen(usuarioId: _usuarioId),
-                  ),
-                );
-              } else if (valor == 'logout') {
-                _logout();
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'cuenta',
-                child: Row(
+    return _loading
+        ? const Center(child: CircularProgressIndicator())
+        : RefreshIndicator(
+            onRefresh: _cargarHabitos,
+            child: ListView(
+              padding: EdgeInsets.fromLTRB(
+                  16, 16, 16, 96 + MediaQuery.of(context).padding.bottom),
+              children: [
+                Row(
                   children: [
-                    Icon(LucideIcons.userRound, size: 20),
-                    SizedBox(width: 12),
-                    Text('Mi cuenta'),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Hoy',
+                              style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w800,
+                                  color: t.text)),
+                          Text(_fechaDeHoy(),
+                              style:
+                                  TextStyle(fontSize: 13, color: t.textMuted)),
+                          if (totalHoy > 0) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              _fraseProgreso(completados.length, totalHoy),
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: completados.length == totalHoy
+                                      ? t.success
+                                      : t.textMuted),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    if (totalHoy > 0)
+                      AnilloProgreso(
+                        actual: completados.length,
+                        total: totalHoy,
+                        color: t.primary,
+                        colorPista: t.surface2,
+                        colorTexto: t.text,
+                      ),
                   ],
                 ),
-              ),
-              const PopupMenuItem(
-                value: 'logout',
-                child: Row(
-                  children: [
-                    Icon(LucideIcons.logOut, size: 20),
-                    SizedBox(width: 12),
-                    Text('Cerrar sesión'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _cargarHabitos,
-              child: ListView(
-                padding: EdgeInsets.fromLTRB(
-                    16, 16, 16, 96 + MediaQuery.of(context).padding.bottom),
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
+                const SizedBox(height: 16),
+                if (_habitos.isEmpty)
+                  _emptyState(t)
+                else ...[
+                  if (pendientes.isEmpty)
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Hoy',
-                                style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w800,
-                                    color: t.text)),
-                            Text(_fechaDeHoy(),
-                                style:
-                                    TextStyle(fontSize: 13, color: t.textMuted)),
-                            if (totalHoy > 0) ...[
-                              const SizedBox(height: 4),
-                              Text(
-                                _fraseProgreso(completados.length, totalHoy),
-                                style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: completados.length == totalHoy
-                                        ? t.success
-                                        : t.textMuted),
-                              ),
-                            ],
+                            const Text('🎉', style: TextStyle(fontSize: 28)),
+                            const SizedBox(height: 4),
+                            Text('¡Todo hecho por hoy!',
+                                style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
+                            Text('Disfruta el resto del día.',
+                                style: TextStyle(fontSize: 12, color: t.textMuted)),
                           ],
                         ),
                       ),
-                      if (totalHoy > 0)
-                        AnilloProgreso(
-                          actual: completados.length,
-                          total: totalHoy,
-                          color: t.primary,
-                          colorPista: t.surface2,
-                          colorTexto: t.text,
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  if (_habitos.isEmpty)
-                    _emptyState(t)
-                  else ...[
-                    if (pendientes.isEmpty)
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            children: [
-                              const Text('🎉', style: TextStyle(fontSize: 28)),
-                              const SizedBox(height: 4),
-                              Text('¡Todo hecho por hoy!',
-                                  style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
-                              Text('Disfruta el resto del día.',
-                                  style: TextStyle(fontSize: 12, color: t.textMuted)),
-                            ],
-                          ),
-                        ),
-                      )
-                    else
-                      ...pendientes.map((h) => _habitoCard(h, false, t)),
-                    if (completados.isNotEmpty) ...[
-                      const SizedBox(height: 16),
-                      Text('COMPLETADOS',
-                          style: TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.w800,
-                              letterSpacing: 1, color: t.textMuted)),
-                      const SizedBox(height: 8),
-                      ...completados.map((h) => _habitoCard(h, true, t)),
-                    ],
-                    if (noTocaHoy.isNotEmpty) ...[
-                      const SizedBox(height: 16),
-                      Theme(
-                        // Sin las líneas divisorias por defecto del ExpansionTile
-                        data: Theme.of(context)
-                            .copyWith(dividerColor: Colors.transparent),
-                        child: ExpansionTile(
-                          tilePadding: EdgeInsets.zero,
-                          title: Text('ESTA SEMANA (${noTocaHoy.length})',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 1,
-                                  color: t.textMuted)),
-                          subtitle: Text('No tocan hoy, pero puedes adelantarlos',
-                              style:
-                                  TextStyle(fontSize: 11, color: t.textMuted)),
-                          children: noTocaHoy
-                              .map((h) => _habitoCard(h, false, t))
-                              .toList(),
-                        ),
+                    )
+                  else
+                    ...pendientes.map((h) => _habitoCard(h, false, t)),
+                  if (completados.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text('COMPLETADOS',
+                        style: TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.w800,
+                            letterSpacing: 1, color: t.textMuted)),
+                    const SizedBox(height: 8),
+                    ...completados.map((h) => _habitoCard(h, true, t)),
+                  ],
+                  if (noTocaHoy.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Theme(
+                      // Sin las líneas divisorias por defecto del ExpansionTile
+                      data: Theme.of(context)
+                          .copyWith(dividerColor: Colors.transparent),
+                      child: ExpansionTile(
+                        tilePadding: EdgeInsets.zero,
+                        title: Text('ESTA SEMANA (${noTocaHoy.length})',
+                            style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1,
+                                color: t.textMuted)),
+                        subtitle: Text('No tocan hoy, pero puedes adelantarlos',
+                            style:
+                                TextStyle(fontSize: 11, color: t.textMuted)),
+                        children: noTocaHoy
+                            .map((h) => _habitoCard(h, false, t))
+                            .toList(),
                       ),
-                    ],
+                    ),
                   ],
                 ],
-              ),
+              ],
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => HabitoScreen(usuarioId: _usuarioId)),
           );
-          if (result == true) _cargarHabitos();
-        },
-        child: const Icon(LucideIcons.plus),
-      ),
-    );
   }
 
   String _fechaDeHoy() {
@@ -437,21 +351,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: t.text)),
             const SizedBox(height: 4),
             Text(
-              'Los grandes cambios empiezan con un paso pequeño. Crea tu primer hábito y empieza tu racha hoy.',
+              'Los grandes cambios empiezan con un paso pequeño. Ve a la pestaña Hábitos para crear el primero.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 13, color: t.textMuted),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => HabitoScreen(usuarioId: _usuarioId)),
-                );
-                if (result == true) _cargarHabitos();
-              },
-              icon: const Icon(LucideIcons.plus),
-              label: const Text('Crear mi primer hábito'),
             ),
           ],
         ),
