@@ -14,6 +14,7 @@ import '../widgets/valoracion_sheet.dart';
 import '../widgets/check_circular.dart';
 import '../widgets/anillo_progreso.dart';
 import '../widgets/skeleton.dart';
+import '../widgets/mini_mascota.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -218,9 +219,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // El resumen del día solo cuenta lo que toca hoy
     final totalHoy = _habitos.length - noTocaHoy.length;
 
-    return _loading
-        ? const SkeletonLista(cantidad: 3, padding: EdgeInsets.fromLTRB(16, 16, 16, 96))
-        : RefreshIndicator(
+    return Stack(
+      children: [
+        _loading
+            ? const SkeletonLista(cantidad: 3, padding: EdgeInsets.fromLTRB(16, 16, 16, 96))
+            : RefreshIndicator(
             onRefresh: _cargarHabitos,
             child: ListView(
               padding: EdgeInsets.fromLTRB(
@@ -322,7 +325,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ],
               ],
             ),
-          );
+          ),
+        if (!_loading && _usuarioId != 0) MiniMascota(usuarioId: _usuarioId),
+      ],
+    );
   }
 
   String _fechaDeHoy() {

@@ -351,6 +351,8 @@ static Future<Map<String, dynamic>> completarHabito(int habitoId,
         'puntosGanados': data['puntosGanados'] ?? 0,
         'registroId': data['registroId'],
         'mostrarValoracion': data['mostrarValoracion'] ?? false,
+        'subioNivel': data['subioNivel'] ?? false,
+        'nivelNuevo': data['nivelNuevo'] ?? 0,
       };
     } else {
       throw Exception('Error al completar el hábito');
@@ -505,7 +507,7 @@ static Future<Map<String, dynamic>> completarHabito(int habitoId,
     }
   }
 
-  static Future<String> usarProducto(int usuarioId, int productoId) async {
+  static Future<Map<String, dynamic>> usarProducto(int usuarioId, int productoId) async {
     final headers = await getHeaders();
     final response = await _client.post(
       Uri.parse('$baseUrl/gamificacion/productos/usar/$usuarioId/$productoId'),
@@ -513,9 +515,38 @@ static Future<Map<String, dynamic>> completarHabito(int habitoId,
     );
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return data['codigoConsumido'];
+      return {
+        'codigoConsumido': data['codigoConsumido'],
+        'subioNivel': data['subioNivel'] ?? false,
+        'nivelNuevo': data['nivelNuevo'] ?? 0,
+      };
     } else {
       throw Exception(response.body);
+    }
+  }
+
+  static Future<Map<String, dynamic>> getMascota(int usuarioId) async {
+    final headers = await getHeaders();
+    final response = await _client.get(
+      Uri.parse('$baseUrl/mascota/$usuarioId'),
+      headers: headers,
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Error al obtener la mascota');
+    }
+  }
+
+  static Future<void> actualizarNombreMascota(int usuarioId, String nombre) async {
+    final headers = await getHeaders();
+    final response = await _client.put(
+      Uri.parse('$baseUrl/mascota/$usuarioId/nombre'),
+      headers: headers,
+      body: jsonEncode({'nombre': nombre}),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Error al actualizar el nombre de la mascota');
     }
   }
 
