@@ -394,6 +394,80 @@ static Future<Map<String, dynamic>> completarHabito(int habitoId,
     }
   }
 
+  // ── Tienda ─────────────────────────────────────────────
+  static Future<List<dynamic>> getCatalogoProductos() async {
+    final headers = await getHeaders();
+    final response = await _client.get(
+      Uri.parse('$baseUrl/gamificacion/productos/catalogo'),
+      headers: headers,
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Error al cargar el catálogo de productos');
+    }
+  }
+
+  static Future<List<dynamic>> getInventarioProductos(int usuarioId) async {
+    final headers = await getHeaders();
+    final response = await _client.get(
+      Uri.parse('$baseUrl/gamificacion/productos/usuario/$usuarioId'),
+      headers: headers,
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Error al cargar tu inventario');
+    }
+  }
+
+  static Future<void> comprarProducto(int usuarioId, int productoId) async {
+    final headers = await getHeaders();
+    final response = await _client.post(
+      Uri.parse('$baseUrl/gamificacion/productos/comprar/$usuarioId/$productoId'),
+      headers: headers,
+    );
+    if (response.statusCode != 200) {
+      throw Exception(response.body);
+    }
+  }
+
+  static Future<void> equiparProducto(int usuarioId, int productoId) async {
+    final headers = await getHeaders();
+    final response = await _client.post(
+      Uri.parse('$baseUrl/gamificacion/productos/equipar/$usuarioId/$productoId'),
+      headers: headers,
+    );
+    if (response.statusCode != 200) {
+      throw Exception(response.body);
+    }
+  }
+
+  static Future<void> desequiparProducto(int usuarioId, int productoId) async {
+    final headers = await getHeaders();
+    final response = await _client.post(
+      Uri.parse('$baseUrl/gamificacion/productos/desequipar/$usuarioId/$productoId'),
+      headers: headers,
+    );
+    if (response.statusCode != 200) {
+      throw Exception(response.body);
+    }
+  }
+
+  static Future<String> usarProducto(int usuarioId, int productoId) async {
+    final headers = await getHeaders();
+    final response = await _client.post(
+      Uri.parse('$baseUrl/gamificacion/productos/usar/$usuarioId/$productoId'),
+      headers: headers,
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['codigoConsumido'];
+    } else {
+      throw Exception(response.body);
+    }
+  }
+
 static Future<List<String>> crearHabito(String nombre, String descripcion,
       String frecuencia, int meta, int usuarioId, int? categoriaId, 
       {String? diasSemana}) async {

@@ -87,12 +87,68 @@ extension TokensDe on AppColors {
   }
 }
 
-TokensContextuales tokens(BuildContext context) => TokensDe.de(context);
+/// Cuando hay un tema premium equipado, contiene sus tokens ya resueltos
+/// (un solo look, ignora claro/oscuro). null = tema Norday de serie.
+final ValueNotifier<TokensContextuales?> temaPremiumNotifier =
+    ValueNotifier<TokensContextuales?>(null);
+
+TokensContextuales tokens(BuildContext context) {
+  final premium = temaPremiumNotifier.value;
+  if (premium != null) return premium;
+  return TokensDe.de(context);
+}
 
 /// ── ThemeData ──
 class AppTheme {
   static ThemeData get light => _base(Brightness.light);
   static ThemeData get dark => _base(Brightness.dark);
+
+  /// ThemeData de un solo look para un tema premium equipado (siempre oscuro
+  /// como base de widgets nativos; los colores reales salen de [t]).
+  static ThemeData premium(TokensContextuales t) {
+    final scheme = ColorScheme.fromSeed(
+      seedColor: t.primary,
+      brightness: Brightness.dark,
+      surface: t.surface,
+    );
+
+    return ThemeData(
+      useMaterial3: true,
+      colorScheme: scheme,
+      scaffoldBackgroundColor: t.bg,
+      textTheme: _tipografia(Brightness.dark),
+      appBarTheme: AppBarTheme(
+        backgroundColor: t.surface,
+        foregroundColor: t.text,
+        elevation: 1,
+      ),
+      cardTheme: CardThemeData(
+        color: t.surface,
+        elevation: 2,
+        shadowColor: Colors.black.withOpacity(0.4),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: t.primary,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sm)),
+          textStyle: const TextStyle(fontWeight: FontWeight.w700),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.sm)),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.sm),
+          borderSide: BorderSide(color: t.primary, width: 2),
+        ),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: t.primary,
+        foregroundColor: Colors.white,
+      ),
+    );
+  }
 
   /// Escala tipográfica Manrope oficial:
   /// Títulos 700 · Subtítulos 500 · Cuerpo 400 · Números/Stats 600
