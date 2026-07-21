@@ -13,6 +13,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../widgets/valoracion_sheet.dart';
 import '../widgets/check_circular.dart';
 import '../widgets/anillo_progreso.dart';
+import '../widgets/skeleton.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -218,7 +219,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final totalHoy = _habitos.length - noTocaHoy.length;
 
     return _loading
-        ? const Center(child: CircularProgressIndicator())
+        ? const SkeletonLista(cantidad: 3, padding: EdgeInsets.fromLTRB(16, 16, 16, 96))
         : RefreshIndicator(
             onRefresh: _cargarHabitos,
             child: ListView(

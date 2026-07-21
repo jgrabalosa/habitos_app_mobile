@@ -4,6 +4,7 @@ import '../theme/app_theme.dart';
 import '../theme/paletas_premium.dart';
 import '../theme/avatares.dart';
 import 'tienda_screen.dart';
+import '../widgets/skeleton.dart';
 
 class _Seccion {
   final String categoriaBackend;
@@ -138,9 +139,20 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
     final t = tokens(context);
 
     if (_loading) {
-      return const Center(child: CircularProgressIndicator());
+      return SkeletonPulso(
+        child: GridView.builder(
+          padding: const EdgeInsets.all(16),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+            childAspectRatio: 0.85,
+          ),
+          itemCount: 6,
+          itemBuilder: (context, i) => const SkeletonBox(height: double.infinity, radius: AppRadius.lg),
+        ),
+      );
     }
-
     final agrupado = _agruparPorCategoria();
     final categoriasConocidas = _seccionesConocidas.map((s) => s.categoriaBackend).toSet();
     final categoriasExtra = agrupado.keys.where((c) => !categoriasConocidas.contains(c));

@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../models/habito.dart';
 import '../theme/app_theme.dart';
 import 'habito_screen.dart';
+import '../widgets/skeleton.dart';
 
 enum _Orden { recientes, masCumplidos }
 
@@ -78,7 +79,7 @@ class _HabitosScreenState extends State<HabitosScreen> {
     final t = tokens(context);
 
     if (_loading) {
-      return const Center(child: CircularProgressIndicator());
+      return const SkeletonLista();
     }
 
     final lista = _filtradosYOrdenados;
