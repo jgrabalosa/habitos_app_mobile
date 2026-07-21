@@ -6,6 +6,7 @@ import 'theme/paletas_premium.dart';
 import 'theme/avatares.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_shell.dart';
+import 'widgets/splash_generico.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -46,41 +47,29 @@ class HabitosApp extends StatelessWidget {
   }
 }
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    _checkSession();
-  }
-
-  Future<void> _checkSession() async {
+  Future<String?> _checkSession() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-    if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => token != null
-            ? const HomeShell()
-            : const LoginScreen(),
-        ),
-      );
-    }
+    return prefs.getString('token');
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
-      ),
+    return SplashGenerico<String?>(
+      rutaImagen: 'assets/branding/simbolo_negativo.png',
+      colorFondo: const Color(0xFF0A1628),
+      wordmark: 'Norday',
+      tarea: _checkSession,
+      onListo: (context, token) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => token != null ? const HomeShell() : const LoginScreen(),
+          ),
+        );
+      },
     );
   }
 }

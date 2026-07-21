@@ -34,3 +34,10 @@ flutter:
   assets:
     - assets/animations/
     - assets/sounds/
+
+flutter_native_splash:
+  color: "0A1628"
+  image: assets/branding/simbolo_negativo.png
+  android_12:
+    color: "0A1628"
+    image: assets/branding/simbolo_negativo.png
