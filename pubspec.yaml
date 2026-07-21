@@ -28,16 +28,17 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_native_splash: ^2.4.3
 
 flutter:
   uses-material-design: true
   assets:
     - assets/animations/
     - assets/sounds/
+    - assets/branding/
 
 flutter_native_splash:
   color: "0A1628"
   image: assets/branding/simbolo_negativo.png
   android_12:
     color: "0A1628"
-    image: assets/branding/simbolo_negativo.png

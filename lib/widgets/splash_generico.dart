@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Splash genérico y exportable al ecosistema Norday: fondo + símbolo +
-/// wordmark, con una duración mínima para que no parpadee, mientras espera
+/// Splash genérico y exportable al ecosistema Norday: fondo Azul Noche +
+/// símbolo + wordmark, con una duración mínima y la posibilidad de esperar
 /// una tarea real (sesión, tema...). El punto 6.5 (Estados de carga) ampliará
 /// `tarea` para que también espere los datos del Dashboard.
 class SplashGenerico<T> extends StatefulWidget {
