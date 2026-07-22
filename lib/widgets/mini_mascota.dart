@@ -85,6 +85,7 @@ class _MiniMascotaState extends State<MiniMascota> {
       areaSize: widget.areaSize,
       onTap: _onTap,
       minTopFraction: 0.5,
+      vagabundeo: true,
       child: AnimatedScale(
         scale: _rebotando ? 1.2 : 1.0,
         duration: const Duration(milliseconds: 200),
