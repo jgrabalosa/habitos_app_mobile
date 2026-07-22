@@ -282,6 +282,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
   Widget build(BuildContext context) {
     final t = tokens(context);
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text(_esEdicion ? 'Editar hábito' : 'Nuevo hábito'),
       ),

@@ -21,6 +21,14 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+            <!-- Fuerza el motor Impeller: elimina el "shader compilation jank"
+                 (tirones la primera vez que aparece una animación/efecto nuevo,
+                 como el teclado, y luego va fluido). -->
+            <meta-data
+              android:name="io.flutter.embedding.android.EnableImpeller"
+              android:value="true"
+              />
+              
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

@@ -84,6 +84,7 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+   resizeToAvoidBottomInset: false,   
 appBar: AppBar(
   // El Hero envuelve al condicional del texto
 title: Hero(
