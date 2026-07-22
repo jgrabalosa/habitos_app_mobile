@@ -9,7 +9,8 @@ import '../theme/app_theme.dart';
 class HabitoScreen extends StatefulWidget {
   final int usuarioId;
   final Habito? habito;
-  const HabitoScreen({super.key, required this.usuarioId, this.habito});
+  final List<dynamic>? categoriasIniciales;
+  const HabitoScreen({super.key, required this.usuarioId, this.habito, this.categoriasIniciales});
 
   @override
   State<HabitoScreen> createState() => _HabitoScreenState();
@@ -62,6 +63,10 @@ class _HabitoScreenState extends State<HabitoScreen> {
       _diasSeleccionados = widget.habito!.diasPlanificados.toSet();
       _recordatorioActivo = widget.habito!.recordatorioActivo;
       _recordatorioHora = widget.habito!.recordatorioHoraTimeOfDay;
+    }
+    if (widget.categoriasIniciales != null) {
+      _categorias = widget.categoriasIniciales!;
+      _categoriasLoading = false;
     }
     _cargarCategorias();
   }

@@ -89,7 +89,7 @@ class _HabitosScreenState extends State<HabitosScreen> {
         onPressed: () async {
           final result = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => HabitoScreen(usuarioId: widget.usuarioId)),
+            MaterialPageRoute(builder: (_) => HabitoScreen(usuarioId: widget.usuarioId, categoriasIniciales: _categorias)),
           );
           if (result == true) _cargarDatos();
         },
@@ -176,7 +176,7 @@ class _HabitosScreenState extends State<HabitosScreen> {
             final result = await Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (_) => HabitoScreen(usuarioId: widget.usuarioId, habito: habito)),
+                  builder: (_) => HabitoScreen(usuarioId: widget.usuarioId, habito: habito, categoriasIniciales: _categorias)),
             );
             if (result == true) _cargarDatos();
           },
