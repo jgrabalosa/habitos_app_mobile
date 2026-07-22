@@ -17,12 +17,31 @@ class SonidoService {
   /// (menú de usuario, Fase 16 junto a notificaciones).
   static bool activado = true;
 
+  static bool _contextoConfigurado = false;
+
+  /// Configura el reproductor para "mezclar" con audio de otras apps
+  /// (Spotify, etc.) en vez de pedir el foco exclusivo y cortarlas.
+  /// Se hace una sola vez, antes del primer sonido reproducido.
+  static Future<void> _asegurarContextoAudio() async {
+    if (_contextoConfigurado) return;
+    _contextoConfigurado = true;
+    try {
+      await AudioPlayer.global.setAudioContext(
+        AudioContextConfig(focus: AudioContextConfigFocus.mixWithOthers).build(),
+      );
+    } catch (_) {
+      // El sonido nunca debe romper la app
+    }
+  }
+
   static Future<void> reproducir(String evento) async {
     if (!activado) return;
     final ruta = _sonidos[evento];
     if (ruta == null) return;
 
-try {
+    await _asegurarContextoAudio();
+
+    try {
       final player = AudioPlayer();
       player.onPlayerComplete.listen((_) => player.dispose());
       await player.play(AssetSource(ruta));
