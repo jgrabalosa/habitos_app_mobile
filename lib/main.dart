@@ -13,8 +13,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  await cargarTemaGuardado();
-  await cargarTemaPremiumGuardado();
+  await cargarTemaEquipadoGuardado();
   await cargarAvatarGuardado();
   runApp(const HabitosApp());
 }
@@ -24,23 +23,15 @@ class HabitosApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<ThemeMode>(
-      valueListenable: temaNotifier,
-      builder: (context, modo, _) {
-        return ValueListenableBuilder<TokensContextuales?>(
-          valueListenable: temaPremiumNotifier,
-          builder: (context, premium, __) {
-            final temaFijo = premium != null ? AppTheme.premium(premium) : null;
-            return MaterialApp(
-              navigatorKey: navigatorKey,
-              title: 'Norday Hábitos',
-              debugShowCheckedModeBanner: false,
-              theme: temaFijo ?? AppTheme.light,
-              darkTheme: temaFijo ?? AppTheme.dark,
-              themeMode: modo,
-              home: const SplashScreen(),
-            );
-          },
+    return ValueListenableBuilder<TokensContextuales>(
+      valueListenable: temaEquipadoNotifier,
+      builder: (context, tema, _) {
+        return MaterialApp(
+          navigatorKey: navigatorKey,
+          title: 'Norday Hábitos',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.deTema(tema),
+          home: const SplashScreen(),
         );
       },
     );

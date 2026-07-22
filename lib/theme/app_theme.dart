@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 /// ── Design Tokens — Identidad oficial Norday ──
 class AppColors {
@@ -23,14 +22,14 @@ class AppColors {
   static const points = Color(0xFFF59E0B);
   static const danger = Color(0xFFEF4444);
 
-  // Light (crudo frío: fondo un punto más oscuro, tarjetas en blanco roto)
+  // Básico Claro (crudo frío: fondo un punto más oscuro, tarjetas en blanco roto)
   static const bgLight = Color(0xFFE6ECF2);
   static const surfaceLight = Color(0xFFF7F9FB);
   static const surface2Light = Color(0xFFCFDAE6);
   static const textLight = azulNoche;
   static const textMutedLight = grisMedio;
 
-  // Dark DE MARCA (fondos Azul Noche / Azul Acero, no gris genérico)
+  // Básico Oscuro DE MARCA (fondos Azul Noche / Azul Acero, no gris genérico)
   static const primaryDarkMode = verdeEsmeralda;
   static const successDarkMode = verdeClaro;
   static const streakDarkMode = Color(0xFFFF8226);
@@ -58,7 +57,7 @@ class AppRadius {
   static const double xl = 24; // overlays, diálogos
 }
 
-/// Colores que cambian según el tema — úsalos con tokens(context)
+/// Colores que cambian según el tema equipado — úsalos con tokens(context)
 class TokensContextuales {
   final Color primary, success, streak, points, bg, surface, surface2, text, textMuted;
   const TokensContextuales({
@@ -68,44 +67,29 @@ class TokensContextuales {
   });
 }
 
-extension TokensDe on AppColors {
-  static TokensContextuales de(BuildContext context) {
-    final oscuro = Theme.of(context).brightness == Brightness.dark;
-    return oscuro
-        ? const TokensContextuales(
-            primary: AppColors.primaryDarkMode, success: AppColors.successDarkMode,
-            streak: AppColors.streakDarkMode, points: AppColors.pointsDarkMode,
-            bg: AppColors.bgDark, surface: AppColors.surfaceDark,
-            surface2: AppColors.surface2Dark, text: AppColors.textDark,
-            textMuted: AppColors.textMutedDark)
-        : const TokensContextuales(
-            primary: AppColors.primary, success: AppColors.success,
-            streak: AppColors.streak, points: AppColors.points,
-            bg: AppColors.bgLight, surface: AppColors.surfaceLight,
-            surface2: AppColors.surface2Light, text: AppColors.textLight,
-            textMuted: AppColors.textMutedLight);
-  }
-}
+// Fallback de arranque antes de que cargarTemaEquipadoGuardado() resuelva el
+// tema real guardado (o para el rarísimo caso de que aún no haya ninguno).
+// Es la paleta "Básico Oscuro" — la más característica de la marca.
+const TokensContextuales _basicoOscuroPorDefecto = TokensContextuales(
+  primary: AppColors.primaryDarkMode, success: AppColors.successDarkMode,
+  streak: AppColors.streakDarkMode, points: AppColors.pointsDarkMode,
+  bg: AppColors.bgDark, surface: AppColors.surfaceDark,
+  surface2: AppColors.surface2Dark, text: AppColors.textDark,
+  textMuted: AppColors.textMutedDark,
+);
 
-/// Cuando hay un tema premium equipado, contiene sus tokens ya resueltos
-/// (un solo look, ignora claro/oscuro). null = tema Norday de serie.
-final ValueNotifier<TokensContextuales?> temaPremiumNotifier =
-    ValueNotifier<TokensContextuales?>(null);
+/// El tema actualmente equipado (uno de los 7: 2 básicos + 5 premium).
+/// Todas las paletas funcionan exactamente igual — no hay distinción especial.
+final ValueNotifier<TokensContextuales> temaEquipadoNotifier =
+    ValueNotifier<TokensContextuales>(_basicoOscuroPorDefecto);
 
-TokensContextuales tokens(BuildContext context) {
-  final premium = temaPremiumNotifier.value;
-  if (premium != null) return premium;
-  return TokensDe.de(context);
-}
+TokensContextuales tokens(BuildContext context) => temaEquipadoNotifier.value;
 
 /// ── ThemeData ──
 class AppTheme {
-  static ThemeData get light => _base(Brightness.light);
-  static ThemeData get dark => _base(Brightness.dark);
-
-  /// ThemeData de un solo look para un tema premium equipado (siempre oscuro
-  /// como base de widgets nativos; los colores reales salen de [t]).
-  static ThemeData premium(TokensContextuales t) {
+  /// ThemeData para el tema actualmente equipado — un único look, construido
+  /// a partir de sus tokens. Todas las paletas (básicas o premium) pasan por aquí.
+  static ThemeData deTema(TokensContextuales t) {
     final scheme = ColorScheme.fromSeed(
       seedColor: t.primary,
       brightness: Brightness.dark,
@@ -116,7 +100,7 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: scheme,
       scaffoldBackgroundColor: t.bg,
-      textTheme: _tipografia(Brightness.dark),
+      textTheme: _tipografia(),
       appBarTheme: AppBarTheme(
         backgroundColor: t.surface,
         foregroundColor: t.text,
@@ -152,10 +136,8 @@ class AppTheme {
 
   /// Escala tipográfica Manrope oficial:
   /// Títulos 700 · Subtítulos 500 · Cuerpo 400 · Números/Stats 600
-  static TextTheme _tipografia(Brightness b) {
-    final base = GoogleFonts.manropeTextTheme(
-      b == Brightness.dark ? ThemeData.dark().textTheme : ThemeData.light().textTheme,
-    );
+  static TextTheme _tipografia() {
+    final base = GoogleFonts.manropeTextTheme(ThemeData.dark().textTheme);
     return base.copyWith(
       // Títulos (H1-H3) → Bold 700
       headlineLarge: base.headlineLarge?.copyWith(fontWeight: FontWeight.w700),
@@ -173,69 +155,4 @@ class AppTheme {
       labelLarge: base.labelLarge?.copyWith(fontWeight: FontWeight.w600),
     );
   }
-
-  static ThemeData _base(Brightness b) {
-    final esOscuro = b == Brightness.dark;
-    final scheme = ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
-      brightness: b,
-      surface: esOscuro ? AppColors.surfaceDark : AppColors.surfaceLight,
-    );
-
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: scheme,
-      scaffoldBackgroundColor: esOscuro ? AppColors.bgDark : AppColors.bgLight,
-      textTheme: _tipografia(b),
-      appBarTheme: AppBarTheme(
-        backgroundColor: esOscuro ? AppColors.surfaceDark : AppColors.surfaceLight,
-        foregroundColor: esOscuro ? AppColors.textDark : AppColors.textLight,
-        elevation: 1,
-      ),
-      cardTheme: CardThemeData(
-        color: esOscuro ? AppColors.surfaceDark : AppColors.surfaceLight,
-        elevation: 2,
-        shadowColor: Colors.black.withOpacity(esOscuro ? 0.4 : 0.08),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: esOscuro ? AppColors.primaryDarkMode : AppColors.primary,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sm)),
-          textStyle: const TextStyle(fontWeight: FontWeight.w700),
-        ),
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.sm)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.sm),
-          borderSide: BorderSide(
-              color: esOscuro ? AppColors.primaryDarkMode : AppColors.primary, width: 2),
-        ),
-      ),
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: esOscuro ? AppColors.primaryDarkMode : AppColors.primary,
-        foregroundColor: Colors.white,
-      ),
-    );
-  }
-}
-
-/// ── Gestión del tema con persistencia ──
-final ValueNotifier<ThemeMode> temaNotifier = ValueNotifier(ThemeMode.system);
-
-Future<void> cargarTemaGuardado() async {
-  final prefs = await SharedPreferences.getInstance();
-  final guardado = prefs.getString('tema');
-  if (guardado == 'dark') temaNotifier.value = ThemeMode.dark;
-  if (guardado == 'light') temaNotifier.value = ThemeMode.light;
-}
-
-Future<void> alternarTema(BuildContext context) async {
-  final esOscuroAhora = Theme.of(context).brightness == Brightness.dark;
-  final nuevo = esOscuroAhora ? ThemeMode.light : ThemeMode.dark;
-  temaNotifier.value = nuevo;
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setString('tema', nuevo == ThemeMode.dark ? 'dark' : 'light');
 }

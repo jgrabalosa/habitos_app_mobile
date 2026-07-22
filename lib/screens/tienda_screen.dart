@@ -3,6 +3,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../theme/paletas_premium.dart';
+import '../theme/avatares.dart';
 
 class TiendaScreen extends StatefulWidget {
   final int usuarioId;
@@ -70,11 +71,15 @@ class _TiendaScreenState extends State<TiendaScreen> {
     }
   }
 
-  Future<void> _equipar(int productoId, String? codigo) async {
+  Future<void> _equipar(int productoId, String? codigo, String categoria) async {
     setState(() => _procesando = productoId);
     try {
       await ApiService.equiparProducto(widget.usuarioId, productoId);
-      await guardarTemaPremiumEquipado(codigo);
+      if (categoria == 'Tema') {
+        await guardarTemaEquipado(codigo);
+      } else if (categoria == 'Avatar') {
+        await guardarAvatarEquipado(codigo);
+      }
       await _cargarDatos();
     } catch (e) {
       _mostrarError(e);
@@ -201,7 +206,7 @@ class _TiendaScreenState extends State<TiendaScreen> {
               children: [
                 Text('${producto['precio']} pts',
                     style: TextStyle(color: t.textMuted, fontWeight: FontWeight.w600)),
-                _botonAccion(productoId, tipo, poseido, equipado, cantidad, codigo, procesandoEste),
+                _botonAccion(productoId, tipo, poseido, equipado, cantidad, codigo, categoria, procesandoEste),
               ],
             ),
           ],
@@ -218,7 +223,7 @@ class _TiendaScreenState extends State<TiendaScreen> {
       );
 
   Widget _botonAccion(int productoId, String tipo, bool poseido, bool equipado,
-      int cantidad, String? codigo, bool procesando) {
+      int cantidad, String? codigo, String categoria, bool procesando) {
     if (procesando) {
       return const SizedBox(
         width: 20,
@@ -238,7 +243,7 @@ class _TiendaScreenState extends State<TiendaScreen> {
         return const SizedBox.shrink();
       }
       return OutlinedButton(
-        onPressed: () => _equipar(productoId, codigo),
+        onPressed: () => _equipar(productoId, codigo, categoria),
         child: const Text('Equipar'),
       );
     }

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'app_theme.dart';
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';   // ← nuevo import
+import 'package:shared_preferences/shared_preferences.dart';
 import 'app_theme.dart';
 
-/// Paleta fija para un tema premium — sustituye a claro/oscuro cuando está equipado.
+/// Paleta fija de un tema — las 7 (2 básicas + 5 premium) funcionan igual.
 class Paleta {
   final Color primary, success, streak, points, bg, surface, surface2, text, textMuted;
   const Paleta({
@@ -19,33 +17,44 @@ class Paleta {
       );
 }
 
-const _keyTemaPremium = 'tema_premium_codigo';
+const _keyTemaEquipado = 'tema_premium_codigo'; // nombre de clave histórico, sin migrar
 
-/// Llamar al arrancar la app (junto a cargarTemaGuardado), antes de runApp,
-/// para que el tema premium aplique sin parpadeo desde el primer frame.
-Future<void> cargarTemaPremiumGuardado() async {
+/// Llamar al arrancar la app (junto a cargarAvatarGuardado), antes de runApp,
+/// para que el tema equipado aplique sin parpadeo desde el primer frame.
+Future<void> cargarTemaEquipadoGuardado() async {
   final prefs = await SharedPreferences.getInstance();
-  final codigo = prefs.getString(_keyTemaPremium);
+  final codigo = prefs.getString(_keyTemaEquipado);
   if (codigo != null && catalogoPaletas.containsKey(codigo)) {
-    temaPremiumNotifier.value = catalogoPaletas[codigo]!.comoTokens;
+    temaEquipadoNotifier.value = catalogoPaletas[codigo]!.comoTokens;
   }
+  // Si no hay nada guardado todavía (primer arranque antes del regalo de
+  // bienvenida), se queda el fallback "Básico Oscuro" ya fijado en app_theme.dart.
 }
 
-/// Llamar al equipar/desequipar un tema (pasar null al desequipar,
-/// o cuando se equipa el tema Norday de serie).
-Future<void> guardarTemaPremiumEquipado(String? codigo) async {
-  final prefs = await SharedPreferences.getInstance();
+/// Llamar al equipar un tema — cualquiera de los 7, todos se tratan igual.
+Future<void> guardarTemaEquipado(String? codigo) async {
   if (codigo == null || !catalogoPaletas.containsKey(codigo)) {
-    temaPremiumNotifier.value = null;
-    await prefs.remove(_keyTemaPremium);
-  } else {
-    temaPremiumNotifier.value = catalogoPaletas[codigo]!.comoTokens;
-    await prefs.setString(_keyTemaPremium, codigo);
+    return; // no debería pasar: todo producto de categoría Tema tiene entrada aquí
   }
+  temaEquipadoNotifier.value = catalogoPaletas[codigo]!.comoTokens;
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString(_keyTemaEquipado, codigo);
 }
 
-/// Registro de paletas premium por código de producto — nada de hexadecimales en la BD.
+/// Registro de paletas por código de producto — nada de hexadecimales en la BD.
 const Map<String, Paleta> catalogoPaletas = {
+  'TEMA_BASICO_CLARO': Paleta(
+    primary: AppColors.primary, success: AppColors.success,
+    streak: AppColors.streak, points: AppColors.points,
+    bg: AppColors.bgLight, surface: AppColors.surfaceLight, surface2: AppColors.surface2Light,
+    text: AppColors.textLight, textMuted: AppColors.textMutedLight,
+  ),
+  'TEMA_BASICO_OSCURO': Paleta(
+    primary: AppColors.primaryDarkMode, success: AppColors.successDarkMode,
+    streak: AppColors.streakDarkMode, points: AppColors.pointsDarkMode,
+    bg: AppColors.bgDark, surface: AppColors.surfaceDark, surface2: AppColors.surface2Dark,
+    text: AppColors.textDark, textMuted: AppColors.textMutedDark,
+  ),
   'TEMA_CALIDEZ': Paleta(
     primary: Color(0xFFE07856), success: Color(0xFFD89B4A),
     streak: Color(0xFFF2994A), points: Color(0xFFF5B942),
