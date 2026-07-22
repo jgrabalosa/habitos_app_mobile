@@ -35,6 +35,8 @@ class _HabitoScreenState extends State<HabitoScreen> {
   String _frecuencia = 'DIARIO';
   int _meta = 1;
   Set<int> _diasSeleccionados = {}; // días ISO elegidos (solo SEMANAL)
+  bool _recordatorioActivo = true;
+  TimeOfDay? _recordatorioHora;
   bool _loading = false;
   String? _error;
 
@@ -58,6 +60,8 @@ class _HabitoScreenState extends State<HabitoScreen> {
       _meta = widget.habito!.meta;
       _categoriaId = widget.habito!.categoriaId;
       _diasSeleccionados = widget.habito!.diasPlanificados.toSet();
+      _recordatorioActivo = widget.habito!.recordatorioActivo;
+      _recordatorioHora = widget.habito!.recordatorioHoraTimeOfDay;
     }
     _cargarCategorias();
   }
@@ -134,6 +138,9 @@ class _HabitoScreenState extends State<HabitoScreen> {
         ? (_diasSeleccionados.toList()..sort()).join(',')
         : null;
     final int meta = _metaDerivada ? _diasSeleccionados.length : _meta;
+    final String? recordatorioHora = _recordatorioHora == null
+        ? null
+        : '${_recordatorioHora!.hour.toString().padLeft(2, '0')}:${_recordatorioHora!.minute.toString().padLeft(2, '0')}';
 
     setState(() { _loading = true; _error = null; });
     try {
@@ -147,6 +154,8 @@ class _HabitoScreenState extends State<HabitoScreen> {
           widget.usuarioId,
           _categoriaId,
           diasSemana: diasSemana,
+          recordatorioActivo: _recordatorioActivo,
+          recordatorioHora: recordatorioHora,
         );
         if (mounted) Navigator.pop(context, true);
       } else {
@@ -158,6 +167,8 @@ class _HabitoScreenState extends State<HabitoScreen> {
           widget.usuarioId,
           _categoriaId,
           diasSemana: diasSemana,
+          recordatorioActivo: _recordatorioActivo,
+          recordatorioHora: recordatorioHora,
         );
         await AnalyticsService.habitoCreado(_frecuencia);
         if (mounted) Navigator.pop(context, true);
@@ -199,6 +210,16 @@ class _HabitoScreenState extends State<HabitoScreen> {
       } catch (e) {
         setState(() { _error = 'Error al eliminar el hábito'; _loading = false; });
       }
+    }
+  }
+
+  Future<void> _elegirHoraRecordatorio() async {
+    final hora = await showTimePicker(
+      context: context,
+      initialTime: _recordatorioHora ?? const TimeOfDay(hour: 9, minute: 0),
+    );
+    if (hora != null) {
+      setState(() { _recordatorioHora = hora; });
     }
   }
 
@@ -373,6 +394,29 @@ class _HabitoScreenState extends State<HabitoScreen> {
                         onPressed: () => setState(() { _meta++; }),
                       ),
                     ],
+                  ),
+                const SizedBox(height: 12),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Recordatorio'),
+                  subtitle: Text(_recordatorioActivo
+                      ? (_recordatorioHora != null
+                          ? 'A las ${_recordatorioHora!.format(context)}'
+                          : 'Elige una hora')
+                      : 'Desactivado'),
+                  value: _recordatorioActivo,
+                  onChanged: (v) => setState(() { _recordatorioActivo = v; }),
+                ),
+                if (_recordatorioActivo)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: _elegirHoraRecordatorio,
+                      icon: const Icon(LucideIcons.clock),
+                      label: Text(_recordatorioHora == null
+                          ? 'Elegir hora'
+                          : 'Cambiar hora (${_recordatorioHora!.format(context)})'),
+                    ),
                   ),
                 if (_error != null) ...[
                   const SizedBox(height: 8),

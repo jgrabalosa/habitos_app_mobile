@@ -552,7 +552,7 @@ static Future<Map<String, dynamic>> completarHabito(int habitoId,
 
 static Future<List<String>> crearHabito(String nombre, String descripcion,
       String frecuencia, int meta, int usuarioId, int? categoriaId, 
-      {String? diasSemana}) async {
+      {String? diasSemana, bool recordatorioActivo = true, String? recordatorioHora}) async {
     final headers = await getHeaders();
     final body = {
       'nombre': nombre,
@@ -561,6 +561,8 @@ static Future<List<String>> crearHabito(String nombre, String descripcion,
       'meta': meta,
       'propietario': {'usuarioId': usuarioId},
       'diasSemana': diasSemana,
+      'recordatorioActivo': recordatorioActivo,
+      'recordatorioHora': recordatorioHora,
     };
     if (categoriaId != null) {
       body['tipo'] = {'categoriaId': categoriaId};
@@ -579,9 +581,10 @@ static Future<List<String>> crearHabito(String nombre, String descripcion,
       throw Exception('Error al crear el hábito');
     }
   }
-    static Future<void> actualizarHabito(int habitoId, String nombre, String descripcion,
+
+   static Future<void> actualizarHabito(int habitoId, String nombre, String descripcion,
       String frecuencia, int meta, int usuarioId, int? categoriaId, 
-      {String? diasSemana}) async {
+      {String? diasSemana, bool recordatorioActivo = true, String? recordatorioHora}) async {
     final headers = await getHeaders();
     final body = {
       'nombre': nombre,
@@ -590,6 +593,8 @@ static Future<List<String>> crearHabito(String nombre, String descripcion,
       'meta': meta,
       'propietario': {'usuarioId': usuarioId},
       'diasSemana': diasSemana,
+      'recordatorioActivo': recordatorioActivo,
+      'recordatorioHora': recordatorioHora,
     };
     if (categoriaId != null) {
       body['tipo'] = {'categoriaId': categoriaId};
@@ -652,6 +657,8 @@ static Future<List<String>> crearHabito(String nombre, String descripcion,
       throw Exception('Error al actualizar el token de notificaciones');
     }
   }
+
+  
 
   
 }

@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class Habito {
   final int habitoId;
   final String nombre;
@@ -8,6 +10,8 @@ class Habito {
   final String? categoriaNombre;
   final int? categoriaId;
   final String? diasSemana; // "2,4,6" = martes, jueves, sábado (1=lunes..7=domingo)
+  final bool recordatorioActivo;
+  final String? recordatorioHora; // "HH:mm:ss" tal cual llega del backend, o null si no se ha elegido
 
   Habito({
     required this.habitoId,
@@ -19,6 +23,8 @@ class Habito {
     this.categoriaNombre,
     this.categoriaId,
     this.diasSemana,
+    this.recordatorioActivo = true,
+    this.recordatorioHora,
   });
 
   factory Habito.fromJson(Map<String, dynamic> json) {
@@ -32,8 +38,23 @@ class Habito {
       categoriaNombre: json['tipo'] != null ? json['tipo']['nombre'] : null,
       categoriaId: json['tipo'] != null ? json['tipo']['categoriaId'] : null,
       diasSemana: json['diasSemana'],
+      recordatorioActivo: json['recordatorioActivo'] ?? true,
+      recordatorioHora: json['recordatorioHora'],
     );
   }
+
+  /// Hora del recordatorio como TimeOfDay, o null si no hay elegida.
+  /// Parsea "HH:mm:ss" o "HH:mm" indistintamente.
+  TimeOfDay? get recordatorioHoraTimeOfDay {
+    if (recordatorioHora == null || recordatorioHora!.isEmpty) return null;
+    final partes = recordatorioHora!.split(':');
+    if (partes.length < 2) return null;
+    final h = int.tryParse(partes[0]);
+    final m = int.tryParse(partes[1]);
+    if (h == null || m == null) return null;
+    return TimeOfDay(hour: h, minute: m);
+  }
+
   /// Días planificados como enteros ISO (1=lunes..7=domingo), coincide con
   /// DateTime.weekday. Lista vacía = semanal flexible o hábito diario.
   List<int> get diasPlanificados =>
