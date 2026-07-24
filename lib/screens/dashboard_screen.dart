@@ -429,7 +429,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 3),
                             decoration: BoxDecoration(
-                              color: t.primary.withOpacity(0.12),
+                              color: t.primary.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(999),
                             ),
                             child: Text(
@@ -521,7 +521,7 @@ Widget _miniHeatmap(Habito h, TokensContextuales t) {
               color = t.success;
             } else if (esSemanal && semanaCumplida(d)) {
               // Día vacío de una semana ganada: verde tenue, "no pasa nada"
-              color = t.success.withOpacity(0.18);
+              color = t.success.withValues(alpha: 0.18);
             } else {
               color = t.surface2;
             }

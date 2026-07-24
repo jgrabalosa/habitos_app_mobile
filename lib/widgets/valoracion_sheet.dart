@@ -18,9 +18,9 @@ class ValoracionSheet {
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Valoración',
-      barrierColor: Colors.black.withOpacity(0.25),
+      barrierColor: Colors.black.withValues(alpha: 0.25),
       transitionDuration: const Duration(milliseconds: 250),
-      pageBuilder: (context, _, __) => _ValoracionDialogContent(
+      pageBuilder: (context, _, _) => _ValoracionDialogContent(
         valoracionInicial: valoracionInicial,
         notaInicial: notaInicial,
       ),
@@ -99,7 +99,7 @@ class _ValoracionDialogContentState extends State<_ValoracionDialogContent> {
               borderRadius: BorderRadius.circular(AppRadius.xl),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.25),
+                  color: Colors.black.withValues(alpha: 0.25),
                   blurRadius: 24,
                   offset: const Offset(0, 8),
                 ),
@@ -138,7 +138,7 @@ class _ValoracionDialogContentState extends State<_ValoracionDialogContent> {
                             LucideIcons.star,
                             color: marcada
                                 ? Colors.amber
-                                : t.textMuted.withOpacity(0.45),
+                                : t.textMuted.withValues(alpha: 0.45),
                           ),
                         );
                       }),

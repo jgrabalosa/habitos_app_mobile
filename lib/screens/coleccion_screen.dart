@@ -242,7 +242,7 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (info != null)
-                CircleAvatar(radius: 28, backgroundColor: info.color.withOpacity(0.25),
+                CircleAvatar(radius: 28, backgroundColor: info.color.withValues(alpha: 0.25),
                     child: Text(info.emoji, style: const TextStyle(fontSize: 28)))
               else
                 CircleAvatar(radius: 28, backgroundColor: t.surface2),
@@ -288,7 +288,7 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
             Row(
               children: [
                 if (avatarInfo != null) ...[
-                  CircleAvatar(radius: 14, backgroundColor: avatarInfo.color.withOpacity(0.25),
+                  CircleAvatar(radius: 14, backgroundColor: avatarInfo.color.withValues(alpha: 0.25),
                       child: Text(avatarInfo.emoji, style: const TextStyle(fontSize: 14))),
                   const SizedBox(width: 6),
                 ],
@@ -336,7 +336,7 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
         return Container(
           padding: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
-            color: t.primary.withOpacity(0.15),
+            color: t.primary.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text('Equipado',
@@ -372,7 +372,7 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (avatarInfo != null) ...[
-                      CircleAvatar(radius: 14, backgroundColor: avatarInfo.color.withOpacity(0.2),
+                      CircleAvatar(radius: 14, backgroundColor: avatarInfo.color.withValues(alpha: 0.2),
                           child: Opacity(opacity: 0.5,
                               child: Text(avatarInfo.emoji, style: const TextStyle(fontSize: 14)))),
                       const SizedBox(height: 6),
@@ -385,9 +385,9 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
                       const SizedBox(height: 6),
                       Row(
                         children: [
-                          _swatch(paleta.primary.withOpacity(0.5)),
-                          _swatch(paleta.success.withOpacity(0.5)),
-                          _swatch(paleta.points.withOpacity(0.5)),
+                          _swatch(paleta.primary.withValues(alpha: 0.5)),
+                          _swatch(paleta.success.withValues(alpha: 0.5)),
+                          _swatch(paleta.points.withValues(alpha: 0.5)),
                         ],
                       ),
                     ],

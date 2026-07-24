@@ -16,7 +16,6 @@ class MascotaScreen extends StatefulWidget {
 class _MascotaScreenState extends State<MascotaScreen> {
   bool _loading = true;
   String _nombre = '';
-  int _xp = 0;
   int _nivel = 1;
   int _xpEnNivelActual = 0;
   int _xpParaSiguienteNivel = 20;
@@ -34,7 +33,6 @@ class _MascotaScreenState extends State<MascotaScreen> {
       final data = await ApiService.getMascota(widget.usuarioId);
       setState(() {
         _nombre = data['nombre'] ?? '';
-        _xp = data['xp'] ?? 0;
         _nivel = data['nivel'] ?? 1;
         _xpEnNivelActual = data['xpEnNivelActual'] ?? 0;
         _xpParaSiguienteNivel = data['xpParaSiguienteNivel'] ?? 20;
