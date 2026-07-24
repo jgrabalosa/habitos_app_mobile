@@ -10,7 +10,8 @@ class HabitoScreen extends StatefulWidget {
   final int usuarioId;
   final Habito? habito;
   final List<dynamic>? categoriasIniciales;
-  const HabitoScreen({super.key, required this.usuarioId, this.habito, this.categoriasIniciales});
+  final List<String>? nombresHabitosExistentes;
+  const HabitoScreen({super.key, required this.usuarioId, this.habito, this.categoriasIniciales, this.nombresHabitosExistentes});
 
   @override
   State<HabitoScreen> createState() => _HabitoScreenState();
@@ -18,14 +19,13 @@ class HabitoScreen extends StatefulWidget {
 
 class _HabitoScreenState extends State<HabitoScreen> {
   static const List<Map<String, dynamic>> _plantillas = [
-    {'emoji': '💧', 'nombre': 'Beber agua', 'frecuencia': 'DIARIO', 'meta': 4},
-    {'emoji': '📖', 'nombre': 'Leer 20 min', 'frecuencia': 'DIARIO', 'meta': 1},
-    {'emoji': '🏃', 'nombre': 'Ejercicio', 'frecuencia': 'SEMANAL', 'meta': 3, 'dias': '2,4,6'},
-    {'emoji': '🧘', 'nombre': 'Meditar', 'frecuencia': 'DIARIO', 'meta': 1},
-    {'emoji': '😴', 'nombre': 'Dormir 8h', 'frecuencia': 'DIARIO', 'meta': 1},
-    {'emoji': '🚶', 'nombre': 'Caminar', 'frecuencia': 'DIARIO', 'meta': 1},
-    {'emoji': '📓', 'nombre': 'Escribir diario', 'frecuencia': 'DIARIO', 'meta': 1},
-    {'emoji': '🧹', 'nombre': 'Limpiar casa', 'frecuencia': 'SEMANAL', 'meta': 2},
+    {'emoji': '💧', 'nombre': 'Beber agua', 'frecuencia': 'DIARIO', 'meta': 4, 'categoria': 'Salud'},
+    {'emoji': '📖', 'nombre': 'Leer 20 min', 'frecuencia': 'DIARIO', 'meta': 1, 'categoria': 'Estudio'},
+    {'emoji': '🏃', 'nombre': 'Ejercicio', 'frecuencia': 'SEMANAL', 'meta': 3, 'dias': '2,4,6', 'categoria': 'Deporte'},
+    {'emoji': '🧘', 'nombre': 'Meditar', 'frecuencia': 'DIARIO', 'meta': 1, 'categoria': 'Mente'},
+    {'emoji': '😴', 'nombre': 'Dormir 8h', 'frecuencia': 'DIARIO', 'meta': 1, 'categoria': 'Sueño'},
+    {'emoji': '🚶', 'nombre': 'Caminar', 'frecuencia': 'DIARIO', 'meta': 1, 'categoria': 'Salud'},
+    {'emoji': '📓', 'nombre': 'Escribir diario', 'frecuencia': 'DIARIO', 'meta': 1, 'categoria': 'Mente'},
   ];
 
   // Etiquetas L-D en orden ISO (1=lunes .. 7=domingo)
@@ -91,8 +91,39 @@ class _HabitoScreenState extends State<HabitoScreen> {
       _diasSeleccionados = plantilla['dias'] != null
           ? (plantilla['dias'] as String).split(',').map(int.parse).toSet()
           : {};
+
+      final categoriaNombre = plantilla['categoria'] as String?;
+      if (categoriaNombre != null) {
+        final match = _categorias.firstWhere(
+          (c) => c['nombre'] == categoriaNombre,
+          orElse: () => null,
+        );
+        if (match != null) {
+          _categoriaId = match['categoriaId'];
+        }
+      }
     });
   }
+
+  String _normalizar(String s) => s
+      .toLowerCase()
+      .trim()
+      .replaceAll(RegExp(r'[áàä]'), 'a')
+      .replaceAll(RegExp(r'[éèë]'), 'e')
+      .replaceAll(RegExp(r'[íìï]'), 'i')
+      .replaceAll(RegExp(r'[óòö]'), 'o')
+      .replaceAll(RegExp(r'[úùü]'), 'u');
+
+  bool _yaExiste(String nombrePlantilla) {
+    final normalizada = _normalizar(nombrePlantilla);
+    return (widget.nombresHabitosExistentes ?? []).any((nombre) {
+      final n = _normalizar(nombre);
+      return n == normalizada || n.contains(normalizada) || normalizada.contains(n);
+    });
+  }
+
+  List<Map<String, dynamic>> get _plantillasDisponibles =>
+      _plantillas.where((p) => !_yaExiste(p['nombre'])).toList();
 
   void _alternarDia(int dia) {
     setState(() {
@@ -295,18 +326,18 @@ class _HabitoScreenState extends State<HabitoScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (!_esEdicion) ...[
-                  const Text('Empieza rápido (opcional)',
+                if (!_esEdicion && _plantillasDisponibles.isNotEmpty) ...[
+                  const Text('Hábitos recomendados (opcional)',
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                   const SizedBox(height: 8),
                   SizedBox(
                     height: 56,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
-                      itemCount: _plantillas.length,
+                      itemCount: _plantillasDisponibles.length,
                       separatorBuilder: (_, __) => const SizedBox(width: 8),
                       itemBuilder: (context, i) {
-                        final p = _plantillas[i];
+                        final p = _plantillasDisponibles[i];
                         return ActionChip(
                           avatar: Text(p['emoji'], style: const TextStyle(fontSize: 16)),
                           label: Text(p['nombre']),
