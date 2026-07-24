@@ -178,7 +178,7 @@ class _TiendaScreenState extends State<TiendaScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: t.primary.withOpacity(0.15),
+                      color: t.primary.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text('Equipado',

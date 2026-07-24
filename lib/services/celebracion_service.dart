@@ -30,6 +30,7 @@ static Future<void> _procesarCola() async {
       final codigo = _cola.removeAt(0);
       final context = navigatorKey.currentContext;
       if (context == null) continue;
+      if (!context.mounted) return;
       SonidoService.reproducir('logro');
 
       await showGeneralDialog(

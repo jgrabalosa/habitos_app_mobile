@@ -38,7 +38,7 @@ class _HabitosScreenState extends State<HabitosScreen> {
       ]);
       setState(() {
         _resumen = resultados[0] as List<Map<String, dynamic>>;
-        _categorias = resultados[1] as List<dynamic>;
+        _categorias = resultados[1];
         _loading = false;
       });
     } catch (e) {
@@ -150,7 +150,7 @@ class _HabitosScreenState extends State<HabitosScreen> {
       label: Text(label),
       selected: selected,
       onSelected: (_) => onTap(),
-      selectedColor: t.primary.withOpacity(0.2),
+      selectedColor: t.primary.withValues(alpha: 0.2),
       labelStyle: TextStyle(
           color: selected ? t.primary : t.textMuted, fontWeight: FontWeight.w600),
     );
@@ -193,7 +193,7 @@ class _HabitosScreenState extends State<HabitosScreen> {
           trailing: Switch(
             value: habito.activo,
             onChanged: (v) => v ? _activar(habito.habitoId) : _desactivar(habito.habitoId),
-            activeColor: t.primary,
+            activeThumbColor: t.primary,
           ),
         ),
       ),

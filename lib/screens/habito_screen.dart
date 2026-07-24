@@ -335,7 +335,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: _plantillasDisponibles.length,
-                      separatorBuilder: (_, __) => const SizedBox(width: 8),
+                      separatorBuilder: (_, _) => const SizedBox(width: 8),
                       itemBuilder: (context, i) {
                         final p = _plantillasDisponibles[i];
                         return ActionChip(
@@ -374,7 +374,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                         child: LinearProgressIndicator(),
                       )
                     : DropdownButtonFormField<int?>(
-                        value: _categoriaId,
+                        initialValue: _categoriaId,
                         decoration: const InputDecoration(
                           labelText: 'Categoría (opcional)',
                           border: OutlineInputBorder(),
@@ -393,7 +393,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                       ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: _frecuencia,
+                  initialValue: _frecuencia,
                   decoration: const InputDecoration(
                     labelText: 'Frecuencia',
                     border: OutlineInputBorder(),

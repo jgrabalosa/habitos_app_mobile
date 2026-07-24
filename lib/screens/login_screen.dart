@@ -4,7 +4,6 @@ import '../theme/app_theme.dart';
 import '../services/api_service.dart';
 import 'home_shell.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'habito_screen.dart';
 import '../services/analytics_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'recuperacion_screen.dart';
@@ -39,9 +38,8 @@ class _LoginScreenState extends State<LoginScreen> {
           await ApiService.actualizarFcmToken(usuarioId, token);
         }
       }
-    } catch (e) {
+    } catch (_) {
       // No bloqueamos el login si falla el registro de notificaciones
-      print('Error al registrar notificaciones: $e');
     }
   }
 

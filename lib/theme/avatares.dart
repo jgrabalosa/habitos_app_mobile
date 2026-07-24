@@ -57,7 +57,7 @@ class AvatarUsuario extends StatelessWidget {
         if (info != null) {
           return CircleAvatar(
             radius: radius,
-            backgroundColor: info.color.withOpacity(0.25),
+            backgroundColor: info.color.withValues(alpha: 0.25),
             child: Text(info.emoji, style: TextStyle(fontSize: radius)),
           );
         }

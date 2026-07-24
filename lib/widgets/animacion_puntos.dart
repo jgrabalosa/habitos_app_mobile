@@ -106,7 +106,7 @@ class _PuntosFlotantesState extends State<_PuntosFlotantes>
                         fontWeight: FontWeight.w800,
                         shadows: [
                           Shadow(
-                            color: Colors.black.withOpacity(0.25),
+                            color: Colors.black.withValues(alpha: 0.25),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),

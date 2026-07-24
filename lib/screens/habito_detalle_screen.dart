@@ -245,7 +245,7 @@ title: Hero(
     Color colorDia(int veces) {
       if (veces == 0) return t.surface2;
       if (!conNiveles) return t.primary;
-      if (veces < meta) return t.primary.withOpacity(0.35);
+      if (veces < meta) return t.primary.withValues(alpha: 0.35);
       if (veces == meta) return t.primary;
       return AppColors.primaryDark; // superada
     }
@@ -335,7 +335,7 @@ title: Hero(
                       style: TextStyle(fontSize: 10, color: t.textMuted)),
                   ...[
                     t.surface2,
-                    if (conNiveles) t.primary.withOpacity(0.35),
+                    if (conNiveles) t.primary.withValues(alpha: 0.35),
                     t.primary,
                     if (conNiveles) AppColors.primaryDark,
                   ].map((c) => Container(
@@ -418,7 +418,7 @@ title: Hero(
                                     size: 14,
                                     color: i < (r['valoracion'] as int)
                                         ? Colors.amber
-                                        : Colors.grey.withOpacity(0.3),
+                                        : Colors.grey.withValues(alpha: 0.3),
                                   )),
                                 ),
                               if (r['nota'] != null && r['nota'].toString().isNotEmpty)
