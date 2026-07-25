@@ -95,7 +95,7 @@ Future<void> _registro() async {
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const HomeShell()),
+          MaterialPageRoute(builder: (_) => const HomeShell(mostrarOnboarding: true)),
         );
       }
     } catch (e) {
@@ -109,7 +109,7 @@ Future<void> _registro() async {
   Future<void> _loginConGoogle() async {
     setState(() { _loading = true; _error = null; });
     try {
-      await ApiService.loginConGoogle();
+      final esNuevo = await ApiService.loginConGoogle();
       final usuarioLocal = await ApiService.getUsuarioLocal();
       if (usuarioLocal != null && usuarioLocal['usuarioId'] != null) {
         await _registrarNotificaciones(usuarioLocal['usuarioId']);
@@ -117,7 +117,7 @@ Future<void> _registro() async {
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const HomeShell()),
+          MaterialPageRoute(builder: (_) => HomeShell(mostrarOnboarding: esNuevo)),
         );
       }
     } catch (e) {

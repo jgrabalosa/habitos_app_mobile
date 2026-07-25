@@ -11,9 +11,12 @@ import 'login_screen.dart';
 import 'habitos_screen.dart';
 import 'mascota_screen.dart';
 import '../theme/avatares.dart';
+import '../widgets/selector_avatar_gratis.dart';
+import '../widgets/onboarding_overlay.dart';
 
 class HomeShell extends StatefulWidget {
-  const HomeShell({super.key});
+  final bool mostrarOnboarding;
+  const HomeShell({super.key, this.mostrarOnboarding = false});
 
   @override
   State<HomeShell> createState() => _HomeShellState();
@@ -71,6 +74,20 @@ class _HomeShellState extends State<HomeShell> {
       _nombre = usuario['nombre'] ?? '';
       _loading = false;
     });
+
+    if (widget.mostrarOnboarding) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _comprobarOnboarding());
+    }
+  }
+
+  // Salvaguarda: en circunstancias normales un alta nueva siempre tiene 0
+  // avatares, pero si por lo que sea ya tiene alguno, no mostramos nada.
+  Future<void> _comprobarOnboarding() async {
+    if (!mounted) return;
+    final tieneAvatar = await SelectorAvatarGratis.tieneAlgunAvatar(_usuarioId);
+    if (!tieneAvatar && mounted) {
+      OnboardingOverlay.mostrar(context, usuarioId: _usuarioId);
+    }
   }
 
   Future<void> _logout() async {

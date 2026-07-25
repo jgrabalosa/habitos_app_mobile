@@ -5,6 +5,7 @@ import '../theme/paletas_premium.dart';
 import '../theme/avatares.dart';
 import 'tienda_screen.dart';
 import '../widgets/skeleton.dart';
+import '../widgets/selector_avatar_gratis.dart';
 
 class _Seccion {
   final String categoriaBackend;
@@ -96,22 +97,6 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
     }
   }
 
-  // Regla puente: elegir el primer avatar gratis (una sola vez, hasta que
-  // exista la pantalla de Bienvenida de Fase 4, que reutilizará esta lógica).
-  Future<void> _elegirAvatarGratis(int productoId, String? codigo) async {
-    setState(() => _procesando = productoId);
-    try {
-      await ApiService.otorgarProducto(widget.usuarioId, productoId);
-      await ApiService.equiparProducto(widget.usuarioId, productoId);
-      await guardarAvatarEquipado(codigo);
-      await _cargarDatos();
-    } catch (e) {
-      _mostrarError(e);
-    } finally {
-      if (mounted) setState(() => _procesando = null);
-    }
-  }
-
   void _mostrarError(Object e) {
     final mensaje = e.toString().replaceFirst('Exception: ', '');
     if (mounted) {
@@ -175,7 +160,6 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
   Widget _seccionWidget(_Seccion seccion, List<dynamic> productos, TokensContextuales t) {
     final algunoPoseido = productos.any((p) => _inventario.containsKey(p['productoId']));
     final esAvatarSinElegir = seccion.categoriaBackend == 'Avatar' && !algunoPoseido;
-    final itemCount = productos.length;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -185,30 +169,31 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
           Text('${seccion.emoji} ${seccion.titulo}',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: t.text)),
           const SizedBox(height: 8),
-          if (esAvatarSinElegir)
+          if (esAvatarSinElegir) ...[
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Text('Elige tu primer avatar gratis 👇',
                   style: TextStyle(color: t.primary, fontWeight: FontWeight.w600)),
-            )
-          else if (!algunoPoseido)
-            _ganchoTienda(seccion.titulo, t),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              childAspectRatio: 0.85,
             ),
-            itemCount: itemCount,
-            itemBuilder: (context, i) {
-              return esAvatarSinElegir
-                  ? _tarjetaAvatarGratis(productos[i], t)
-                  : _tarjetaProducto(productos[i], t);
-            },
-          ),
+            SelectorAvatarGratis(
+              usuarioId: widget.usuarioId,
+              onElegido: (_) => _cargarDatos(),
+            ),
+          ] else ...[
+            if (!algunoPoseido) _ganchoTienda(seccion.titulo, t),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+                childAspectRatio: 0.85,
+              ),
+              itemCount: productos.length,
+              itemBuilder: (context, i) => _tarjetaProducto(productos[i], t),
+            ),
+          ],
         ],
       ),
     );
@@ -221,43 +206,6 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
         onTap: _irATienda,
         child: Text('Descubre $titulo en la tienda →',
             style: TextStyle(color: t.primary, fontWeight: FontWeight.w600)),
-      ),
-    );
-  }
-
-  // Tarjeta especial mientras el usuario no tiene ningún avatar: tap = elegir
-  // ese como el gratis (no hay candado ni enlace a tienda todavía).
-  Widget _tarjetaAvatarGratis(dynamic producto, TokensContextuales t) {
-    final productoId = producto['productoId'] as int;
-    final codigo = producto['codigo'] as String?;
-    final info = codigo != null ? catalogoAvatares[codigo] : null;
-    final procesandoEste = _procesando == productoId;
-
-    return GestureDetector(
-      onTap: procesandoEste ? null : () => _elegirAvatarGratis(productoId, codigo),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (info != null)
-                CircleAvatar(radius: 28, backgroundColor: info.color.withValues(alpha: 0.25),
-                    child: Text(info.emoji, style: const TextStyle(fontSize: 28)))
-              else
-                CircleAvatar(radius: 28, backgroundColor: t.surface2),
-              const SizedBox(height: 8),
-              Text(producto['nombre'], maxLines: 1, overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
-              const SizedBox(height: 4),
-              if (procesandoEste)
-                const SizedBox(width: 16, height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2))
-              else
-                Text('Elegir gratis', style: TextStyle(color: t.primary, fontSize: 12)),
-            ],
-          ),
-        ),
       ),
     );
   }

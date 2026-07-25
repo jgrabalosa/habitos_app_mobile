@@ -619,13 +619,15 @@ static Future<List<String>> crearHabito(String nombre, String descripcion,
       throw Exception('Error al eliminar el hábito');
     }
   }
-  static Future<void> loginConGoogle() async {
+  // Devuelve true si la cuenta se acaba de crear en este login (para
+  // disparar el mini-onboarding), false si ya existía o si se canceló.
+  static Future<bool> loginConGoogle() async {
   final GoogleSignIn googleSignIn = GoogleSignIn(
     serverClientId: '177339814167-fdtmn2i1s6aeg1agrqtikq066opib8ce.apps.googleusercontent.com',
   );
 
   final GoogleSignInAccount? account = await googleSignIn.signIn();
-  if (account == null) return;
+  if (account == null) return false;
 
   final GoogleSignInAuthentication auth = await account.authentication;
   final String? idToken = auth.idToken;
@@ -641,6 +643,7 @@ static Future<List<String>> crearHabito(String nombre, String descripcion,
     final data = jsonDecode(response.body);
     await saveToken(data['token']);
     await saveUsuario(Usuario.fromJson(data));
+    return data['esNuevo'] ?? false;
   } else {
     throw Exception(response.body);
   }
