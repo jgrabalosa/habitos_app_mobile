@@ -55,26 +55,36 @@ class _OnboardingContentState extends State<_OnboardingContent> {
       canPop: false,
       child: SafeArea(
         child: Center(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 24),
-            padding: const EdgeInsets.all(28),
-            decoration: BoxDecoration(
-              color: t.surface,
-              borderRadius: BorderRadius.circular(AppRadius.xl),
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.25),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8)),
-              ],
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.sizeOf(context).height * 0.85,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _indicadorProgreso(t),
-                const SizedBox(height: 20),
-                _contenidoPaso(t),
-              ],
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.all(28),
+              decoration: BoxDecoration(
+                color: t.surface,
+                borderRadius: BorderRadius.circular(AppRadius.xl),
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.25),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8)),
+                ],
+              ),
+              // SingleChildScrollView se ajusta al tamaño real del contenido
+              // (como antes) mientras quepa en el maxHeight de arriba; solo si
+              // no cabe, hace scroll en vez de desbordar.
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _indicadorProgreso(t),
+                    const SizedBox(height: 20),
+                    _contenidoPaso(t),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
