@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/selector_preferencias.dart';
 import 'login_screen.dart';
 
 class PerfilScreen extends StatefulWidget {
@@ -197,6 +198,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      SelectorPreferencias(usuarioId: widget.usuarioId),
+                      const SizedBox(height: 8),
                       TextFormField(
                         controller: _nombreController,
                         textCapitalization: TextCapitalization.words,

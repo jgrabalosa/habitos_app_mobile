@@ -54,5 +54,11 @@
   "prodAvatarBuho": "Coruja",
   "prodAvatarPanda": "Panda",
   "prodAvatarTortuga": "Tartaruga",
-  "prodComidaBasica": "Comida"
+  "prodComidaBasica": "Comida",
+  "preferenciasSubtitulo": "Idioma e fuso horário",
+  "cambiarZona": "Alterar fuso horário",
+  "buscarZona": "Procurar fuso",
+  "sinResultados": "Sem resultados",
+  "preferenciasGuardadas": "Preferências atualizadas",
+  "errorGuardar": "Não foi possível guardar. Tenta novamente."
 }

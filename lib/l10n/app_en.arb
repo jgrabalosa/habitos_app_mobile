@@ -54,5 +54,11 @@
   "prodAvatarBuho": "Owl",
   "prodAvatarPanda": "Panda",
   "prodAvatarTortuga": "Turtle",
-  "prodComidaBasica": "Food"
+  "prodComidaBasica": "Food",
+  "preferenciasSubtitulo": "Language and time zone",
+  "cambiarZona": "Change time zone",
+  "buscarZona": "Search zone",
+  "sinResultados": "No results",
+  "preferenciasGuardadas": "Preferences updated",
+  "errorGuardar": "Couldn''t save. Please try again."
 }

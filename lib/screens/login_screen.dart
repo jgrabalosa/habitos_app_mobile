@@ -5,6 +5,8 @@ import '../services/api_service.dart';
 import 'home_shell.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '../services/analytics_service.dart';
+import '../services/idioma_service.dart';
+import '../services/zona_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'recuperacion_screen.dart';
 
@@ -43,6 +45,21 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  /// Tras iniciar sesion, el backend manda la ultima palabra sobre las
+  /// preferencias (puede haberlas cambiado desde otro dispositivo). En un
+  /// alta nueva aun no hay nada guardado, asi que se propone la zona del
+  /// dispositivo.
+  Future<void> _sincronizarPreferencias(int usuarioId) async {
+    try {
+      final prefs = await ApiService.getPreferencias(usuarioId);
+      await IdiomaService.sincronizarDesdeBackend(prefs['idioma']);
+      await ZonaService.sincronizarDesdeBackend(prefs['zonaHoraria']);
+    } catch (_) {
+      // Sin conexion se sigue con lo que haya en local
+    }
+    await ZonaService.inicializarSiHaceFalta(usuarioId: usuarioId);
+  }
+
   // ── Login ──────────────────────────────────────────────
   Future<void> _login() async {
     setState(() { _loading = true; _error = null; });
@@ -55,6 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await ApiService.saveUsuario(usuario);
       await AnalyticsService.login(usuario.usuarioId);
       await _registrarNotificaciones(usuario.usuarioId);
+      await _sincronizarPreferencias(usuario.usuarioId);
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -91,6 +109,7 @@ Future<void> _registro() async {
       await ApiService.saveUsuario(usuario);
       await AnalyticsService.registro(usuario.usuarioId);
       await _registrarNotificaciones(usuario.usuarioId);
+      await _sincronizarPreferencias(usuario.usuarioId);
 
       if (mounted) {
         Navigator.pushReplacement(
@@ -113,6 +132,7 @@ Future<void> _registro() async {
       final usuarioLocal = await ApiService.getUsuarioLocal();
       if (usuarioLocal != null && usuarioLocal['usuarioId'] != null) {
         await _registrarNotificaciones(usuarioLocal['usuarioId']);
+        await _sincronizarPreferencias(usuarioLocal['usuarioId']);
       }
       if (mounted) {
         Navigator.pushReplacement(
