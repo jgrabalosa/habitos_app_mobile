@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
@@ -48,6 +49,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
   }
 
   Future<void> _guardar() async {
+    final l = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _guardando = true);
@@ -60,13 +62,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Perfil actualizado ✅')),
+          SnackBar(content: Text(l.perfilActualizado)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al guardar: $e')),
+          SnackBar(content: Text(l.perfilErrorGuardar)),
         );
       }
     } finally {
@@ -75,6 +77,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
   }
 
   Future<void> _cambiarContrasena() async {
+    final l = AppLocalizations.of(context)!;
     if (!_formContrasenaKey.currentState!.validate()) return;
 
     setState(() => _cambiandoContrasena = true);
@@ -88,13 +91,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
         _contrasenaActualController.clear();
         _contrasenaNuevaController.clear();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Contraseña actualizada ✅')),
+          SnackBar(content: Text(l.perfilPassActualizada)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text(l.perfilErrorPass)),
         );
       }
     } finally {
@@ -103,22 +106,21 @@ class _PerfilScreenState extends State<PerfilScreen> {
   }
 
   Future<void> _confirmarEliminarCuenta() async {
+    final l = AppLocalizations.of(context)!;
     // ── Primera confirmación ──
     final primera = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('¿Eliminar tu cuenta?'),
-        content: const Text(
-            'Se borrarán para siempre todos tus hábitos, registros, '
-            'rachas, logros y puntos.\n\nEsta acción no se puede deshacer.'),
+        title: Text(l.perfilEliminarTitulo),
+        content: Text(l.perfilEliminarCuerpo),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
+            child: Text(l.cancelar),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Continuar',
+            child: Text(l.comunContinuar,
                 style: TextStyle(color: Colors.red)),
           ),
         ],
@@ -130,19 +132,17 @@ class _PerfilScreenState extends State<PerfilScreen> {
     final segunda = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Última confirmación'),
-        content: const Text(
-            '¿Estás completamente seguro? Tu cuenta y todos tus datos '
-            'se eliminarán de forma definitiva.'),
+        title: Text(l.perfilUltimaConfirmacion),
+        content: Text(l.perfilUltimaConfirmacionCuerpo),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('No, volver'),
+            child: Text(l.perfilNoVolver),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Sí, eliminar mi cuenta'),
+            child: Text(l.perfilSiEliminar),
           ),
         ],
       ),
@@ -163,7 +163,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
       if (mounted) {
         setState(() => _eliminando = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al eliminar la cuenta: $e')),
+          SnackBar(content: Text(l.perfilErrorEliminar)),
         );
       }
     }
@@ -181,11 +181,12 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final t = tokens(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mi cuenta',
+        title: Text(l.perfilTitulo,
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
       ),
       body: _cargando
@@ -203,23 +204,23 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       TextFormField(
                         controller: _nombreController,
                         textCapitalization: TextCapitalization.words,
-                        decoration: const InputDecoration(
-                          labelText: 'Nombre',
-                          prefixIcon: Icon(LucideIcons.userRound),
+                        decoration: InputDecoration(
+                          labelText: l.perfilLabelNombre,
+                          prefixIcon: const Icon(LucideIcons.userRound),
                         ),
                         validator: (v) => (v == null || v.trim().isEmpty)
-                            ? 'El nombre no puede estar vacío'
+                            ? l.perfilNombreVacio
                             : null,
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _usernameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Nombre de usuario',
-                          prefixIcon: Icon(LucideIcons.atSign),
+                        decoration: InputDecoration(
+                          labelText: l.perfilLabelUsuario,
+                          prefixIcon: const Icon(LucideIcons.atSign),
                         ),
                         validator: (v) => (v == null || v.trim().isEmpty)
-                            ? 'El nombre de usuario no puede estar vacío'
+                            ? l.perfilUsuarioVacio
                             : null,
                       ),
                       const SizedBox(height: 16),
@@ -227,18 +228,18 @@ class _PerfilScreenState extends State<PerfilScreen> {
                         controller: _emailController,
                         enabled: !_esGoogle,
                         decoration: InputDecoration(
-                          labelText: 'Email',
+                          labelText: l.perfilLabelEmail,
                           prefixIcon: const Icon(LucideIcons.mail),
                           helperText: _esGoogle
-                              ? 'Gestionado por tu cuenta de Google'
+                              ? l.perfilGestionadoGoogle
                               : null,
                         ),
                         validator: (v) {
                           if (v == null || v.trim().isEmpty) {
-                            return 'El email no puede estar vacío';
+                            return l.perfilEmailVacio;
                           }
                           if (!v.contains('@') || !v.contains('.')) {
-                            return 'Introduce un email válido';
+                            return l.perfilEmailInvalido;
                           }
                           return null;
                         },
@@ -253,7 +254,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                                 child:
                                     CircularProgressIndicator(strokeWidth: 2),
                               )
-                            : const Text('Guardar cambios'),
+                            : Text(l.perfilGuardarCambios),
                       ),
                       if (!_esGoogle) ...[
                         const SizedBox(height: 40),
@@ -276,12 +277,12 @@ class _PerfilScreenState extends State<PerfilScreen> {
                               TextFormField(
                                 controller: _contrasenaActualController,
                                 obscureText: !_verContrasenas,
-                                decoration: const InputDecoration(
-                                  labelText: 'Contraseña actual',
+                                decoration: InputDecoration(
+                                  labelText: l.perfilPassActual,
                                   prefixIcon: Icon(LucideIcons.lock),
                                 ),
                                 validator: (v) => (v == null || v.isEmpty)
-                                    ? 'Introduce tu contraseña actual'
+                                    ? l.perfilPassActualVacia
                                     : null,
                               ),
                               const SizedBox(height: 16),
@@ -289,7 +290,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                                 controller: _contrasenaNuevaController,
                                 obscureText: !_verContrasenas,
                                 decoration: InputDecoration(
-                                  labelText: 'Nueva contraseña',
+                                  labelText: l.perfilPassNueva,
                                   prefixIcon: const Icon(LucideIcons.keyRound),
                                   suffixIcon: IconButton(
                                     icon: Icon(_verContrasenas
@@ -301,10 +302,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
                                 ),
                                 validator: (v) {
                                   if (v == null || v.isEmpty) {
-                                    return 'Introduce la nueva contraseña';
+                                    return l.perfilPassNuevaVacia;
                                   }
                                   if (v.length < 6) {
-                                    return 'Mínimo 6 caracteres';
+                                    return l.perfilMinimo6;
                                   }
                                   return null;
                                 },
@@ -321,7 +322,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                                         child: CircularProgressIndicator(
                                             strokeWidth: 2),
                                       )
-                                    : const Text('Cambiar contraseña'),
+                                    : Text(l.perfilCambiarPass),
                               ),
                             ],
                           ),
@@ -330,9 +331,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       const SizedBox(height: 40),
                       const Divider(),
                       const SizedBox(height: 16),
-                      const Text(
-                        'Zona de peligro',
-                        style: TextStyle(
+                      Text(
+                        l.perfilZonaPeligro,
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.red,
@@ -354,7 +355,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                                     strokeWidth: 2, color: Colors.red),
                               )
                             : const Icon(LucideIcons.trash2),
-                        label: const Text('Eliminar mi cuenta'),
+                        label: Text(l.perfilEliminarCuenta),
                       ),
                     ],
                   ),
