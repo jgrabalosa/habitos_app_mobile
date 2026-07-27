@@ -9,23 +9,48 @@ import 'tienda_screen.dart';
 import '../widgets/skeleton.dart';
 import '../widgets/selector_avatar_gratis.dart';
 
-class _Seccion {
-  final String categoriaBackend;
+class SeccionColeccion {
+  /// Una seccion puede recoger varias categorias del backend: alli
+  /// 'Protección' y 'Consumible' son etiquetas distintas, pero de cara al
+  /// usuario son lo mismo y van juntas.
+  final List<String> categoriasBackend;
   final String emoji;
   /// Clave de traduccion resuelta al pintar. Las categorias que llegan del
   /// backend y no conocemos caen a su propio texto crudo.
   final String Function(AppLocalizations)? _titulo;
-  const _Seccion(this.categoriaBackend, this.emoji, [this._titulo]);
+  const SeccionColeccion(this.categoriasBackend, this.emoji, [this._titulo]);
 
-  String titulo(AppLocalizations l) => _titulo?.call(l) ?? categoriaBackend;
+  String titulo(AppLocalizations l) => _titulo?.call(l) ?? categoriasBackend.first;
 }
 
 // Orden fijo de esta app — el motor (categoria en backend) sigue siendo generico.
-final _seccionesConocidas = [
-  _Seccion('Avatar', '🧑', (l) => l.colSeccionAvatares),
-  _Seccion('Protección', '🛡️', (l) => l.colSeccionConsumibles),
-  _Seccion('Tema', '🎨', (l) => l.colSeccionTemas),
+final seccionesConocidas = [
+  SeccionColeccion(['Avatar'], '🧑', (l) => l.colSeccionAvatares),
+  SeccionColeccion(['Protección', 'Consumible'], '🛡️', (l) => l.colSeccionConsumibles),
+  SeccionColeccion(['Tema'], '🎨', (l) => l.colSeccionTemas),
 ];
+
+/// Reparte los productos ya agrupados por categoria de backend en las
+/// secciones de la pantalla, en el orden declarado arriba. Las categorias que
+/// no conoce ninguna seccion caen cada una en la suya, con su texto crudo.
+///
+/// Vive fuera del State para poder probarlo sin montar el widget.
+List<(SeccionColeccion, List<dynamic>)> repartirEnSecciones(
+    Map<String, List<dynamic>> agrupado) {
+  final conocidas = seccionesConocidas.expand((s) => s.categoriasBackend).toSet();
+
+  // Los productos de una seccion son la union de sus categorias, en el orden
+  // en que estan declaradas.
+  List<dynamic> productosDe(SeccionColeccion s) =>
+      [for (final c in s.categoriasBackend) ...?agrupado[c]];
+
+  return [
+    for (final seccion in seccionesConocidas)
+      if (productosDe(seccion).isNotEmpty) (seccion, productosDe(seccion)),
+    for (final categoria in agrupado.keys.where((c) => !conocidas.contains(c)))
+      (SeccionColeccion([categoria], '📦'), agrupado[categoria]!),
+  ];
+}
 
 class ColeccionScreen extends StatefulWidget {
   final int usuarioId;
@@ -146,29 +171,25 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
         ),
       );
     }
-    final agrupado = _agruparPorCategoria();
-    final categoriasConocidas = _seccionesConocidas.map((s) => s.categoriaBackend).toSet();
-    final categoriasExtra = agrupado.keys.where((c) => !categoriasConocidas.contains(c));
+    final seccionesConProductos = repartirEnSecciones(_agruparPorCategoria());
 
     return RefreshIndicator(
       onRefresh: _cargarDatos,
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          for (final seccion in _seccionesConocidas)
-            if (agrupado.containsKey(seccion.categoriaBackend))
-              _seccionWidget(l, seccion, agrupado[seccion.categoriaBackend]!, t),
-          for (final categoria in categoriasExtra)
-            _seccionWidget(l, _Seccion(categoria, '📦'), agrupado[categoria]!, t),
+          for (final (seccion, productos) in seccionesConProductos)
+            _seccionWidget(l, seccion, productos, t),
         ],
       ),
     );
   }
 
-  Widget _seccionWidget(AppLocalizations l, _Seccion seccion, List<dynamic> productos,
+  Widget _seccionWidget(AppLocalizations l, SeccionColeccion seccion, List<dynamic> productos,
       TokensContextuales t) {
     final algunoPoseido = productos.any((p) => _inventario.containsKey(p['productoId']));
-    final esAvatarSinElegir = seccion.categoriaBackend == 'Avatar' && !algunoPoseido;
+    final esAvatarSinElegir =
+        seccion.categoriasBackend.contains('Avatar') && !algunoPoseido;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
