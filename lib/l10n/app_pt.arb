@@ -136,5 +136,6 @@
   "detSemanalMeta": "Semanal · meta {n}/semana",
   "detSemanalDias": "Semanal · {dias}",
   "detProgresoDia": "{hechos}/{meta}",
-  "detLogrosDe": "{n} de {total} conquistas"
+  "detLogrosDe": "{n} de {total} conquistas",
+  "detVacioRegistro": "Completa este hábito e o registo ficará aqui."
 }

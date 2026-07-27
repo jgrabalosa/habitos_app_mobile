@@ -215,5 +215,6 @@
         "type": "int"
       }
     }
-  }
+  },
+  "detVacioRegistro": "Completa este hábito y aquí quedará el registro."
 }

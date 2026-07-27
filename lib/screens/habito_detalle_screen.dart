@@ -400,7 +400,7 @@ title: Hero(
                           style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: tokens(context).text)),
-                      Text('Completa este hábito y aquí quedará el registro.',
+                      Text(l.detVacioRegistro,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               fontSize: 12, color: tokens(context).textMuted)),

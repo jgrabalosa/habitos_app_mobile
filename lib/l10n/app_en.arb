@@ -136,5 +136,6 @@
   "detSemanalMeta": "Weekly · goal {n}/week",
   "detSemanalDias": "Weekly · {dias}",
   "detProgresoDia": "{hechos}/{meta}",
-  "detLogrosDe": "{n} of {total} achievements"
+  "detLogrosDe": "{n} of {total} achievements",
+  "detVacioRegistro": "Complete this habit and the entry will show up here."
 }
