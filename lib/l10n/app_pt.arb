@@ -230,5 +230,20 @@
   "colSeccionTemas": "Temas",
   "colEligeAvatar": "Escolha seu primeiro avatar grátis 👇",
   "colDescubre": "Descubra {seccion} na loja →",
-  "colError": "Não foi possível concluir a operação. Tente de novo."
+  "colError": "Não foi possível concluir a operação. Tente de novo.",
+  "obTitulo1": "Bem-vindo ao Norday! 🎉",
+  "obCuerpo1": "Cada hábito que você concluir dá pontos. Use-os para desbloquear avatares, temas e mais na loja.",
+  "obTitulo2": "Seu companheiro cresce com você 🐣",
+  "obCuerpo2": "Você tem um mascote que sobe de nível sempre que você conclui um hábito. Cuide dele e veja como evolui.",
+  "obTitulo3": "Escolha seu primeiro avatar, é grátis! 👇",
+  "obCuerpo3": "Você pode trocar quando quiser pela Coleção.",
+  "obSiguiente": "Avançar",
+  "valTitulo": "Avaliação",
+  "valEditar": "Editar avaliação",
+  "valComoTeSentiste": "Como você se sentiu?",
+  "valHintNota": "Adicione uma nota (opcional)",
+  "celLogroDesbloqueado": "Conquista desbloqueada!",
+  "celGenial": "Demais!",
+  "selElegirGratis": "Escolher grátis",
+  "selError": "Não foi possível escolher o avatar. Tente de novo."
 }

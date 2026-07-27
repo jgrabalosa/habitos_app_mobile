@@ -374,5 +374,20 @@
       }
     }
   },
-  "colError": "No se pudo completar la operación. Inténtalo de nuevo."
+  "colError": "No se pudo completar la operación. Inténtalo de nuevo.",
+  "obTitulo1": "¡Bienvenido a Norday! 🎉",
+  "obCuerpo1": "Cada hábito que completes te da puntos. Úsalos para desbloquear avatares, temas y más en la tienda.",
+  "obTitulo2": "Tu compañero crece contigo 🐣",
+  "obCuerpo2": "Tienes una mascota que sube de nivel cada vez que completas un hábito. Cuídala y mira cómo evoluciona.",
+  "obTitulo3": "Elige tu primer avatar, ¡es gratis! 👇",
+  "obCuerpo3": "Podrás cambiarlo cuando quieras desde la Colección.",
+  "obSiguiente": "Siguiente",
+  "valTitulo": "Valoración",
+  "valEditar": "Editar valoración",
+  "valComoTeSentiste": "¿Cómo te sentiste?",
+  "valHintNota": "Añade una nota (opcional)",
+  "celLogroDesbloqueado": "¡Logro desbloqueado!",
+  "celGenial": "¡Genial!",
+  "selElegirGratis": "Elegir gratis",
+  "selError": "No se pudo elegir el avatar. Inténtalo de nuevo."
 }

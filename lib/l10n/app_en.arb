@@ -230,5 +230,20 @@
   "colSeccionTemas": "Themes",
   "colEligeAvatar": "Pick your first free avatar 👇",
   "colDescubre": "Discover {seccion} in the shop →",
-  "colError": "Something went wrong. Please try again."
+  "colError": "Something went wrong. Please try again.",
+  "obTitulo1": "Welcome to Norday! 🎉",
+  "obCuerpo1": "Every habit you complete earns you points. Spend them on avatars, themes and more in the shop.",
+  "obTitulo2": "Your companion grows with you 🐣",
+  "obCuerpo2": "You have a pet that levels up every time you complete a habit. Take care of it and watch it evolve.",
+  "obTitulo3": "Pick your first avatar — it's free! 👇",
+  "obCuerpo3": "You can change it anytime from your Collection.",
+  "obSiguiente": "Next",
+  "valTitulo": "Rating",
+  "valEditar": "Edit rating",
+  "valComoTeSentiste": "How did it feel?",
+  "valHintNota": "Add a note (optional)",
+  "celLogroDesbloqueado": "Achievement unlocked!",
+  "celGenial": "Awesome!",
+  "selElegirGratis": "Choose for free",
+  "selError": "The avatar couldn't be selected. Please try again."
 }

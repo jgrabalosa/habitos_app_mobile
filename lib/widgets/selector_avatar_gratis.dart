@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../l10n/catalogos.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
@@ -52,6 +53,7 @@ class _SelectorAvatarGratisState extends State<SelectorAvatarGratis> {
   }
 
   Future<void> _elegir(int productoId, String? codigo) async {
+    final l = AppLocalizations.of(context)!;
     setState(() => _procesando = productoId);
     try {
       await ApiService.otorgarProducto(widget.usuarioId, productoId);
@@ -61,7 +63,7 @@ class _SelectorAvatarGratisState extends State<SelectorAvatarGratis> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+          SnackBar(content: Text(l.selError)),
         );
       }
     } finally {
@@ -72,6 +74,7 @@ class _SelectorAvatarGratisState extends State<SelectorAvatarGratis> {
   @override
   Widget build(BuildContext context) {
     final t = tokens(context);
+    final l = AppLocalizations.of(context)!;
 
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
@@ -121,7 +124,8 @@ class _SelectorAvatarGratisState extends State<SelectorAvatarGratis> {
                         height: 16,
                         child: CircularProgressIndicator(strokeWidth: 2))
                   else
-                    Text('Elegir gratis', style: TextStyle(color: t.primary, fontSize: 12)),
+                    Text(l.selElegirGratis,
+                        style: TextStyle(color: t.primary, fontSize: 12)),
                 ],
               ),
             ),

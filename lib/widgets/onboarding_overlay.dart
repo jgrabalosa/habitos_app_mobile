@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:lottie/lottie.dart';
 import '../theme/app_theme.dart';
@@ -50,6 +51,7 @@ class _OnboardingContentState extends State<_OnboardingContent> {
   @override
   Widget build(BuildContext context) {
     final t = tokens(context);
+    final l = AppLocalizations.of(context)!;
 
     return PopScope(
       canPop: false,
@@ -83,7 +85,7 @@ class _OnboardingContentState extends State<_OnboardingContent> {
                     children: [
                       _indicadorProgreso(t),
                       const SizedBox(height: 20),
-                      _contenidoPaso(t),
+                      _contenidoPaso(l, t),
                     ],
                   ),
                 ),
@@ -114,40 +116,39 @@ class _OnboardingContentState extends State<_OnboardingContent> {
     );
   }
 
-  Widget _contenidoPaso(TokensContextuales t) {
+  Widget _contenidoPaso(AppLocalizations l, TokensContextuales t) {
     switch (_paso) {
       case 0:
-        return _paso1(t);
+        return _paso1(l, t);
       case 1:
-        return _paso2(t);
+        return _paso2(l, t);
       default:
-        return _paso3(t);
+        return _paso3(l, t);
     }
   }
 
-  Widget _paso1(TokensContextuales t) {
+  Widget _paso1(AppLocalizations l, TokensContextuales t) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(LucideIcons.coins, size: 56, color: t.points),
         const SizedBox(height: 16),
-        Text('¡Bienvenido a Norday! 🎉',
+        Text(l.obTitulo1,
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: t.text)),
         const SizedBox(height: 12),
         Text(
-          'Cada hábito que completes te da puntos. Úsalos para desbloquear '
-          'avatares, temas y más en la tienda.',
+          l.obCuerpo1,
           textAlign: TextAlign.center,
           style: TextStyle(color: t.textMuted),
         ),
         const SizedBox(height: 24),
-        _botonSiguiente(),
+        _botonSiguiente(l),
       ],
     );
   }
 
-  Widget _paso2(TokensContextuales t) {
+  Widget _paso2(AppLocalizations l, TokensContextuales t) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -157,32 +158,31 @@ class _OnboardingContentState extends State<_OnboardingContent> {
           child: Lottie.asset('assets/animations/mascota_placeholder.json'),
         ),
         const SizedBox(height: 16),
-        Text('Tu compañero crece contigo 🐣',
+        Text(l.obTitulo2,
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: t.text)),
         const SizedBox(height: 12),
         Text(
-          'Tienes una mascota que sube de nivel cada vez que completas un '
-          'hábito. Cuídala y mira cómo evoluciona.',
+          l.obCuerpo2,
           textAlign: TextAlign.center,
           style: TextStyle(color: t.textMuted),
         ),
         const SizedBox(height: 24),
-        _botonSiguiente(),
+        _botonSiguiente(l),
       ],
     );
   }
 
-  Widget _paso3(TokensContextuales t) {
+  Widget _paso3(AppLocalizations l, TokensContextuales t) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text('Elige tu primer avatar, ¡es gratis! 👇',
+        Text(l.obTitulo3,
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: t.text)),
         const SizedBox(height: 8),
         Text(
-          'Podrás cambiarlo cuando quieras desde la Colección.',
+          l.obCuerpo3,
           textAlign: TextAlign.center,
           style: TextStyle(color: t.textMuted),
         ),
@@ -192,12 +192,12 @@ class _OnboardingContentState extends State<_OnboardingContent> {
     );
   }
 
-  Widget _botonSiguiente() {
+  Widget _botonSiguiente(AppLocalizations l) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
         onPressed: _siguiente,
-        child: const Text('Siguiente'),
+        child: Text(l.obSiguiente),
       ),
     );
   }

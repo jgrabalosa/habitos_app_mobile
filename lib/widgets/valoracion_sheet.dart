@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../theme/app_theme.dart';
 
@@ -17,7 +18,7 @@ class ValoracionSheet {
     return showGeneralDialog<Map<String, dynamic>>(
       context: context,
       barrierDismissible: true,
-      barrierLabel: 'Valoración',
+      barrierLabel: AppLocalizations.of(context)!.valTitulo,
       barrierColor: Colors.black.withValues(alpha: 0.25),
       transitionDuration: const Duration(milliseconds: 250),
       pageBuilder: (context, _, _) => _ValoracionDialogContent(
@@ -84,6 +85,7 @@ class _ValoracionDialogContentState extends State<_ValoracionDialogContent> {
   @override
   Widget build(BuildContext context) {
     final t = tokens(context);
+    final l = AppLocalizations.of(context)!;
     final teclado = MediaQuery.of(context).viewInsets.bottom;
 
     return SafeArea(
@@ -112,7 +114,7 @@ class _ValoracionDialogContentState extends State<_ValoracionDialogContent> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    _esEdicion ? 'Editar valoración' : '¿Cómo te sentiste?',
+                    _esEdicion ? l.valEditar : l.valComoTeSentiste,
                     style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -151,8 +153,8 @@ class _ValoracionDialogContentState extends State<_ValoracionDialogContent> {
                     maxLines: 3,
                     maxLength: 500,
                     style: TextStyle(color: t.text),
-                    decoration: const InputDecoration(
-                      hintText: 'Añade una nota (opcional)',
+                    decoration: InputDecoration(
+                      hintText: l.valHintNota,
                       counterText: '',
                     ),
                   ),
@@ -161,7 +163,7 @@ class _ValoracionDialogContentState extends State<_ValoracionDialogContent> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: _guardar,
-                      child: const Text('Guardar'),
+                      child: Text(l.guardar),
                     ),
                   ),
                 ],

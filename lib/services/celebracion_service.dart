@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../l10n/catalogos.dart';
 import '../main.dart';
 import 'api_service.dart';
@@ -37,7 +38,7 @@ static Future<void> _procesarCola() async {
       await showGeneralDialog(
         context: context,
         barrierDismissible: true,
-        barrierLabel: 'Cerrar',
+        barrierLabel: AppLocalizations.of(context)!.comunCerrar,
         barrierColor: Colors.black54,
         transitionDuration: const Duration(milliseconds: 300),
         pageBuilder: (context, anim1, anim2) => const SizedBox.shrink(),
@@ -83,6 +84,7 @@ class _CelebracionDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Center(
       child: Material(
         color: Colors.transparent,
@@ -116,8 +118,8 @@ class _CelebracionDialog extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text('¡Logro desbloqueado!',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+              Text(l.celLogroDesbloqueado,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
                   textAlign: TextAlign.center),
               const SizedBox(height: 8),
               Text(Catalogos.logro(context, codigo, nombreBackend),
@@ -126,7 +128,7 @@ class _CelebracionDialog extends StatelessWidget {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('¡Genial!'),
+                child: Text(l.celGenial),
               ),
             ],
           ),
