@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
@@ -58,7 +59,7 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No se pudo cargar el hábito')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.detErrorCargar)),
         );
       }
     }
@@ -79,6 +80,7 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
    resizeToAvoidBottomInset: false,   
 appBar: AppBar(
@@ -98,7 +100,7 @@ title: Hero(
   actions: [
     IconButton(
       icon: const Icon(LucideIcons.pencil),
-      tooltip: 'Editar hábito',
+      tooltip: l.habTituloEditar,
       onPressed: _abrirEdicion,
     ),
   ],
@@ -106,7 +108,7 @@ title: Hero(
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _detalle == null
-              ? const Center(child: Text('Error al cargar el hábito'))
+              ? Center(child: Text(l.detErrorCargarDetalle))
               : ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
@@ -124,6 +126,7 @@ title: Hero(
   }
 
   Widget _buildLineaFrecuencia() {
+    final l = AppLocalizations.of(context)!;
     final t = tokens(context);
     final bool esDiario = _detalle!['frecuencia'] == 'DIARIO';
     final int meta = _detalle!['meta'] ?? 1;
@@ -133,16 +136,18 @@ title: Hero(
 
     final String texto;
     if (esDiario) {
-      texto = meta > 1 ? 'Diario · meta $meta/día' : 'Diario';
+      texto = meta > 1 ? l.detDiarioMeta(meta) : l.frecDiario;
     } else if (diasSemana != null && diasSemana.trim().isNotEmpty) {
       // Semanal con días planificados: "Semanal · M · J · S"
       final dias = diasSemana
           .split(',')
           .map((d) => etiquetas[int.parse(d.trim()) - 1])
           .join(' · ');
-      texto = 'Semanal · $dias';
+      texto = l.detSemanalDias(dias);
     } else {
-      texto = meta > 1 ? 'Semanal · meta $meta/semana' : 'Semanal · 1 día/semana';
+      texto = meta > 1
+          ? l.detSemanalMeta(meta)
+          : '${l.frecSemanal} · ${l.detSemanalUnDia}';
     }
 
     return Padding(
@@ -162,22 +167,24 @@ title: Hero(
   }
 
   Widget _buildStatCards() {
+    final l = AppLocalizations.of(context)!;
     return Row(
       children: [
-        _statCard('🔥', _detalle!['rachaActual'].toString(), 'Racha actual', Colors.blue),
+        _statCard('🔥', _detalle!['rachaActual'].toString(), l.detRachaActual, Colors.blue),
         const SizedBox(width: 8),
-        _statCard('🏆', _detalle!['rachaMaxima'].toString(), 'Mejor racha', Colors.green),
+        _statCard('🏆', _detalle!['rachaMaxima'].toString(), l.detMejorRacha, Colors.green),
         const SizedBox(width: 8),
-        _statCard('📊', _detalle!['totalCompletados'].toString(), 'Total', Colors.purple),
+        _statCard('📊', _detalle!['totalCompletados'].toString(), l.detTotal, Colors.purple),
         const SizedBox(width: 8),
         _statCard('📅',
             (_detalle!['completadosMesActual'] ?? 0).toString(),
-            _esMesActual ? 'Días este mes' : 'Días del mes', Colors.orange),
+            _esMesActual ? l.detDiasEsteMes : l.detDiasDelMes, Colors.orange),
       ],
     );
   }
 
   Widget _buildValoracionMedia() {
+    final l = AppLocalizations.of(context)!;
     final media = _detalle!['valoracionMedia'];
     if (media == null) return const SizedBox.shrink();
 
@@ -197,8 +204,8 @@ title: Hero(
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(width: 6),
-              const Text('Satisfacción media',
-                  style: TextStyle(fontSize: 12, color: Colors.grey)),
+              Text(l.detSatisfaccion,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey)),
             ],
           ),
         ),
@@ -229,6 +236,7 @@ title: Hero(
   }
 
   Widget _buildHeatmap() {
+    final l = AppLocalizations.of(context)!;
     final List<dynamic> heatmap = _detalle!['heatmap'];
     final int meta = _detalle!['meta'] ?? 1;
     final bool esDiario = _detalle!['frecuencia'] == 'DIARIO';
@@ -329,7 +337,7 @@ title: Hero(
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Menos ',
+                  Text('${l.detMenos} ',
                       style: TextStyle(fontSize: 10, color: t.textMuted)),
                   ...[
                     t.surface2,
@@ -345,7 +353,7 @@ title: Hero(
                           borderRadius: BorderRadius.circular(3),
                         ),
                       )),
-                  Text(' Más',
+                  Text(' ${l.detMas}',
                       style: TextStyle(fontSize: 10, color: t.textMuted)),
                 ],
               ),
@@ -360,12 +368,14 @@ title: Hero(
     final int veces = dia['veces'] ?? (dia['completado'] == true ? 1 : 0);
     final base = DateFormat.MMMMd(Localizations.localeOf(context).toLanguageTag())
         .format(fecha);
-    if (veces == 0) return '$base · Sin completar';
-    if (conNiveles) return '$base · $veces/$meta';
-    return '$base · Completado';
+    final l = AppLocalizations.of(context)!;
+    if (veces == 0) return '$base · ${l.detSinCompletar}';
+    if (conNiveles) return '$base · ${l.detProgresoDia(veces, meta)}';
+    return '$base · ${l.detCompletado}';
   }
 
   Widget _buildUltimosRegistros() {
+    final l = AppLocalizations.of(context)!;
     final List<dynamic> registros = _detalle!['ultimosRegistros'];
 
     return Card(
@@ -374,8 +384,8 @@ title: Hero(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Últimos registros',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(l.detUltimosRegistros,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 8),
             if (registros.isEmpty)
               Center(
@@ -386,7 +396,7 @@ title: Hero(
                       Icon(LucideIcons.calendarHeart,
                           size: 36, color: tokens(context).textMuted),
                       const SizedBox(height: 8),
-                      Text('Tu historia empieza hoy',
+                      Text(l.detVacioTitulo,
                           style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: tokens(context).text)),
@@ -472,7 +482,7 @@ title: Hero(
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No se pudo guardar. Inténtalo de nuevo.')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.errorGuardar)),
         );
       }
     }

@@ -153,5 +153,67 @@
         "type": "String"
       }
     }
+  },
+  "detErrorCargar": "No se pudo cargar el hábito",
+  "detErrorCargarDetalle": "Error al cargar el hábito",
+  "detRachaActual": "Racha actual",
+  "detMejorRacha": "Mejor racha",
+  "detTotal": "Total",
+  "detDiasEsteMes": "Días este mes",
+  "detDiasDelMes": "Días del mes",
+  "detSatisfaccion": "Satisfacción media",
+  "detMenos": "Menos",
+  "detMas": "Más",
+  "detSinCompletar": "Sin completar",
+  "detCompletado": "Completado",
+  "detUltimosRegistros": "Últimos registros",
+  "detVacioTitulo": "Tu historia empieza hoy",
+  "detVacioSubtitulo": "Completa este hábito y aquí verás tu progreso.",
+  "detSemanalUnDia": "1 día/semana",
+  "detDiarioMeta": "Diario · meta {n}/día",
+  "@detDiarioMeta": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "detSemanalMeta": "Semanal · meta {n}/semana",
+  "@detSemanalMeta": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "detSemanalDias": "Semanal · {dias}",
+  "@detSemanalDias": {
+    "placeholders": {
+      "dias": {
+        "type": "String"
+      }
+    }
+  },
+  "detProgresoDia": "{hechos}/{meta}",
+  "@detProgresoDia": {
+    "placeholders": {
+      "hechos": {
+        "type": "int"
+      },
+      "meta": {
+        "type": "int"
+      }
+    }
+  },
+  "detLogrosDe": "{n} de {total} logros",
+  "@detLogrosDe": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
   }
 }
