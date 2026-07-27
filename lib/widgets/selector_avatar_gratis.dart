@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/catalogos.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../theme/avatares.dart';
@@ -109,7 +110,7 @@ class _SelectorAvatarGratisState extends State<SelectorAvatarGratis> {
                   else
                     CircleAvatar(radius: 28, backgroundColor: t.surface2),
                   const SizedBox(height: 8),
-                  Text(producto['nombre'],
+                  Text(Catalogos.producto(context, producto['codigo'], producto['nombre']),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),

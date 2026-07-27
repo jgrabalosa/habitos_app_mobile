@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/catalogos.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../models/habito.dart';
@@ -134,7 +135,7 @@ class _HabitosScreenState extends State<HabitosScreen> {
             Padding(
               padding: const EdgeInsets.only(left: 8),
               child: _chip(
-                '${c['icono'] ?? ''} ${c['nombre']}'.trim(),
+                '${c['icono'] ?? ''} ${Catalogos.categoria(context, c['codigo'], c['nombre'])}'.trim(),
                 _filtroCategoriaId == c['categoriaId'],
                 () => setState(() => _filtroCategoriaId = c['categoriaId']),
                 t,
@@ -187,7 +188,7 @@ class _HabitosScreenState extends State<HabitosScreen> {
           title: Text(habito.nombre,
               style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
           subtitle: Text(
-            '${habito.categoriaNombre ?? 'Sin categoría'} · $total completados',
+            '${habito.categoriaNombre == null ? 'Sin categoría' : Catalogos.categoria(context, habito.categoriaCodigo, habito.categoriaNombre!)} · $total completados',
             style: TextStyle(color: t.textMuted, fontSize: 12),
           ),
           trailing: Switch(

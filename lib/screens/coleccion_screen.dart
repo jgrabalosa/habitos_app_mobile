@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/catalogos.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../theme/paletas_premium.dart';
@@ -241,7 +242,7 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
                   const SizedBox(width: 6),
                 ],
                 Expanded(
-                  child: Text(producto['nombre'],
+                  child: Text(Catalogos.producto(context, producto['codigo'], producto['nombre']),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
@@ -325,7 +326,7 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
                               child: Text(avatarInfo.emoji, style: const TextStyle(fontSize: 14)))),
                       const SizedBox(height: 6),
                     ],
-                    Text(producto['nombre'],
+                    Text(Catalogos.producto(context, producto['codigo'], producto['nombre']),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontWeight: FontWeight.bold, color: t.textMuted)),

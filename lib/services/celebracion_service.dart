@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/catalogos.dart';
 import '../main.dart';
 import 'api_service.dart';
 import 'package:lottie/lottie.dart';
@@ -50,7 +51,8 @@ static Future<void> _procesarCola() async {
                 child: Opacity(
                   opacity: anim.value.clamp(0.0, 1.0),
                   child: _CelebracionDialog(
-                    nombre: nombres[codigo] ?? codigo,
+                    codigo: codigo,
+                    nombreBackend: nombres[codigo] ?? codigo,
                   ),
                 ),
               ),
@@ -75,8 +77,9 @@ static Future<void> _procesarCola() async {
 }
 
 class _CelebracionDialog extends StatelessWidget {
-  final String nombre;
-  const _CelebracionDialog({required this.nombre});
+  final String codigo;
+  final String nombreBackend;
+  const _CelebracionDialog({required this.codigo, required this.nombreBackend});
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +120,7 @@ class _CelebracionDialog extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
                   textAlign: TextAlign.center),
               const SizedBox(height: 8),
-              Text(nombre,
+              Text(Catalogos.logro(context, codigo, nombreBackend),
                   style: const TextStyle(fontSize: 16),
                   textAlign: TextAlign.center),
               const SizedBox(height: 20),

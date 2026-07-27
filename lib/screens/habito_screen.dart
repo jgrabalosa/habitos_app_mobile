@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/catalogos.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../services/analytics_service.dart';
@@ -386,7 +387,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                           ),
                           ..._categorias.map((c) => DropdownMenuItem<int?>(
                                 value: c['categoriaId'],
-                                child: Text('${c['icono'] ?? ''} ${c['nombre']}'.trim()),
+                                child: Text('${c['icono'] ?? ''} ${Catalogos.categoria(context, c['codigo'], c['nombre'])}'.trim()),
                               )),
                         ],
                         onChanged: (v) => setState(() { _categoriaId = v; }),

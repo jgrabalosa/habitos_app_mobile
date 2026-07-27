@@ -8,6 +8,8 @@ class Habito {
   final int meta;
   final bool activo;
   final String? categoriaNombre;
+  /// Código del catálogo; null si la categoría la creó el usuario.
+  final String? categoriaCodigo;
   final int? categoriaId;
   final String? diasSemana; // "2,4,6" = martes, jueves, sábado (1=lunes..7=domingo)
   final bool recordatorioActivo;
@@ -21,6 +23,7 @@ class Habito {
     required this.meta,
     required this.activo,
     this.categoriaNombre,
+    this.categoriaCodigo,
     this.categoriaId,
     this.diasSemana,
     this.recordatorioActivo = true,
@@ -36,6 +39,7 @@ class Habito {
       meta: json['meta'] ?? 1,
       activo: json['activo'],
       categoriaNombre: json['tipo'] != null ? json['tipo']['nombre'] : null,
+      categoriaCodigo: json['tipo'] != null ? json['tipo']['codigo'] : null,
       categoriaId: json['tipo'] != null ? json['tipo']['categoriaId'] : null,
       diasSemana: json['diasSemana'],
       recordatorioActivo: json['recordatorioActivo'] ?? true,

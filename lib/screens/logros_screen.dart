@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/catalogos.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
@@ -134,7 +135,7 @@ class _LogrosScreenState extends State<LogrosScreen> {
         margin: const EdgeInsets.only(bottom: 8),
         child: ListTile(
           leading: Text(conseguido ? '🏆' : '🔒', style: const TextStyle(fontSize: 24)),
-          title: Text('$icono ${logro['nombre']}',
+          title: Text('$icono ${Catalogos.logro(context, logro['codigo'], logro['nombre'])}',
               style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
           subtitle: Text(
               '${logro['descripcion']}\n${logro['categoria']} · ${logro['nivel']}',

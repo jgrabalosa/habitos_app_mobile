@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/catalogos.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
@@ -171,7 +172,7 @@ class _TiendaScreenState extends State<TiendaScreen> {
                 Text(icono, style: const TextStyle(fontSize: 24)),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(producto['nombre'],
+                  child: Text(Catalogos.producto(context, producto['codigo'], producto['nombre']),
                       style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
                 ),
                 if (equipado)
