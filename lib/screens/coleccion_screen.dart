@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../l10n/catalogos.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
@@ -10,16 +11,20 @@ import '../widgets/selector_avatar_gratis.dart';
 
 class _Seccion {
   final String categoriaBackend;
-  final String titulo;
   final String emoji;
-  const _Seccion(this.categoriaBackend, this.titulo, this.emoji);
+  /// Clave de traduccion resuelta al pintar. Las categorias que llegan del
+  /// backend y no conocemos caen a su propio texto crudo.
+  final String Function(AppLocalizations)? _titulo;
+  const _Seccion(this.categoriaBackend, this.emoji, [this._titulo]);
+
+  String titulo(AppLocalizations l) => _titulo?.call(l) ?? categoriaBackend;
 }
 
-// Orden y nombres fijos de esta app — el motor (categoria en backend) sigue siendo genérico.
-const _seccionesConocidas = [
-  _Seccion('Avatar', 'Avatares', '🧑'),
-  _Seccion('Protección', 'Consumibles', '🛡️'),
-  _Seccion('Tema', 'Temas', '🎨'),
+// Orden fijo de esta app — el motor (categoria en backend) sigue siendo generico.
+final _seccionesConocidas = [
+  _Seccion('Avatar', '🧑', (l) => l.colSeccionAvatares),
+  _Seccion('Protección', '🛡️', (l) => l.colSeccionConsumibles),
+  _Seccion('Tema', '🎨', (l) => l.colSeccionTemas),
 ];
 
 class ColeccionScreen extends StatefulWidget {
@@ -99,9 +104,10 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
   }
 
   void _mostrarError(Object e) {
-    final mensaje = e.toString().replaceFirst('Exception: ', '');
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensaje)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.colError)),
+      );
     }
   }
 
@@ -123,6 +129,7 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
   @override
   Widget build(BuildContext context) {
     final t = tokens(context);
+    final l = AppLocalizations.of(context)!;
 
     if (_loading) {
       return SkeletonPulso(
@@ -150,15 +157,16 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
         children: [
           for (final seccion in _seccionesConocidas)
             if (agrupado.containsKey(seccion.categoriaBackend))
-              _seccionWidget(seccion, agrupado[seccion.categoriaBackend]!, t),
+              _seccionWidget(l, seccion, agrupado[seccion.categoriaBackend]!, t),
           for (final categoria in categoriasExtra)
-            _seccionWidget(_Seccion(categoria, categoria, '📦'), agrupado[categoria]!, t),
+            _seccionWidget(l, _Seccion(categoria, '📦'), agrupado[categoria]!, t),
         ],
       ),
     );
   }
 
-  Widget _seccionWidget(_Seccion seccion, List<dynamic> productos, TokensContextuales t) {
+  Widget _seccionWidget(AppLocalizations l, _Seccion seccion, List<dynamic> productos,
+      TokensContextuales t) {
     final algunoPoseido = productos.any((p) => _inventario.containsKey(p['productoId']));
     final esAvatarSinElegir = seccion.categoriaBackend == 'Avatar' && !algunoPoseido;
 
@@ -167,13 +175,13 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('${seccion.emoji} ${seccion.titulo}',
+          Text('${seccion.emoji} ${seccion.titulo(l)}',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: t.text)),
           const SizedBox(height: 8),
           if (esAvatarSinElegir) ...[
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              child: Text('Elige tu primer avatar gratis 👇',
+              child: Text(l.colEligeAvatar,
                   style: TextStyle(color: t.primary, fontWeight: FontWeight.w600)),
             ),
             SelectorAvatarGratis(
@@ -181,7 +189,7 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
               onElegido: (_) => _cargarDatos(),
             ),
           ] else ...[
-            if (!algunoPoseido) _ganchoTienda(seccion.titulo, t),
+            if (!algunoPoseido) _ganchoTienda(l, seccion.titulo(l), t),
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -192,7 +200,7 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
                 childAspectRatio: 0.85,
               ),
               itemCount: productos.length,
-              itemBuilder: (context, i) => _tarjetaProducto(productos[i], t),
+              itemBuilder: (context, i) => _tarjetaProducto(l, productos[i], t),
             ),
           ],
         ],
@@ -200,18 +208,18 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
     );
   }
 
-  Widget _ganchoTienda(String titulo, TokensContextuales t) {
+  Widget _ganchoTienda(AppLocalizations l, String titulo, TokensContextuales t) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: GestureDetector(
         onTap: _irATienda,
-        child: Text('Descubre $titulo en la tienda →',
+        child: Text(l.colDescubre(titulo),
             style: TextStyle(color: t.primary, fontWeight: FontWeight.w600)),
       ),
     );
   }
 
-  Widget _tarjetaProducto(dynamic producto, TokensContextuales t) {
+  Widget _tarjetaProducto(AppLocalizations l, dynamic producto, TokensContextuales t) {
     final productoId = producto['productoId'] as int;
     final codigo = producto['codigo'] as String?;
     final tipo = producto['tipo'] as String;
@@ -270,7 +278,7 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       ),
                     )
-                  : _accionPoseido(productoId, tipo, equipado, cantidad, codigo, categoria, t),
+                  : _accionPoseido(l, productoId, tipo, equipado, cantidad, codigo, categoria, t),
             ),
           ],
         ),
@@ -278,7 +286,7 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
     );
   }
 
-  Widget _accionPoseido(int productoId, String tipo, bool equipado, int cantidad,
+  Widget _accionPoseido(AppLocalizations l, int productoId, String tipo, bool equipado, int cantidad,
       String? codigo, String categoria, TokensContextuales t) {
     if (tipo == 'EQUIPABLE') {
       if (equipado) {
@@ -288,21 +296,21 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
             color: t.primary.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Text('Equipado',
+          child: Text(l.tiendaEquipado,
               textAlign: TextAlign.center,
               style: TextStyle(color: t.primary, fontSize: 12, fontWeight: FontWeight.bold)),
         );
       }
       return OutlinedButton(
         onPressed: () => _equipar(productoId, codigo, categoria),
-        child: const Text('Equipar'),
+        child: Text(l.tiendaEquipar),
       );
     }
 
     // CONSUMIBLE
     return ElevatedButton(
       onPressed: cantidad > 0 ? () => _usar(productoId) : null,
-      child: Text('Usar (x$cantidad)'),
+      child: Text(l.tiendaUsar(cantidad)),
     );
   }
 

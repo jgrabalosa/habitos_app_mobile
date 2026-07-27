@@ -320,5 +320,59 @@
         "type": "int"
       }
     }
-  }
+  },
+  "puntos": "puntos",
+  "tiendaTitulo": "Tienda",
+  "tiendaCatalogo": "Catálogo",
+  "tiendaComprar": "Comprar",
+  "tiendaEquipar": "Equipar",
+  "tiendaEquipado": "Equipado",
+  "tiendaPrecio": "{n} pts",
+  "@tiendaPrecio": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "tiendaUsar": "Usar (x{n})",
+  "@tiendaUsar": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "tiendaError": "No se pudo completar la operación. Inténtalo de nuevo.",
+  "logrosTitulo": "Mis logros",
+  "logrosSeccion": "Logros",
+  "logrosPorcentaje": "{n}%",
+  "@logrosPorcentaje": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "logrosPuntos": "+{n} pts",
+  "@logrosPuntos": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "colSeccionAvatares": "Avatares",
+  "colSeccionConsumibles": "Consumibles",
+  "colSeccionTemas": "Temas",
+  "colEligeAvatar": "Elige tu primer avatar gratis 👇",
+  "colDescubre": "Descubre {seccion} en la tienda →",
+  "@colDescubre": {
+    "placeholders": {
+      "seccion": {
+        "type": "String"
+      }
+    }
+  },
+  "colError": "No se pudo completar la operación. Inténtalo de nuevo."
 }

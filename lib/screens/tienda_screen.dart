@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../l10n/catalogos.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
@@ -102,18 +103,20 @@ class _TiendaScreenState extends State<TiendaScreen> {
   }
 
   void _mostrarError(Object e) {
-    final mensaje = e.toString().replaceFirst('Exception: ', '');
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensaje)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.tiendaError)),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final t = tokens(context);
+    final l = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Tienda')),
+      appBar: AppBar(title: Text(l.tiendaTitulo)),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -131,23 +134,23 @@ class _TiendaScreenState extends State<TiendaScreen> {
                           Text('$_saldo',
                               style: TextStyle(
                                   fontSize: 28, fontWeight: FontWeight.w800, color: t.text)),
-                          Text('puntos', style: TextStyle(color: t.textMuted)),
+                          Text(l.puntos, style: TextStyle(color: t.textMuted)),
                         ],
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text('Catálogo',
+                  Text(l.tiendaCatalogo,
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: t.text)),
                   const SizedBox(height: 8),
-                  ..._catalogo.map((producto) => _productoCard(producto, t)),
+                  ..._catalogo.map((producto) => _productoCard(l, producto, t)),
                 ],
               ),
             ),
     );
   }
 
-  Widget _productoCard(dynamic producto, TokensContextuales t) {
+  Widget _productoCard(AppLocalizations l, dynamic producto, TokensContextuales t) {
     final productoId = producto['productoId'] as int;
     final codigo = producto['codigo'] as String?;
     final tipo = producto['tipo'] as String;
@@ -182,7 +185,7 @@ class _TiendaScreenState extends State<TiendaScreen> {
                       color: t.primary.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(999),
                     ),
-                    child: Text('Equipado',
+                    child: Text(l.tiendaEquipado,
                         style: TextStyle(
                             color: t.primary, fontSize: 12, fontWeight: FontWeight.bold)),
                   ),
@@ -205,9 +208,9 @@ class _TiendaScreenState extends State<TiendaScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('${producto['precio']} pts',
+                Text(l.tiendaPrecio(producto['precio'] as int),
                     style: TextStyle(color: t.textMuted, fontWeight: FontWeight.w600)),
-                _botonAccion(productoId, tipo, poseido, equipado, cantidad, codigo, categoria, procesandoEste),
+                _botonAccion(l, productoId, tipo, poseido, equipado, cantidad, codigo, categoria, procesandoEste),
               ],
             ),
           ],
@@ -223,7 +226,7 @@ class _TiendaScreenState extends State<TiendaScreen> {
         decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4)),
       );
 
-  Widget _botonAccion(int productoId, String tipo, bool poseido, bool equipado,
+  Widget _botonAccion(AppLocalizations l, int productoId, String tipo, bool poseido, bool equipado,
       int cantidad, String? codigo, String categoria, bool procesando) {
     if (procesando) {
       return const SizedBox(
@@ -237,7 +240,7 @@ class _TiendaScreenState extends State<TiendaScreen> {
       if (!poseido) {
         return ElevatedButton(
           onPressed: () => _comprar(productoId),
-          child: const Text('Comprar'),
+          child: Text(l.tiendaComprar),
         );
       }
       if (equipado) {
@@ -245,7 +248,7 @@ class _TiendaScreenState extends State<TiendaScreen> {
       }
       return OutlinedButton(
         onPressed: () => _equipar(productoId, codigo, categoria),
-        child: const Text('Equipar'),
+        child: Text(l.tiendaEquipar),
       );
     }
 
@@ -260,14 +263,14 @@ class _TiendaScreenState extends State<TiendaScreen> {
           ),
           ElevatedButton(
             onPressed: () => _usar(productoId),
-            child: Text('Usar (x$cantidad)'),
+            child: Text(l.tiendaUsar(cantidad)),
           ),
         ],
       );
     }
     return ElevatedButton(
       onPressed: () => _comprar(productoId),
-      child: const Text('Comprar'),
+      child: Text(l.tiendaComprar),
     );
   }
 }

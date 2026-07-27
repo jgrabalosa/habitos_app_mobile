@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../l10n/catalogos.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
@@ -55,12 +56,13 @@ class _LogrosScreenState extends State<LogrosScreen> {
   @override
   Widget build(BuildContext context) {
     final t = tokens(context);
+    final l = AppLocalizations.of(context)!;
     final total = _catalogo.length;
     final conseguidos = _idsConseguidos.length;
     final pct = total > 0 ? conseguidos / total : 0.0;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mis Logros')),
+      appBar: AppBar(title: Text(l.logrosTitulo)),
       body: _loading
           ? _skeletonLogros()
           : RefreshIndicator(
@@ -79,7 +81,7 @@ class _LogrosScreenState extends State<LogrosScreen> {
                           Text('$_saldo',
                               style: TextStyle(
                                   fontSize: 28, fontWeight: FontWeight.w800, color: t.text)),
-                          Text('puntos', style: TextStyle(color: t.textMuted)),
+                          Text(l.puntos, style: TextStyle(color: t.textMuted)),
                         ],
                       ),
                     ),
@@ -95,9 +97,9 @@ class _LogrosScreenState extends State<LogrosScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('$conseguidos de $total logros',
+                              Text(l.detLogrosDe(conseguidos, total),
                                   style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
-                              Text('${(pct * 100).round()}%',
+                              Text(l.logrosPorcentaje((pct * 100).round()),
                                   style: TextStyle(color: t.textMuted)),
                             ],
                           ),
@@ -116,17 +118,17 @@ class _LogrosScreenState extends State<LogrosScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text('Logros',
+                  Text(l.logrosSeccion,
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: t.text)),
                   const SizedBox(height: 8),
-                  ..._catalogo.map((logro) => _logroCard(logro, t)),
+                  ..._catalogo.map((logro) => _logroCard(l, logro, t)),
                 ],
               ),
             ),
     );
   }
 
-  Widget _logroCard(dynamic logro, TokensContextuales t) {
+  Widget _logroCard(AppLocalizations l, dynamic logro, TokensContextuales t) {
     final conseguido = _idsConseguidos.contains(logro['logroId']);
     final icono = iconosCategoria[logro['categoria']] ?? '⭐';
     return Opacity(
@@ -141,7 +143,8 @@ class _LogrosScreenState extends State<LogrosScreen> {
               '${logro['descripcion']}\n${logro['categoria']} · ${logro['nivel']}',
               style: TextStyle(color: t.textMuted)),
           isThreeLine: true,
-          trailing: Text('+${logro['puntos']} pts', style: TextStyle(color: t.textMuted)),
+          trailing: Text(l.logrosPuntos(logro['puntos'] as int),
+              style: TextStyle(color: t.textMuted)),
         ),
       ),
     );
