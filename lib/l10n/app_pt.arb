@@ -76,5 +76,12 @@
   "mascotaErrorNombre": "Não foi possível guardar o nome. Tenta novamente.",
   "mascotaIrTienda": "Ir à loja para o alimentar",
   "mascotaNivel": "Nível {n}",
-  "mascotaXp": "{actual}/{total} XP"
+  "mascotaXp": "{actual}/{total} XP",
+  "plantillaBeberAgua": "Beber água",
+  "plantillaLeer20Min": "Ler 20 min",
+  "plantillaEjercicio": "Exercício",
+  "plantillaMeditar": "Meditar",
+  "plantillaDormir8h": "Dormir 8h",
+  "plantillaCaminar": "Caminhar",
+  "plantillaEscribirDiario": "Escrever diário"
 }

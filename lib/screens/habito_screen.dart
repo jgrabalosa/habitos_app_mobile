@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../l10n/catalogos.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
@@ -19,15 +20,30 @@ class HabitoScreen extends StatefulWidget {
 }
 
 class _HabitoScreenState extends State<HabitoScreen> {
+  /// Plantillas: 'id' identifica la clave de traducción, y la categoría se
+  /// casa por CÓDIGO, no por nombre — el nombre que manda el backend puede
+  /// venir traducido o cambiar, el código no.
   static const List<Map<String, dynamic>> _plantillas = [
-    {'emoji': '💧', 'nombre': 'Beber agua', 'frecuencia': 'DIARIO', 'meta': 4, 'categoria': 'Salud'},
-    {'emoji': '📖', 'nombre': 'Leer 20 min', 'frecuencia': 'DIARIO', 'meta': 1, 'categoria': 'Estudio'},
-    {'emoji': '🏃', 'nombre': 'Ejercicio', 'frecuencia': 'SEMANAL', 'meta': 3, 'dias': '2,4,6', 'categoria': 'Deporte'},
-    {'emoji': '🧘', 'nombre': 'Meditar', 'frecuencia': 'DIARIO', 'meta': 1, 'categoria': 'Mente'},
-    {'emoji': '😴', 'nombre': 'Dormir 8h', 'frecuencia': 'DIARIO', 'meta': 1, 'categoria': 'Sueño'},
-    {'emoji': '🚶', 'nombre': 'Caminar', 'frecuencia': 'DIARIO', 'meta': 1, 'categoria': 'Salud'},
-    {'emoji': '📓', 'nombre': 'Escribir diario', 'frecuencia': 'DIARIO', 'meta': 1, 'categoria': 'Mente'},
+    {'emoji': '💧', 'id': 'beberAgua', 'frecuencia': 'DIARIO', 'meta': 4, 'categoriaCodigo': 'CAT_SALUD'},
+    {'emoji': '📖', 'id': 'leer20Min', 'frecuencia': 'DIARIO', 'meta': 1, 'categoriaCodigo': 'CAT_ESTUDIO'},
+    {'emoji': '🏃', 'id': 'ejercicio', 'frecuencia': 'SEMANAL', 'meta': 3, 'dias': '2,4,6', 'categoriaCodigo': 'CAT_DEPORTE'},
+    {'emoji': '🧘', 'id': 'meditar', 'frecuencia': 'DIARIO', 'meta': 1, 'categoriaCodigo': 'CAT_MENTE'},
+    {'emoji': '😴', 'id': 'dormir8h', 'frecuencia': 'DIARIO', 'meta': 1, 'categoriaCodigo': 'CAT_SUENO'},
+    {'emoji': '🚶', 'id': 'caminar', 'frecuencia': 'DIARIO', 'meta': 1, 'categoriaCodigo': 'CAT_SALUD'},
+    {'emoji': '📓', 'id': 'escribirDiario', 'frecuencia': 'DIARIO', 'meta': 1, 'categoriaCodigo': 'CAT_MENTE'},
   ];
+
+  /// Nombre de una plantilla en un idioma concreto.
+  static String _nombrePlantilla(AppLocalizations l, String id) => switch (id) {
+        'beberAgua' => l.plantillaBeberAgua,
+        'leer20Min' => l.plantillaLeer20Min,
+        'ejercicio' => l.plantillaEjercicio,
+        'meditar' => l.plantillaMeditar,
+        'dormir8h' => l.plantillaDormir8h,
+        'caminar' => l.plantillaCaminar,
+        'escribirDiario' => l.plantillaEscribirDiario,
+        _ => id,
+      };
 
   // Etiquetas L-D en orden ISO (1=lunes .. 7=domingo)
   static const List<String> _etiquetasDias = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -85,18 +101,20 @@ class _HabitoScreenState extends State<HabitoScreen> {
   }
 
   void _aplicarPlantilla(Map<String, dynamic> plantilla) {
+    final l = AppLocalizations.of(context)!;
     setState(() {
-      _nombreController.text = plantilla['nombre'];
+      // El hábito es dato del usuario: se guarda en el idioma en el que lo creó
+      _nombreController.text = _nombrePlantilla(l, plantilla['id']);
       _frecuencia = plantilla['frecuencia'];
       _meta = plantilla['meta'];
       _diasSeleccionados = plantilla['dias'] != null
           ? (plantilla['dias'] as String).split(',').map(int.parse).toSet()
           : {};
 
-      final categoriaNombre = plantilla['categoria'] as String?;
-      if (categoriaNombre != null) {
+      final codigoCategoria = plantilla['categoriaCodigo'] as String?;
+      if (codigoCategoria != null) {
         final match = _categorias.firstWhere(
-          (c) => c['nombre'] == categoriaNombre,
+          (c) => c['codigo'] == codigoCategoria,
           orElse: () => null,
         );
         if (match != null) {
@@ -115,16 +133,27 @@ class _HabitoScreenState extends State<HabitoScreen> {
       .replaceAll(RegExp(r'[óòö]'), 'o')
       .replaceAll(RegExp(r'[úùü]'), 'u');
 
-  bool _yaExiste(String nombrePlantilla) {
-    final normalizada = _normalizar(nombrePlantilla);
+  /// Se compara contra las TRES traducciones, no solo la activa: un hábito
+  /// creado en español debe seguir ocultando su plantilla si el usuario se
+  /// pasa a inglés.
+  static final List<AppLocalizations> _todosLosIdiomas = [
+    lookupAppLocalizations(const Locale('es')),
+    lookupAppLocalizations(const Locale('en')),
+    lookupAppLocalizations(const Locale('pt')),
+  ];
+
+  bool _yaExiste(String idPlantilla) {
+    final variantes = _todosLosIdiomas
+        .map((l) => _normalizar(_nombrePlantilla(l, idPlantilla)))
+        .toSet();
     return (widget.nombresHabitosExistentes ?? []).any((nombre) {
       final n = _normalizar(nombre);
-      return n == normalizada || n.contains(normalizada) || normalizada.contains(n);
+      return variantes.any((v) => n == v || n.contains(v) || v.contains(n));
     });
   }
 
   List<Map<String, dynamic>> get _plantillasDisponibles =>
-      _plantillas.where((p) => !_yaExiste(p['nombre'])).toList();
+      _plantillas.where((p) => !_yaExiste(p['id'])).toList();
 
   void _alternarDia(int dia) {
     setState(() {
@@ -341,7 +370,8 @@ class _HabitoScreenState extends State<HabitoScreen> {
                         final p = _plantillasDisponibles[i];
                         return ActionChip(
                           avatar: Text(p['emoji'], style: const TextStyle(fontSize: 16)),
-                          label: Text(p['nombre']),
+                          label: Text(_nombrePlantilla(
+                              AppLocalizations.of(context)!, p['id'])),
                           labelPadding: const EdgeInsets.symmetric(horizontal: 4),
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                           onPressed: () => _aplicarPlantilla(p),

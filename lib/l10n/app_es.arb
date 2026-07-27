@@ -93,5 +93,12 @@
         "type": "int"
       }
     }
-  }
+  },
+  "plantillaBeberAgua": "Beber agua",
+  "plantillaLeer20Min": "Leer 20 min",
+  "plantillaEjercicio": "Ejercicio",
+  "plantillaMeditar": "Meditar",
+  "plantillaDormir8h": "Dormir 8h",
+  "plantillaCaminar": "Caminar",
+  "plantillaEscribirDiario": "Escribir diario"
 }

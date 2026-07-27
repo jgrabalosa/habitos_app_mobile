@@ -76,5 +76,12 @@
   "mascotaErrorNombre": "Couldn't save the name. Please try again.",
   "mascotaIrTienda": "Go to the shop to feed it",
   "mascotaNivel": "Level {n}",
-  "mascotaXp": "{actual}/{total} XP"
+  "mascotaXp": "{actual}/{total} XP",
+  "plantillaBeberAgua": "Drink water",
+  "plantillaLeer20Min": "Read 20 min",
+  "plantillaEjercicio": "Exercise",
+  "plantillaMeditar": "Meditate",
+  "plantillaDormir8h": "Sleep 8h",
+  "plantillaCaminar": "Walk",
+  "plantillaEscribirDiario": "Journal"
 }
