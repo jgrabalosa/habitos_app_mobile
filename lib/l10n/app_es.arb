@@ -389,5 +389,61 @@
   "celLogroDesbloqueado": "¡Logro desbloqueado!",
   "celGenial": "¡Genial!",
   "selElegirGratis": "Elegir gratis",
-  "selError": "No se pudo elegir el avatar. Inténtalo de nuevo."
+  "selError": "No se pudo elegir el avatar. Inténtalo de nuevo.",
+  "logroDescPrimerHabito": "Crea tu primer hábito personalizado",
+  "logroDescPrimeraCategoria": "Crea tu primera categoría personalizada",
+  "logroDescPrimerosPasos": "Completa tu primer hábito",
+  "logroDescRacha3": "Alcanza tu primera racha de 3",
+  "logroDescRacha7": "Alcanza una racha de 7",
+  "logroDescRachaRecuperada": "Recupera un hábito tras romper una racha y vuelve a alcanzar 3",
+  "logroDescRacha30": "Alcanza una racha de 30",
+  "logroDescRacha100": "Alcanza una racha de 100",
+  "logroDescRacha365": "Alcanza una racha de 365",
+  "logroDescHabitosActivos3": "Ten 3 hábitos activos a la vez",
+  "logroDescHabitosActivos5": "Ten 5 hábitos activos a la vez",
+  "logroDescRegistros100": "Alcanza 100 registros completados en total",
+  "logroDescRegistros500": "Alcanza 500 registros completados en total",
+  "logroDescRegistros1000": "Alcanza 1000 registros completados en total",
+  "logroDescCategorias3": "Usa 3 categorías distintas en tus hábitos",
+  "logroDescCategorias5": "Usa 5 categorías distintas",
+  "logroDescPrimeraNota": "Añade una nota a un registro",
+  "logroDescBienvenido": "Personaliza tu perfil de usuario",
+  "logroDescLoginGoogle": "Inicia sesión usando tu cuenta de Google",
+  "logroDescInteraccionResena": "Interactúa con la valoración de la app en Google Play",
+  "prodDescEscudoRacha": "Protege tu racha durante 1 día si olvidas completar tu hábito",
+  "prodDescTemaBasicoClaro": "El tema claro de serie de Norday",
+  "prodDescTemaBasicoOscuro": "El tema oscuro de serie de Norday",
+  "prodDescTemaCalidez": "Un tema premium con tonos cálidos y acogedores",
+  "prodDescTemaNeotokyo": "Un tema premium inspirado en la estética anime y neón",
+  "prodDescTemaOceano": "Un tema premium con tonos azules y frescos del mar",
+  "prodDescTemaBosque": "Un tema premium con tonos verdes y naturales",
+  "prodDescTemaCobre": "Un tema premium elegante en azul noche y cobre",
+  "prodDescAvatarZorro": "Avatar ilustrado de zorro",
+  "prodDescAvatarGato": "Avatar ilustrado de gato",
+  "prodDescAvatarBuho": "Avatar ilustrado de búho",
+  "prodDescAvatarPanda": "Avatar ilustrado de panda",
+  "prodDescAvatarTortuga": "Avatar ilustrado de tortuga",
+  "prodDescComidaBasica": "Alimenta a tu mascota y gana experiencia",
+  "logroCatInicio": "Inicio",
+  "logroCatConstancia": "Constancia",
+  "logroCatVolumen": "Volumen",
+  "logroCatVariedad": "Variedad",
+  "logroCatExploracion": "Exploración",
+  "nivelFacil": "Fácil",
+  "nivelMedio": "Medio",
+  "nivelDificil": "Difícil",
+  "logrosSubtitulo": "{descripcion}\n{categoria} · {nivel}",
+  "@logrosSubtitulo": {
+    "placeholders": {
+      "descripcion": {
+        "type": "String"
+      },
+      "categoria": {
+        "type": "String"
+      },
+      "nivel": {
+        "type": "String"
+      }
+    }
+  }
 }

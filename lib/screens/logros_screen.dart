@@ -140,7 +140,12 @@ class _LogrosScreenState extends State<LogrosScreen> {
           title: Text('$icono ${Catalogos.logro(context, logro['codigo'], logro['nombre'])}',
               style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
           subtitle: Text(
-              '${logro['descripcion']}\n${logro['categoria']} · ${logro['nivel']}',
+              l.logrosSubtitulo(
+                Catalogos.logroDescripcion(
+                    context, logro['codigo'], logro['descripcion']),
+                Catalogos.logroCategoria(context, logro['categoria']),
+                Catalogos.logroNivel(context, logro['nivel']),
+              ),
               style: TextStyle(color: t.textMuted)),
           isThreeLine: true,
           trailing: Text(l.logrosPuntos(logro['puntos'] as int),

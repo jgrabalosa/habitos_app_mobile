@@ -22,6 +22,23 @@ class Catalogos {
   static String producto(BuildContext context, String? codigo, String nombreBackend) =>
       _traducir(_productos(context), codigo, nombreBackend);
 
+  static String logroDescripcion(
+          BuildContext context, String? codigo, String descripcionBackend) =>
+      _traducir(_logrosDescripcion(context), codigo, descripcionBackend);
+
+  static String productoDescripcion(
+          BuildContext context, String? codigo, String descripcionBackend) =>
+      _traducir(_productosDescripcion(context), codigo, descripcionBackend);
+
+  /// Categoría y nivel del logro no viajan por código: el backend manda el
+  /// literal en español ('Constancia', 'Facil'). Se traducen por ese valor,
+  /// que aquí hace de clave.
+  static String logroCategoria(BuildContext context, String categoriaBackend) =>
+      _traducir(_logrosCategoria(context), categoriaBackend, categoriaBackend);
+
+  static String logroNivel(BuildContext context, String nivelBackend) =>
+      _traducir(_logrosNivel(context), nivelBackend, nivelBackend);
+
   static String _traducir(Map<String, String> mapa, String? codigo, String nombreBackend) {
     if (codigo == null) return nombreBackend;
     return mapa[codigo] ?? nombreBackend;
@@ -86,6 +103,73 @@ class Catalogos {
       'AVATAR_PANDA': l.prodAvatarPanda,
       'AVATAR_TORTUGA': l.prodAvatarTortuga,
       'COMIDA_BASICA': l.prodComidaBasica,
+    };
+  }
+
+  static Map<String, String> _logrosDescripcion(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return {
+      'PRIMER_HABITO': l.logroDescPrimerHabito,
+      'BIENVENIDO': l.logroDescBienvenido,
+      'PRIMERA_CATEGORIA': l.logroDescPrimeraCategoria,
+      'LOGIN_GOOGLE': l.logroDescLoginGoogle,
+      'PRIMEROS_PASOS': l.logroDescPrimerosPasos,
+      'RACHA_3': l.logroDescRacha3,
+      'RACHA_7': l.logroDescRacha7,
+      'RACHA_RECUPERADA': l.logroDescRachaRecuperada,
+      'RACHA_30': l.logroDescRacha30,
+      'RACHA_100': l.logroDescRacha100,
+      'RACHA_365': l.logroDescRacha365,
+      'HABITOS_ACTIVOS_3': l.logroDescHabitosActivos3,
+      'HABITOS_ACTIVOS_5': l.logroDescHabitosActivos5,
+      'REGISTROS_100': l.logroDescRegistros100,
+      'REGISTROS_500': l.logroDescRegistros500,
+      'REGISTROS_1000': l.logroDescRegistros1000,
+      'CATEGORIAS_3': l.logroDescCategorias3,
+      'CATEGORIAS_5': l.logroDescCategorias5,
+      'PRIMERA_NOTA': l.logroDescPrimeraNota,
+      'INTERACCION_RESENA': l.logroDescInteraccionResena,
+    };
+  }
+
+  static Map<String, String> _productosDescripcion(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return {
+      'ESCUDO_RACHA': l.prodDescEscudoRacha,
+      'TEMA_BASICO_CLARO': l.prodDescTemaBasicoClaro,
+      'TEMA_BASICO_OSCURO': l.prodDescTemaBasicoOscuro,
+      'TEMA_CALIDEZ': l.prodDescTemaCalidez,
+      'TEMA_NEOTOKYO': l.prodDescTemaNeotokyo,
+      'TEMA_OCEANO': l.prodDescTemaOceano,
+      'TEMA_BOSQUE': l.prodDescTemaBosque,
+      'TEMA_COBRE': l.prodDescTemaCobre,
+      'AVATAR_ZORRO': l.prodDescAvatarZorro,
+      'AVATAR_GATO': l.prodDescAvatarGato,
+      'AVATAR_BUHO': l.prodDescAvatarBuho,
+      'AVATAR_PANDA': l.prodDescAvatarPanda,
+      'AVATAR_TORTUGA': l.prodDescAvatarTortuga,
+      'COMIDA_BASICA': l.prodDescComidaBasica,
+    };
+  }
+
+  static Map<String, String> _logrosCategoria(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return {
+      'Inicio': l.logroCatInicio,
+      'Constancia': l.logroCatConstancia,
+      'Volumen': l.logroCatVolumen,
+      'Variedad': l.logroCatVariedad,
+      'Exploración': l.logroCatExploracion,
+    };
+  }
+
+  // Sin tilde en las claves: así es como llegan de los initializers.
+  static Map<String, String> _logrosNivel(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return {
+      'Facil': l.nivelFacil,
+      'Medio': l.nivelMedio,
+      'Dificil': l.nivelDificil,
     };
   }
 }

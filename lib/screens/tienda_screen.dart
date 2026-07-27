@@ -192,7 +192,10 @@ class _TiendaScreenState extends State<TiendaScreen> {
               ],
             ),
             const SizedBox(height: 4),
-            Text(producto['descripcion'], style: TextStyle(color: t.textMuted)),
+            Text(
+                Catalogos.productoDescripcion(
+                    context, producto['codigo'], producto['descripcion']),
+                style: TextStyle(color: t.textMuted)),
             if (paleta != null) ...[
               const SizedBox(height: 10),
               Row(
