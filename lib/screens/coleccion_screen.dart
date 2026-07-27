@@ -266,8 +266,10 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
             Row(
               children: [
                 if (avatarInfo != null) ...[
-                  CircleAvatar(radius: 14, backgroundColor: avatarInfo.color.withValues(alpha: 0.25),
-                      child: Text(avatarInfo.emoji, style: const TextStyle(fontSize: 14))),
+                  CircleAvatar(
+                      radius: 14,
+                      backgroundColor: fondoAvatar,
+                      child: Image.asset(avatarInfo.asset, width: 21, height: 21)),
                   const SizedBox(width: 6),
                 ],
                 Expanded(
@@ -350,9 +352,12 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (avatarInfo != null) ...[
-                      CircleAvatar(radius: 14, backgroundColor: avatarInfo.color.withValues(alpha: 0.2),
-                          child: Opacity(opacity: 0.5,
-                              child: Text(avatarInfo.emoji, style: const TextStyle(fontSize: 14)))),
+                      CircleAvatar(
+                          radius: 14,
+                          backgroundColor: fondoAvatar,
+                          child: Opacity(
+                              opacity: 0.5,
+                              child: Image.asset(avatarInfo.asset, width: 21, height: 21))),
                       const SizedBox(height: 6),
                     ],
                     Text(Catalogos.producto(context, producto['codigo'], producto['nombre']),

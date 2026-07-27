@@ -108,8 +108,8 @@ class _SelectorAvatarGratisState extends State<SelectorAvatarGratis> {
                   if (info != null)
                     CircleAvatar(
                         radius: 28,
-                        backgroundColor: info.color.withValues(alpha: 0.25),
-                        child: Text(info.emoji, style: const TextStyle(fontSize: 28)))
+                        backgroundColor: fondoAvatar,
+                        child: Image.asset(info.asset, width: 42, height: 42))
                   else
                     CircleAvatar(radius: 28, backgroundColor: t.surface2),
                   const SizedBox(height: 8),
