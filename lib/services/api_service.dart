@@ -31,6 +31,36 @@ class ApiService {
     await prefs.setString('proveedorAuth', usuario.proveedorAuth);
   }
 
+  // ── Preferencias: idioma y zona horaria ────────────────
+  static Future<Map<String, dynamic>> getPreferencias(int usuarioId) async {
+    final response = await _client.get(
+      Uri.parse('$baseUrl/usuarios/$usuarioId/preferencias'),
+      headers: await getHeaders(),
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    throw Exception('Error al cargar las preferencias');
+  }
+
+  /// Cada campo es opcional: se manda solo el que se quiere cambiar.
+  static Future<void> actualizarPreferencias(int usuarioId,
+      {String? idioma, String? zonaHoraria}) async {
+    final body = <String, String>{};
+    if (idioma != null) body['idioma'] = idioma;
+    if (zonaHoraria != null) body['zonaHoraria'] = zonaHoraria;
+    if (body.isEmpty) return;
+
+    final response = await _client.put(
+      Uri.parse('$baseUrl/usuarios/$usuarioId/preferencias'),
+      headers: await getHeaders(),
+      body: jsonEncode(body),
+    );
+    if (response.statusCode != 200) {
+      throw Exception(response.body);
+    }
+  }
+
   static Future<Map<String, dynamic>?> getUsuarioLocal() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');

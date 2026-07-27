@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'l10n/app_localizations.dart';
+import 'services/idioma_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'theme/app_theme.dart';
 import 'theme/paletas_premium.dart';
@@ -15,6 +18,8 @@ void main() async {
   await Firebase.initializeApp();
   await cargarTemaEquipadoGuardado();
   await cargarAvatarGuardado();
+  // Antes de runApp: si no, el primer frame se pinta en el idioma equivocado
+  await IdiomaService.cargarAlArrancar();
   runApp(const HabitosApp());
 }
 
@@ -23,15 +28,30 @@ class HabitosApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Dos notifiers anidados: el tema y el idioma cambian por su cuenta y
+    // cualquiera de los dos debe repintar sin reiniciar la app.
     return ValueListenableBuilder<TokensContextuales>(
       valueListenable: temaEquipadoNotifier,
       builder: (context, tema, _) {
-        return MaterialApp(
-          navigatorKey: navigatorKey,
-          title: 'Norday Hábitos',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.deTema(tema),
-          home: const SplashScreen(),
+        return ValueListenableBuilder<Locale>(
+          valueListenable: IdiomaService.localeNotifier,
+          builder: (context, locale, _) {
+            return MaterialApp(
+              navigatorKey: navigatorKey,
+              onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitulo,
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.deTema(tema),
+              locale: locale,
+              supportedLocales: IdiomaService.localesSoportados,
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              home: const SplashScreen(),
+            );
+          },
         );
       },
     );

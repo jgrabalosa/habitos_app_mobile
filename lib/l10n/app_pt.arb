@@ -1,0 +1,14 @@
+{
+  "@@locale": "pt",
+  "appTitulo": "Norday Hábitos",
+  "idioma": "Idioma",
+  "zonaHoraria": "Fuso horário",
+  "preferencias": "Preferências",
+  "idiomaEs": "Espanhol",
+  "idiomaEn": "Inglês",
+  "idiomaPt": "Português",
+  "guardar": "Guardar",
+  "cancelar": "Cancelar",
+  "zonaDetectada": "Detetado do teu dispositivo",
+  "zonaAyuda": "Define quando começa e acaba o teu dia para as sequências e os lembretes."
+}

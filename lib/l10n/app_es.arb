@@ -1,0 +1,14 @@
+{
+  "@@locale": "es",
+  "appTitulo": "Norday Hábitos",
+  "idioma": "Idioma",
+  "zonaHoraria": "Zona horaria",
+  "preferencias": "Preferencias",
+  "idiomaEs": "Español",
+  "idiomaEn": "Inglés",
+  "idiomaPt": "Portugués",
+  "guardar": "Guardar",
+  "cancelar": "Cancelar",
+  "zonaDetectada": "Detectada de tu dispositivo",
+  "zonaAyuda": "Define cuándo empieza y acaba tu día para las rachas y los recordatorios."
+}

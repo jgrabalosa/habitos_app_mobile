@@ -1,0 +1,14 @@
+{
+  "@@locale": "en",
+  "appTitulo": "Norday Habits",
+  "idioma": "Language",
+  "zonaHoraria": "Time zone",
+  "preferencias": "Preferences",
+  "idiomaEs": "Spanish",
+  "idiomaEn": "English",
+  "idiomaPt": "Portuguese",
+  "guardar": "Save",
+  "cancelar": "Cancel",
+  "zonaDetectada": "Detected from your device",
+  "zonaAyuda": "It defines when your day starts and ends for streaks and reminders."
+}
