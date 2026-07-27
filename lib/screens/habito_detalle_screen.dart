@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../models/habito.dart';
@@ -21,11 +22,6 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
   bool _loading = true;
   DateTime _mesActual = DateTime(DateTime.now().year, DateTime.now().month, 1);
   Map<String, dynamic>? _diaSeleccionado; // día tocado en el heatmap (tooltip)
-
-  final List<String> _nombresMeses = [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-  ];
 
   @override
   void initState() {
@@ -262,7 +258,9 @@ title: Hero(
                   icon: const Icon(LucideIcons.chevronLeft),
                   onPressed: () => _cambiarMes(-1),
                 ),
-                Text('${_nombresMeses[_mesActual.month - 1]} ${_mesActual.year}',
+                Text(
+                    DateFormat.yMMMM(Localizations.localeOf(context).toLanguageTag())
+                        .format(_mesActual),
                     style: const TextStyle(fontWeight: FontWeight.bold)),
                 IconButton(
                   icon: const Icon(LucideIcons.chevronRight),
@@ -360,8 +358,8 @@ title: Hero(
   String _infoDia(Map<String, dynamic> dia, int meta, bool conNiveles) {
     final fecha = DateTime.parse(dia['fecha']);
     final int veces = dia['veces'] ?? (dia['completado'] == true ? 1 : 0);
-    final nombreMes = _nombresMeses[fecha.month - 1].toLowerCase();
-    final base = '${fecha.day} de $nombreMes';
+    final base = DateFormat.MMMMd(Localizations.localeOf(context).toLanguageTag())
+        .format(fecha);
     if (veces == 0) return '$base · Sin completar';
     if (conNiveles) return '$base · $veces/$meta';
     return '$base · Completado';

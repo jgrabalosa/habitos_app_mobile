@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'l10n/app_localizations.dart';
 import 'services/idioma_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,6 +21,9 @@ void main() async {
   await cargarAvatarGuardado();
   // Antes de runApp: si no, el primer frame se pinta en el idioma equivocado
   await IdiomaService.cargarAlArrancar();
+  // Obligatorio: sin esto DateFormat lanza LocaleDataException para es/en/pt.
+  // GlobalMaterialLocalizations no cubre los símbolos de fecha de intl.
+  await initializeDateFormatting();
   runApp(const HabitosApp());
 }
 

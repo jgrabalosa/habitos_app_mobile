@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:in_app_review/in_app_review.dart';
 import '../services/api_service.dart';
@@ -243,7 +244,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   fontSize: 24,
                                   fontWeight: FontWeight.w800,
                                   color: t.text)),
-                          Text(_fechaDeHoy(),
+                          Text(_fechaDeHoy(context),
                               style:
                                   TextStyle(fontSize: 13, color: t.textMuted)),
                           if (totalHoy > 0) ...[
@@ -337,12 +338,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  String _fechaDeHoy() {
-    const dias = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
-    const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-    final hoy = DateTime.now();
-    return '${dias[hoy.weekday - 1]}, ${hoy.day} de ${meses[hoy.month - 1]}';
+  /// Fecha en el idioma activo. MMMMEEEEd resuelve por sí solo el orden y
+  /// las preposiciones de cada idioma ("miércoles, 4 de junio" / "Wednesday,
+  /// June 4"), que es justo lo que una plantilla fija no puede hacer.
+  String _fechaDeHoy(BuildContext context) {
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    return DateFormat.MMMMEEEEd(locale).format(DateTime.now());
   }
 
   String _fraseProgreso(int hechos, int total) {
