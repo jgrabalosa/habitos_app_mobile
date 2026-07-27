@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
@@ -28,7 +29,10 @@ class _HomeShellState extends State<HomeShell> {
   String _nombre = '';
   bool _loading = true;
 
-  static const _titulos = ['Hoy', 'Hábitos', 'Colección', 'Mascota'];
+  /// El titulo del AppBar y la etiqueta de la pestaña son el mismo texto:
+  /// se leen de aqui para que no puedan divergir.
+  List<String> _titulos(AppLocalizations l) =>
+      [l.navHoy, l.navHabitos, l.navColeccion, l.navMascota];
 
   DateTime? _ultimaPulsacionAtras;
 
@@ -52,9 +56,9 @@ class _HomeShellState extends State<HomeShell> {
     _ultimaPulsacionAtras = ahora;
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Pulsa atrás otra vez para salir'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.shellPulsaAtras),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
@@ -107,6 +111,8 @@ class _HomeShellState extends State<HomeShell> {
     }
 
     final t = tokens(context);
+    final l = AppLocalizations.of(context)!;
+    final titulos = _titulos(l);
 
     // Nota temporal: Colección sigue trayendo su propio AppBar
     // (doble AppBar visible) hasta el paso 3.
@@ -142,7 +148,7 @@ class _HomeShellState extends State<HomeShell> {
                     ],
                   ),
                 )
-              : Text(_titulos[_tabIndex],
+              : Text(titulos[_tabIndex],
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           actions: [
             IconButton(
@@ -169,23 +175,23 @@ class _HomeShellState extends State<HomeShell> {
                 }
               },
               itemBuilder: (context) => [
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'cuenta',
                   child: Row(
                     children: [
-                      Icon(LucideIcons.userRound, size: 20),
-                      SizedBox(width: 12),
-                      Text('Mi cuenta'),
+                      const Icon(LucideIcons.userRound, size: 20),
+                      const SizedBox(width: 12),
+                      Text(l.perfilTitulo),
                     ],
                   ),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'logout',
                   child: Row(
                     children: [
-                      Icon(LucideIcons.logOut, size: 20),
-                      SizedBox(width: 12),
-                      Text('Cerrar sesión'),
+                      const Icon(LucideIcons.logOut, size: 20),
+                      const SizedBox(width: 12),
+                      Text(l.shellCerrarSesion),
                     ],
                   ),
                 ),
@@ -198,11 +204,11 @@ class _HomeShellState extends State<HomeShell> {
           selectedIndex: _tabIndex,
           onDestinationSelected: (i) => setState(() => _tabIndex = i),
           backgroundColor: t.surface,
-          destinations: const [
-            NavigationDestination(icon: Icon(LucideIcons.house), label: 'Hoy'),
-            NavigationDestination(icon: Icon(LucideIcons.listChecks), label: 'Hábitos'),
-            NavigationDestination(icon: Icon(LucideIcons.layoutGrid), label: 'Colección'),
-            NavigationDestination(icon: Icon(LucideIcons.pawPrint), label: 'Mascota'),
+          destinations: [
+            NavigationDestination(icon: const Icon(LucideIcons.house), label: titulos[0]),
+            NavigationDestination(icon: const Icon(LucideIcons.listChecks), label: titulos[1]),
+            NavigationDestination(icon: const Icon(LucideIcons.layoutGrid), label: titulos[2]),
+            NavigationDestination(icon: const Icon(LucideIcons.pawPrint), label: titulos[3]),
           ],
         ),
       ),

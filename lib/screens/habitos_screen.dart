@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../l10n/catalogos.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
@@ -78,6 +79,7 @@ class _HabitosScreenState extends State<HabitosScreen> {
   @override
   Widget build(BuildContext context) {
     final t = tokens(context);
+    final l = AppLocalizations.of(context)!;
 
     if (_loading) {
       return const SkeletonLista();
@@ -105,32 +107,32 @@ class _HabitosScreenState extends State<HabitosScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
           children: [
-            _filtrosCategoria(t),
+            _filtrosCategoria(l, t),
             const SizedBox(height: 12),
-            _selectorOrden(),
+            _selectorOrden(l),
             const SizedBox(height: 16),
             if (lista.isEmpty)
               Center(
                 child: Padding(
                   padding: const EdgeInsets.only(top: 40),
-                  child: Text('No hay hábitos con este filtro',
+                  child: Text(l.habitosSinFiltro,
                       style: TextStyle(color: t.textMuted)),
                 ),
               )
             else
-              ...lista.map((r) => _tarjetaHabito(r, t)),
+              ...lista.map((r) => _tarjetaHabito(l, r, t)),
           ],
         ),
       ),
     );
   }
 
-  Widget _filtrosCategoria(TokensContextuales t) {
+  Widget _filtrosCategoria(AppLocalizations l, TokensContextuales t) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _chip('Todas', _filtroCategoriaId == null, () => setState(() => _filtroCategoriaId = null), t),
+          _chip(l.habitosTodas, _filtroCategoriaId == null, () => setState(() => _filtroCategoriaId = null), t),
           for (final c in _categorias)
             Padding(
               padding: const EdgeInsets.only(left: 8),
@@ -157,18 +159,18 @@ class _HabitosScreenState extends State<HabitosScreen> {
     );
   }
 
-  Widget _selectorOrden() {
+  Widget _selectorOrden(AppLocalizations l) {
     return SegmentedButton<_Orden>(
-      segments: const [
-        ButtonSegment(value: _Orden.recientes, label: Text('Recientes')),
-        ButtonSegment(value: _Orden.masCumplidos, label: Text('Más cumplidos')),
+      segments: [
+        ButtonSegment(value: _Orden.recientes, label: Text(l.habitosOrdenRecientes)),
+        ButtonSegment(value: _Orden.masCumplidos, label: Text(l.habitosOrdenMasCumplidos)),
       ],
       selected: {_orden},
       onSelectionChanged: (nuevo) => setState(() => _orden = nuevo.first),
     );
   }
 
-  Widget _tarjetaHabito(Map<String, dynamic> r, TokensContextuales t) {
+  Widget _tarjetaHabito(AppLocalizations l, Map<String, dynamic> r, TokensContextuales t) {
     final habito = r['habito'] as Habito;
     final total = r['totalCompletados'] as int;
 
@@ -188,7 +190,13 @@ class _HabitosScreenState extends State<HabitosScreen> {
           title: Text(habito.nombre,
               style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
           subtitle: Text(
-            '${habito.categoriaNombre == null ? 'Sin categoría' : Catalogos.categoria(context, habito.categoriaCodigo, habito.categoriaNombre!)} · $total completados',
+            l.habitosSubtitulo(
+              habito.categoriaNombre == null
+                  ? l.habSinCategoria
+                  : Catalogos.categoria(
+                      context, habito.categoriaCodigo, habito.categoriaNombre!),
+              total,
+            ),
             style: TextStyle(color: t.textMuted, fontSize: 12),
           ),
           trailing: Switch(

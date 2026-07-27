@@ -266,5 +266,59 @@
   "recReenviar": "Reenviar código",
   "recRestablecida": "Contraseña restablecida ✅ Ya puedes iniciar sesión",
   "recErrorEnviar": "No se pudo enviar el código. Inténtalo de nuevo.",
-  "recError": "No se pudo restablecer la contraseña. Revisa el código e inténtalo de nuevo."
+  "recError": "No se pudo restablecer la contraseña. Revisa el código e inténtalo de nuevo.",
+  "navHoy": "Hoy",
+  "navHabitos": "Hábitos",
+  "navColeccion": "Colección",
+  "navMascota": "Mascota",
+  "shellPulsaAtras": "Pulsa atrás otra vez para salir",
+  "shellCerrarSesion": "Cerrar sesión",
+  "dashSinConexion": "Sin conexión. Inténtalo de nuevo.",
+  "dashTodoHecho": "¡Todo hecho por hoy!",
+  "dashDisfruta": "Disfruta el resto del día.",
+  "dashCompletados": "COMPLETADOS",
+  "dashEstaSemana": "ESTA SEMANA ({n})",
+  "@dashEstaSemana": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "dashNoTocanHoy": "No tocan hoy, pero puedes adelantarlos",
+  "dashProgresoPrimero": "¡Vamos a por el primero!",
+  "dashProgresoPerfecto": "¡Día perfecto! 🎉",
+  "dashProgresoCasi": "Ya casi lo tienes",
+  "dashProgresoBuenRitmo": "Buen ritmo, sigue así",
+  "dashVacioTitulo": "Tu primer hábito te espera",
+  "dashVacioCuerpo": "Los grandes cambios empiezan con un paso pequeño. Ve a la pestaña Hábitos para crear el primero.",
+  "dashChipFrecuencia": "{frecuencia} · {hechos}/{meta}",
+  "@dashChipFrecuencia": {
+    "placeholders": {
+      "frecuencia": {
+        "type": "String"
+      },
+      "hechos": {
+        "type": "int"
+      },
+      "meta": {
+        "type": "int"
+      }
+    }
+  },
+  "habitosTodas": "Todas",
+  "habitosOrdenRecientes": "Recientes",
+  "habitosOrdenMasCumplidos": "Más cumplidos",
+  "habitosSinFiltro": "No hay hábitos con este filtro",
+  "habitosSubtitulo": "{categoria} · {n, plural, =1{1 completado} other{{n} completados}}",
+  "@habitosSubtitulo": {
+    "placeholders": {
+      "categoria": {
+        "type": "String"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  }
 }

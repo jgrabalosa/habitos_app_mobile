@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:in_app_review/in_app_review.dart';
@@ -32,7 +33,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int _usuarioId = 0;
   bool _yaPidioResena = false;
 
-  static const nombresFrecuencia = {'DIARIO': 'Diario', 'SEMANAL': 'Semanal'};
+  /// Caida al codigo crudo si llega una frecuencia desconocida, igual que
+  /// hace Catalogos: nunca se deja al usuario sin texto.
+  String _frecuenciaLegible(AppLocalizations l, String codigo) => switch (codigo) {
+        'DIARIO' => l.frecDiario,
+        'SEMANAL' => l.frecSemanal,
+        _ => codigo,
+      };
 
   @override
   void initState() {
@@ -118,7 +125,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Sin conexión. Inténtalo de nuevo.')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.dashSinConexion)),
         );
       }
       return;
@@ -199,6 +206,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final t = tokens(context);
+    final l = AppLocalizations.of(context)!;
 
     // Reparto: diarios y semanales que tocan hoy → lista principal;
     // semanales con días planificados que NO tocan hoy → "Esta semana"
@@ -239,7 +247,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Hoy',
+                          Text(l.navHoy,
                               style: TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.w800,
@@ -250,7 +258,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           if (totalHoy > 0) ...[
                             const SizedBox(height: 4),
                             Text(
-                              _fraseProgreso(completados.length, totalHoy),
+                              _fraseProgreso(l, completados.length, totalHoy),
                               style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -274,7 +282,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 const SizedBox(height: 16),
                 if (_habitos.isEmpty)
-                  _emptyState(t)
+                  _emptyState(l, t)
                 else ...[
                   if (pendientes.isEmpty)
                     Card(
@@ -284,24 +292,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           children: [
                             const Text('🎉', style: TextStyle(fontSize: 28)),
                             const SizedBox(height: 4),
-                            Text('¡Todo hecho por hoy!',
+                            Text(l.dashTodoHecho,
                                 style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
-                            Text('Disfruta el resto del día.',
+                            Text(l.dashDisfruta,
                                 style: TextStyle(fontSize: 12, color: t.textMuted)),
                           ],
                         ),
                       ),
                     )
                   else
-                    ...pendientes.map((h) => _habitoCard(h, false, t)),
+                    ...pendientes.map((h) => _habitoCard(l, h, false, t)),
                   if (completados.isNotEmpty) ...[
                     const SizedBox(height: 16),
-                    Text('COMPLETADOS',
+                    Text(l.dashCompletados,
                         style: TextStyle(
                             fontSize: 12, fontWeight: FontWeight.w800,
                             letterSpacing: 1, color: t.textMuted)),
                     const SizedBox(height: 8),
-                    ...completados.map((h) => _habitoCard(h, true, t)),
+                    ...completados.map((h) => _habitoCard(l, h, true, t)),
                   ],
                   if (noTocaHoy.isNotEmpty) ...[
                     const SizedBox(height: 16),
@@ -311,17 +319,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           .copyWith(dividerColor: Colors.transparent),
                       child: ExpansionTile(
                         tilePadding: EdgeInsets.zero,
-                        title: Text('ESTA SEMANA (${noTocaHoy.length})',
+                        title: Text(l.dashEstaSemana(noTocaHoy.length),
                             style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: 1,
                                 color: t.textMuted)),
-                        subtitle: Text('No tocan hoy, pero puedes adelantarlos',
+                        subtitle: Text(l.dashNoTocanHoy,
                             style:
                                 TextStyle(fontSize: 11, color: t.textMuted)),
                         children: noTocaHoy
-                            .map((h) => _habitoCard(h, false, t))
+                            .map((h) => _habitoCard(l, h, false, t))
                             .toList(),
                       ),
                     ),
@@ -346,14 +354,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return DateFormat.MMMMEEEEd(locale).format(DateTime.now());
   }
 
-  String _fraseProgreso(int hechos, int total) {
-    if (hechos == 0) return '¡Vamos a por el primero!';
-    if (hechos == total) return '¡Día perfecto! 🎉';
-    if (hechos / total >= 0.5) return 'Ya casi lo tienes';
-    return 'Buen ritmo, sigue así';
+  String _fraseProgreso(AppLocalizations l, int hechos, int total) {
+    if (hechos == 0) return l.dashProgresoPrimero;
+    if (hechos == total) return l.dashProgresoPerfecto;
+    if (hechos / total >= 0.5) return l.dashProgresoCasi;
+    return l.dashProgresoBuenRitmo;
   }
 
-  Widget _emptyState(TokensContextuales t) {
+  Widget _emptyState(AppLocalizations l, TokensContextuales t) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -361,11 +369,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             Icon(LucideIcons.sprout, size: 48, color: t.success),
             const SizedBox(height: 12),
-            Text('Tu primer hábito te espera',
+            Text(l.dashVacioTitulo,
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: t.text)),
             const SizedBox(height: 4),
             Text(
-              'Los grandes cambios empiezan con un paso pequeño. Ve a la pestaña Hábitos para crear el primero.',
+              l.dashVacioCuerpo,
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 13, color: t.textMuted),
             ),
@@ -375,9 +383,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _habitoCard(Habito h, bool hecho, TokensContextuales t) {
+  Widget _habitoCard(AppLocalizations l, Habito h, bool hecho, TokensContextuales t) {
     final p = _progreso[h.habitoId] ?? {'completadosPeriodo': 0, 'meta': 1};
-    final frec = nombresFrecuencia[h.frecuencia] ?? h.frecuencia;
 
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 400),
@@ -434,7 +441,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               borderRadius: BorderRadius.circular(999),
                             ),
                             child: Text(
-                                '$frec · ${p['completadosPeriodo']}/${p['meta']}',
+                                l.dashChipFrecuencia(
+                                    _frecuenciaLegible(l, h.frecuencia),
+                                    p['completadosPeriodo'] ?? 0,
+                                    p['meta'] ?? 1),
                                 style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
