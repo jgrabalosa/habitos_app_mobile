@@ -60,5 +60,38 @@
   "buscarZona": "Buscar zona",
   "sinResultados": "Sin resultados",
   "preferenciasGuardadas": "Preferencias actualizadas",
-  "errorGuardar": "No se pudo guardar. Inténtalo de nuevo."
+  "errorGuardar": "No se pudo guardar. Inténtalo de nuevo.",
+  "comunCerrar": "Cerrar",
+  "comunContinuar": "Continuar",
+  "comunEliminar": "Eliminar",
+  "mascotaTitulo": "Tu mascota",
+  "mascotaFaseHuevo": "Huevo",
+  "mascotaFaseCria": "Cría",
+  "mascotaFaseAdulto": "Adulto",
+  "mascotaEstadoFeliz": "Feliz",
+  "mascotaEstadoAtencion": "Necesita atención",
+  "mascotaEstadoTranquila": "Tranquila",
+  "mascotaPonleNombre": "Ponle nombre",
+  "mascotaHintNombre": "Nombre de tu mascota",
+  "mascotaErrorNombre": "No se pudo guardar el nombre. Inténtalo de nuevo.",
+  "mascotaIrTienda": "Ir a la tienda a alimentarla",
+  "mascotaNivel": "Nivel {n}",
+  "@mascotaNivel": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "mascotaXp": "{actual}/{total} XP",
+  "@mascotaXp": {
+    "placeholders": {
+      "actual": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  }
 }

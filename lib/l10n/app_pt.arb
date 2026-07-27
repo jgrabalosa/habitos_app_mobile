@@ -60,5 +60,21 @@
   "buscarZona": "Procurar fuso",
   "sinResultados": "Sem resultados",
   "preferenciasGuardadas": "Preferências atualizadas",
-  "errorGuardar": "Não foi possível guardar. Tenta novamente."
+  "errorGuardar": "Não foi possível guardar. Tenta novamente.",
+  "comunCerrar": "Fechar",
+  "comunContinuar": "Continuar",
+  "comunEliminar": "Eliminar",
+  "mascotaTitulo": "O teu bicho",
+  "mascotaFaseHuevo": "Ovo",
+  "mascotaFaseCria": "Cria",
+  "mascotaFaseAdulto": "Adulto",
+  "mascotaEstadoFeliz": "Feliz",
+  "mascotaEstadoAtencion": "Precisa de atenção",
+  "mascotaEstadoTranquila": "Tranquilo",
+  "mascotaPonleNombre": "Dá-lhe um nome",
+  "mascotaHintNombre": "Nome do teu bicho",
+  "mascotaErrorNombre": "Não foi possível guardar o nome. Tenta novamente.",
+  "mascotaIrTienda": "Ir à loja para o alimentar",
+  "mascotaNivel": "Nível {n}",
+  "mascotaXp": "{actual}/{total} XP"
 }

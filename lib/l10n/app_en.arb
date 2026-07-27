@@ -60,5 +60,21 @@
   "buscarZona": "Search zone",
   "sinResultados": "No results",
   "preferenciasGuardadas": "Preferences updated",
-  "errorGuardar": "Couldn''t save. Please try again."
+  "errorGuardar": "Couldn''t save. Please try again.",
+  "comunCerrar": "Close",
+  "comunContinuar": "Continue",
+  "comunEliminar": "Delete",
+  "mascotaTitulo": "Your pet",
+  "mascotaFaseHuevo": "Egg",
+  "mascotaFaseCria": "Hatchling",
+  "mascotaFaseAdulto": "Adult",
+  "mascotaEstadoFeliz": "Happy",
+  "mascotaEstadoAtencion": "Needs care",
+  "mascotaEstadoTranquila": "Calm",
+  "mascotaPonleNombre": "Give it a name",
+  "mascotaHintNombre": "Your pet's name",
+  "mascotaErrorNombre": "Couldn't save the name. Please try again.",
+  "mascotaIrTienda": "Go to the shop to feed it",
+  "mascotaNivel": "Level {n}",
+  "mascotaXp": "{actual}/{total} XP"
 }

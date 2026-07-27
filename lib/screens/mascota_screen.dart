@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
@@ -19,7 +20,7 @@ class _MascotaScreenState extends State<MascotaScreen> {
   int _nivel = 1;
   int _xpEnNivelActual = 0;
   int _xpParaSiguienteNivel = 20;
-  String _fase = 'Huevo';
+  String _fase = 'HUEVO'; // código, no texto: se traduce al pintar
   String _estado = 'neutral';
 
   @override
@@ -36,7 +37,7 @@ class _MascotaScreenState extends State<MascotaScreen> {
         _nivel = data['nivel'] ?? 1;
         _xpEnNivelActual = data['xpEnNivelActual'] ?? 0;
         _xpParaSiguienteNivel = data['xpParaSiguienteNivel'] ?? 20;
-        _fase = data['fase'] ?? 'Huevo';
+        _fase = data['fase'] ?? 'HUEVO';
         _estado = data['estado'] ?? 'neutral';
         _loading = false;
       });
@@ -56,37 +57,47 @@ class _MascotaScreenState extends State<MascotaScreen> {
     }
   }
 
-  String get _estadoLegible {
-    switch (_estado) {
-      case 'feliz':
-        return 'Feliz';
-      case 'dormida':
-        return 'Necesita atención';
-      default:
-        return 'Tranquila';
-    }
-  }
+  /// Fase traducida. Caída al código crudo si llega uno desconocido, igual
+  /// que hace Catalogos: nunca se deja al usuario sin texto.
+  String _faseLegible(AppLocalizations l) => switch (_fase) {
+        'HUEVO' => l.mascotaFaseHuevo,
+        'CRIA' => l.mascotaFaseCria,
+        'ADULTO' => l.mascotaFaseAdulto,
+        _ => _fase,
+      };
+
+  String _estadoLegible(AppLocalizations l) => switch (_estado) {
+        'feliz' => l.mascotaEstadoFeliz,
+        'dormida' => l.mascotaEstadoAtencion,
+        _ => l.mascotaEstadoTranquila,
+      };
+
+  /// Sin nombre puesto, se muestra la fase localizada. Así el valor por
+  /// defecto está traducido sin haber guardado nada en la BD.
+  String _nombreVisible(AppLocalizations l) =>
+      _nombre.isEmpty ? _faseLegible(l) : _nombre;
 
   Future<void> _editarNombre() async {
+    final l = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: _nombre);
     final nuevoNombre = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Ponle nombre'),
+        title: Text(l.mascotaPonleNombre),
         content: TextField(
           controller: controller,
           autofocus: true,
           maxLength: 30,
-          decoration: const InputDecoration(hintText: 'Nombre de tu mascota'),
+          decoration: InputDecoration(hintText: l.mascotaHintNombre),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
+            child: Text(l.cancelar),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('Guardar'),
+            child: Text(l.guardar),
           ),
         ],
       ),
@@ -101,7 +112,7 @@ class _MascotaScreenState extends State<MascotaScreen> {
         if (mounted) {
           setState(() => _nombre = anterior);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No se pudo guardar el nombre. Inténtalo de nuevo.')),
+            SnackBar(content: Text(l.mascotaErrorNombre)),
           );
         }
       }
@@ -111,10 +122,11 @@ class _MascotaScreenState extends State<MascotaScreen> {
   @override
   Widget build(BuildContext context) {
     final t = tokens(context);
+    final l = AppLocalizations.of(context)!;
     final pct = _xpParaSiguienteNivel > 0 ? _xpEnNivelActual / _xpParaSiguienteNivel : 0.0;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Tu mascota')),
+      appBar: AppBar(title: Text(l.mascotaTitulo)),
       body: _loading
           ? _skeletonMascota()
           : RefreshIndicator(
@@ -134,7 +146,7 @@ class _MascotaScreenState extends State<MascotaScreen> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(_nombre,
+                                Text(_nombreVisible(l),
                                     style: TextStyle(
                                         fontSize: 22,
                                         fontWeight: FontWeight.bold,
@@ -145,7 +157,7 @@ class _MascotaScreenState extends State<MascotaScreen> {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Text('$_fase · $_estadoLegible',
+                          Text('${_faseLegible(l)} · ${_estadoLegible(l)}',
                               style: TextStyle(color: t.textMuted)),
                         ],
                       ),
@@ -161,9 +173,9 @@ class _MascotaScreenState extends State<MascotaScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Nivel $_nivel',
+                              Text(l.mascotaNivel(_nivel),
                                   style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
-                              Text('$_xpEnNivelActual/$_xpParaSiguienteNivel XP',
+                              Text(l.mascotaXp(_xpEnNivelActual, _xpParaSiguienteNivel),
                                   style: TextStyle(color: t.textMuted)),
                             ],
                           ),
@@ -192,7 +204,7 @@ class _MascotaScreenState extends State<MascotaScreen> {
                       ).then((_) => _cargarDatos());
                     },
                     icon: const Icon(LucideIcons.utensils),
-                    label: const Text('Ir a la tienda a alimentarla'),
+                    label: Text(l.mascotaIrTienda),
                   ),
                 ],
               ),
