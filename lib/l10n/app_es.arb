@@ -100,5 +100,58 @@
   "plantillaMeditar": "Meditar",
   "plantillaDormir8h": "Dormir 8h",
   "plantillaCaminar": "Caminar",
-  "plantillaEscribirDiario": "Escribir diario"
+  "plantillaEscribirDiario": "Escribir diario",
+  "frecDiario": "Diario",
+  "frecSemanal": "Semanal",
+  "habTituloNuevo": "Nuevo hábito",
+  "habTituloEditar": "Editar hábito",
+  "habCambiarFrecTitulo": "¿Cambiar la frecuencia?",
+  "habCambiarFrecCuerpo": "Cambiar la frecuencia reiniciará tu racha actual a 0.\nTu mejor racha se conserva.",
+  "habNombreObligatorio": "El nombre es obligatorio",
+  "habErrorCrear": "Error al crear el hábito",
+  "habErrorActualizar": "Error al actualizar el hábito",
+  "habErrorEliminar": "Error al eliminar el hábito",
+  "habEliminarTitulo": "Eliminar hábito",
+  "habEliminarCuerpo": "¿Seguro que quieres eliminar este hábito? Esta acción no se puede deshacer.",
+  "habRecomendados": "Hábitos recomendados (opcional)",
+  "habLabelNombre": "Nombre del hábito",
+  "habLabelDescripcion": "Descripción (opcional)",
+  "habLabelCategoria": "Categoría (opcional)",
+  "habSinCategoria": "Sin categoría",
+  "habLabelFrecuencia": "Frecuencia",
+  "habDiasSemana": "Días de la semana (opcional)",
+  "habDiasAyudaSin": "Sin días concretos: tú eliges cuándo, la meta marca cuántos.",
+  "habDiasAyudaCon": "Son tu guía: si un día no puedes, vale cualquier otro de la semana.",
+  "habMeta": "Meta: ",
+  "habRecordatorio": "Recordatorio",
+  "habEligeHora": "Elige una hora",
+  "habDesactivado": "Desactivado",
+  "habElegirHora": "Elegir hora",
+  "habBotonCrear": "Crear hábito",
+  "habBotonActualizar": "Actualizar hábito",
+  "habBotonEliminar": "Eliminar hábito",
+  "habDiasSemanaMeta": "{n} días/semana",
+  "@habDiasSemanaMeta": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "habALas": "A las {hora}",
+  "@habALas": {
+    "placeholders": {
+      "hora": {
+        "type": "String"
+      }
+    }
+  },
+  "habCambiarHora": "Cambiar hora ({hora})",
+  "@habCambiarHora": {
+    "placeholders": {
+      "hora": {
+        "type": "String"
+      }
+    }
+  }
 }

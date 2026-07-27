@@ -170,22 +170,21 @@ class _HabitoScreenState extends State<HabitoScreen> {
   }
 
   Future<void> _guardar() async {
+    final l = AppLocalizations.of(context)!;
     if (widget.habito != null && _frecuencia != widget.habito!.frecuencia) {
       final confirmar = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('¿Cambiar la frecuencia?'),
-          content: const Text(
-              'Cambiar la frecuencia reiniciará tu racha actual a 0.\n'
-              'Tu mejor racha se conserva.'),
+          title: Text(l.habCambiarFrecTitulo),
+          content: Text(l.habCambiarFrecCuerpo),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
+              child: Text(l.cancelar),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Continuar'),
+              child: Text(l.comunContinuar),
             ),
           ],
         ),
@@ -194,7 +193,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
     }
 
     if (_nombreController.text.isEmpty) {
-      setState(() { _error = 'El nombre es obligatorio'; });
+      setState(() { _error = l.habNombreObligatorio; });
       return;
     }
 
@@ -243,26 +242,27 @@ class _HabitoScreenState extends State<HabitoScreen> {
         }
       }
     } catch (e) {
-      setState(() { _error = _esEdicion ? 'Error al actualizar el hábito' : 'Error al crear el hábito'; });
+      setState(() { _error = _esEdicion ? l.habErrorActualizar : l.habErrorCrear; });
     } finally {
       setState(() { _loading = false; });
     }
   }
 
   Future<void> _eliminar() async {
+    final l = AppLocalizations.of(context)!;
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Eliminar hábito'),
-        content: const Text('¿Seguro que quieres eliminar este hábito? Esta acción no se puede deshacer.'),
+        title: Text(l.habEliminarTitulo),
+        content: Text(l.habEliminarCuerpo),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+            child: Text(l.cancelar),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+            child: Text(l.comunEliminar, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -290,10 +290,11 @@ class _HabitoScreenState extends State<HabitoScreen> {
   }
 
   Widget _selectorDias(TokensContextuales t) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Días de la semana (opcional)',
+        Text(l.habDiasSemana,
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
         const SizedBox(height: 8),
         Row(
@@ -331,8 +332,8 @@ class _HabitoScreenState extends State<HabitoScreen> {
         const SizedBox(height: 4),
         Text(
           _diasSeleccionados.isEmpty
-              ? 'Sin días concretos: tú eliges cuándo, la meta marca cuántos.'
-              : 'Son tu guía: si un día no puedes, vale cualquier otro de la semana.',
+              ? l.habDiasAyudaSin
+              : l.habDiasAyudaCon,
           style: TextStyle(fontSize: 12, color: t.textMuted),
         ),
       ],
@@ -341,11 +342,12 @@ class _HabitoScreenState extends State<HabitoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final t = tokens(context);
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text(_esEdicion ? 'Editar hábito' : 'Nuevo hábito'),
+        title: Text(_esEdicion ? l.habTituloEditar : l.habTituloNuevo),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -357,7 +359,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (!_esEdicion && _plantillasDisponibles.isNotEmpty) ...[
-                  const Text('Hábitos recomendados (opcional)',
+                  Text(l.habRecomendados,
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                   const SizedBox(height: 8),
                   SizedBox(
@@ -384,18 +386,18 @@ class _HabitoScreenState extends State<HabitoScreen> {
                 TextField(
                   controller: _nombreController,
                   textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(
-                    labelText: 'Nombre del hábito',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: l.habLabelNombre,
+                    border: const OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _descripcionController,
                   textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(
-                    labelText: 'Descripción (opcional)',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: l.habLabelDescripcion,
+                    border: const OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -406,14 +408,14 @@ class _HabitoScreenState extends State<HabitoScreen> {
                       )
                     : DropdownButtonFormField<int?>(
                         initialValue: _categoriaId,
-                        decoration: const InputDecoration(
-                          labelText: 'Categoría (opcional)',
+                        decoration: InputDecoration(
+                          labelText: l.habLabelCategoria,
                           border: OutlineInputBorder(),
                         ),
                         items: [
-                          const DropdownMenuItem<int?>(
+                          DropdownMenuItem<int?>(
                             value: null,
-                            child: Text('Sin categoría'),
+                            child: Text(l.habSinCategoria),
                           ),
                           ..._categorias.map((c) => DropdownMenuItem<int?>(
                                 value: c['categoriaId'],
@@ -425,12 +427,14 @@ class _HabitoScreenState extends State<HabitoScreen> {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   initialValue: _frecuencia,
-                  decoration: const InputDecoration(
-                    labelText: 'Frecuencia',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: l.habLabelFrecuencia,
+                    border: const OutlineInputBorder(),
                   ),
                   items: ['DIARIO', 'SEMANAL']
-                      .map((f) => DropdownMenuItem(value: f, child: Text(f)))
+                      .map((f) => DropdownMenuItem(
+                          value: f,
+                          child: Text(f == 'DIARIO' ? l.frecDiario : l.frecSemanal)))
                       .toList(),
                   onChanged: (v) => setState(() { _frecuencia = v!; }),
                 ),
@@ -442,8 +446,8 @@ class _HabitoScreenState extends State<HabitoScreen> {
                 if (_metaDerivada)
                   Row(
                     children: [
-                      const Text('Meta: '),
-                      Text('${_diasSeleccionados.length} días/semana',
+                      Text(l.habMeta),
+                      Text(l.habDiasSemanaMeta(_diasSeleccionados.length),
                           style: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold)),
                     ],
@@ -451,7 +455,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                 else
                   Row(
                     children: [
-                      const Text('Meta: '),
+                      Text(l.habMeta),
                       IconButton(
                         icon: const Icon(LucideIcons.minus),
                         onPressed: () => setState(() { if (_meta > 1) _meta--; }),
@@ -466,12 +470,12 @@ class _HabitoScreenState extends State<HabitoScreen> {
                 const SizedBox(height: 12),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Recordatorio'),
+                  title: Text(l.habRecordatorio),
                   subtitle: Text(_recordatorioActivo
                       ? (_recordatorioHora != null
-                          ? 'A las ${_recordatorioHora!.format(context)}'
-                          : 'Elige una hora')
-                      : 'Desactivado'),
+                          ? l.habALas(_recordatorioHora!.format(context))
+                          : l.habEligeHora)
+                      : l.habDesactivado),
                   value: _recordatorioActivo,
                   onChanged: (v) => setState(() { _recordatorioActivo = v; }),
                 ),
@@ -482,8 +486,8 @@ class _HabitoScreenState extends State<HabitoScreen> {
                       onPressed: _elegirHoraRecordatorio,
                       icon: const Icon(LucideIcons.clock),
                       label: Text(_recordatorioHora == null
-                          ? 'Elegir hora'
-                          : 'Cambiar hora (${_recordatorioHora!.format(context)})'),
+                          ? l.habElegirHora
+                          : l.habCambiarHora(_recordatorioHora!.format(context))),
                     ),
                   ),
                 if (_error != null) ...[
@@ -497,7 +501,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                     onPressed: _loading ? null : _guardar,
                     child: _loading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : Text(_esEdicion ? 'Actualizar hábito' : 'Crear hábito'),
+                        : Text(_esEdicion ? l.habBotonActualizar : l.habBotonCrear),
                   ),
                 ),
                 if (_esEdicion) ...[
@@ -510,7 +514,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                         side: const BorderSide(color: Colors.red),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
-                      child: const Text('Eliminar hábito',
+                      child: Text(l.habBotonEliminar,
                           style: TextStyle(color: Colors.red, fontSize: 16)),
                     ),
                   ),
