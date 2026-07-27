@@ -261,7 +261,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                         const Divider(),
                         const SizedBox(height: 16),
                         Text(
-                          'Cambiar contraseña',
+                          l.perfilCambiarPass,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,

@@ -274,7 +274,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
         await ApiService.eliminarHabito(widget.habito!.habitoId);
         if (mounted) Navigator.pop(context, true);
       } catch (e) {
-        setState(() { _error = 'Error al eliminar el hábito'; _loading = false; });
+        setState(() { _error = l.habErrorEliminar; _loading = false; });
       }
     }
   }
