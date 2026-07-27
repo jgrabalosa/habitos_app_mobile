@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
@@ -21,8 +22,9 @@ class _RecuperacionScreenState extends State<RecuperacionScreen> {
   String? _error;
 
   Future<void> _enviarCodigo() async {
+    final l = AppLocalizations.of(context)!;
     if (_emailController.text.trim().isEmpty) {
-      setState(() => _error = 'Escribe tu email');
+      setState(() => _error = l.recEscribeEmail);
       return;
     }
     setState(() { _loading = true; _error = null; });
@@ -30,16 +32,17 @@ class _RecuperacionScreenState extends State<RecuperacionScreen> {
       await ApiService.solicitarCodigoRecuperacion(_emailController.text.trim());
       setState(() => _codigoEnviado = true);
     } catch (e) {
-      setState(() => _error = 'No se pudo enviar el código. Inténtalo de nuevo.');
+      setState(() => _error = l.recErrorEnviar);
     } finally {
       setState(() => _loading = false);
     }
   }
 
   Future<void> _restablecer() async {
+    final l = AppLocalizations.of(context)!;
     if (_codigoController.text.trim().isEmpty ||
         _contrasenaController.text.isEmpty) {
-      setState(() => _error = 'Rellena el código y la nueva contraseña');
+      setState(() => _error = l.recRellenaCampos);
       return;
     }
     setState(() { _loading = true; _error = null; });
@@ -51,16 +54,12 @@ class _RecuperacionScreenState extends State<RecuperacionScreen> {
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Contraseña restablecida ✅ Ya puedes iniciar sesión'),
-          ),
+          SnackBar(content: Text(l.recRestablecida)),
         );
         Navigator.pop(context);
       }
     } catch (e) {
-      setState(() {
-        _error = e.toString().replaceFirst('Exception: ', '');
-      });
+      setState(() => _error = l.recError);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -76,9 +75,10 @@ class _RecuperacionScreenState extends State<RecuperacionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Recuperar contraseña'),
+        title: Text(l.recTitulo),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -90,9 +90,7 @@ class _RecuperacionScreenState extends State<RecuperacionScreen> {
               Icon(LucideIcons.keyRound, size: 48, color: AppColors.primary),
               const SizedBox(height: 16),
               Text(
-                _codigoEnviado
-                    ? 'Revisa tu correo. Si el email está registrado, te hemos enviado un código de 6 dígitos (caduca en 15 minutos).'
-                    : 'Escribe el email de tu cuenta y te enviaremos un código para restablecer la contraseña.',
+                _codigoEnviado ? l.recCodigoEnviado : l.recIntro,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 15),
               ),
@@ -103,9 +101,9 @@ class _RecuperacionScreenState extends State<RecuperacionScreen> {
                 controller: _emailController,
                 enabled: !_codigoEnviado,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l.perfilLabelEmail,
+                  border: const OutlineInputBorder(),
                 ),
               ),
 
@@ -117,9 +115,9 @@ class _RecuperacionScreenState extends State<RecuperacionScreen> {
                   controller: _codigoController,
                   keyboardType: TextInputType.number,
                   maxLength: 6,
-                  decoration: const InputDecoration(
-                    labelText: 'Código de 6 dígitos',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: l.recLabelCodigo,
+                    border: const OutlineInputBorder(),
                     counterText: '',
                   ),
                 ),
@@ -130,8 +128,8 @@ class _RecuperacionScreenState extends State<RecuperacionScreen> {
                   controller: _contrasenaController,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    labelText: 'Nueva contraseña',
-                    helperText: 'Mínimo 6 caracteres',
+                    labelText: l.perfilPassNueva,
+                    helperText: l.perfilMinimo6,
                     border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(_obscurePassword
@@ -176,8 +174,8 @@ class _RecuperacionScreenState extends State<RecuperacionScreen> {
                       ? const CircularProgressIndicator(color: Colors.white)
                       : Text(
                           _codigoEnviado
-                              ? 'Restablecer contraseña'
-                              : 'Enviar código',
+                              ? l.recBotonRestablecer
+                              : l.recBotonEnviar,
                           style: const TextStyle(
                               color: Colors.white, fontSize: 16),
                         ),
@@ -188,7 +186,7 @@ class _RecuperacionScreenState extends State<RecuperacionScreen> {
                 const SizedBox(height: 8),
                 TextButton(
                   onPressed: _loading ? null : _enviarCodigo,
-                  child: const Text('Reenviar código'),
+                  child: Text(l.recReenviar),
                 ),
               ],
             ],

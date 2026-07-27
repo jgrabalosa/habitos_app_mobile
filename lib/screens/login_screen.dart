@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
@@ -62,6 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // ── Login ──────────────────────────────────────────────
   Future<void> _login() async {
+    final l = AppLocalizations.of(context)!;
     setState(() { _loading = true; _error = null; });
     try {
       final usuario = await ApiService.login(
@@ -80,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } catch (e) {
-      setState(() { _error = e.toString().replaceAll('Exception: ', ''); });
+      setState(() { _error = l.loginError; });
     } finally {
       setState(() { _loading = false; });
     }
@@ -91,6 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
 
 Future<void> _registro() async {
+    final l = AppLocalizations.of(context)!;
     setState(() { _loading = true; _error = null; });
     try {
       await ApiService.registro(
@@ -118,7 +121,7 @@ Future<void> _registro() async {
         );
       }
     } catch (e) {
-      setState(() { _error = e.toString().replaceAll('Exception: ', ''); });
+      setState(() { _error = l.loginError; });
     } finally {
       setState(() { _loading = false; });
     }
@@ -126,6 +129,7 @@ Future<void> _registro() async {
 
   // ── Login con Google ───────────────────────────────────
   Future<void> _loginConGoogle() async {
+    final l = AppLocalizations.of(context)!;
     setState(() { _loading = true; _error = null; });
     try {
       final esNuevo = await ApiService.loginConGoogle();
@@ -141,7 +145,7 @@ Future<void> _registro() async {
         );
       }
     } catch (e) {
-      setState(() { _error = e.toString().replaceAll('Exception: ', ''); });
+      setState(() { _error = l.loginError; });
     } finally {
       setState(() { _loading = false; });
     }
@@ -149,6 +153,7 @@ Future<void> _registro() async {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.bgLight,
       body: SafeArea(
@@ -161,10 +166,10 @@ Future<void> _registro() async {
                 // Logo
                 const Icon(LucideIcons.circleCheck, size: 72, color: AppColors.primary),
                 const SizedBox(height: 12),
-                const Text('Norday Hábitos',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-                const Text('Construye hábitos, transforma tu vida',
-                  style: TextStyle(color: Colors.grey)),
+                Text(l.appTitulo,
+                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                Text(l.loginTagline,
+                  style: const TextStyle(color: Colors.grey)),
                 const SizedBox(height: 32),
 
                 // Card
@@ -181,7 +186,7 @@ Future<void> _registro() async {
                               child: GestureDetector(
                                 onTap: () => setState(() { _isLogin = true; _error = null; }),
                                 child: Column(children: [
-                                  Text('Iniciar sesión',
+                                  Text(l.loginIniciarSesion,
                                     style: TextStyle(
                                       color: _isLogin ? AppColors.primary : Colors.grey,
                                       fontWeight: _isLogin ? FontWeight.bold : FontWeight.normal,
@@ -196,7 +201,7 @@ Future<void> _registro() async {
                               child: GestureDetector(
                                 onTap: () => setState(() { _isLogin = false; _error = null; }),
                                 child: Column(children: [
-                                  Text('Registrarse',
+                                  Text(l.loginRegistrarse,
                                     style: TextStyle(
                                       color: !_isLogin ? AppColors.primary : Colors.grey,
                                       fontWeight: !_isLogin ? FontWeight.bold : FontWeight.normal,
@@ -217,7 +222,7 @@ Future<void> _registro() async {
                           child: OutlinedButton.icon(
                             onPressed: _loading ? null : _loginConGoogle,
                             icon: const Text('G', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red)),
-                            label: const Text('Continuar con Google'),
+                            label: Text(l.loginContinuarGoogle),
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -225,13 +230,13 @@ Future<void> _registro() async {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        const Row(children: [
-                          Expanded(child: Divider()),
+                        Row(children: [
+                          const Expanded(child: Divider()),
                           Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 8),
-                            child: Text('o', style: TextStyle(color: Colors.grey)),
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Text(l.loginO, style: const TextStyle(color: Colors.grey)),
                           ),
-                          Expanded(child: Divider()),
+                          const Expanded(child: Divider()),
                         ]),
                         const SizedBox(height: 12),
 
@@ -240,17 +245,17 @@ Future<void> _registro() async {
                           TextField(
                             controller: _nombreController,
                             textCapitalization: TextCapitalization.words,
-                            decoration: const InputDecoration(
-                              labelText: 'Nombre',
-                              border: OutlineInputBorder(),
+                            decoration: InputDecoration(
+                              labelText: l.perfilLabelNombre,
+                              border: const OutlineInputBorder(),
                             ),
                           ),
                           const SizedBox(height: 12),
                           TextField(
                             controller: _usernameController,
-                            decoration: const InputDecoration(
-                              labelText: 'Username',
-                              border: OutlineInputBorder(),
+                            decoration: InputDecoration(
+                              labelText: l.perfilLabelUsuario,
+                              border: const OutlineInputBorder(),
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -260,9 +265,9 @@ Future<void> _registro() async {
                         TextField(
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
-                          decoration: const InputDecoration(
-                            labelText: 'Email',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: l.perfilLabelEmail,
+                            border: const OutlineInputBorder(),
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -272,7 +277,7 @@ Future<void> _registro() async {
                           controller: _contrasenaController,
                           obscureText: _obscurePassword,
                           decoration: InputDecoration(
-                            labelText: 'Contraseña',
+                            labelText: l.loginLabelContrasena,
                             border: const OutlineInputBorder(),
                             suffixIcon: IconButton(
                               icon: Icon(_obscurePassword ? LucideIcons.eye : LucideIcons.eyeOff),
@@ -296,7 +301,7 @@ Future<void> _registro() async {
                                         ),
                                       );
                                     },
-                              child: const Text('¿Olvidaste tu contraseña?'),
+                              child: Text(l.loginOlvidasteContrasena),
                             ),
                           )
                         else
@@ -329,7 +334,7 @@ Future<void> _registro() async {
                             child: _loading
                               ? const CircularProgressIndicator(color: Colors.white)
                               : Text(
-                                  _isLogin ? 'Iniciar sesión' : 'Crear cuenta',
+                                  _isLogin ? l.loginIniciarSesion : l.loginCrearCuenta,
                                   style: const TextStyle(color: Colors.white, fontSize: 16),
                                 ),
                           ),
