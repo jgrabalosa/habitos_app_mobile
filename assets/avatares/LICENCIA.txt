@@ -1,0 +1,23 @@
+Avatares Norday Hábitos — origen y licencia
+
+Fuente: Noto Emoji (Google) — https://github.com/googlefonts/noto-emoji
+Licencia de las imágenes: Apache License, version 2.0
+https://github.com/googlefonts/noto-emoji/blob/main/LICENSE
+
+No exige mostrar un crédito visible en la interfaz de la app, pero sí
+conservar el aviso de licencia del proyecto. Recomendado: mencionar
+"Iconos de avatar: Noto Emoji (Google), licencia Apache 2.0" en la
+pantalla de créditos / política de privacidad (Fase 4 del roadmap).
+
+Archivos (10), 128×128 px, PNG, fondo transparente:
+
+AVATAR_ZORRO.png      🦊 U+1F98A
+AVATAR_GATO.png       🐱 U+1F431
+AVATAR_BUHO.png       🦉 U+1F989
+AVATAR_PANDA.png      🐼 U+1F43C
+AVATAR_TORTUGA.png    🐢 U+1F422
+AVATAR_PERRO.png      🐶 U+1F436
+AVATAR_CONEJO.png     🐰 U+1F430
+AVATAR_KOALA.png      🐨 U+1F428
+AVATAR_PINGUINO.png   🐧 U+1F427
+AVATAR_LEON.png       🦁 U+1F981
