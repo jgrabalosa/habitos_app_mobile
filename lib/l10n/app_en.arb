@@ -288,5 +288,15 @@
   "nivelFacil": "Easy",
   "nivelMedio": "Medium",
   "nivelDificil": "Hard",
-  "logrosSubtitulo": "{descripcion}\n{categoria} · {nivel}"
+  "logrosSubtitulo": "{descripcion}\n{categoria} · {nivel}",
+  "prodAvatarPerro": "Dog",
+  "prodAvatarConejo": "Rabbit",
+  "prodAvatarKoala": "Koala",
+  "prodAvatarPinguino": "Penguin",
+  "prodAvatarLeon": "Lion",
+  "prodDescAvatarPerro": "Illustrated dog avatar",
+  "prodDescAvatarConejo": "Illustrated rabbit avatar",
+  "prodDescAvatarKoala": "Illustrated koala avatar",
+  "prodDescAvatarPinguino": "Illustrated penguin avatar",
+  "prodDescAvatarLeon": "Illustrated lion avatar"
 }

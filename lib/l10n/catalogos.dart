@@ -102,6 +102,11 @@ class Catalogos {
       'AVATAR_BUHO': l.prodAvatarBuho,
       'AVATAR_PANDA': l.prodAvatarPanda,
       'AVATAR_TORTUGA': l.prodAvatarTortuga,
+      'AVATAR_PERRO': l.prodAvatarPerro,
+      'AVATAR_CONEJO': l.prodAvatarConejo,
+      'AVATAR_KOALA': l.prodAvatarKoala,
+      'AVATAR_PINGUINO': l.prodAvatarPinguino,
+      'AVATAR_LEON': l.prodAvatarLeon,
       'COMIDA_BASICA': l.prodComidaBasica,
     };
   }
@@ -148,6 +153,11 @@ class Catalogos {
       'AVATAR_BUHO': l.prodDescAvatarBuho,
       'AVATAR_PANDA': l.prodDescAvatarPanda,
       'AVATAR_TORTUGA': l.prodDescAvatarTortuga,
+      'AVATAR_PERRO': l.prodDescAvatarPerro,
+      'AVATAR_CONEJO': l.prodDescAvatarConejo,
+      'AVATAR_KOALA': l.prodDescAvatarKoala,
+      'AVATAR_PINGUINO': l.prodDescAvatarPinguino,
+      'AVATAR_LEON': l.prodDescAvatarLeon,
       'COMIDA_BASICA': l.prodDescComidaBasica,
     };
   }

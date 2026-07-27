@@ -288,5 +288,15 @@
   "nivelFacil": "Fácil",
   "nivelMedio": "Médio",
   "nivelDificil": "Difícil",
-  "logrosSubtitulo": "{descripcion}\n{categoria} · {nivel}"
+  "logrosSubtitulo": "{descripcion}\n{categoria} · {nivel}",
+  "prodAvatarPerro": "Cachorro",
+  "prodAvatarConejo": "Coelho",
+  "prodAvatarKoala": "Coala",
+  "prodAvatarPinguino": "Pinguim",
+  "prodAvatarLeon": "Leão",
+  "prodDescAvatarPerro": "Avatar ilustrado de cachorro",
+  "prodDescAvatarConejo": "Avatar ilustrado de coelho",
+  "prodDescAvatarKoala": "Avatar ilustrado de coala",
+  "prodDescAvatarPinguino": "Avatar ilustrado de pinguim",
+  "prodDescAvatarLeon": "Avatar ilustrado de leão"
 }

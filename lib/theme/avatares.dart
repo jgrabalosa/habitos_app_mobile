@@ -16,6 +16,11 @@ const Map<String, AvatarInfo> catalogoAvatares = {
   'AVATAR_BUHO': AvatarInfo(emoji: '🦉', color: Color(0xFF6B7280)),
   'AVATAR_PANDA': AvatarInfo(emoji: '🐼', color: Color(0xFF374151)),
   'AVATAR_TORTUGA': AvatarInfo(emoji: '🐢', color: Color(0xFF27C76F)),
+  'AVATAR_PERRO': AvatarInfo(emoji: '🐶', color: Color(0xFFB98A5E)),
+  'AVATAR_CONEJO': AvatarInfo(emoji: '🐰', color: Color(0xFFD98BA8)),
+  'AVATAR_KOALA': AvatarInfo(emoji: '🐨', color: Color(0xFF8A9BA8)),
+  'AVATAR_PINGUINO': AvatarInfo(emoji: '🐧', color: Color(0xFF3B82F6)),
+  'AVATAR_LEON': AvatarInfo(emoji: '🦁', color: Color(0xFFE0A020)),
 };
 
 const _keyAvatarEquipado = 'avatar_equipado_codigo';

@@ -445,5 +445,15 @@
         "type": "String"
       }
     }
-  }
+  },
+  "prodAvatarPerro": "Perro",
+  "prodAvatarConejo": "Conejo",
+  "prodAvatarKoala": "Koala",
+  "prodAvatarPinguino": "Pingüino",
+  "prodAvatarLeon": "León",
+  "prodDescAvatarPerro": "Avatar ilustrado de perro",
+  "prodDescAvatarConejo": "Avatar ilustrado de conejo",
+  "prodDescAvatarKoala": "Avatar ilustrado de koala",
+  "prodDescAvatarPinguino": "Avatar ilustrado de pingüino",
+  "prodDescAvatarLeon": "Avatar ilustrado de león"
 }
