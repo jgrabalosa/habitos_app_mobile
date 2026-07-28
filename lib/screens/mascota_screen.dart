@@ -46,6 +46,7 @@ class _MascotaScreenState extends State<MascotaScreen> {
     }
   }
 
+  /// Respaldo: solo se pinta si la imagen de la fase actual no existe todavia.
   String get _icono {
     switch (_estado) {
       case 'feliz':
@@ -56,6 +57,20 @@ class _MascotaScreenState extends State<MascotaScreen> {
         return '🐤';
     }
   }
+
+  String get _sufijoEstado {
+    switch (_estado) {
+      case 'feliz':
+        return 'sonriente';
+      case 'dormida':
+        return 'dormido';
+      default:
+        return 'triste';
+    }
+  }
+
+  String get _imagenMascota =>
+      'assets/mascota/Nori_${_fase.toLowerCase()}_$_sufijoEstado.png';
 
   /// Fase traducida. Caída al código crudo si llega uno desconocido, igual
   /// que hace Catalogos: nunca se deja al usuario sin texto.
@@ -139,7 +154,24 @@ class _MascotaScreenState extends State<MascotaScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
                       child: Column(
                         children: [
-                          Text(_icono, style: const TextStyle(fontSize: 96)),
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            transitionBuilder: (child, animation) => FadeTransition(
+                              opacity: animation,
+                              child: ScaleTransition(scale: animation, child: child),
+                            ),
+                            child: Image.asset(
+                              _imagenMascota,
+                              key: ValueKey(_imagenMascota),
+                              width: 140,
+                              height: 140,
+                              // Solo existen imagenes de la fase HUEVO: para
+                              // CRIA y ADULTO cae al emoji de siempre.
+                              errorBuilder: (context, error, stackTrace) => Text(_icono,
+                                  key: ValueKey('icono_$_estado'),
+                                  style: const TextStyle(fontSize: 96)),
+                            ),
+                          ),
                           const SizedBox(height: 12),
                           GestureDetector(
                             onTap: _editarNombre,
