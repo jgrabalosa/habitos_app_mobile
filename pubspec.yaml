@@ -41,6 +41,7 @@ flutter:
     - assets/sounds/
     - assets/branding/
     - assets/avatares/
+    - assets/mascota/
 
 flutter_native_splash:
   color: "0A1628"

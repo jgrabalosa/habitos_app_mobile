@@ -11,6 +11,7 @@ import 'theme/avatares.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_shell.dart';
 import 'widgets/splash_generico.dart';
+import 'screens/mascota_estatica_test_screen.dart'; // TEMPORAL: prueba de Nori
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -53,7 +54,7 @@ class HabitosApp extends StatelessWidget {
                 GlobalWidgetsLocalizations.delegate,
                 GlobalCupertinoLocalizations.delegate,
               ],
-              home: const SplashScreen(),
+              home: const MascotaEstaticaTestScreen(), // TEMPORAL: era const SplashScreen()
             );
           },
         );
