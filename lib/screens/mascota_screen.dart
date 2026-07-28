@@ -54,9 +54,9 @@ class _MascotaScreenState extends State<MascotaScreen> {
       case 'dormida':
         return '💤';
       case 'triste':
-        return '🐤';
+        return '😢';
       default:
-        return '🐤';
+        return '😢';
     }
   }
 
