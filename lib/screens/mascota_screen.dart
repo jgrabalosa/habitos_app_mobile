@@ -21,7 +21,7 @@ class _MascotaScreenState extends State<MascotaScreen> {
   int _xpEnNivelActual = 0;
   int _xpParaSiguienteNivel = 20;
   String _fase = 'HUEVO'; // código, no texto: se traduce al pintar
-  String _estado = 'neutral';
+  String _estado = 'triste';
 
   @override
   void initState() {
@@ -38,7 +38,7 @@ class _MascotaScreenState extends State<MascotaScreen> {
         _xpEnNivelActual = data['xpEnNivelActual'] ?? 0;
         _xpParaSiguienteNivel = data['xpParaSiguienteNivel'] ?? 20;
         _fase = data['fase'] ?? 'HUEVO';
-        _estado = data['estado'] ?? 'neutral';
+        _estado = data['estado'] ?? 'triste';
         _loading = false;
       });
     } catch (e) {
@@ -53,6 +53,8 @@ class _MascotaScreenState extends State<MascotaScreen> {
         return '🐣';
       case 'dormida':
         return '💤';
+      case 'triste':
+        return '🐤';
       default:
         return '🐤';
     }
@@ -64,6 +66,8 @@ class _MascotaScreenState extends State<MascotaScreen> {
         return 'sonriente';
       case 'dormida':
         return 'dormido';
+      case 'triste':
+        return 'triste';
       default:
         return 'triste';
     }
@@ -81,9 +85,13 @@ class _MascotaScreenState extends State<MascotaScreen> {
         _ => _fase,
       };
 
+  /// Los tres que manda el backend, explicitos. La caida solo cubre un
+  /// estado futuro que este cliente aun no conozca: mejor "Tranquila" que
+  /// un codigo crudo o una alarma que no toca.
   String _estadoLegible(AppLocalizations l) => switch (_estado) {
         'feliz' => l.mascotaEstadoFeliz,
         'dormida' => l.mascotaEstadoAtencion,
+        'triste' => l.mascotaEstadoTriste,
         _ => l.mascotaEstadoTranquila,
       };
 

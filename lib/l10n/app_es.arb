@@ -71,6 +71,7 @@
   "mascotaEstadoFeliz": "Feliz",
   "mascotaEstadoAtencion": "Necesita atención",
   "mascotaEstadoTranquila": "Tranquila",
+  "mascotaEstadoTriste": "Triste",
   "mascotaPonleNombre": "Ponle nombre",
   "mascotaHintNombre": "Nombre de tu mascota",
   "mascotaErrorNombre": "No se pudo guardar el nombre. Inténtalo de nuevo.",

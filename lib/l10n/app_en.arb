@@ -71,6 +71,7 @@
   "mascotaEstadoFeliz": "Happy",
   "mascotaEstadoAtencion": "Needs care",
   "mascotaEstadoTranquila": "Calm",
+  "mascotaEstadoTriste": "Sad",
   "mascotaPonleNombre": "Give it a name",
   "mascotaHintNombre": "Your pet's name",
   "mascotaErrorNombre": "Couldn't save the name. Please try again.",

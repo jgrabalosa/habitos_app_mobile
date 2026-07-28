@@ -71,6 +71,7 @@
   "mascotaEstadoFeliz": "Feliz",
   "mascotaEstadoAtencion": "Precisa de atenção",
   "mascotaEstadoTranquila": "Tranquilo",
+  "mascotaEstadoTriste": "Triste",
   "mascotaPonleNombre": "Dá-lhe um nome",
   "mascotaHintNombre": "Nome do teu bicho",
   "mascotaErrorNombre": "Não foi possível guardar o nome. Tenta novamente.",

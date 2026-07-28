@@ -7,7 +7,7 @@ import '../screens/mascota_screen.dart';
 import 'burbuja_flotante.dart';
 
 /// Traductor de dominio: convierte el estado genérico de la mascota
-/// (feliz/neutral/dormida) en una representación visual. Hoy es un
+/// (feliz/dormida/triste) en una representación visual. Hoy es un
 /// placeholder emoji/Lottie de prueba — cuando lleguen los assets
 /// definitivos, solo se sustituye `_iconoPara` / el Lottie.asset.
 class MiniMascota extends StatefulWidget {
@@ -54,12 +54,14 @@ class _MiniMascotaState extends State<MiniMascota> {
     switch (estado) {
       case 'feliz':
         return '🐣';
-      case 'neutral':
-        return '🐤';
       case 'dormida':
         return '💤';
+      case 'triste':
+        return '🐤';
       default:
-        return '🐣';
+        // Estado desconocido o sin cargar todavia: nada que celebrar, pero
+        // tampoco se da por hecho que este contenta.
+        return '🐤';
     }
   }
 
