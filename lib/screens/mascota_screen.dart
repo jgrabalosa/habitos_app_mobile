@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../theme/mascota_assets.dart';
+import '../widgets/mascota_animada_viva.dart';
 import '../widgets/skeleton.dart';
 import 'tienda_screen.dart';
 
@@ -158,11 +159,15 @@ class _MascotaScreenState extends State<MascotaScreen> {
                               opacity: animation,
                               child: ScaleTransition(scale: animation, child: child),
                             ),
-                            child: Image.asset(
-                              _imagenMascota,
+                            child: MascotaAnimadaViva(
+                              // La clave es la ilustración, no el estado: el
+                              // AnimatedSwitcher tiene que cruzar cuando
+                              // cambia lo que se ve.
                               key: ValueKey(_imagenMascota),
-                              width: 140,
-                              height: 140,
+                              fase: _fase,
+                              estado: _estado,
+                              tamano: 140,
+                              permiteToque: true,
                             ),
                           ),
                           const SizedBox(height: 12),

@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
-import '../theme/mascota_assets.dart';
 import '../screens/mascota_screen.dart';
 import 'burbuja_flotante.dart';
+import 'mascota_animada_viva.dart';
 
-/// Versión flotante y pequeña de la mascota. La ilustración sale de
-/// `assetMascota`, el mismo mapeo que usa la pantalla grande: aquí no se
-/// decide nada sobre fases ni estados.
+/// Versión flotante y pequeña de la mascota. La ilustración y su animación
+/// de reposo salen de `MascotaAnimadaViva`, el mismo widget que usa la
+/// pantalla grande: aquí no se decide nada sobre fases ni estados.
 class MiniMascota extends StatefulWidget {
   final int usuarioId;
   final Size areaSize;
@@ -91,10 +91,12 @@ class _MiniMascotaState extends State<MiniMascota> {
             ],
           ),
           child: Center(
-            child: Image.asset(
-              assetMascota(fase: _fase, estado: _estado),
-              width: 48,
-              height: 48,
+            // El toque lo gestiona la burbuja (que además arrastra), así que
+            // aquí va sin él: dos GestureDetector encajados se pelearían.
+            child: MascotaAnimadaViva(
+              fase: _fase,
+              estado: _estado,
+              tamano: 48,
             ),
           ),
         ),

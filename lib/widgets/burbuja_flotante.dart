@@ -15,10 +15,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 ///
 /// Vagabundeo (opcional, `vagabundeo: true`): mientras no se arrastra, da
 /// pasos pequeños y aleatorios dentro de su área permitida cada pocos
-/// segundos, y tiene un balanceo continuo de reposo — para que se sienta
-/// "viva" en vez de completamente estática. Pensado para burbujas que
-/// representen algo con vida propia (ej. una mascota); una burbuja
-/// puramente funcional puede dejarlo en false (el valor por defecto).
+/// segundos. Pensado para burbujas que representen algo con vida propia
+/// (ej. una mascota); una burbuja puramente funcional puede dejarlo en
+/// false (el valor por defecto).
+///
+/// La burbuja mueve la burbuja: la vida de reposo del contenido (respirar,
+/// balancearse) es cosa del contenido, que es quien sabe si respira y a qué
+/// ritmo. Por eso aquí no hay ningún vaivén propio.
 class BurbujaFlotante extends StatefulWidget {
   final Widget child;
   final String storageKey; // clave única en SharedPreferences para la posición
@@ -60,12 +63,7 @@ class _BurbujaFlotanteState extends State<BurbujaFlotante>
   Animation<double>? _dxAnim;
   Animation<double>? _dyAnim;
 
-  // Balanceo continuo de reposo (vida en idle) — independiente de la
-  // posición real, se superpone como un pequeño desplazamiento vertical.
-  late final AnimationController _balanceoController;
-
   final _random = Random();
-  bool _paseandoAhoraMismo = false;
 
   bool get _vivo => widget.vagabundeo;
 
@@ -84,21 +82,12 @@ class _BurbujaFlotanteState extends State<BurbujaFlotante>
         }
       });
 
-    _balanceoController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1400),
-    );
-    if (_vivo) {
-      _balanceoController.repeat(reverse: true);
-    }
-
     _cargarPosicion();
   }
 
   @override
   void dispose() {
     _snapController.dispose();
-    _balanceoController.dispose();
     super.dispose();
   }
 
@@ -155,11 +144,7 @@ class _BurbujaFlotanteState extends State<BurbujaFlotante>
     final paso = widget.pasoDistanciaFraccion;
     final nuevoDx = (_dx + (_random.nextDouble() * 2 - 1) * paso).clamp(0.0, 1.0);
     final nuevoDy = (_dy + (_random.nextDouble() * 2 - 1) * paso).clamp(0.0, 1.0);
-    setState(() => _paseandoAhoraMismo = true);
     _animarHasta(nuevoDx, nuevoDy, duracion: const Duration(milliseconds: 700));
-    Future.delayed(const Duration(milliseconds: 700), () {
-      if (mounted) setState(() => _paseandoAhoraMismo = false);
-    });
     _guardarPosicion();
   }
 
@@ -199,25 +184,10 @@ class _BurbujaFlotanteState extends State<BurbujaFlotante>
           // vagabundeo, retoma sus paseos solos desde ahí.
           _guardarPosicion();
         },
-        child: AnimatedBuilder(
-          animation: _balanceoController,
-          builder: (context, child) {
-            // Balanceo de reposo: un pequeño vaivén vertical continuo (±3px).
-            // Se pausa visualmente mientras da un paso, para no competir con
-            // el movimiento del paso en sí.
-            final balanceo = (_vivo && !_paseandoAhoraMismo && !_arrastrando)
-                ? (sin(_balanceoController.value * pi) * 3.0 - 1.5)
-                : 0.0;
-            return Transform.translate(
-              offset: Offset(0, balanceo),
-              child: child,
-            );
-          },
-          child: AnimatedScale(
-            scale: _arrastrando ? 1.08 : 1.0,
-            duration: const Duration(milliseconds: 150),
-            child: widget.child,
-          ),
+        child: AnimatedScale(
+          scale: _arrastrando ? 1.08 : 1.0,
+          duration: const Duration(milliseconds: 150),
+          child: widget.child,
         ),
       ),
     );
