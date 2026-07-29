@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'l10n/app_localizations.dart';
+import 'services/crashlytics_service.dart';
 import 'services/idioma_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'theme/app_theme.dart';
@@ -17,6 +18,8 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  // Lo primero tras Firebase: si algo de lo de abajo revienta, ya hay red.
+  await CrashlyticsService.inicializar();
   await cargarTemaEquipadoGuardado();
   await cargarAvatarGuardado();
   // Antes de runApp: si no, el primer frame se pinta en el idioma equivocado
