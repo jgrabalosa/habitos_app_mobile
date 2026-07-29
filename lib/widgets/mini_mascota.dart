@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
+import '../theme/mascota_assets.dart';
 import '../screens/mascota_screen.dart';
 import 'burbuja_flotante.dart';
 
-/// Traductor de dominio: convierte el estado genérico de la mascota
-/// (feliz/dormida/triste) en una representación visual. Hoy es un
-/// placeholder emoji/Lottie de prueba — cuando lleguen los assets
-/// definitivos, solo se sustituye `_iconoPara` / el Lottie.asset.
+/// Versión flotante y pequeña de la mascota. La ilustración sale de
+/// `assetMascota`, el mismo mapeo que usa la pantalla grande: aquí no se
+/// decide nada sobre fases ni estados.
 class MiniMascota extends StatefulWidget {
   final int usuarioId;
   final Size areaSize;
@@ -22,6 +21,7 @@ class MiniMascota extends StatefulWidget {
 
 class _MiniMascotaState extends State<MiniMascota> {
   String? _estado;
+  String? _fase;
   bool _oculta = false;
   bool _cargando = true;
   bool _rebotando = false;
@@ -36,33 +36,21 @@ class _MiniMascotaState extends State<MiniMascota> {
     final prefs = await SharedPreferences.getInstance();
     final oculta = prefs.getBool('mini_mascota_oculta') ?? false;
     String? estado;
+    String? fase;
     try {
       final data = await ApiService.getMascota(widget.usuarioId);
       estado = data['estado'];
+      fase = data['fase'];
     } catch (_) {
-      // Si falla, se muestra igualmente con el estado por defecto
+      // Si falla, se muestra igualmente con fase y estado por defecto
     }
     if (!mounted) return;
     setState(() {
       _estado = estado;
+      _fase = fase;
       _oculta = oculta;
       _cargando = false;
     });
-  }
-
-  String _iconoPara(String? estado) {
-    switch (estado) {
-      case 'feliz':
-        return '🐣';
-      case 'dormida':
-        return '💤';
-      case 'triste':
-        return '🐤';
-      default:
-        // Estado desconocido o sin cargar todavia: nada que celebrar, pero
-        // tampoco se da por hecho que este contenta.
-        return '🐤';
-    }
   }
 
   void _onTap() {
@@ -103,9 +91,11 @@ class _MiniMascotaState extends State<MiniMascota> {
             ],
           ),
           child: Center(
-            child: _estado == 'feliz'
-                ? Lottie.asset('assets/animations/mascota_placeholder.json', width: 48, height: 48)
-                : Text(_iconoPara(_estado), style: const TextStyle(fontSize: 32)),
+            child: Image.asset(
+              assetMascota(fase: _fase, estado: _estado),
+              width: 48,
+              height: 48,
+            ),
           ),
         ),
       ),

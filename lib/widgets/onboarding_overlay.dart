@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:lottie/lottie.dart';
 import '../theme/app_theme.dart';
+import '../theme/mascota_assets.dart';
 import 'selector_avatar_gratis.dart';
 
 /// Mini-onboarding de 3 pasos tras un alta nueva. Mismo patrón visual que
@@ -152,10 +152,12 @@ class _OnboardingContentState extends State<_OnboardingContent> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(
+        // Un alta nueva empieza siempre en HUEVO, y aquí se le presenta la
+        // mascota: se enseña contenta.
+        Image.asset(
+          assetMascota(fase: 'huevo', estado: 'feliz'),
           height: 96,
           width: 96,
-          child: Lottie.asset('assets/animations/mascota_placeholder.json'),
         ),
         const SizedBox(height: 16),
         Text(l.obTitulo2,

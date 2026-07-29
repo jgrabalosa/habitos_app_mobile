@@ -4,6 +4,7 @@ import '../l10n/mensajes_error.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
+import '../theme/mascota_assets.dart';
 import '../widgets/skeleton.dart';
 import 'tienda_screen.dart';
 
@@ -52,35 +53,7 @@ class _MascotaScreenState extends State<MascotaScreen> {
     }
   }
 
-  /// Respaldo: solo se pinta si la imagen de la fase actual no existe todavia.
-  String get _icono {
-    switch (_estado) {
-      case 'feliz':
-        return '🐣';
-      case 'dormida':
-        return '💤';
-      case 'triste':
-        return '😢';
-      default:
-        return '😢';
-    }
-  }
-
-  String get _sufijoEstado {
-    switch (_estado) {
-      case 'feliz':
-        return 'sonriente';
-      case 'dormida':
-        return 'dormido';
-      case 'triste':
-        return 'triste';
-      default:
-        return 'triste';
-    }
-  }
-
-  String get _imagenMascota =>
-      'assets/mascota/Nori_${_fase.toLowerCase()}_$_sufijoEstado.png';
+  String get _imagenMascota => assetMascota(fase: _fase, estado: _estado);
 
   /// Fase traducida. Caída al código crudo si llega uno desconocido, igual
   /// que hace Catalogos: nunca se deja al usuario sin texto.
@@ -190,11 +163,6 @@ class _MascotaScreenState extends State<MascotaScreen> {
                               key: ValueKey(_imagenMascota),
                               width: 140,
                               height: 140,
-                              // Solo existen imagenes de la fase HUEVO: para
-                              // CRIA y ADULTO cae al emoji de siempre.
-                              errorBuilder: (context, error, stackTrace) => Text(_icono,
-                                  key: ValueKey('icono_$_estado'),
-                                  style: const TextStyle(fontSize: 96)),
                             ),
                           ),
                           const SizedBox(height: 12),
