@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/catalogos.dart';
+import '../l10n/mensajes_error.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../services/analytics_service.dart';
@@ -88,15 +89,23 @@ class _HabitoScreenState extends State<HabitoScreen> {
     _cargarCategorias();
   }
 
+  @override
+  void dispose() {
+    _nombreController.dispose();
+    _descripcionController.dispose();
+    super.dispose();
+  }
+
   Future<void> _cargarCategorias() async {
     try {
       final categorias = await ApiService.getCategoriasUsuario(widget.usuarioId);
+      if (!mounted) return;
       setState(() {
         _categorias = categorias;
         _categoriasLoading = false;
       });
     } catch (e) {
-      setState(() { _categoriasLoading = false; });
+      if (mounted) setState(() { _categoriasLoading = false; });
     }
   }
 
@@ -242,9 +251,16 @@ class _HabitoScreenState extends State<HabitoScreen> {
         }
       }
     } catch (e) {
-      setState(() { _error = _esEdicion ? l.habErrorActualizar : l.habErrorCrear; });
+      if (mounted) {
+        setState(() {
+          _error = MensajesError.de(context, e,
+              generico: _esEdicion ? l.habErrorActualizar : l.habErrorCrear);
+        });
+      }
     } finally {
-      setState(() { _loading = false; });
+      // En el camino bueno ya se ha hecho Navigator.pop: la pantalla puede
+      // estar desmontada cuando llega este finally.
+      if (mounted) setState(() { _loading = false; });
     }
   }
 
@@ -274,7 +290,12 @@ class _HabitoScreenState extends State<HabitoScreen> {
         await ApiService.eliminarHabito(widget.habito!.habitoId);
         if (mounted) Navigator.pop(context, true);
       } catch (e) {
-        setState(() { _error = l.habErrorEliminar; _loading = false; });
+        if (mounted) {
+          setState(() {
+            _error = MensajesError.de(context, e, generico: l.habErrorEliminar);
+            _loading = false;
+          });
+        }
       }
     }
   }
@@ -284,7 +305,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
       context: context,
       initialTime: _recordatorioHora ?? const TimeOfDay(hour: 9, minute: 0),
     );
-    if (hora != null) {
+    if (hora != null && mounted) {
       setState(() { _recordatorioHora = hora; });
     }
   }

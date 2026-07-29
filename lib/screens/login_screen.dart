@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
+import '../l10n/mensajes_error.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
+import '../services/api_error.dart';
 import 'home_shell.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '../services/analytics_service.dart';
@@ -25,6 +27,15 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _loading = false;
   bool _obscurePassword = true;
   String? _error;
+
+  /// Esta es la unica pantalla sin sesion todavia: aqui un 401 no significa
+  /// "sesion caducada" sino que el email o la contrasena no son correctos.
+  String _textoError(Object e, AppLocalizations l) {
+    if (e is ApiException && e.tipo == TipoErrorApi.noAutorizado) {
+      return l.loginCredenciales;
+    }
+    return MensajesError.de(context, e, generico: l.loginError);
+  }
 
  Future<void> _registrarNotificaciones(int usuarioId) async {
     try {
@@ -82,9 +93,10 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } catch (e) {
-      setState(() { _error = l.loginError; });
+      if (mounted) setState(() { _error = _textoError(e, l); });
     } finally {
-      setState(() { _loading = false; });
+      // pushReplacement ya ha desmontado esta pantalla en el caso bueno
+      if (mounted) setState(() { _loading = false; });
     }
   }
 
@@ -121,9 +133,13 @@ Future<void> _registro() async {
         );
       }
     } catch (e) {
-      setState(() { _error = l.loginError; });
+      if (mounted) {
+        setState(() {
+          _error = MensajesError.de(context, e, generico: l.loginError);
+        });
+      }
     } finally {
-      setState(() { _loading = false; });
+      if (mounted) setState(() { _loading = false; });
     }
   }
 
@@ -145,10 +161,23 @@ Future<void> _registro() async {
         );
       }
     } catch (e) {
-      setState(() { _error = l.loginError; });
+      if (mounted) {
+        setState(() {
+          _error = MensajesError.de(context, e, generico: l.loginError);
+        });
+      }
     } finally {
-      setState(() { _loading = false; });
+      if (mounted) setState(() { _loading = false; });
     }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _contrasenaController.dispose();
+    _nombreController.dispose();
+    _usernameController.dispose();
+    super.dispose();
   }
 
   @override

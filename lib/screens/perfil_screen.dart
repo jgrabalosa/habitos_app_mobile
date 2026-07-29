@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
+import '../l10n/mensajes_error.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
@@ -68,7 +69,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l.perfilErrorGuardar)),
+          SnackBar(
+              content: Text(MensajesError.de(context, e,
+                  generico: l.perfilErrorGuardar))),
         );
       }
     } finally {
@@ -97,7 +100,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l.perfilErrorPass)),
+          SnackBar(
+              content: Text(MensajesError.de(context, e,
+                  generico: l.perfilErrorPass))),
         );
       }
     } finally {
@@ -163,7 +168,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
       if (mounted) {
         setState(() => _eliminando = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l.perfilErrorEliminar)),
+          SnackBar(
+              content: Text(MensajesError.de(context, e,
+                  generico: l.perfilErrorEliminar))),
         );
       }
     }

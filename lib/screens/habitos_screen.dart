@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/catalogos.dart';
+import '../l10n/mensajes_error.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../models/habito.dart';
@@ -38,24 +39,45 @@ class _HabitosScreenState extends State<HabitosScreen> {
         ApiService.getResumenHabitos(widget.usuarioId),
         ApiService.getCategoriasUsuario(widget.usuarioId),
       ]);
+      if (!mounted) return;
       setState(() {
         _resumen = resultados[0] as List<Map<String, dynamic>>;
         _categorias = resultados[1];
         _loading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _loading = false);
+      _avisarError(e);
     }
   }
 
   Future<void> _activar(int habitoId) async {
-    await ApiService.activarHabito(habitoId);
-    _cargarDatos();
+    try {
+      await ApiService.activarHabito(habitoId);
+      _cargarDatos();
+    } catch (e) {
+      _avisarError(e);
+    }
   }
 
   Future<void> _desactivar(int habitoId) async {
-    await ApiService.desactivarHabito(habitoId);
-    _cargarDatos();
+    try {
+      await ApiService.desactivarHabito(habitoId);
+      _cargarDatos();
+    } catch (e) {
+      _avisarError(e);
+    }
+  }
+
+  void _avisarError(Object e) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(MensajesError.de(context, e,
+            generico: AppLocalizations.of(context)!.habitosErrorEstado)),
+      ),
+    );
   }
 
   List<Map<String, dynamic>> get _filtradosYOrdenados {

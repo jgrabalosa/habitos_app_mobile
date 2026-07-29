@@ -456,5 +456,14 @@
   "prodDescAvatarConejo": "Avatar ilustrado de conejo",
   "prodDescAvatarKoala": "Avatar ilustrado de koala",
   "prodDescAvatarPinguino": "Avatar ilustrado de pingüino",
-  "prodDescAvatarLeon": "Avatar ilustrado de león"
+  "prodDescAvatarLeon": "Avatar ilustrado de león",
+
+  "errorSinConexion": "Sin conexión. Comprueba tu red e inténtalo de nuevo.",
+  "errorTimeout": "La conexión ha tardado demasiado. Inténtalo de nuevo.",
+  "errorServidor": "El servidor no responde bien ahora mismo. Inténtalo en unos minutos.",
+  "errorSesionCaducada": "Tu sesión ha caducado. Vuelve a iniciar sesión.",
+  "errorRespuesta": "El servidor ha respondido algo que no esperábamos. Inténtalo de nuevo.",
+  "errorGenerico": "No se pudo completar la operación. Inténtalo de nuevo.",
+  "loginCredenciales": "Email o contraseña incorrectos.",
+  "habitosErrorEstado": "No se pudo cambiar el estado del hábito."
 }

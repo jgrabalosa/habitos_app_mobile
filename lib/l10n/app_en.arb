@@ -299,5 +299,14 @@
   "prodDescAvatarConejo": "Illustrated rabbit avatar",
   "prodDescAvatarKoala": "Illustrated koala avatar",
   "prodDescAvatarPinguino": "Illustrated penguin avatar",
-  "prodDescAvatarLeon": "Illustrated lion avatar"
+  "prodDescAvatarLeon": "Illustrated lion avatar",
+
+  "errorSinConexion": "No connection. Check your network and try again.",
+  "errorTimeout": "The connection took too long. Please try again.",
+  "errorServidor": "The server isn't responding properly right now. Try again in a few minutes.",
+  "errorSesionCaducada": "Your session has expired. Please sign in again.",
+  "errorRespuesta": "The server returned something unexpected. Please try again.",
+  "errorGenerico": "Something went wrong. Please try again.",
+  "loginCredenciales": "Incorrect email or password.",
+  "habitosErrorEstado": "The habit's status couldn't be changed."
 }

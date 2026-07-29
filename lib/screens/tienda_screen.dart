@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/catalogos.dart';
+import '../l10n/mensajes_error.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
@@ -50,6 +51,7 @@ class _TiendaScreenState extends State<TiendaScreen> {
         };
       }
 
+      if (!mounted) return;
       setState(() {
         _saldo = saldo;
         _catalogo = catalogo;
@@ -57,7 +59,9 @@ class _TiendaScreenState extends State<TiendaScreen> {
         _loading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _loading = false);
+      _mostrarError(e);
     }
   }
 
@@ -105,7 +109,10 @@ class _TiendaScreenState extends State<TiendaScreen> {
   void _mostrarError(Object e) {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.tiendaError)),
+        SnackBar(
+          content: Text(MensajesError.de(context, e,
+              generico: AppLocalizations.of(context)!.tiendaError)),
+        ),
       );
     }
   }

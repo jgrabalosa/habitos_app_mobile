@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/catalogos.dart';
+import '../l10n/mensajes_error.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../theme/paletas_premium.dart';
@@ -86,13 +87,16 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
         };
       }
 
+      if (!mounted) return;
       setState(() {
         _catalogo = catalogo;
         _inventario = mapaInventario;
         _loading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _loading = false);
+      _mostrarError(e);
     }
   }
 
@@ -131,7 +135,10 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
   void _mostrarError(Object e) {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.colError)),
+        SnackBar(
+          content: Text(MensajesError.de(context, e,
+              generico: AppLocalizations.of(context)!.colError)),
+        ),
       );
     }
   }

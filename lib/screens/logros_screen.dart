@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/catalogos.dart';
+import '../l10n/mensajes_error.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
@@ -42,6 +43,7 @@ class _LogrosScreenState extends State<LogrosScreen> {
 
       final ids = conseguidos.map<int>((ul) => ul['logro']['logroId'] as int).toSet();
 
+      if (!mounted) return;
       setState(() {
         _saldo = saldo;
         _catalogo = catalogo;
@@ -49,7 +51,11 @@ class _LogrosScreenState extends State<LogrosScreen> {
         _loading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() { _loading = false; });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(MensajesError.de(context, e))),
+      );
     }
   }
 

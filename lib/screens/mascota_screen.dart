@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
+import '../l10n/mensajes_error.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
@@ -32,6 +33,7 @@ class _MascotaScreenState extends State<MascotaScreen> {
   Future<void> _cargarDatos() async {
     try {
       final data = await ApiService.getMascota(widget.usuarioId);
+      if (!mounted) return;
       setState(() {
         _nombre = data['nombre'] ?? '';
         _nivel = data['nivel'] ?? 1;
@@ -42,7 +44,11 @@ class _MascotaScreenState extends State<MascotaScreen> {
         _loading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() { _loading = false; });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(MensajesError.de(context, e))),
+      );
     }
   }
 
@@ -103,39 +109,50 @@ class _MascotaScreenState extends State<MascotaScreen> {
   Future<void> _editarNombre() async {
     final l = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: _nombre);
-    final nuevoNombre = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l.mascotaPonleNombre),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          maxLength: 30,
-          decoration: InputDecoration(hintText: l.mascotaHintNombre),
+    // El controller es local al dialogo: se destruye al cerrarse, pase lo que
+    // pase. Si no, cada vez que se abre el dialogo se queda uno vivo.
+    String? nuevoNombre;
+    try {
+      nuevoNombre = await showDialog<String>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l.mascotaPonleNombre),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            maxLength: 30,
+            decoration: InputDecoration(hintText: l.mascotaHintNombre),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l.cancelar),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+              child: Text(l.guardar),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l.cancelar),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: Text(l.guardar),
-          ),
-        ],
-      ),
-    );
+      );
+    } finally {
+      controller.dispose();
+    }
 
-    if (nuevoNombre != null && nuevoNombre.isNotEmpty && nuevoNombre != _nombre) {
+    final elegido = nuevoNombre;
+    if (elegido != null && elegido.isNotEmpty && elegido != _nombre) {
       final anterior = _nombre;
-      setState(() => _nombre = nuevoNombre);
+      setState(() => _nombre = elegido);
       try {
-        await ApiService.actualizarNombreMascota(widget.usuarioId, nuevoNombre);
+        await ApiService.actualizarNombreMascota(widget.usuarioId, elegido);
       } catch (e) {
         if (mounted) {
           setState(() => _nombre = anterior);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l.mascotaErrorNombre)),
+            SnackBar(
+              content: Text(MensajesError.de(context, e,
+                  generico: l.mascotaErrorNombre)),
+            ),
           );
         }
       }

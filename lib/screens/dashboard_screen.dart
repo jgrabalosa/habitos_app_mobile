@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
+import '../l10n/mensajes_error.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:in_app_review/in_app_review.dart';
@@ -49,7 +50,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _cargarDatos() async {
     final usuario = await ApiService.getUsuarioLocal();
-    if (usuario == null) return;
+    if (usuario == null || !mounted) return;
     setState(() {
       _usuarioId = usuario['usuarioId'] ?? 0;
     });
@@ -64,7 +65,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     try {
       final logros = await ApiService.getLogrosUsuario(_usuarioId);
       final yaPidio = logros.any((l) => l['logro']?['codigo'] == 'INTERACCION_RESENA');
-      setState(() { _yaPidioResena = yaPidio; });
+      if (mounted) setState(() { _yaPidioResena = yaPidio; });
     } catch (_) {
       // Si falla, dejamos _yaPidioResena en false (se volverá a intentar pedir)
     }
@@ -89,12 +90,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _fechasCompletadas[habito.habitoId] = fechas.cast<String>().toSet();
       }
 
+      if (!mounted) return;
       setState(() {
         _habitos = habitos;
         _loading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() { _loading = false; });
+      // Antes la lista se quedaba vacia sin decir por que.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(MensajesError.de(context, e,
+              generico: AppLocalizations.of(context)!.dashSinConexion)),
+        ),
+      );
     }
   }
 
@@ -125,7 +135,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.dashSinConexion)),
+          SnackBar(
+            content: Text(MensajesError.de(context, e,
+                generico: AppLocalizations.of(context)!.dashSinConexion)),
+          ),
         );
       }
       return;

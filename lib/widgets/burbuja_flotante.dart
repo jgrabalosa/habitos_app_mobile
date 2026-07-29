@@ -106,6 +106,7 @@ class _BurbujaFlotanteState extends State<BurbujaFlotante>
     final prefs = await SharedPreferences.getInstance();
     final dx = prefs.getDouble('${widget.storageKey}_dx');
     final dy = prefs.getDouble('${widget.storageKey}_dy');
+    if (!mounted) return;
     setState(() {
       if (dx != null) _dx = dx;
       if (dy != null) _dy = dy;

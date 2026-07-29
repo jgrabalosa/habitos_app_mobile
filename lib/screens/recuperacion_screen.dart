@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
+import '../l10n/mensajes_error.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
@@ -30,11 +31,14 @@ class _RecuperacionScreenState extends State<RecuperacionScreen> {
     setState(() { _loading = true; _error = null; });
     try {
       await ApiService.solicitarCodigoRecuperacion(_emailController.text.trim());
-      setState(() => _codigoEnviado = true);
+      if (mounted) setState(() => _codigoEnviado = true);
     } catch (e) {
-      setState(() => _error = l.recErrorEnviar);
+      if (mounted) {
+        setState(() =>
+            _error = MensajesError.de(context, e, generico: l.recErrorEnviar));
+      }
     } finally {
-      setState(() => _loading = false);
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -59,7 +63,10 @@ class _RecuperacionScreenState extends State<RecuperacionScreen> {
         Navigator.pop(context);
       }
     } catch (e) {
-      setState(() => _error = l.recError);
+      if (mounted) {
+        setState(() =>
+            _error = MensajesError.de(context, e, generico: l.recError));
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }

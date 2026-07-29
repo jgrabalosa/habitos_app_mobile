@@ -72,7 +72,7 @@ class _HomeShellState extends State<HomeShell> {
 
   Future<void> _cargarUsuario() async {
     final usuario = await ApiService.getUsuarioLocal();
-    if (usuario == null) return;
+    if (usuario == null || !mounted) return;
     setState(() {
       _usuarioId = usuario['usuarioId'] ?? 0;
       _nombre = usuario['nombre'] ?? '';
@@ -88,9 +88,14 @@ class _HomeShellState extends State<HomeShell> {
   // avatares, pero si por lo que sea ya tiene alguno, no mostramos nada.
   Future<void> _comprobarOnboarding() async {
     if (!mounted) return;
-    final tieneAvatar = await SelectorAvatarGratis.tieneAlgunAvatar(_usuarioId);
-    if (!tieneAvatar && mounted) {
-      OnboardingOverlay.mostrar(context, usuarioId: _usuarioId);
+    try {
+      final tieneAvatar = await SelectorAvatarGratis.tieneAlgunAvatar(_usuarioId);
+      if (!tieneAvatar && mounted) {
+        OnboardingOverlay.mostrar(context, usuarioId: _usuarioId);
+      }
+    } catch (_) {
+      // Sin conexion no se muestra el onboarding, pero tampoco se rompe el
+      // arranque: se volvera a intentar en el siguiente alta.
     }
   }
 

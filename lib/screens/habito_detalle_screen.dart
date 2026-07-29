@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
+import '../l10n/mensajes_error.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
@@ -36,12 +37,20 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
       final mesParam =
           '${_mesActual.year}-${_mesActual.month.toString().padLeft(2, '0')}';
       final detalle = await ApiService.getHabitoDetalle(widget.habitoId, mes: mesParam);
+      if (!mounted) return;
       setState(() {
         _detalle = detalle;
         _loading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() { _loading = false; });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(MensajesError.de(context, e,
+              generico: AppLocalizations.of(context)!.detErrorCargarDetalle)),
+        ),
+      );
     }
   }
 
@@ -59,7 +68,10 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.detErrorCargar)),
+          SnackBar(
+            content: Text(MensajesError.de(context, e,
+                generico: AppLocalizations.of(context)!.detErrorCargar)),
+          ),
         );
       }
     }
@@ -482,7 +494,10 @@ title: Hero(
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.errorGuardar)),
+          SnackBar(
+            content: Text(MensajesError.de(context, e,
+                generico: AppLocalizations.of(context)!.errorGuardar)),
+          ),
         );
       }
     }

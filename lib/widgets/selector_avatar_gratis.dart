@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/catalogos.dart';
+import '../l10n/mensajes_error.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../theme/avatares.dart';
@@ -43,12 +44,13 @@ class _SelectorAvatarGratisState extends State<SelectorAvatarGratis> {
   Future<void> _cargarAvatares() async {
     try {
       final catalogo = await ApiService.getCatalogoProductos();
+      if (!mounted) return;
       setState(() {
         _avatares = catalogo.where((p) => p['categoria'] == 'Avatar').toList();
         _loading = false;
       });
     } catch (e) {
-      setState(() => _loading = false);
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -63,7 +65,7 @@ class _SelectorAvatarGratisState extends State<SelectorAvatarGratis> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l.selError)),
+          SnackBar(content: Text(MensajesError.de(context, e, generico: l.selError))),
         );
       }
     } finally {
