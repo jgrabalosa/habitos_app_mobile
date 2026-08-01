@@ -29,18 +29,37 @@ class _HomeShellState extends State<HomeShell> {
   String _nombre = '';
   bool _loading = true;
 
+  /// Deslizar y tocar la barra mueven el mismo PageView, asi que el indice
+  /// activo tiene una sola fuente: lo que diga `onPageChanged`.
+  final _pageController = PageController();
+
   /// El titulo del AppBar y la etiqueta de la pestaña son el mismo texto:
   /// se leen de aqui para que no puedan divergir.
   List<String> _titulos(AppLocalizations l) =>
-      [l.navHoy, l.navHabitos, l.navColeccion, l.navMascota];
+      [l.navHoy, l.navMascota, l.navHabitos];
 
   DateTime? _ultimaPulsacionAtras;
+
+  void _irAPestana(int i) {
+    _pageController.animateToPage(
+      i,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _abrirColeccion() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ColeccionScreen(usuarioId: _usuarioId)),
+    );
+  }
 
   // Botón atrás Android: si no estás en "Hoy", vuelve ahí primero.
   // Si ya estás en "Hoy", hace falta pulsar dos veces seguidas para salir.
   Future<void> _manejarAtras() async {
     if (_tabIndex != 0) {
-      setState(() => _tabIndex = 0);
+      _irAPestana(0);
       return;
     }
 
@@ -68,6 +87,12 @@ class _HomeShellState extends State<HomeShell> {
   void initState() {
     super.initState();
     _cargarUsuario();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   Future<void> _cargarUsuario() async {
@@ -119,13 +144,12 @@ class _HomeShellState extends State<HomeShell> {
     final l = AppLocalizations.of(context)!;
     final titulos = _titulos(l);
 
-    // Nota temporal: Colección sigue trayendo su propio AppBar
-    // (doble AppBar visible) hasta el paso 3.
+    // Colección ya no es pestaña: se abre desde el icono del AppBar, con su
+    // propia cabecera. Aquí solo viven las tres que se deslizan.
     final tabs = [
       const DashboardScreen(),
+      MascotaScreen(usuarioId: _usuarioId, embebida: true),
       HabitosScreen(usuarioId: _usuarioId),
-      ColeccionScreen(usuarioId: _usuarioId),
-      MascotaScreen(usuarioId: _usuarioId),
     ];
 
     return PopScope(
@@ -139,11 +163,11 @@ class _HomeShellState extends State<HomeShell> {
         appBar: AppBar(
           title: _tabIndex == 0
               ? GestureDetector(
-                  onTap: () => setState(() => _tabIndex = 2), // 2 = Colección
+                  onTap: _abrirColeccion,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      AvatarUsuario(nombre: _nombre, radius: 16),
+                      AvatarUsuario(nombre: _nombre, radius: 22),
                       const SizedBox(width: 10),
                       Flexible(
                         child: Text(_nombre,
@@ -157,7 +181,13 @@ class _HomeShellState extends State<HomeShell> {
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           actions: [
             IconButton(
+              tooltip: l.navColeccion,
               icon: Icon(LucideIcons.trophy, color: t.points),
+              onPressed: _abrirColeccion,
+            ),
+            IconButton(
+              tooltip: l.logrosTitulo,
+              icon: Icon(LucideIcons.medal, color: t.textMuted),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -204,19 +234,46 @@ class _HomeShellState extends State<HomeShell> {
             ),
           ],
         ),
-        body: IndexedStack(index: _tabIndex, children: tabs),
+        body: PageView(
+          controller: _pageController,
+          onPageChanged: (i) => setState(() => _tabIndex = i),
+          // Cada pestaña se mantiene viva al salir de pantalla, como hacía el
+          // IndexedStack: deslizar no debe recargar lo que ya estaba cargado.
+          children: [for (final tab in tabs) _MantenerVivo(child: tab)],
+        ),
         bottomNavigationBar: NavigationBar(
           selectedIndex: _tabIndex,
-          onDestinationSelected: (i) => setState(() => _tabIndex = i),
+          onDestinationSelected: _irAPestana,
           backgroundColor: t.surface,
           destinations: [
             NavigationDestination(icon: const Icon(LucideIcons.house), label: titulos[0]),
-            NavigationDestination(icon: const Icon(LucideIcons.listChecks), label: titulos[1]),
-            NavigationDestination(icon: const Icon(LucideIcons.layoutGrid), label: titulos[2]),
-            NavigationDestination(icon: const Icon(LucideIcons.pawPrint), label: titulos[3]),
+            NavigationDestination(icon: const Icon(LucideIcons.pawPrint), label: titulos[1]),
+            NavigationDestination(icon: const Icon(LucideIcons.listChecks), label: titulos[2]),
           ],
         ),
       ),
     );
+  }
+}
+
+/// Mantiene vivo a su hijo cuando el PageView lo saca de pantalla. Genérico:
+/// no sabe qué envuelve.
+class _MantenerVivo extends StatefulWidget {
+  final Widget child;
+  const _MantenerVivo({required this.child});
+
+  @override
+  State<_MantenerVivo> createState() => _MantenerVivoState();
+}
+
+class _MantenerVivoState extends State<_MantenerVivo>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return widget.child;
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
@@ -20,6 +22,18 @@ class MiniMascota extends StatefulWidget {
 }
 
 class _MiniMascotaState extends State<MiniMascota> {
+  /// Tamaño habitual de la burbuja. En cualquier móvil normal manda este
+  /// valor: el tope de abajo solo entra en juego en pantallas diminutas.
+  static const double _tamanoNominal = 64;
+
+  /// La burbuja no puede pasar del 40% del alto de pantalla. Es una
+  /// salvaguarda, no un tamaño: si se llega a aplicar es que la pantalla es
+  /// tan baja que 64px ya tapaban media lista.
+  static const double _fraccionMaximaAlto = 0.4;
+
+  /// La ilustración deja aire dentro del círculo (48 sobre 64).
+  static const double _proporcionIlustracion = 0.75;
+
   String? _estado;
   String? _fase;
   bool _oculta = false;
@@ -69,10 +83,16 @@ class _MiniMascotaState extends State<MiniMascota> {
     if (_cargando || _oculta) return const SizedBox.shrink();
 
     final t = tokens(context);
+    final topeAlto =
+        MediaQuery.of(context).size.height * _fraccionMaximaAlto;
+    final tamano = min(_tamanoNominal, topeAlto);
 
     return BurbujaFlotante(
       storageKey: 'mini_mascota',
       areaSize: widget.areaSize,
+      // La burbuja calcula sus límites con este tamaño: si no coincide con el
+      // del contenido, la mascota se sale del área por abajo.
+      size: tamano,
       onTap: _onTap,
       minTopFraction: 0.5,
       vagabundeo: true,
@@ -81,8 +101,8 @@ class _MiniMascotaState extends State<MiniMascota> {
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutBack,
         child: Container(
-          width: 64,
-          height: 64,
+          width: tamano,
+          height: tamano,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: t.surface,
@@ -96,7 +116,7 @@ class _MiniMascotaState extends State<MiniMascota> {
             child: MascotaAnimadaViva(
               fase: _fase,
               estado: _estado,
-              tamano: 48,
+              tamano: tamano * _proporcionIlustracion,
             ),
           ),
         ),

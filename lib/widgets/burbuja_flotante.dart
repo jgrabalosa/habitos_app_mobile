@@ -1,7 +1,24 @@
 import 'dart:math';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+/// Arrastre libre que gana el pulso a un pager horizontal que la contenga.
+///
+/// Un [PanGestureRecognizer] normal no reclama el gesto hasta los 36px
+/// (`kPanSlop`), pero el deslizamiento entre pestañas lo reclama a los 18
+/// (`kTouchSlop`): sin esto, arrastrar la burbuja de lado cambiaba de pestaña
+/// en vez de mover la burbuja. Con el mismo umbral gana el hijo, que se
+/// resuelve antes que el ancestro.
+class _ArrastreLibre extends PanGestureRecognizer {
+  @override
+  bool hasSufficientGlobalDistanceToAccept(
+      PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop) {
+    return globalDistanceMoved.abs() >
+        computeHitSlop(pointerDeviceKind, gestureSettings);
+  }
+}
 
 /// Widget flotante genérico y exportable: una "burbuja" arrastrable que se
 /// imanta al borde lateral más cercano (izquierda/derecha) al soltarla,
@@ -163,26 +180,38 @@ class _BurbujaFlotanteState extends State<BurbujaFlotante>
     return Positioned(
       left: left,
       top: top,
-      child: GestureDetector(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          widget.onTap?.call();
-        },
-        onPanStart: (_) => setState(() => _arrastrando = true),
-        onPanUpdate: (details) {
-          setState(() {
-            final nuevoLeft = (left + details.delta.dx)
-                .clamp(margen, tamano.width - widget.size - margen);
-            final nuevoTop = (top + details.delta.dy).clamp(minY, maxY);
-            _dx = (nuevoLeft - margen) / (tamano.width - widget.size - margen * 2);
-            _dy = (nuevoTop - minY) / (maxY - minY);
-          });
-        },
-         onPanEnd: (_) {
-          setState(() => _arrastrando = false);
-          // Se queda donde se suelte (sin imán a los lados). Si tiene
-          // vagabundeo, retoma sus paseos solos desde ahí.
-          _guardarPosicion();
+      child: RawGestureDetector(
+        gestures: {
+          TapGestureRecognizer:
+              GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
+            TapGestureRecognizer.new,
+            (r) => r.onTap = () {
+              HapticFeedback.lightImpact();
+              widget.onTap?.call();
+            },
+          ),
+          _ArrastreLibre: GestureRecognizerFactoryWithHandlers<_ArrastreLibre>(
+            _ArrastreLibre.new,
+            (r) {
+              r.onStart = (_) => setState(() => _arrastrando = true);
+              r.onUpdate = (details) {
+                setState(() {
+                  final nuevoLeft = (left + details.delta.dx)
+                      .clamp(margen, tamano.width - widget.size - margen);
+                  final nuevoTop = (top + details.delta.dy).clamp(minY, maxY);
+                  _dx = (nuevoLeft - margen) /
+                      (tamano.width - widget.size - margen * 2);
+                  _dy = (nuevoTop - minY) / (maxY - minY);
+                });
+              };
+              r.onEnd = (_) {
+                setState(() => _arrastrando = false);
+                // Se queda donde se suelte (sin imán a los lados). Si tiene
+                // vagabundeo, retoma sus paseos solos desde ahí.
+                _guardarPosicion();
+              };
+            },
+          ),
         },
         child: AnimatedScale(
           scale: _arrastrando ? 1.08 : 1.0,

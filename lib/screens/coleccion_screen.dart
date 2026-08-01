@@ -163,21 +163,34 @@ class _ColeccionScreenState extends State<ColeccionScreen> {
     final t = tokens(context);
     final l = AppLocalizations.of(context)!;
 
-    if (_loading) {
-      return SkeletonPulso(
-        child: GridView.builder(
-          padding: const EdgeInsets.all(16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            childAspectRatio: 0.85,
-          ),
-          itemCount: 6,
-          itemBuilder: (context, i) => const SkeletonBox(height: double.infinity, radius: AppRadius.lg),
+    // Ya no es pestaña del shell: se abre como ruta desde el icono de arriba,
+    // asi que trae su propia cabecera y su boton de volver.
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l.navColeccion,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      ),
+      body: _loading ? _skeletonColeccion() : _contenido(l, t),
+    );
+  }
+
+  Widget _skeletonColeccion() {
+    return SkeletonPulso(
+      child: GridView.builder(
+        padding: const EdgeInsets.all(16),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
+          childAspectRatio: 0.85,
         ),
-      );
-    }
+        itemCount: 6,
+        itemBuilder: (context, i) => const SkeletonBox(height: double.infinity, radius: AppRadius.lg),
+      ),
+    );
+  }
+
+  Widget _contenido(AppLocalizations l, TokensContextuales t) {
     final seccionesConProductos = repartirEnSecciones(_agruparPorCategoria());
 
     return RefreshIndicator(

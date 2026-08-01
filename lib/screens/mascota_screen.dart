@@ -11,7 +11,17 @@ import 'tienda_screen.dart';
 
 class MascotaScreen extends StatefulWidget {
   final int usuarioId;
-  const MascotaScreen({super.key, required this.usuarioId});
+
+  /// Dentro del shell la cabecera ya la pone el shell: un Scaffold propio aquí
+  /// pintaría el título dos veces. Abierta como ruta (mini-mascota) sí necesita
+  /// la suya, con su botón de volver.
+  final bool embebida;
+
+  const MascotaScreen({
+    super.key,
+    required this.usuarioId,
+    this.embebida = false,
+  });
 
   @override
   State<MascotaScreen> createState() => _MascotaScreenState();
@@ -139,9 +149,7 @@ class _MascotaScreenState extends State<MascotaScreen> {
     final l = AppLocalizations.of(context)!;
     final pct = _xpParaSiguienteNivel > 0 ? _xpEnNivelActual / _xpParaSiguienteNivel : 0.0;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l.mascotaTitulo)),
-      body: _loading
+    final contenido = _loading
           ? _skeletonMascota()
           : RefreshIndicator(
               onRefresh: _cargarDatos,
@@ -238,7 +246,13 @@ class _MascotaScreenState extends State<MascotaScreen> {
                   ),
                 ],
               ),
-            ),
+            );
+
+    if (widget.embebida) return contenido;
+
+    return Scaffold(
+      appBar: AppBar(title: Text(l.mascotaTitulo)),
+      body: contenido,
     );
   }
 
