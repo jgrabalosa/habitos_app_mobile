@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
-import '../theme/app_theme.dart';
 import '../screens/mascota_screen.dart';
 import 'burbuja_flotante.dart';
 import 'mascota_animada_viva.dart';
@@ -24,14 +23,16 @@ class MiniMascota extends StatefulWidget {
 class _MiniMascotaState extends State<MiniMascota> {
   /// Tamaño habitual de la burbuja. En cualquier móvil normal manda este
   /// valor: el tope de abajo solo entra en juego en pantallas diminutas.
-  static const double _tamanoNominal = 64;
+  static const double _tamanoNominal = 84;
 
   /// La burbuja no puede pasar del 40% del alto de pantalla. Es una
   /// salvaguarda, no un tamaño: si se llega a aplicar es que la pantalla es
-  /// tan baja que 64px ya tapaban media lista.
+  /// tan baja que 84px ya tapaban media lista.
   static const double _fraccionMaximaAlto = 0.4;
 
-  /// La ilustración deja aire dentro del círculo (48 sobre 64).
+  /// La ilustración deja aire alrededor dentro de la caja de la burbuja
+  /// (63 sobre 84). Ese aire es el margen del que tira el arrastre, no un
+  /// adorno: la caja es lo que la burbuja usa para calcular sus límites.
   static const double _proporcionIlustracion = 0.75;
 
   String? _estado;
@@ -82,7 +83,6 @@ class _MiniMascotaState extends State<MiniMascota> {
   Widget build(BuildContext context) {
     if (_cargando || _oculta) return const SizedBox.shrink();
 
-    final t = tokens(context);
     final topeAlto =
         MediaQuery.of(context).size.height * _fraccionMaximaAlto;
     final tamano = min(_tamanoNominal, topeAlto);
@@ -100,16 +100,13 @@ class _MiniMascotaState extends State<MiniMascota> {
         scale: _rebotando ? 1.2 : 1.0,
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutBack,
-        child: Container(
+        // Sin círculo, sin sombra y sin superficie detrás: Nori se ve
+        // directamente sobre el fondo de la pantalla. La caja sigue midiendo
+        // `tamano` porque es la que le hemos declarado a la burbuja para que
+        // calcule sus límites; simplemente ya no pinta nada.
+        child: SizedBox(
           width: tamano,
           height: tamano,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: t.surface,
-            boxShadow: const [
-              BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 3)),
-            ],
-          ),
           child: Center(
             // El toque lo gestiona la burbuja (que además arrastra), así que
             // aquí va sin él: dos GestureDetector encajados se pelearían.
