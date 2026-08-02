@@ -148,7 +148,9 @@ class _HomeShellState extends State<HomeShell> {
     // propia cabecera. Aquí solo viven las tres que se deslizan.
     final tabs = [
       const DashboardScreen(),
-      MascotaScreen(usuarioId: _usuarioId, embebida: true),
+      // `activa` es lo que hace que la mascota se recargue al volver a su
+      // pestaña: el PageView la mantiene viva y su initState no se repite.
+      MascotaScreen(usuarioId: _usuarioId, embebida: true, activa: _tabIndex == 1),
       HabitosScreen(usuarioId: _usuarioId),
     ];
 

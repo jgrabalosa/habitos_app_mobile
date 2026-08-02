@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../theme/mascota_assets.dart';
+import '../widgets/animacion_puntos.dart';
 import '../widgets/mascota_animada_viva.dart';
 import '../widgets/skeleton.dart';
 import 'tienda_screen.dart';
@@ -17,10 +18,17 @@ class MascotaScreen extends StatefulWidget {
   /// la suya, con su botón de volver.
   final bool embebida;
 
+  /// Si la pantalla está a la vista. Dentro del PageView del shell el estado se
+  /// mantiene vivo, así que `initState` sólo corre una vez: sin esto, una fase
+  /// que cambia mientras el usuario está en otra pestaña no se vería hasta
+  /// reiniciar. Abierta como ruta siempre está activa.
+  final bool activa;
+
   const MascotaScreen({
     super.key,
     required this.usuarioId,
     this.embebida = false,
+    this.activa = true,
   });
 
   @override
@@ -36,13 +44,30 @@ class _MascotaScreenState extends State<MascotaScreen> {
   String _fase = 'HUEVO'; // código, no texto: se traduce al pintar
   String _estado = 'triste';
 
+  /// Comida disponible. El id del producto sale del propio inventario: el
+  /// cliente no cablea ningún identificador de la BD, sólo el código.
+  static const _codigoComida = 'COMIDA_BASICA';
+  int? _comidaProductoId;
+  int _comidaCantidad = 0;
+  bool _alimentando = false;
+
   @override
   void initState() {
     super.initState();
     _cargarDatos();
   }
 
-  Future<void> _cargarDatos() async {
+  @override
+  void didUpdateWidget(covariant MascotaScreen anterior) {
+    super.didUpdateWidget(anterior);
+    // Al volver a la pestaña, no al salir de ella.
+    if (!anterior.activa && widget.activa) _cargarDatos();
+  }
+
+  Future<void> _cargarDatos() =>
+      Future.wait([_cargarMascota(), _cargarInventario()]);
+
+  Future<void> _cargarMascota() async {
     try {
       final data = await ApiService.getMascota(widget.usuarioId);
       if (!mounted) return;
@@ -61,6 +86,58 @@ class _MascotaScreenState extends State<MascotaScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(MensajesError.de(context, e))),
       );
+    }
+  }
+
+  /// El inventario es accesorio: si falla, la mascota se sigue viendo y el
+  /// botón de alimentar se queda deshabilitado. No se avisa por separado
+  /// porque un fallo de red ya lo canta la carga de la mascota.
+  Future<void> _cargarInventario() async {
+    try {
+      final inventario = await ApiService.getInventarioProductos(widget.usuarioId);
+      int? productoId;
+      int cantidad = 0;
+      for (final up in inventario) {
+        if (up['producto']?['codigo'] == _codigoComida) {
+          productoId = up['producto']['productoId'] as int?;
+          cantidad = up['cantidad'] ?? 0;
+          break;
+        }
+      }
+      if (!mounted) return;
+      setState(() {
+        _comidaProductoId = productoId;
+        _comidaCantidad = cantidad;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _comidaCantidad = 0);
+    }
+  }
+
+  Future<void> _alimentar() async {
+    final productoId = _comidaProductoId;
+    if (productoId == null || _comidaCantidad <= 0 || _alimentando) return;
+
+    setState(() => _alimentando = true);
+    try {
+      final resultado = await ApiService.usarProducto(widget.usuarioId, productoId);
+      if (!mounted) return;
+      // Consumir la comida siempre da XP; subir de nivel es el caso vistoso.
+      if (resultado['subioNivel'] == true || resultado['codigoConsumido'] != null) {
+        AnimacionPuntos.mostrar(context, 10, simbolo: 'XP');
+      }
+      await _cargarDatos();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(MensajesError.de(context, e,
+              generico: AppLocalizations.of(context)!.mascotaErrorAlimentar)),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _alimentando = false);
     }
   }
 
@@ -143,6 +220,11 @@ class _MascotaScreenState extends State<MascotaScreen> {
     }
   }
 
+  /// Nori manda en la pantalla: ocupa algo menos de dos tercios del ancho.
+  /// El tope evita que en tablet crezca hasta lo absurdo.
+  double _tamanoMascota(BuildContext context) =>
+      (MediaQuery.sizeOf(context).width * 0.62).clamp(160.0, 320.0);
+
   @override
   Widget build(BuildContext context) {
     final t = tokens(context);
@@ -150,99 +232,111 @@ class _MascotaScreenState extends State<MascotaScreen> {
     final pct = _xpParaSiguienteNivel > 0 ? _xpEnNivelActual / _xpParaSiguienteNivel : 0.0;
 
     final contenido = _loading
-          ? _skeletonMascota()
+          ? _skeletonMascota(context)
           : RefreshIndicator(
               onRefresh: _cargarDatos,
               child: ListView(
-                padding: const EdgeInsets.all(16),
+                // Sin tarjetas, el contenido no siempre llena la pantalla: sin
+                // esto no habría dónde tirar para refrescar.
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
                 children: [
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
-                      child: Column(
+                  Center(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      transitionBuilder: (child, animation) => FadeTransition(
+                        opacity: animation,
+                        child: ScaleTransition(scale: animation, child: child),
+                      ),
+                      child: MascotaAnimadaViva(
+                        // La clave es la ilustración, no el estado: el
+                        // AnimatedSwitcher tiene que cruzar cuando
+                        // cambia lo que se ve.
+                        key: ValueKey(_imagenMascota),
+                        fase: _fase,
+                        estado: _estado,
+                        tamano: _tamanoMascota(context),
+                        permiteToque: true,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Center(
+                    child: GestureDetector(
+                      onTap: _editarNombre,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 300),
-                            transitionBuilder: (child, animation) => FadeTransition(
-                              opacity: animation,
-                              child: ScaleTransition(scale: animation, child: child),
-                            ),
-                            child: MascotaAnimadaViva(
-                              // La clave es la ilustración, no el estado: el
-                              // AnimatedSwitcher tiene que cruzar cuando
-                              // cambia lo que se ve.
-                              key: ValueKey(_imagenMascota),
-                              fase: _fase,
-                              estado: _estado,
-                              tamano: 140,
-                              permiteToque: true,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          GestureDetector(
-                            onTap: _editarNombre,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(_nombreVisible(l),
-                                    style: TextStyle(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold,
-                                        color: t.text)),
-                                const SizedBox(width: 6),
-                                Icon(LucideIcons.pencil, size: 16, color: t.textMuted),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text('${_faseLegible(l)} · ${_estadoLegible(l)}',
-                              style: TextStyle(color: t.textMuted)),
+                          Text(_nombreVisible(l),
+                              style: TextStyle(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.bold,
+                                  color: t.text)),
+                          const SizedBox(width: 6),
+                          Icon(LucideIcons.pencil, size: 16, color: t.textMuted),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(l.mascotaNivel(_nivel),
-                                  style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
-                              Text(l.mascotaXp(_xpEnNivelActual, _xpParaSiguienteNivel),
-                                  style: TextStyle(color: t.textMuted)),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(999),
-                            child: LinearProgressIndicator(
-                              value: pct.clamp(0.0, 1.0),
-                              minHeight: 10,
-                              backgroundColor: t.surface2,
-                              valueColor: AlwaysStoppedAnimation(t.success),
-                            ),
-                          ),
-                        ],
-                      ),
+                  const SizedBox(height: 4),
+                  Center(
+                    child: Text('${_faseLegible(l)} · ${_estadoLegible(l)}',
+                        style: TextStyle(color: t.textMuted)),
+                  ),
+                  const SizedBox(height: 20),
+                  // Progreso desnudo, sin tarjeta: acompaña a Nori en vez de
+                  // competir con ella por la atención.
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(l.mascotaNivel(_nivel),
+                          style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
+                      Text(l.mascotaXp(_xpEnNivelActual, _xpParaSiguienteNivel),
+                          style: TextStyle(color: t.textMuted)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(999),
+                    child: LinearProgressIndicator(
+                      value: pct.clamp(0.0, 1.0),
+                      minHeight: 10,
+                      backgroundColor: t.surface2,
+                      valueColor: AlwaysStoppedAnimation(t.success),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => TiendaScreen(usuarioId: widget.usuarioId),
-                        ),
-                      ).then((_) => _cargarDatos());
-                    },
-                    icon: const Icon(LucideIcons.utensils),
-                    label: Text(l.mascotaIrTienda),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      OutlinedButton.icon(
+                        // Sin comida el botón sigue a la vista, apagado: es la
+                        // pista de que hay algo que comprar en la tienda.
+                        onPressed:
+                            _comidaCantidad > 0 && !_alimentando ? _alimentar : null,
+                        icon: _alimentando
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(LucideIcons.drumstick, size: 18),
+                        label: Text('${l.mascotaAlimentar} ($_comidaCantidad)'),
+                      ),
+                      const SizedBox(width: 12),
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => TiendaScreen(usuarioId: widget.usuarioId),
+                            ),
+                          ).then((_) => _cargarDatos());
+                        },
+                        icon: const Icon(LucideIcons.store, size: 18),
+                        label: Text(l.tiendaTitulo),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -256,38 +350,29 @@ class _MascotaScreenState extends State<MascotaScreen> {
     );
   }
 
-  Widget _skeletonMascota() {
+  Widget _skeletonMascota(BuildContext context) {
+    final lado = _tamanoMascota(context);
     return SkeletonPulso(
       child: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
         children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
-              child: Column(
-                children: const [
-                  SkeletonBox(width: 96, height: 96, radius: 48),
-                  SizedBox(height: 16),
-                  SkeletonBox(width: 120, height: 22),
-                  SizedBox(height: 8),
-                  SkeletonBox(width: 90, height: 14),
-                ],
-              ),
-            ),
-          ),
+          Center(child: SkeletonBox(width: lado, height: lado, radius: lado / 2)),
+          const SizedBox(height: 16),
+          const Center(child: SkeletonBox(width: 160, height: 26)),
+          const SizedBox(height: 10),
+          const Center(child: SkeletonBox(width: 110, height: 14)),
+          const SizedBox(height: 24),
+          const SkeletonBox(height: 14),
           const SizedBox(height: 12),
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SkeletonBox(height: 14),
-                  SizedBox(height: 12),
-                  SkeletonBox(height: 10, radius: 999),
-                ],
-              ),
-            ),
+          const SkeletonBox(height: 10, radius: 999),
+          const SizedBox(height: 28),
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SkeletonBox(width: 130, height: 40, radius: 20),
+              SizedBox(width: 12),
+              SkeletonBox(width: 110, height: 40, radius: 20),
+            ],
           ),
         ],
       ),

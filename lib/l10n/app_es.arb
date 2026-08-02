@@ -64,7 +64,7 @@
   "comunCerrar": "Cerrar",
   "comunContinuar": "Continuar",
   "comunEliminar": "Eliminar",
-  "mascotaTitulo": "Tu mascota",
+  "mascotaTitulo": "Mascota",
   "mascotaFaseHuevo": "Huevo",
   "mascotaFaseCria": "Cría",
   "mascotaFaseAdulto": "Adulto",
@@ -75,7 +75,8 @@
   "mascotaPonleNombre": "Ponle nombre",
   "mascotaHintNombre": "Nombre de tu mascota",
   "mascotaErrorNombre": "No se pudo guardar el nombre. Inténtalo de nuevo.",
-  "mascotaIrTienda": "Ir a la tienda a alimentarla",
+  "mascotaAlimentar": "Alimentar",
+  "mascotaErrorAlimentar": "No se pudo alimentar a tu mascota. Inténtalo de nuevo.",
   "mascotaNivel": "Nivel {n}",
   "@mascotaNivel": {
     "placeholders": {
