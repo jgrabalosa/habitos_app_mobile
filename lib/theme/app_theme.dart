@@ -17,7 +17,10 @@ class AppColors {
   // Semánticos (sobre la marca)
   static const primary = verdeEsmeralda;
   static const primaryDark = verdeOscuro;
-  static const success = verdeOscuro; // apto como texto sobre fondos claros
+  // Verde de "hecho" para iconos y rellenos, donde WCAG pide 3:1 y no 4.5:1.
+  // Como TEXTO sobre los fondos claros no llega (2.59 sobre bgLight, 2.92
+  // sobre surfaceLight): para eso está successTextLight.
+  static const success = verdeOscuro;
   static const streak = Color(0xFFF97316);
   static const points = Color(0xFFF59E0B);
   static const danger = Color(0xFFEF4444);
@@ -27,7 +30,23 @@ class AppColors {
   static const surfaceLight = Color(0xFFF7F9FB);
   static const surface2Light = Color(0xFFCFDAE6);
   static const textLight = azulNoche;
-  static const textMutedLight = grisMedio;
+
+  /// Gris secundario del tema claro. Más oscuro que `grisMedio` (#6B7280),
+  /// que se quedaba en 4.06 sobre bgLight y 3.41 sobre surface2Light — por
+  /// debajo del 4.5:1 de WCAG AA. Este pasa: 5.47 / 6.17 / 4.60.
+  static const textMutedLight = Color(0xFF585E6A);
+
+  /// `success` oscurecido para usarlo como TEXTO en el tema claro: 4.65 sobre
+  /// bgLight y 5.24 sobre surfaceLight, frente al 2.59/2.92 del verde normal.
+  /// Sobre surface2Light se queda en 3.90, así que ahí sólo vale a tamaño
+  /// grande — de momento no se usa sobre ese fondo.
+  static const successTextLight = Color(0xFF167841);
+
+  /// Lo mismo para `streak`: el naranja normal se queda en 2.66 como texto
+  /// sobre surfaceLight. Éste llega a 4.76 ahí, que es donde se usa (las
+  /// cifras van dentro de Card). Sobre bgLight se queda en 4.22, así que
+  /// directamente sobre el fondo sólo valdría a tamaño grande.
+  static const streakTextLight = Color(0xFFB4530A);
 
   // Básico Oscuro DE MARCA (fondos Azul Noche / Azul Acero, no gris genérico)
   static const primaryDarkMode = verdeEsmeralda;
@@ -60,11 +79,27 @@ class AppRadius {
 /// Colores que cambian según el tema equipado — úsalos con tokens(context)
 class TokensContextuales {
   final Color primary, success, streak, points, bg, surface, surface2, text, textMuted;
+
+  /// El verde cuando se pinta como TEXTO. Como relleno o icono basta con
+  /// `success` (WCAG pide 3:1 ahí, no 4.5:1); es al escribir con él cuando
+  /// hace falta la variante oscura. Sólo lo declaran las paletas donde el
+  /// verde de relleno no llega a 4.5:1 sobre su propio fondo — en las
+  /// oscuras `success` ya contrasta de sobra y es su propio valor.
+  final Color successText;
+
+  /// Igual que `successText` pero para `streak`. Mismo criterio: como relleno
+  /// o icono vale `streak`; al escribir con él hace falta la variante que
+  /// contrasta sobre el fondo de su propia paleta.
+  final Color streakText;
+
   const TokensContextuales({
     required this.primary, required this.success, required this.streak,
     required this.points, required this.bg, required this.surface,
     required this.surface2, required this.text, required this.textMuted,
-  });
+    Color? successText,
+    Color? streakText,
+  })  : successText = successText ?? success,
+        streakText = streakText ?? streak;
 }
 
 // Fallback de arranque antes de que cargarTemaEquipadoGuardado() resuelva el

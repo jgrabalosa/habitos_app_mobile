@@ -275,8 +275,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
+                                  // Va como texto, no como relleno: el verde
+                                  // del tema claro no contrasta ahí.
                                   color: completados.length == totalHoy
-                                      ? t.success
+                                      ? t.successText
                                       : t.textMuted),
                             ),
                           ],

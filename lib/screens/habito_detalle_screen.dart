@@ -178,19 +178,23 @@ title: Hero(
     );
   }
 
+  /// Cuatro cifras que son en realidad dos métricas miradas a dos plazos: la
+  /// racha (ahora / récord) y los completados (siempre / este mes). El color
+  /// dice de qué familia es cada una; el emoji y la etiqueta, el plazo.
   Widget _buildStatCards() {
     final l = AppLocalizations.of(context)!;
+    final t = tokens(context);
     return Row(
       children: [
-        _statCard('🔥', _detalle!['rachaActual'].toString(), l.detRachaActual, Colors.blue),
+        _statCard('🔥', _detalle!['rachaActual'].toString(), l.detRachaActual, t.streakText),
         const SizedBox(width: 8),
-        _statCard('🏆', _detalle!['rachaMaxima'].toString(), l.detMejorRacha, Colors.green),
+        _statCard('🏆', _detalle!['rachaMaxima'].toString(), l.detMejorRacha, t.streakText),
         const SizedBox(width: 8),
-        _statCard('📊', _detalle!['totalCompletados'].toString(), l.detTotal, Colors.purple),
+        _statCard('📊', _detalle!['totalCompletados'].toString(), l.detTotal, t.successText),
         const SizedBox(width: 8),
         _statCard('📅',
             (_detalle!['completadosMesActual'] ?? 0).toString(),
-            _esMesActual ? l.detDiasEsteMes : l.detDiasDelMes, Colors.orange),
+            _esMesActual ? l.detDiasEsteMes : l.detDiasDelMes, t.successText),
       ],
     );
   }
@@ -225,7 +229,10 @@ title: Hero(
     );
   }
 
+  /// El `color` es el de la cifra, y llega ya resuelto para texto: quien
+  /// llama pasa `successText`, no `success`.
   Widget _statCard(String emoji, String valor, String label, Color color) {
+    final t = tokens(context);
     return Expanded(
       child: Card(
         child: Padding(
@@ -238,7 +245,7 @@ title: Hero(
                   style: TextStyle(
                       fontSize: 18, fontWeight: FontWeight.bold, color: color)),
               Text(label,
-                  style: const TextStyle(fontSize: 10, color: Colors.grey),
+                  style: TextStyle(fontSize: 10, color: t.textMuted),
                   textAlign: TextAlign.center),
             ],
           ),
