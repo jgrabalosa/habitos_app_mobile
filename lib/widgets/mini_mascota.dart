@@ -23,15 +23,15 @@ class MiniMascota extends StatefulWidget {
 class _MiniMascotaState extends State<MiniMascota> {
   /// Tamaño habitual de la burbuja. En cualquier móvil normal manda este
   /// valor: el tope de abajo solo entra en juego en pantallas diminutas.
-  static const double _tamanoNominal = 84;
+  static const double _tamanoNominal = 105;
 
   /// La burbuja no puede pasar del 40% del alto de pantalla. Es una
   /// salvaguarda, no un tamaño: si se llega a aplicar es que la pantalla es
-  /// tan baja que 84px ya tapaban media lista.
+  /// tan baja que 105px ya tapaban media lista.
   static const double _fraccionMaximaAlto = 0.4;
 
   /// La ilustración deja aire alrededor dentro de la caja de la burbuja
-  /// (63 sobre 84). Ese aire es el margen del que tira el arrastre, no un
+  /// (79 sobre 105). Ese aire es el margen del que tira el arrastre, no un
   /// adorno: la caja es lo que la burbuja usa para calcular sus límites.
   static const double _proporcionIlustracion = 0.75;
 

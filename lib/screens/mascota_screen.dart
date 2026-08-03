@@ -220,10 +220,12 @@ class _MascotaScreenState extends State<MascotaScreen> {
     }
   }
 
-  /// Nori manda en la pantalla: ocupa algo menos de dos tercios del ancho.
-  /// El tope evita que en tablet crezca hasta lo absurdo.
+  /// Nori manda en la pantalla: ocupa casi tres cuartos del ancho. Los topes
+  /// suben con el factor, pero el de arriba se queda algo por debajo de la
+  /// proporción exacta (serían 372): en tablet el ancho crece mucho más que el
+  /// alto, y pasado ese punto Nori empuja los botones fuera de la pantalla.
   double _tamanoMascota(BuildContext context) =>
-      (MediaQuery.sizeOf(context).width * 0.62).clamp(160.0, 320.0);
+      (MediaQuery.sizeOf(context).width * 0.72).clamp(185.0, 360.0);
 
   @override
   Widget build(BuildContext context) {
@@ -235,110 +237,143 @@ class _MascotaScreenState extends State<MascotaScreen> {
           ? _skeletonMascota(context)
           : RefreshIndicator(
               onRefresh: _cargarDatos,
-              child: ListView(
-                // Sin tarjetas, el contenido no siempre llena la pantalla: sin
-                // esto no habría dónde tirar para refrescar.
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-                children: [
-                  Center(
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      transitionBuilder: (child, animation) => FadeTransition(
-                        opacity: animation,
-                        child: ScaleTransition(scale: animation, child: child),
-                      ),
-                      child: MascotaAnimadaViva(
-                        // La clave es la ilustración, no el estado: el
-                        // AnimatedSwitcher tiene que cruzar cuando
-                        // cambia lo que se ve.
-                        key: ValueKey(_imagenMascota),
-                        fase: _fase,
-                        estado: _estado,
-                        tamano: _tamanoMascota(context),
-                        permiteToque: true,
-                      ),
+              // El scroll se conserva aunque el contenido quepa de sobra: es lo
+              // que da el gesto de tirar para refrescar. Lo que añade el
+              // LayoutBuilder es el `minHeight` del viewport, para que la
+              // Column pueda centrarse verticalmente en ese hueco en vez de
+              // apelotonarse arriba. Restamos el padding vertical (8 + 24)
+              // porque el mínimo se aplica al contenido ya despadeado: sin eso
+              // la pantalla scrollearía siempre 32px de más.
+              child: LayoutBuilder(
+                builder: (context, restricciones) => SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      // El clamp cubre el viewport más bajo que el propio
+                      // padding: un mínimo negativo revienta BoxConstraints.
+                      minHeight: (restricciones.maxHeight - 32).clamp(0.0, double.infinity),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Center(
-                    child: GestureDetector(
-                      onTap: _editarNombre,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(_nombreVisible(l),
-                              style: TextStyle(
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.bold,
-                                  color: t.text)),
-                          const SizedBox(width: 6),
-                          Icon(LucideIcons.pencil, size: 16, color: t.textMuted),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Center(
-                    child: Text('${_faseLegible(l)} · ${_estadoLegible(l)}',
-                        style: TextStyle(color: t.textMuted)),
-                  ),
-                  const SizedBox(height: 20),
-                  // Progreso desnudo, sin tarjeta: acompaña a Nori en vez de
-                  // competir con ella por la atención.
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(l.mascotaNivel(_nivel),
-                          style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
-                      Text(l.mascotaXp(_xpEnNivelActual, _xpParaSiguienteNivel),
-                          style: TextStyle(color: t.textMuted)),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(999),
-                    child: LinearProgressIndicator(
-                      value: pct.clamp(0.0, 1.0),
-                      minHeight: 10,
-                      backgroundColor: t.surface2,
-                      valueColor: AlwaysStoppedAnimation(t.success),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      OutlinedButton.icon(
-                        // Sin comida el botón sigue a la vista, apagado: es la
-                        // pista de que hay algo que comprar en la tienda.
-                        onPressed:
-                            _comidaCantidad > 0 && !_alimentando ? _alimentar : null,
-                        icon: _alimentando
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(LucideIcons.drumstick, size: 18),
-                        label: Text('${l.mascotaAlimentar} ($_comidaCantidad)'),
-                      ),
-                      const SizedBox(width: 12),
-                      OutlinedButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => TiendaScreen(usuarioId: widget.usuarioId),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      // Como hacía el ListView: los hijos ocupan todo el ancho,
+                      // que es de lo que tiran la barra de XP y la fila de
+                      // nivel.
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Center(
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            transitionBuilder: (child, animation) =>
+                                FadeTransition(
+                              opacity: animation,
+                              child:
+                                  ScaleTransition(scale: animation, child: child),
                             ),
-                          ).then((_) => _cargarDatos());
-                        },
-                        icon: const Icon(LucideIcons.store, size: 18),
-                        label: Text(l.tiendaTitulo),
-                      ),
-                    ],
+                            child: MascotaAnimadaViva(
+                              // La clave es la ilustración, no el estado: el
+                              // AnimatedSwitcher tiene que cruzar cuando
+                              // cambia lo que se ve.
+                              key: ValueKey(_imagenMascota),
+                              fase: _fase,
+                              estado: _estado,
+                              tamano: _tamanoMascota(context),
+                              permiteToque: true,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Center(
+                          child: GestureDetector(
+                            onTap: _editarNombre,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(_nombreVisible(l),
+                                    style: TextStyle(
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.bold,
+                                        color: t.text)),
+                                const SizedBox(width: 6),
+                                Icon(LucideIcons.pencil,
+                                    size: 16, color: t.textMuted),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Center(
+                          child: Text(
+                              '${_faseLegible(l)} · ${_estadoLegible(l)}',
+                              style: TextStyle(color: t.textMuted)),
+                        ),
+                        const SizedBox(height: 20),
+                        // Progreso desnudo, sin tarjeta: acompaña a Nori en vez
+                        // de competir con ella por la atención.
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(l.mascotaNivel(_nivel),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, color: t.text)),
+                            Text(
+                                l.mascotaXp(
+                                    _xpEnNivelActual, _xpParaSiguienteNivel),
+                                style: TextStyle(color: t.textMuted)),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(999),
+                          child: LinearProgressIndicator(
+                            value: pct.clamp(0.0, 1.0),
+                            minHeight: 10,
+                            backgroundColor: t.surface2,
+                            valueColor: AlwaysStoppedAnimation(t.success),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            OutlinedButton.icon(
+                              // Sin comida el botón sigue a la vista, apagado:
+                              // es la pista de que hay algo que comprar en la
+                              // tienda.
+                              onPressed: _comidaCantidad > 0 && !_alimentando
+                                  ? _alimentar
+                                  : null,
+                              icon: _alimentando
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2),
+                                    )
+                                  : const Icon(LucideIcons.drumstick, size: 18),
+                              label: Text(
+                                  '${l.mascotaAlimentar} ($_comidaCantidad)'),
+                            ),
+                            const SizedBox(width: 12),
+                            OutlinedButton.icon(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => TiendaScreen(
+                                        usuarioId: widget.usuarioId),
+                                  ),
+                                ).then((_) => _cargarDatos());
+                              },
+                              icon: const Icon(LucideIcons.store, size: 18),
+                              label: Text(l.tiendaTitulo),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ],
+                ),
               ),
             );
 
