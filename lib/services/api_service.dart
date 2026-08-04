@@ -618,7 +618,7 @@ class ApiService {
   // disparar el mini-onboarding), false si ya existía o si se canceló.
   static Future<bool> loginConGoogle() async {
     final GoogleSignIn googleSignIn = GoogleSignIn(
-      serverClientId: '177339814167-fdtmn2i1s6aeg1agrqtikq066opib8ce.apps.googleusercontent.com',
+      serverClientId: '1086143132391-vprrrjr7s3u12q544flm2tclllj61ami.apps.googleusercontent.com',
     );
 
     final GoogleSignInAccount? account = await googleSignIn.signIn();
