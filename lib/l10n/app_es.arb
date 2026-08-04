@@ -376,6 +376,28 @@
       }
     }
   },
+  "colSeleccionActual": "Tu selección actual",
+  "colContador": "{poseidos}/{total}",
+  "@colContador": {
+    "placeholders": {
+      "poseidos": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "colCantidad": "x{n}",
+  "@colCantidad": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "colSeActivaSolo": "Se activa solo",
+  "colUsar": "Usar",
   "colError": "No se pudo completar la operación. Inténtalo de nuevo.",
   "obTitulo1": "¡Bienvenido a Norday! 🎉",
   "obCuerpo1": "Cada hábito que completes te da puntos. Úsalos para desbloquear avatares, temas y más en la tienda.",
