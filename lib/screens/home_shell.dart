@@ -55,6 +55,13 @@ class _HomeShellState extends State<HomeShell> {
     );
   }
 
+  void _abrirLogros() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => LogrosScreen(usuarioId: _usuarioId)),
+    );
+  }
+
   // Botón atrás Android: si no estás en "Hoy", vuelve ahí primero.
   // Si ya estás en "Hoy", hace falta pulsar dos veces seguidas para salir.
   Future<void> _manejarAtras() async {
@@ -190,28 +197,89 @@ class _HomeShellState extends State<HomeShell> {
             IconButton(
               tooltip: l.logrosTitulo,
               icon: Icon(LucideIcons.medal, color: t.textMuted),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => LogrosScreen(usuarioId: _usuarioId)),
-                );
-              },
+              onPressed: _abrirLogros,
             ),
             PopupMenuButton<String>(
               icon: Icon(LucideIcons.menu, color: t.textMuted),
               onSelected: (valor) {
-                if (valor == 'cuenta') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => PerfilScreen(usuarioId: _usuarioId),
-                    ),
-                  );
-                } else if (valor == 'logout') {
-                  _logout();
+                switch (valor) {
+                  case 'hoy':
+                    _irAPestana(0);
+                  case 'mascota':
+                    _irAPestana(1);
+                  case 'habitos':
+                    _irAPestana(2);
+                  case 'coleccion':
+                    _abrirColeccion();
+                  case 'logros':
+                    _abrirLogros();
+                  case 'cuenta':
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PerfilScreen(usuarioId: _usuarioId),
+                      ),
+                    );
+                  case 'logout':
+                    _logout();
                 }
               },
+              // El menu lleva a todo: las tres pestañas que se deslizan y las
+              // dos pantallas que solo tenian icono arriba. Los iconos son los
+              // mismos que en la barra inferior y el AppBar, y los textos las
+              // mismas claves, para que nada pueda divergir.
               itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'hoy',
+                  child: Row(
+                    children: [
+                      const Icon(LucideIcons.house, size: 20),
+                      const SizedBox(width: 12),
+                      Text(l.navHoy),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'mascota',
+                  child: Row(
+                    children: [
+                      const Icon(LucideIcons.pawPrint, size: 20),
+                      const SizedBox(width: 12),
+                      Text(l.navMascota),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'habitos',
+                  child: Row(
+                    children: [
+                      const Icon(LucideIcons.listChecks, size: 20),
+                      const SizedBox(width: 12),
+                      Text(l.navHabitos),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'coleccion',
+                  child: Row(
+                    children: [
+                      const Icon(LucideIcons.trophy, size: 20),
+                      const SizedBox(width: 12),
+                      Text(l.navColeccion),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'logros',
+                  child: Row(
+                    children: [
+                      const Icon(LucideIcons.medal, size: 20),
+                      const SizedBox(width: 12),
+                      Text(l.logrosTitulo),
+                    ],
+                  ),
+                ),
+                const PopupMenuDivider(),
                 PopupMenuItem(
                   value: 'cuenta',
                   child: Row(
