@@ -7,6 +7,7 @@ import 'package:in_app_review/in_app_review.dart';
 import '../services/api_service.dart';
 import '../models/habito.dart';
 import '../theme/app_theme.dart';
+import '../theme/mascota_refresh.dart';
 import 'habito_detalle_screen.dart';
 import '../services/analytics_service.dart';
 import '../services/celebracion_service.dart';
@@ -143,6 +144,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       }
       return;
     }
+
+    // Completar cambia el ánimo de la mascota en el servidor: hay que avisar a
+    // quien la esté pintando (la mini-mascota flotante no se entera sola).
+    solicitarRefrescoMascota();
 
     // Analytics en segundo plano: no bloquea la celebración
     AnalyticsService.habitoCompletado(habitoActual.frecuencia);

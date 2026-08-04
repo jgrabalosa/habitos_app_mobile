@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import '../screens/mascota_screen.dart';
+import '../theme/mascota_refresh.dart';
 import 'burbuja_flotante.dart';
 import 'mascota_animada_viva.dart';
 
@@ -45,7 +46,18 @@ class _MiniMascotaState extends State<MiniMascota> {
   void initState() {
     super.initState();
     _inicializar();
+    // La mini-mascota vive fuera de la pantalla que provoca el cambio, así
+    // que sin esta señal se quedaría con el ánimo del último `_inicializar()`.
+    refrescoMascotaNotifier.addListener(_onRefrescoSolicitado);
   }
+
+  @override
+  void dispose() {
+    refrescoMascotaNotifier.removeListener(_onRefrescoSolicitado);
+    super.dispose();
+  }
+
+  void _onRefrescoSolicitado() => _inicializar();
 
   Future<void> _inicializar() async {
     final prefs = await SharedPreferences.getInstance();
