@@ -79,6 +79,8 @@ class SplashScreen extends StatelessWidget {
       rutaImagen: 'assets/branding/simbolo_negativo.png',
       colorFondo: const Color(0xFF0A1628),
       wordmark: 'Norday',
+      anchoImagen: 220,
+      tamanoWordmark: 32,
       tarea: _checkSession,
       onListo: (context, token) {
         Navigator.pushReplacement(

@@ -13,6 +13,13 @@ class SplashGenerico<T> extends StatefulWidget {
   final void Function(BuildContext context, T resultado) onListo;
   final String? wordmark;
 
+  /// Ancho del símbolo en dp. Cada app del ecosistema tiene su propio
+  /// logo, así que el tamaño es del consumidor, no del motor.
+  final double anchoImagen;
+
+  /// Tamaño de fuente del wordmark en dp, acompañando a [anchoImagen].
+  final double tamanoWordmark;
+
   const SplashGenerico({
     super.key,
     required this.rutaImagen,
@@ -21,6 +28,8 @@ class SplashGenerico<T> extends StatefulWidget {
     required this.onListo,
     this.duracionMinima = const Duration(milliseconds: 1200),
     this.wordmark,
+    this.anchoImagen = 180,
+    this.tamanoWordmark = 26,
   });
 
   @override
@@ -53,13 +62,13 @@ class _SplashGenericoState<T> extends State<SplashGenerico<T>> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset(widget.rutaImagen, width: 180),
+            Image.asset(widget.rutaImagen, width: widget.anchoImagen),
             if (widget.wordmark != null) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               Text(
                 widget.wordmark!,
                 style: GoogleFonts.manrope(
-                  fontSize: 26,
+                  fontSize: widget.tamanoWordmark,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                   letterSpacing: 0.5,
