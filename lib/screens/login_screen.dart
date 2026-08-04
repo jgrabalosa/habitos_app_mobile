@@ -193,11 +193,13 @@ Future<void> _registro() async {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo
-                Icon(LucideIcons.circleCheck, size: 72, color: t.primary),
+                // Logo y wordmark comparten verde, y ese verde es
+                // `successText`, no `primary`: el esmeralda se queda en 1.86:1
+                // sobre el fondo del tema claro. El icono es relleno y le
+                // bastaría 3:1, pero ni eso alcanza — y además así los dos
+                // elementos de la marca van del mismo color en las 7 paletas.
+                Icon(LucideIcons.circleCheck, size: 72, color: t.successText),
                 const SizedBox(height: 12),
-                // El verde va como TEXTO, así que toca `successText`, no
-                // `primary`: sobre el fondo claro el esmeralda se queda en 1.86:1.
                 Text(l.appTitulo,
                   style: TextStyle(
                     fontSize: 28, fontWeight: FontWeight.bold, color: t.successText)),
