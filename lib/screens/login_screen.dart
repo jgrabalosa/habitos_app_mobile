@@ -182,9 +182,10 @@ Future<void> _registro() async {
 
   @override
   Widget build(BuildContext context) {
+    final t = tokens(context);
     final l = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: AppColors.bgLight,
+      backgroundColor: t.bg,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -193,12 +194,15 @@ Future<void> _registro() async {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Logo
-                const Icon(LucideIcons.circleCheck, size: 72, color: AppColors.primary),
+                Icon(LucideIcons.circleCheck, size: 72, color: t.primary),
                 const SizedBox(height: 12),
+                // El verde va como TEXTO, así que toca `successText`, no
+                // `primary`: sobre el fondo claro el esmeralda se queda en 1.86:1.
                 Text(l.appTitulo,
-                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                  style: TextStyle(
+                    fontSize: 28, fontWeight: FontWeight.bold, color: t.successText)),
                 Text(l.loginTagline,
-                  style: const TextStyle(color: Colors.grey)),
+                  style: TextStyle(color: t.textMuted)),
                 const SizedBox(height: 32),
 
                 // Card
@@ -217,12 +221,13 @@ Future<void> _registro() async {
                                 child: Column(children: [
                                   Text(l.loginIniciarSesion,
                                     style: TextStyle(
-                                      color: _isLogin ? AppColors.primary : Colors.grey,
+                                      color: _isLogin ? t.successText : t.textMuted,
                                       fontWeight: _isLogin ? FontWeight.bold : FontWeight.normal,
                                     )),
                                   const SizedBox(height: 4),
+                                  // La barra es relleno, no texto: aquí sí vale `primary`.
                                   Container(height: 2,
-                                    color: _isLogin ? AppColors.primary : Colors.transparent),
+                                    color: _isLogin ? t.primary : Colors.transparent),
                                 ]),
                               ),
                             ),
@@ -232,12 +237,12 @@ Future<void> _registro() async {
                                 child: Column(children: [
                                   Text(l.loginRegistrarse,
                                     style: TextStyle(
-                                      color: !_isLogin ? AppColors.primary : Colors.grey,
+                                      color: !_isLogin ? t.successText : t.textMuted,
                                       fontWeight: !_isLogin ? FontWeight.bold : FontWeight.normal,
                                     )),
                                   const SizedBox(height: 4),
                                   Container(height: 2,
-                                    color: !_isLogin ? AppColors.primary : Colors.transparent),
+                                    color: !_isLogin ? t.primary : Colors.transparent),
                                 ]),
                               ),
                             ),
@@ -263,7 +268,7 @@ Future<void> _registro() async {
                           const Expanded(child: Divider()),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: Text(l.loginO, style: const TextStyle(color: Colors.grey)),
+                            child: Text(l.loginO, style: TextStyle(color: t.textMuted)),
                           ),
                           const Expanded(child: Divider()),
                         ]),
@@ -355,7 +360,7 @@ Future<void> _registro() async {
                           child: ElevatedButton(
                             onPressed: _loading ? null : (_isLogin ? _login : _registro),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
+                              backgroundColor: t.primary,
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8)),
