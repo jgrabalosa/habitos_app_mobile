@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../services/api_service.dart';
-import '../theme/app_theme.dart';
 import 'dashboard_screen.dart';
-import 'coleccion_screen.dart';
-import 'logros_screen.dart';
-import 'perfil_screen.dart';
-import 'login_screen.dart';
 import 'habitos_screen.dart';
-import 'mascota_screen.dart';
-import '../theme/avatares.dart';
-import '../widgets/selector_avatar_gratis.dart';
-import '../widgets/onboarding_overlay.dart';
+
+/// Adónde va el motor cuando la sesión ya es buena.
+///
+/// `LoginScreen` y `PerfilScreen` viven en norday_flutter_core y no pueden
+/// conocer `HomeShell` —el paquete no importa de la app—, así que se lo
+/// decimos con esto. Es una función suelta y no un método para que valga como
+/// constante donde hace falta.
+Widget destinoTrasLogin(BuildContext context, bool mostrarOnboarding) =>
+    HomeShell(mostrarOnboarding: mostrarOnboarding);
 
 class HomeShell extends StatefulWidget {
   final bool mostrarOnboarding;
@@ -103,7 +103,7 @@ class _HomeShellState extends State<HomeShell> {
   }
 
   Future<void> _cargarUsuario() async {
-    final usuario = await ApiService.getUsuarioLocal();
+    final usuario = await ApiServiceCore.getUsuarioLocal();
     if (usuario == null || !mounted) return;
     setState(() {
       _usuarioId = usuario['usuarioId'] ?? 0;
@@ -132,11 +132,13 @@ class _HomeShellState extends State<HomeShell> {
   }
 
   Future<void> _logout() async {
-    await ApiService.logout();
+    await ApiServiceCore.logout();
     if (mounted) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        MaterialPageRoute(
+            builder: (_) =>
+                const LoginScreen(destinoTrasLogin: destinoTrasLogin)),
       );
     }
   }
@@ -217,7 +219,10 @@ class _HomeShellState extends State<HomeShell> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => PerfilScreen(usuarioId: _usuarioId),
+                        builder: (_) => PerfilScreen(
+                          usuarioId: _usuarioId,
+                          destinoTrasLogin: destinoTrasLogin,
+                        ),
                       ),
                     );
                   case 'logout':

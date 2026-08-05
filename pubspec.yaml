@@ -12,6 +12,12 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+  # El motor del ecosistema: red, temas, gamificación, mascota, onboarding y
+  # preferencias. Lo que vive ahí no sabe de hábitos.
+  norday_flutter_core:
+    git:
+      url: https://github.com/jgrabalosa/norday_flutter_core.git
+      ref: main
   intl: any
   cupertino_icons: ^1.0.8
   http: ^1.2.0
@@ -39,11 +45,9 @@ flutter:
   uses-material-design: true
   generate: true
   assets:
-    - assets/animations/
-    - assets/sounds/
+    # Lo único que no se comparte: el branding es de esta app. Animaciones,
+    # sonidos, mascota y avatares los declara norday_flutter_core.
     - assets/branding/
-    - assets/avatares/
-    - assets/mascota/
 
 flutter_launcher_icons:
   android: "ic_launcher"

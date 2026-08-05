@@ -1,21 +1,50 @@
 # Norday — Contexto del proyecto (Flutter / Mobile)
 
 Esta app (Norday Hábitos) es la primera de un ecosistema de apps Norday.
-El starter kit de Flutter (ApiService, sistema de temas, CelebracionService,
-SonidoService, login) está pensado para extraerse a un paquete Dart
-compartido cuando exista la segunda app.
+El motor genérico ya **no vive aquí**: está extraído en el paquete
+[norday_flutter_core](https://github.com/jgrabalosa/norday_flutter_core),
+que esta app consume como dependencia Git.
 
 ## Regla de arquitectura obligatoria: Motor vs Disparadores
 
-- **Motor** = genérico y reutilizable: ApiService, temas/tokens de diseño,
-  CelebracionService (logros), SonidoService, animaciones genéricas
-  (ej. `AnimacionPuntos(cantidad)`), lógica de mascota (estado→animación).
-- **Disparadores** = específico de "hábitos": pantallas y lógica de
-  Habito, Registro, Categoria.
+- **Motor** = genérico y reutilizable → vive en `norday_flutter_core`.
+- **Disparadores** = específico de "hábitos" → vive aquí.
 
 **Ningún widget o servicio genérico debe conocer conceptos de dominio
 como "hábito".** Por ejemplo, SonidoService solo conoce eventos tipo
 `completar`/`logro`/`racha`, nunca nombres de hábitos concretos.
+
+Antes de escribir algo genérico aquí, para: probablemente va en el paquete.
+
+### Qué vive en el paquete
+
+`ApiServiceCore` (sesión, usuario, preferencias, gamificación, tienda,
+mascota, notificaciones), `ApiException`, `AnalyticsCore`,
+`CelebracionService`, `SonidoService`, `IdiomaService`, `ZonaService`,
+`AppTheme` y tokens, `catalogoPaletas`, `catalogoAvatares`, `Equipamiento`,
+`assetMascota`, `Usuario`, los 12 widgets genéricos, las 7 pantallas
+genéricas (login, recuperación, tienda, mascota, logros, colección, perfil),
+`NordayCoreLocalizations`, `CatalogosCore`, y los assets de animations,
+sounds, mascota y avatares.
+
+### Qué vive aquí
+
+`ApiServiceHabitos`, `AnalyticsHabitos`, `Habito`, `HomeShell`, dashboard,
+lista de hábitos, detalle de hábito, alta/edición de hábito, `Catalogos`
+(categorías y logros de hábito), `CrashlyticsService`, `AppLocalizations`, y
+`assets/branding/` — que es lo único de assets que **no** se comparte.
+
+### Lo que esta app le enchufa al paquete
+
+El paquete no puede importar de aquí, así que hay tres puntos de conexión:
+
+1. **`destinoTrasLogin`** (función suelta en `home_shell.dart`) — se le pasa a
+   `LoginScreen` y a `PerfilScreen`, que no pueden conocer `HomeShell`.
+2. **`Catalogos.registrarEnElMotor()`** en `main()` — le da al motor los ~32
+   logros de hábitos. En el paquete solo viven los cuatro sin dominio
+   (`BIENVENIDO`, `PRIMEROS_PASOS`, `LOGIN_GOOGLE`, `INTERACCION_RESENA`).
+3. **`nordayNavigatorKey`** — `MaterialApp` usa el del paquete en vez de uno
+   propio, porque `CelebracionService` lo necesita.
 
 ## Identidad de marca (aplicar siempre en UI nueva)
 
@@ -27,18 +56,12 @@ como "hábito".** Por ejemplo, SonidoService solo conoce eventos tipo
 - La mascota es una funcionalidad, no la identidad de marca (eso es el
   logo/brújula).
 
-## Modularización futura (no ejecutar todavía, solo respetar la disciplina)
-
-Cuando exista la segunda app del ecosistema, los servicios genéricos se
-extraerán a un paquete Flutter compartido. Escribe el código nuevo
-pensando ya en esa separación (evita acoplar lógica de motor a widgets
-de hábitos).
-
 ## Idioma y zona horaria
 
 Son **dos preferencias independientes**, no una derivada de la otra: un
 brasileño y un portugués hablan lo mismo y están a cuatro horas. Misma
-pantalla, dos selectores (`SelectorPreferencias`).
+pantalla, dos selectores (`SelectorPreferencias`). Los dos servicios viven
+ya en el paquete.
 
 - Idioma: `IdiomaService`. Se detecta del dispositivo en el primer arranque
   con caída a `es`, se persiste en `shared_preferences` y se sincroniza con
@@ -50,18 +73,44 @@ pantalla, dos selectores (`SelectorPreferencias`).
 - Tras iniciar sesión, el backend manda la última palabra: puede haberlas
   cambiado desde otro dispositivo.
 
+## Tema y avatar equipados
+
+La fuente de verdad es el backend, no el dispositivo: `Equipamiento`
+(en el paquete) lee `getInventarioProductos()` y casa el `codigo` del
+producto contra los catálogos locales. Ya no se usa `SharedPreferences`.
+
+No se puede cargar en `main()`: antes del login no hay ni `usuarioId` ni
+token. Va tras el login y en el splash cuando ya hay sesión guardada, así
+que hasta que responde se ve el tema por defecto.
+
 ## Textos
 
-Ninguna pantalla nueva lleva literales: todo va a `lib/l10n/app_*.arb`
-(`es` es la plantilla) y se accede con `AppLocalizations.of(context)!`.
-Los `app_localizations*.dart` los genera `flutter gen-l10n` y **no** se
-versionan.
+Ninguna pantalla nueva lleva literales. **Hay dos catálogos de textos y dos
+clases**, y los dos delegados conviven en `MaterialApp`:
 
-Los catálogos (categorías, logros, productos) llegan del backend con
-`codigo` y se traducen con `Catalogos.categoria/logro/producto`. **Caída
-obligatoria**: si el código no está traducido o viene a `null` —caso de las
-categorías que crea el usuario— se muestra el nombre que manda el backend.
-Nunca un código crudo.
+- Lo de hábitos → `lib/l10n/app_*.arb`, con `AppLocalizations.of(context)!`.
+- Lo genérico → los `core_*.arb` del paquete, con
+  `NordayCoreLocalizations.of(context)!`.
+
+Ocho claves viven duplicadas a propósito porque las usan los dos lados
+(`comunContinuar`, `logrosTitulo`, `navColeccion`, `navHoy`, `cancelar`,
+`perfilTitulo`, `plantillaBeberAgua`, `dashCompletados`): al cambiar una hay
+que cambiarla en los dos sitios.
+
+Los `app_localizations*.dart` los genera `flutter gen-l10n` y **no** se
+versionan. (En el paquete sí se versionan los suyos — ver su CLAUDE.md.)
+
+Los catálogos llegan del backend con `codigo`. Categorías de hábito con
+`Catalogos.categoria`; productos, niveles y logros con `CatalogosCore`.
+**Caída obligatoria**: si el código no está traducido o viene a `null` —caso
+de las categorías que crea el usuario— se muestra el nombre que manda el
+backend. Nunca un código crudo.
+
+## Tocar el paquete
+
+Un cambio en `norday_flutter_core` no llega solo: hay que hacer push allí y
+luego `flutter pub upgrade norday_flutter_core` aquí, porque la dependencia
+va por `ref: main` y pub cachea el commit resuelto.
 
 ## Estilo de trabajo con el usuario
 

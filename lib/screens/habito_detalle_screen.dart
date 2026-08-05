@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
-import '../l10n/mensajes_error.dart';
+import '../services/api_service_habitos.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../services/api_service.dart';
 import '../models/habito.dart';
-import '../theme/app_theme.dart';
 import 'habito_screen.dart';
-import '../widgets/valoracion_sheet.dart';
 
 class HabitoDetalleScreen extends StatefulWidget {
   final int habitoId;
@@ -36,7 +34,7 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     try {
       final mesParam =
           '${_mesActual.year}-${_mesActual.month.toString().padLeft(2, '0')}';
-      final detalle = await ApiService.getHabitoDetalle(widget.habitoId, mes: mesParam);
+      final detalle = await ApiServiceHabitos.getHabitoDetalle(widget.habitoId, mes: mesParam);
       if (!mounted) return;
       setState(() {
         _detalle = detalle;
@@ -56,7 +54,7 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
 
   Future<void> _abrirEdicion() async {
     try {
-      final Habito habito = await ApiService.getHabito(widget.habitoId);
+      final Habito habito = await ApiServiceHabitos.getHabito(widget.habitoId);
       if (!mounted) return;
       final result = await Navigator.push(
         context,
@@ -491,11 +489,11 @@ title: Hero(
       // Solo se envía la valoración si hay una elegida
       // (el backend no admite borrar una valoración existente)
       if (valoracion != null && valoracion != valoracionActual) {
-        await ApiService.valorarRegistro(registroId, valoracion);
+        await ApiServiceHabitos.valorarRegistro(registroId, valoracion);
       }
       // La nota sí se puede vaciar: enviamos '' si la borró
       if ((nota ?? '') != (notaActual ?? '')) {
-        await ApiService.actualizarNotaRegistro(registroId, nota ?? '');
+        await ApiServiceHabitos.actualizarNotaRegistro(registroId, nota ?? '');
       }
       _cargarDetalle();
     } catch (e) {

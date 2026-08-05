@@ -565,6 +565,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.18.0"
+  norday_flutter_core:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: main
+      resolved-ref: "7278324d64873b9a828763c7e7e7f26fd306728e"
+      url: "https://github.com/jgrabalosa/norday_flutter_core.git"
+    source: git
+    version: "0.1.0"
   objective_c:
     dependency: transitive
     description:

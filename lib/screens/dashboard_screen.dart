@@ -1,24 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
-import '../l10n/mensajes_error.dart';
+import '../services/api_service_habitos.dart';
+import '../services/analytics_service.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:in_app_review/in_app_review.dart';
-import '../services/api_service.dart';
 import '../models/habito.dart';
-import '../theme/app_theme.dart';
-import '../theme/mascota_refresh.dart';
 import 'habito_detalle_screen.dart';
-import '../services/analytics_service.dart';
-import '../services/celebracion_service.dart';
-import '../widgets/animacion_puntos.dart';
-import '../services/sonido_service.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../widgets/valoracion_sheet.dart';
-import '../widgets/check_circular.dart';
-import '../widgets/anillo_progreso.dart';
-import '../widgets/skeleton.dart';
-import '../widgets/mini_mascota.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -50,7 +40,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _cargarDatos() async {
-    final usuario = await ApiService.getUsuarioLocal();
+    final usuario = await ApiServiceCore.getUsuarioLocal();
     if (usuario == null || !mounted) return;
     setState(() {
       _usuarioId = usuario['usuarioId'] ?? 0;
@@ -64,7 +54,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _cargarEstadoResena() async {
     try {
-      final logros = await ApiService.getLogrosUsuario(_usuarioId);
+      final logros = await ApiServiceCore.getLogrosUsuario(_usuarioId);
       final yaPidio = logros.any((l) => l['logro']?['codigo'] == 'INTERACCION_RESENA');
       if (mounted) setState(() { _yaPidioResena = yaPidio; });
     } catch (_) {
@@ -74,7 +64,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _cargarHabitos() async {
     try {
-      final dashboard = await ApiService.getDashboard(_usuarioId);
+      final dashboard = await ApiServiceHabitos.getDashboard(_usuarioId);
 
       final habitos = <Habito>[];
       for (var item in dashboard) {
@@ -128,7 +118,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return; // ya está hecho hoy: no se puede volver a completar
     }
     try {
-      final resultado = await ApiService.completarHabito(habitoId);
+      final resultado = await ApiServiceHabitos.completarHabito(habitoId);
       logrosOtorgados = resultado['logros'];
       puntosGanados = resultado['puntosGanados'];
       registroId = resultado['registroId'];
@@ -150,7 +140,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     solicitarRefrescoMascota();
 
     // Analytics en segundo plano: no bloquea la celebración
-    AnalyticsService.habitoCompletado(habitoActual.frecuencia);
+    AnalyticsHabitos.habitoCompletado(habitoActual.frecuencia);
 
     // Feedback háptico + sonido
     HapticFeedback.mediumImpact();
@@ -166,7 +156,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     setState(() {}); // el cambio de progreso dispara la animación del check
 
     // Sincronización real en segundo plano (por si el conteo local se desviara)
-    ApiService.getProgresoHoy(habitoId).then((prog) {
+    ApiServiceHabitos.getProgresoHoy(habitoId).then((prog) {
       if (mounted) setState(() { _progreso[habitoId] = prog; });
     }).catchError((_) {});
 
@@ -190,10 +180,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           final int? valoracion = respuesta['valoracion'];
           final String? nota = respuesta['nota'];
           if (valoracion != null) {
-            await ApiService.valorarRegistro(registroId, valoracion);
+            await ApiServiceHabitos.valorarRegistro(registroId, valoracion);
           }
           if (nota != null) {
-            await ApiService.actualizarNotaRegistro(registroId, nota);
+            await ApiServiceHabitos.actualizarNotaRegistro(registroId, nota);
           }
         } catch (e) {
           // La valoración es opcional: si falla, no molestamos al usuario
@@ -211,7 +201,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final InAppReview inAppReview = InAppReview.instance;
       if (await inAppReview.isAvailable()) {
         await inAppReview.requestReview();
-        await ApiService.registrarInteraccionResena(_usuarioId);
+        await ApiServiceCore.registrarInteraccionResena(_usuarioId);
         if (mounted) {
           setState(() { _yaPidioResena = true; });
         }

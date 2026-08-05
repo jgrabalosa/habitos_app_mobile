@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
-import '../l10n/catalogos.dart';
-import '../l10n/mensajes_error.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../services/api_service.dart';
+import '../services/api_service_habitos.dart';
 import '../services/analytics_service.dart';
-import '../services/celebracion_service.dart';
+import '../l10n/catalogos.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/habito.dart';
-import '../theme/app_theme.dart';
 
 class HabitoScreen extends StatefulWidget {
   final int usuarioId;
@@ -98,7 +96,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
 
   Future<void> _cargarCategorias() async {
     try {
-      final categorias = await ApiService.getCategoriasUsuario(widget.usuarioId);
+      final categorias = await ApiServiceHabitos.getCategoriasUsuario(widget.usuarioId);
       if (!mounted) return;
       setState(() {
         _categorias = categorias;
@@ -219,7 +217,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
     setState(() { _loading = true; _error = null; });
     try {
       if (_esEdicion) {
-        await ApiService.actualizarHabito(
+        await ApiServiceHabitos.actualizarHabito(
           widget.habito!.habitoId,
           _nombreController.text,
           _descripcionController.text,
@@ -233,7 +231,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
         );
         if (mounted) Navigator.pop(context, true);
       } else {
-        final logrosOtorgados = await ApiService.crearHabito(
+        final logrosOtorgados = await ApiServiceHabitos.crearHabito(
           _nombreController.text,
           _descripcionController.text,
           _frecuencia,
@@ -244,7 +242,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
           recordatorioActivo: _recordatorioActivo,
           recordatorioHora: recordatorioHora,
         );
-        await AnalyticsService.habitoCreado(_frecuencia);
+        await AnalyticsHabitos.habitoCreado(_frecuencia);
         if (mounted) Navigator.pop(context, true);
         if (logrosOtorgados.isNotEmpty) {
           CelebracionService.mostrar(logrosOtorgados);
@@ -287,7 +285,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
     if (confirmar == true) {
       setState(() { _loading = true; });
       try {
-        await ApiService.eliminarHabito(widget.habito!.habitoId);
+        await ApiServiceHabitos.eliminarHabito(widget.habito!.habitoId);
         if (mounted) Navigator.pop(context, true);
       } catch (e) {
         if (mounted) {

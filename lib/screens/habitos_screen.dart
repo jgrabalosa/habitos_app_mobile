@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
+import '../services/api_service_habitos.dart';
 import '../l10n/catalogos.dart';
-import '../l10n/mensajes_error.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../services/api_service.dart';
 import '../models/habito.dart';
-import '../theme/app_theme.dart';
 import 'habito_screen.dart';
-import '../widgets/skeleton.dart';
 
 enum _Orden { recientes, masCumplidos }
 
@@ -36,8 +34,8 @@ class _HabitosScreenState extends State<HabitosScreen> {
     setState(() => _loading = true);
     try {
       final resultados = await Future.wait([
-        ApiService.getResumenHabitos(widget.usuarioId),
-        ApiService.getCategoriasUsuario(widget.usuarioId),
+        ApiServiceHabitos.getResumenHabitos(widget.usuarioId),
+        ApiServiceHabitos.getCategoriasUsuario(widget.usuarioId),
       ]);
       if (!mounted) return;
       setState(() {
@@ -54,7 +52,7 @@ class _HabitosScreenState extends State<HabitosScreen> {
 
   Future<void> _activar(int habitoId) async {
     try {
-      await ApiService.activarHabito(habitoId);
+      await ApiServiceHabitos.activarHabito(habitoId);
       _cargarDatos();
     } catch (e) {
       _avisarError(e);
@@ -63,7 +61,7 @@ class _HabitosScreenState extends State<HabitosScreen> {
 
   Future<void> _desactivar(int habitoId) async {
     try {
-      await ApiService.desactivarHabito(habitoId);
+      await ApiServiceHabitos.desactivarHabito(habitoId);
       _cargarDatos();
     } catch (e) {
       _avisarError(e);

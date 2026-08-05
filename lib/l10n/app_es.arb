@@ -1,16 +1,6 @@
 {
   "@@locale": "es",
-  "appTitulo": "Norday Habits",
-  "idioma": "Idioma",
-  "zonaHoraria": "Zona horaria",
-  "preferencias": "Preferencias",
-  "idiomaEs": "Español",
-  "idiomaEn": "Inglés",
-  "idiomaPt": "Portugués",
-  "guardar": "Guardar",
   "cancelar": "Cancelar",
-  "zonaDetectada": "Detectada de tu dispositivo",
-  "zonaAyuda": "Define cuándo empieza y acaba tu día para las rachas y los recordatorios.",
   "catSalud": "Salud",
   "catDeporte": "Deporte",
   "catAlimentacion": "Alimentación",
@@ -22,10 +12,7 @@
   "catCreatividad": "Creatividad",
   "catSueno": "Sueño",
   "logroPrimerHabito": "Tu primer hábito propio",
-  "logroBienvenido": "Bienvenido/a",
   "logroPrimeraCategoria": "Organizado desde el día 1",
-  "logroLoginGoogle": "Conectado con Google",
-  "logroPrimerosPasos": "Primeros pasos",
   "logroRacha3": "En racha",
   "logroRacha7": "Buen ritmo",
   "logroRachaRecuperada": "Resiliencia",
@@ -40,62 +27,9 @@
   "logroCategorias3": "Explorador de categorías",
   "logroCategorias5": "Todoterreno",
   "logroPrimeraNota": "Historias que contar",
-  "logroInteraccionResena": "Tu opinión cuenta",
-  "prodEscudoRacha": "Escudo de racha",
-  "prodTemaBasicoClaro": "Básico Claro",
-  "prodTemaBasicoOscuro": "Básico Oscuro",
-  "prodTemaCalidez": "Calidez",
-  "prodTemaNeotokyo": "Neo-Tokyo",
-  "prodTemaOceano": "Océano",
-  "prodTemaBosque": "Bosque",
-  "prodTemaCobre": "Cobre Nocturno",
-  "prodAvatarZorro": "Zorro",
-  "prodAvatarGato": "Gato",
-  "prodAvatarBuho": "Búho",
-  "prodAvatarPanda": "Panda",
-  "prodAvatarTortuga": "Tortuga",
-  "prodComidaBasica": "Comida",
-  "preferenciasSubtitulo": "Idioma y zona horaria",
-  "cambiarZona": "Cambiar zona horaria",
-  "buscarZona": "Buscar zona",
-  "sinResultados": "Sin resultados",
-  "preferenciasGuardadas": "Preferencias actualizadas",
   "errorGuardar": "No se pudo guardar. Inténtalo de nuevo.",
-  "comunCerrar": "Cerrar",
   "comunContinuar": "Continuar",
   "comunEliminar": "Eliminar",
-  "mascotaTitulo": "Mascota",
-  "mascotaFaseHuevo": "Huevo",
-  "mascotaFaseCria": "Cría",
-  "mascotaFaseAdulto": "Adulto",
-  "mascotaEstadoFeliz": "Feliz",
-  "mascotaEstadoAtencion": "Necesita atención",
-  "mascotaEstadoTranquila": "Tranquila",
-  "mascotaEstadoTriste": "Triste",
-  "mascotaPonleNombre": "Ponle nombre",
-  "mascotaHintNombre": "Nombre de tu mascota",
-  "mascotaErrorNombre": "No se pudo guardar el nombre. Inténtalo de nuevo.",
-  "mascotaAlimentar": "Alimentar",
-  "mascotaErrorAlimentar": "No se pudo alimentar a tu mascota. Inténtalo de nuevo.",
-  "mascotaNivel": "Nivel {n}",
-  "@mascotaNivel": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
-  "mascotaXp": "{actual}/{total} XP",
-  "@mascotaXp": {
-    "placeholders": {
-      "actual": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
   "plantillaBeberAgua": "Beber agua",
   "plantillaLeer20Min": "Leer 20 min",
   "plantillaEjercicio": "Ejercicio",
@@ -207,68 +141,8 @@
       }
     }
   },
-  "detLogrosDe": "{n} de {total} logros",
-  "@detLogrosDe": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
   "detVacioRegistro": "Completa este hábito y aquí quedará el registro.",
   "perfilTitulo": "Mi cuenta",
-  "perfilActualizado": "Perfil actualizado ✅",
-  "perfilErrorGuardar": "No se pudo guardar el perfil. Inténtalo de nuevo.",
-  "perfilPassActualizada": "Contraseña actualizada ✅",
-  "perfilErrorPass": "No se pudo cambiar la contraseña. Revisa los datos e inténtalo de nuevo.",
-  "perfilErrorEliminar": "No se pudo eliminar la cuenta. Inténtalo de nuevo.",
-  "perfilEliminarTitulo": "¿Eliminar tu cuenta?",
-  "perfilEliminarCuerpo": "Se borrarán para siempre todos tus hábitos, registros, rachas, logros y puntos.\n\nEsta acción no se puede deshacer.",
-  "perfilUltimaConfirmacion": "Última confirmación",
-  "perfilUltimaConfirmacionCuerpo": "¿Estás completamente seguro? Tu cuenta y todos tus datos se eliminarán de forma definitiva.",
-  "perfilNoVolver": "No, volver",
-  "perfilSiEliminar": "Sí, eliminar mi cuenta",
-  "perfilLabelNombre": "Nombre",
-  "perfilLabelUsuario": "Nombre de usuario",
-  "perfilLabelEmail": "Email",
-  "perfilNombreVacio": "El nombre no puede estar vacío",
-  "perfilUsuarioVacio": "El nombre de usuario no puede estar vacío",
-  "perfilEmailVacio": "El email no puede estar vacío",
-  "perfilEmailInvalido": "Introduce un email válido",
-  "perfilGestionadoGoogle": "Gestionado por tu cuenta de Google",
-  "perfilGuardarCambios": "Guardar cambios",
-  "perfilPassActual": "Contraseña actual",
-  "perfilPassNueva": "Nueva contraseña",
-  "perfilPassActualVacia": "Introduce tu contraseña actual",
-  "perfilPassNuevaVacia": "Introduce la nueva contraseña",
-  "perfilMinimo6": "Mínimo 6 caracteres",
-  "perfilCambiarPass": "Cambiar contraseña",
-  "perfilZonaPeligro": "Zona de peligro",
-  "perfilEliminarCuenta": "Eliminar mi cuenta",
-  "loginTagline": "Construye hábitos, transforma tu vida",
-  "loginIniciarSesion": "Iniciar sesión",
-  "loginRegistrarse": "Registrarse",
-  "loginCrearCuenta": "Crear cuenta",
-  "loginContinuarGoogle": "Continuar con Google",
-  "loginO": "o",
-  "loginLabelContrasena": "Contraseña",
-  "loginOlvidasteContrasena": "¿Olvidaste tu contraseña?",
-  "loginError": "No se pudo completar. Revisa tus datos e inténtalo de nuevo.",
-  "recTitulo": "Recuperar contraseña",
-  "recIntro": "Escribe el email de tu cuenta y te enviaremos un código para restablecer la contraseña.",
-  "recCodigoEnviado": "Revisa tu correo. Si el email está registrado, te hemos enviado un código de 6 dígitos (caduca en 15 minutos).",
-  "recLabelCodigo": "Código de 6 dígitos",
-  "recEscribeEmail": "Escribe tu email",
-  "recRellenaCampos": "Rellena el código y la nueva contraseña",
-  "recBotonEnviar": "Enviar código",
-  "recBotonRestablecer": "Restablecer contraseña",
-  "recReenviar": "Reenviar código",
-  "recRestablecida": "Contraseña restablecida ✅ Ya puedes iniciar sesión",
-  "recErrorEnviar": "No se pudo enviar el código. Inténtalo de nuevo.",
-  "recError": "No se pudo restablecer la contraseña. Revisa el código e inténtalo de nuevo.",
   "navHoy": "Hoy",
   "navHabitos": "Hábitos",
   "navColeccion": "Colección",
@@ -323,100 +197,9 @@
       }
     }
   },
-  "puntos": "puntos",
-  "tiendaTitulo": "Tienda",
-  "tiendaCatalogo": "Catálogo",
-  "tiendaComprar": "Comprar",
-  "tiendaEquipar": "Equipar",
-  "tiendaEquipado": "Equipado",
-  "tiendaPrecio": "{n} pts",
-  "@tiendaPrecio": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
-  "tiendaUsar": "Usar (x{n})",
-  "@tiendaUsar": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
-  "tiendaError": "No se pudo completar la operación. Inténtalo de nuevo.",
   "logrosTitulo": "Mis logros",
-  "logrosSeccion": "Logros",
-  "logrosPorcentaje": "{n}%",
-  "@logrosPorcentaje": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
-  "logrosPuntos": "+{n} pts",
-  "@logrosPuntos": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
-  "colSeccionAvatares": "Avatares",
-  "colSeccionConsumibles": "Consumibles",
-  "colSeccionTemas": "Temas",
-  "colEligeAvatar": "Elige tu primer avatar gratis 👇",
-  "colDescubre": "Descubre {seccion} en la tienda →",
-  "@colDescubre": {
-    "placeholders": {
-      "seccion": {
-        "type": "String"
-      }
-    }
-  },
-  "colSeleccionActual": "Tu selección actual",
-  "colContador": "{poseidos}/{total}",
-  "@colContador": {
-    "placeholders": {
-      "poseidos": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "colCantidad": "x{n}",
-  "@colCantidad": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
-  "colSeActivaSolo": "Se activa solo",
-  "colUsar": "Usar",
-  "colError": "No se pudo completar la operación. Inténtalo de nuevo.",
-  "obTitulo1": "¡Bienvenido a Norday! 🎉",
-  "obCuerpo1": "Cada hábito que completes te da puntos. Úsalos para desbloquear avatares, temas y más en la tienda.",
-  "obTitulo2": "Tu compañero crece contigo 🐣",
-  "obCuerpo2": "Tienes una mascota que sube de nivel cada vez que completas un hábito. Cuídala y mira cómo evoluciona.",
-  "obTitulo3": "Elige tu primer avatar, ¡es gratis! 👇",
-  "obCuerpo3": "Podrás cambiarlo cuando quieras desde la Colección.",
-  "obSiguiente": "Siguiente",
-  "valTitulo": "Valoración",
-  "valEditar": "Editar valoración",
-  "valComoTeSentiste": "¿Cómo te sentiste?",
-  "valHintNota": "Añade una nota (opcional)",
-  "celLogroDesbloqueado": "¡Logro desbloqueado!",
-  "celGenial": "¡Genial!",
-  "selElegirGratis": "Elegir gratis",
-  "selError": "No se pudo elegir el avatar. Inténtalo de nuevo.",
   "logroDescPrimerHabito": "Crea tu primer hábito personalizado",
   "logroDescPrimeraCategoria": "Crea tu primera categoría personalizada",
-  "logroDescPrimerosPasos": "Completa tu primer hábito",
   "logroDescRacha3": "Alcanza tu primera racha de 3",
   "logroDescRacha7": "Alcanza una racha de 7",
   "logroDescRachaRecuperada": "Recupera un hábito tras romper una racha y vuelve a alcanzar 3",
@@ -431,62 +214,5 @@
   "logroDescCategorias3": "Usa 3 categorías distintas en tus hábitos",
   "logroDescCategorias5": "Usa 5 categorías distintas",
   "logroDescPrimeraNota": "Añade una nota a un registro",
-  "logroDescBienvenido": "Personaliza tu perfil de usuario",
-  "logroDescLoginGoogle": "Inicia sesión usando tu cuenta de Google",
-  "logroDescInteraccionResena": "Interactúa con la valoración de la app en Google Play",
-  "prodDescEscudoRacha": "Protege tu racha durante 1 día si olvidas completar tu hábito",
-  "prodDescTemaBasicoClaro": "El tema claro de serie de Norday",
-  "prodDescTemaBasicoOscuro": "El tema oscuro de serie de Norday",
-  "prodDescTemaCalidez": "Un tema premium con tonos cálidos y acogedores",
-  "prodDescTemaNeotokyo": "Un tema premium inspirado en la estética anime y neón",
-  "prodDescTemaOceano": "Un tema premium con tonos azules y frescos del mar",
-  "prodDescTemaBosque": "Un tema premium con tonos verdes y naturales",
-  "prodDescTemaCobre": "Un tema premium elegante en azul noche y cobre",
-  "prodDescAvatarZorro": "Avatar ilustrado de zorro",
-  "prodDescAvatarGato": "Avatar ilustrado de gato",
-  "prodDescAvatarBuho": "Avatar ilustrado de búho",
-  "prodDescAvatarPanda": "Avatar ilustrado de panda",
-  "prodDescAvatarTortuga": "Avatar ilustrado de tortuga",
-  "prodDescComidaBasica": "Alimenta a tu mascota y gana experiencia",
-  "logroCatInicio": "Inicio",
-  "logroCatConstancia": "Constancia",
-  "logroCatVolumen": "Volumen",
-  "logroCatVariedad": "Variedad",
-  "logroCatExploracion": "Exploración",
-  "nivelFacil": "Fácil",
-  "nivelMedio": "Medio",
-  "nivelDificil": "Difícil",
-  "logrosSubtitulo": "{descripcion}\n{categoria} · {nivel}",
-  "@logrosSubtitulo": {
-    "placeholders": {
-      "descripcion": {
-        "type": "String"
-      },
-      "categoria": {
-        "type": "String"
-      },
-      "nivel": {
-        "type": "String"
-      }
-    }
-  },
-  "prodAvatarPerro": "Perro",
-  "prodAvatarConejo": "Conejo",
-  "prodAvatarKoala": "Koala",
-  "prodAvatarPinguino": "Pingüino",
-  "prodAvatarLeon": "León",
-  "prodDescAvatarPerro": "Avatar ilustrado de perro",
-  "prodDescAvatarConejo": "Avatar ilustrado de conejo",
-  "prodDescAvatarKoala": "Avatar ilustrado de koala",
-  "prodDescAvatarPinguino": "Avatar ilustrado de pingüino",
-  "prodDescAvatarLeon": "Avatar ilustrado de león",
-
-  "errorSinConexion": "Sin conexión. Comprueba tu red e inténtalo de nuevo.",
-  "errorTimeout": "La conexión ha tardado demasiado. Inténtalo de nuevo.",
-  "errorServidor": "El servidor no responde bien ahora mismo. Inténtalo en unos minutos.",
-  "errorSesionCaducada": "Tu sesión ha caducado. Vuelve a iniciar sesión.",
-  "errorRespuesta": "El servidor ha respondido algo que no esperábamos. Inténtalo de nuevo.",
-  "errorGenerico": "No se pudo completar la operación. Inténtalo de nuevo.",
-  "loginCredenciales": "Email o contraseña incorrectos.",
   "habitosErrorEstado": "No se pudo cambiar el estado del hábito."
 }
