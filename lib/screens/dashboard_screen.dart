@@ -7,9 +7,9 @@ import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:in_app_review/in_app_review.dart';
 import '../models/habito.dart';
+import '../widgets/estados_hoy.dart';
 import '../widgets/identidad_ui.dart';
 import 'habito_detalle_screen.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -25,6 +25,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _loading = true;
   int _usuarioId = 0;
   bool _yaPidioResena = false;
+
+  /// Si la última carga falló. Antes esto sólo era un SnackBar que se iba solo
+  /// y una lista vacía detrás, que se lee igual que "no tienes hábitos": el
+  /// usuario no podía distinguir un fallo de red de una cuenta recién creada.
+  bool _errorCarga = false;
 
   /// Caida al codigo crudo si llega una frecuencia desconocida, igual que
   /// hace Catalogos: nunca se deja al usuario sin texto.
@@ -86,11 +91,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
       setState(() {
         _habitos = habitos;
         _loading = false;
+        _errorCarga = false;
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() { _loading = false; });
-      // Antes la lista se quedaba vacia sin decir por que.
+      // El aviso efímero se queda: dice QUÉ ha fallado. Lo que añade el estado
+      // es que la pantalla siga diciéndolo cuando el SnackBar se haya ido.
+      // Sólo se pinta si no hay nada que enseñar: con datos de una carga
+      // anterior, mejor los datos viejos que un panel de error.
+      setState(() {
+        _loading = false;
+        _errorCarga = _habitos.isEmpty;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(MensajesError.de(context, e,
@@ -243,7 +255,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         return Stack(
       children: [
         _loading
-            ? const SkeletonLista(cantidad: 3, padding: EdgeInsets.fromLTRB(16, 16, 16, 96))
+            ? const SkeletonHoy()
             : RefreshIndicator(
             onRefresh: _cargarHabitos,
             child: ListView(
@@ -292,25 +304,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                if (_habitos.isEmpty)
-                  _emptyState(l, t)
+                if (_errorCarga)
+                  EstadoErrorHoy(onReintentar: _cargarHabitos)
+                else if (_habitos.isEmpty)
+                  const EstadoVacioHoy()
                 else ...[
                   if (pendientes.isEmpty)
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          children: [
-                            const Text('🎉', style: TextStyle(fontSize: 28)),
-                            const SizedBox(height: 4),
-                            Text(l.dashTodoHecho,
-                                style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
-                            Text(l.dashDisfruta,
-                                style: TextStyle(fontSize: 12, color: t.textMuted)),
-                          ],
-                        ),
-                      ),
-                    )
+                    const TarjetaTodoHecho()
                   else
                     ...pendientes.map((h) => _habitoCard(l, h, false, t)),
                   if (completados.isNotEmpty) ...[
@@ -372,33 +372,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return l.dashProgresoBuenRitmo;
   }
 
-  Widget _emptyState(AppLocalizations l, TokensContextuales t) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            Icon(LucideIcons.sprout, size: 48, color: t.success),
-            const SizedBox(height: 12),
-            Text(l.dashVacioTitulo,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: t.text)),
-            const SizedBox(height: 4),
-            Text(
-              l.dashVacioCuerpo,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: t.textMuted),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _habitoCard(AppLocalizations l, Habito h, bool hecho, TokensContextuales t) {
     final p = _progreso[h.habitoId] ?? {'completadosPeriodo': 0, 'meta': 1};
 
     return AnimatedOpacity(
-      duration: const Duration(milliseconds: 400),
+      // La fila se apaga al completarse. Con "reducir movimiento" llega al
+      // mismo 0.72, sin recorrido: el estado no cambia, sólo el camino.
+      duration: (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
+          ? Duration.zero
+          : const Duration(milliseconds: 400),
       opacity: hecho ? 0.72 : 1.0,
       // El radio, el corte y la sombra los pone la identidad equipada; aquí
       // sólo se dice que esto es una tarjeta de fila.
@@ -431,6 +413,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               child: Material(
                                 color: Colors.transparent,
                                 child: Text(h.nombre,
+                                    // Dos líneas antes de cortar: los nombres
+                                    // reales son frases ("Escribir en el
+                                    // diario de gratitud"), y en una sola
+                                    // línea el chip les comía media frase.
+                                    maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,

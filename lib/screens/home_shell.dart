@@ -3,6 +3,7 @@ import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import '../widgets/identidad_ui.dart';
 import 'dashboard_screen.dart';
 import 'habitos_screen.dart';
 
@@ -59,6 +60,15 @@ class _HomeShellState extends State<HomeShell> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => LogrosScreen(usuarioId: _usuarioId)),
+    );
+  }
+
+  /// Hasta ahora a la tienda sólo se llegaba desde el botón de la pantalla de
+  /// mascota, que no es donde nadie la busca.
+  void _abrirTienda() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => TiendaScreen(usuarioId: _usuarioId)),
     );
   }
 
@@ -215,6 +225,8 @@ class _HomeShellState extends State<HomeShell> {
                     _abrirColeccion();
                   case 'logros':
                     _abrirLogros();
+                  case 'tienda':
+                    _abrirTienda();
                   case 'cuenta':
                     Navigator.push(
                       context,
@@ -284,6 +296,18 @@ class _HomeShellState extends State<HomeShell> {
                     ],
                   ),
                 ),
+                PopupMenuItem(
+                  value: 'tienda',
+                  child: Row(
+                    children: [
+                      const Icon(LucideIcons.store, size: 20),
+                      const SizedBox(width: 12),
+                      // El título sale del paquete, que es de quien es la
+                      // pantalla: aquí no se duplica la clave.
+                      Text(NordayCoreLocalizations.of(context)!.tiendaTitulo),
+                    ],
+                  ),
+                ),
                 const PopupMenuDivider(),
                 PopupMenuItem(
                   value: 'cuenta',
@@ -316,15 +340,19 @@ class _HomeShellState extends State<HomeShell> {
           // IndexedStack: deslizar no debe recargar lo que ya estaba cargado.
           children: [for (final tab in tabs) _MantenerVivo(child: tab)],
         ),
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: _tabIndex,
-          onDestinationSelected: _irAPestana,
-          backgroundColor: t.surface,
-          destinations: [
-            NavigationDestination(icon: const Icon(LucideIcons.house), label: titulos[0]),
-            NavigationDestination(icon: const Icon(LucideIcons.pawPrint), label: titulos[1]),
-            NavigationDestination(icon: const Icon(LucideIcons.listChecks), label: titulos[2]),
-          ],
+        // Lo único de la app que se ve en todo momento: la forma del indicador
+        // y el color de lo activo salen de la identidad equipada.
+        bottomNavigationBar: NavigationBarTheme(
+          data: barraNavegacionIdentidad(identidad(context), t),
+          child: NavigationBar(
+            selectedIndex: _tabIndex,
+            onDestinationSelected: _irAPestana,
+            destinations: [
+              NavigationDestination(icon: const Icon(LucideIcons.house), label: titulos[0]),
+              NavigationDestination(icon: const Icon(LucideIcons.pawPrint), label: titulos[1]),
+              NavigationDestination(icon: const Icon(LucideIcons.listChecks), label: titulos[2]),
+            ],
+          ),
         ),
       ),
     );

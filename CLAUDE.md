@@ -35,8 +35,9 @@ lista de hábitos, detalle de hábito, alta/edición de hábito, `Catalogos`
 (categorías y logros de hábito), `CrashlyticsService`, `AppLocalizations`, y
 `assets/branding/` — que es lo único de assets que **no** se comparte.
 
-También `lib/widgets/identidad_ui.dart`: la tarjeta de hábito, el chip de
-frecuencia y la celda del heatmap. Son UI genérica de aspecto pero de dominio
+También `lib/widgets/identidad_ui.dart` (tarjeta de hábito, chip de frecuencia,
+celda del heatmap y tema de la barra inferior) y `lib/widgets/estados_hoy.dart`
+(los cuatro estados de Hoy: carga, vacío, error y todo hecho). Son UI genérica de aspecto pero de dominio
 en lo que dicen, así que se quedan aquí. Despachan por `FormaIdentidad` con un
 `switch` exhaustivo y sacan los radios de `IdentidadPaleta` — el mismo patrón
 que el paquete usa en el halo, el terrario, el aro y el check. Al añadir una
