@@ -21,8 +21,9 @@ Antes de escribir algo genérico aquí, para: probablemente va en el paquete.
 `ApiServiceCore` (sesión, usuario, preferencias, gamificación, tienda,
 mascota, notificaciones), `ApiException`, `AnalyticsCore`,
 `CelebracionService`, `SonidoService`, `IdiomaService`, `ZonaService`,
-`AppTheme` y tokens, `catalogoPaletas`, `catalogoAvatares`, `Equipamiento`,
-`assetMascota`, `Usuario`, los 12 widgets genéricos, las 7 pantallas
+`AppTheme` y tokens, `IdentidadPaleta` y `catalogoIdentidades`,
+`catalogoAvatares`, `Equipamiento`,
+`assetMascota`, `Usuario`, los widgets genéricos, las 7 pantallas
 genéricas (login, recuperación, tienda, mascota, logros, colección, perfil),
 `NordayCoreLocalizations`, `CatalogosCore`, y los assets de animations,
 sounds, mascota y avatares.
@@ -33,6 +34,13 @@ sounds, mascota y avatares.
 lista de hábitos, detalle de hábito, alta/edición de hábito, `Catalogos`
 (categorías y logros de hábito), `CrashlyticsService`, `AppLocalizations`, y
 `assets/branding/` — que es lo único de assets que **no** se comparte.
+
+También `lib/widgets/identidad_ui.dart`: la tarjeta de hábito, el chip de
+frecuencia y la celda del heatmap. Son UI genérica de aspecto pero de dominio
+en lo que dicen, así que se quedan aquí. Despachan por `FormaIdentidad` con un
+`switch` exhaustivo y sacan los radios de `IdentidadPaleta` — el mismo patrón
+que el paquete usa en el halo, el terrario, el aro y el check. Al añadir una
+pieza nueva a Hoy, seguirlo en vez de escribir números sueltos.
 
 ### Lo que esta app le enchufa al paquete
 
