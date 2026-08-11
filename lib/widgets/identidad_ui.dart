@@ -233,6 +233,71 @@ class ChipIdentidad extends StatelessWidget {
   }
 }
 
+/// El tema de la barra de navegación inferior en esta identidad.
+///
+/// Es lo único de la app que se ve en todo momento, así que es donde más se
+/// nota si se queda genérica. Lo que cambia es la forma del indicador de la
+/// pestaña activa y el color de lo seleccionado; la barra en sí sigue siendo
+/// una `NavigationBar` de Material, con su comportamiento y su accesibilidad.
+NavigationBarThemeData barraNavegacionIdentidad(
+  IdentidadPaleta id,
+  TokensContextuales t,
+) {
+  final ({ShapeBorder forma, Color color}) indicador = switch (id.forma) {
+    // Profundidad — pastilla redondeada con el radio de la identidad.
+    FormaIdentidad.glass => (
+        forma: formaDe(id, radio: id.radioSecundario),
+        color: t.primary.withValues(alpha: 0.18),
+      ),
+    // Neotokyo+ — el mismo corte de esquina de las tarjetas, con filo.
+    FormaIdentidad.chamfer => (
+        forma: BordeChaflan(
+          chaflan: id.chaflan,
+          side: BorderSide(color: t.primary, width: 1.2),
+        ),
+        color: t.primary.withValues(alpha: 0.20),
+      ),
+    // Alba no rellena nada: la pestaña activa se marca con un contorno fino,
+    // igual que sus tarjetas se marcan con una línea y no con una superficie.
+    FormaIdentidad.hairline => (
+        forma: StadiumBorder(
+          side: BorderSide(color: t.primary.withValues(alpha: 0.55)),
+        ),
+        color: Colors.transparent,
+      ),
+    // Dulce — píldora completa y de color, que es su forma en todo.
+    FormaIdentidad.pill => (
+        forma: const StadiumBorder(),
+        color: t.primary.withValues(alpha: 0.22),
+      ),
+  };
+
+  return NavigationBarThemeData(
+    backgroundColor: t.surface,
+    indicatorColor: indicador.color,
+    indicatorShape: indicador.forma,
+    iconTheme: WidgetStateProperty.resolveWith(
+      (estados) => IconThemeData(
+        size: 24,
+        color: estados.contains(WidgetState.selected) ? t.primary : t.textMuted,
+      ),
+    ),
+    labelTextStyle: WidgetStateProperty.resolveWith(
+      (estados) => TextStyle(
+        fontSize: 12,
+        fontWeight: estados.contains(WidgetState.selected)
+            ? FontWeight.w700
+            : FontWeight.w500,
+        // El primario va aquí como TEXTO pequeño, así que en las identidades
+        // claras manda la variante que contrasta.
+        color: estados.contains(WidgetState.selected)
+            ? t.successText
+            : t.textMuted,
+      ),
+    ),
+  );
+}
+
 /// Cómo se pinta una celda del mini-heatmap en esta identidad.
 ///
 /// Sólo decora: cuándo una celda está llena, cuándo es descanso y cuándo es
