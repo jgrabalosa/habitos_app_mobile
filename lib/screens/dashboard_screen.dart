@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:in_app_review/in_app_review.dart';
 import '../models/habito.dart';
+import '../widgets/identidad_ui.dart';
 import 'habito_detalle_screen.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -399,10 +400,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 400),
       opacity: hecho ? 0.72 : 1.0,
-      child: Card(
-        margin: const EdgeInsets.only(bottom: 8),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppRadius.lg),
+      // El radio, el corte y la sombra los pone la identidad equipada; aquí
+      // sólo se dice que esto es una tarjeta de fila.
+      child: TarjetaIdentidad(
           onTap: () async {
             await Navigator.push(
               context,
@@ -443,22 +443,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: t.primary.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: Text(
-                                l.dashChipFrecuencia(
-                                    _frecuenciaLegible(l, h.frecuencia),
-                                    p['completadosPeriodo'] ?? 0,
-                                    p['meta'] ?? 1),
-                                style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    color: t.primary)),
+                          ChipIdentidad(
+                            texto: l.dashChipFrecuencia(
+                                _frecuenciaLegible(l, h.frecuencia),
+                                p['completadosPeriodo'] ?? 0,
+                                p['meta'] ?? 1),
                           ),
                         ],
                       ),
@@ -477,12 +466,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
           ),
-        ),
       ),
     );
   }
 
 Widget _miniHeatmap(Habito h, TokensContextuales t) {
+    final id = identidad(context);
     final fechas = _fechasCompletadas[h.habitoId] ?? {};
     final hoy = DateTime.now();
     final bool esSemanal = h.frecuencia == 'SEMANAL';
@@ -515,14 +504,12 @@ Widget _miniHeatmap(Habito h, TokensContextuales t) {
 
           final Widget celda;
           if (esDescanso) {
-            // Día de descanso: punto pequeño, visualmente menor
+            // Día de descanso: punto pequeño, visualmente menor. La celda no
+            // se pinta —sólo marca el hoy, si toca— y el punto es el mismo en
+            // las cuatro identidades: un descanso significa lo mismo en todas.
             celda = Container(
-              decoration: esHoy
-                  ? BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                      border: Border.all(color: t.primary, width: 1.5),
-                    )
-                  : null,
+              decoration: celdaHeatmap(id, t,
+                  color: Colors.transparent, llena: false, esHoy: esHoy),
               child: Center(
                 child: FractionallySizedBox(
                   widthFactor: 0.38,
@@ -547,12 +534,8 @@ Widget _miniHeatmap(Habito h, TokensContextuales t) {
               color = t.surface2;
             }
             celda = Container(
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(5),
-                border:
-                    esHoy ? Border.all(color: t.primary, width: 1.5) : null,
-              ),
+              decoration: celdaHeatmap(id, t,
+                  color: color, llena: lleno, esHoy: esHoy),
             );
           }
 
