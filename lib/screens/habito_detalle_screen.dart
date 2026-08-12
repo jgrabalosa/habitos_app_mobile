@@ -5,6 +5,7 @@ import '../services/api_service_habitos.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/habito.dart';
+import '../widgets/identidad_ui.dart';
 import 'habito_screen.dart';
 
 class HabitoDetalleScreen extends StatefulWidget {
@@ -178,19 +179,26 @@ title: Hero(
 
   /// Cuatro cifras que son en realidad dos métricas miradas a dos plazos: la
   /// racha (ahora / récord) y los completados (siempre / este mes). El color
-  /// dice de qué familia es cada una; el emoji y la etiqueta, el plazo.
+  /// dice de qué familia es cada una; el icono y la etiqueta, el plazo.
+  ///
+  /// Los iconos son Lucide y ya no emoji, por lo mismo que en la tienda y en
+  /// logros: el emoji lo pinta la fuente del sistema y cambia de dibujo, color
+  /// y peso entre plataformas, así que no se alinea con la identidad equipada.
   Widget _buildStatCards() {
     final l = AppLocalizations.of(context)!;
     final t = tokens(context);
     return Row(
       children: [
-        _statCard('🔥', _detalle!['rachaActual'].toString(), l.detRachaActual, t.streakText),
+        _statCard(LucideIcons.flame, _detalle!['rachaActual'].toString(),
+            l.detRachaActual, t.streakText),
         const SizedBox(width: 8),
-        _statCard('🏆', _detalle!['rachaMaxima'].toString(), l.detMejorRacha, t.streakText),
+        _statCard(LucideIcons.trophy, _detalle!['rachaMaxima'].toString(),
+            l.detMejorRacha, t.streakText),
         const SizedBox(width: 8),
-        _statCard('📊', _detalle!['totalCompletados'].toString(), l.detTotal, t.successText),
+        _statCard(LucideIcons.chartColumn,
+            _detalle!['totalCompletados'].toString(), l.detTotal, t.successText),
         const SizedBox(width: 8),
-        _statCard('📅',
+        _statCard(LucideIcons.calendarDays,
             (_detalle!['completadosMesActual'] ?? 0).toString(),
             _esMesActual ? l.detDiasEsteMes : l.detDiasDelMes, t.successText),
       ],
@@ -202,24 +210,29 @@ title: Hero(
     final media = _detalle!['valoracionMedia'];
     if (media == null) return const SizedBox.shrink();
 
+    final t = tokens(context);
     final valor = (media as num).toDouble();
     return Padding(
       padding: const EdgeInsets.only(top: 8),
-      child: Card(
+      child: TarjetaIdentidad(
+        margen: EdgeInsets.zero,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(LucideIcons.star, color: Colors.amber, size: 20),
+              // La estrella va en el color de puntos de la identidad, no en el
+              // ámbar de Material: es la misma familia que el resto de premios.
+              Icon(LucideIcons.star, color: t.points, size: 20),
               const SizedBox(width: 6),
               Text(
                 valor.toStringAsFixed(1).replaceAll('.', ','),
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.bold, color: t.text),
               ),
               const SizedBox(width: 6),
               Text(l.detSatisfaccion,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  style: TextStyle(fontSize: 12, color: t.textMuted)),
             ],
           ),
         ),
@@ -229,15 +242,16 @@ title: Hero(
 
   /// El `color` es el de la cifra, y llega ya resuelto para texto: quien
   /// llama pasa `successText`, no `success`.
-  Widget _statCard(String emoji, String valor, String label, Color color) {
+  Widget _statCard(IconData icono, String valor, String label, Color color) {
     final t = tokens(context);
     return Expanded(
-      child: Card(
+      child: TarjetaIdentidad(
+        margen: EdgeInsets.zero,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
           child: Column(
             children: [
-              Text(emoji, style: const TextStyle(fontSize: 18)),
+              Icon(icono, size: 18, color: color),
               const SizedBox(height: 4),
               Text(valor,
                   style: TextStyle(
@@ -262,6 +276,7 @@ title: Hero(
     final primerDia = DateTime.parse(heatmap[0]['fecha']);
     final diaSemana = (primerDia.weekday - 1); // Lunes = 0
     final t = tokens(context);
+    final id = identidad(context);
 
     Color colorDia(int veces) {
       if (veces == 0) return t.surface2;
@@ -271,7 +286,8 @@ title: Hero(
       return AppColors.primaryDark; // superada
     }
 
-    return Card(
+    return TarjetaIdentidad(
+      margen: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -328,15 +344,19 @@ title: Hero(
                   onTap: () => setState(() {
                     _diaSeleccionado = seleccionado ? null : dia;
                   }),
+                  // La celda es exactamente la misma que la de los diez días de
+                  // Hoy: LED con halo en Neotokyo+, puntito hueco en Alba,
+                  // circulito pastel en Dulce y celda con brillo verde en
+                  // Profundidad. Lo único distinto aquí es el layout —un mes
+                  // entero en rejilla de siete— y que un día se puede tocar.
                   child: Container(
-                    decoration: BoxDecoration(
+                    decoration: celdaHeatmap(
+                      id,
+                      t,
                       color: colorDia(veces),
-                      borderRadius: BorderRadius.circular(6),
-                      border: seleccionado
-                          ? Border.all(color: t.text, width: 2)
-                          : esHoy
-                              ? Border.all(color: t.primary, width: 2)
-                              : null,
+                      llena: veces > 0,
+                      esHoy: esHoy,
+                      seleccionada: seleccionado,
                     ),
                   ),
                 );
@@ -365,10 +385,11 @@ title: Hero(
                         width: 10,
                         height: 10,
                         margin: const EdgeInsets.symmetric(horizontal: 1.5),
-                        decoration: BoxDecoration(
-                          color: c,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
+                        // La leyenda son celdas en pequeño, así que se pintan
+                        // con la misma función: si la rejilla son puntos y la
+                        // leyenda cuadraditos, la leyenda deja de explicarla.
+                        decoration: celdaHeatmap(id, t,
+                            color: c, llena: c != t.surface2, esHoy: false),
                       )),
                   Text(' ${l.detMas}',
                       style: TextStyle(fontSize: 10, color: t.textMuted)),
@@ -393,16 +414,19 @@ title: Hero(
 
   Widget _buildUltimosRegistros() {
     final l = AppLocalizations.of(context)!;
+    final t = tokens(context);
     final List<dynamic> registros = _detalle!['ultimosRegistros'];
 
-    return Card(
+    return TarjetaIdentidad(
+      margen: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(l.detUltimosRegistros,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 16, color: t.text)),
             const SizedBox(height: 8),
             if (registros.isEmpty)
               Center(
@@ -435,28 +459,35 @@ title: Hero(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(r['fecha'], style: const TextStyle(fontWeight: FontWeight.w600)),
+                              Text(r['fecha'],
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: t.text)),
                               if (r['valoracion'] != null)
                                 Row(
                                   children: List.generate(5, (i) => Icon(
                                     LucideIcons.star,
                                     size: 14,
                                     color: i < (r['valoracion'] as int)
-                                        ? Colors.amber
-                                        : Colors.grey.withValues(alpha: 0.3),
+                                        ? t.points
+                                        : t.textMuted.withValues(alpha: 0.3),
                                   )),
                                 ),
                               if (r['nota'] != null && r['nota'].toString().isNotEmpty)
-                                Text(r['nota'], style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                                Text(r['nota'],
+                                    style: TextStyle(
+                                        fontSize: 12, color: t.textMuted)),
                             ],
                           ),
                         ),
                         Icon(
                           r['completado'] ? LucideIcons.circleCheck : LucideIcons.circleX,
-                          color: r['completado'] ? Colors.green : Colors.grey,
+                          // Como icono basta el verde de relleno; el que hace
+                          // falta oscurecer es el que se escribe.
+                          color: r['completado'] ? t.success : t.textMuted,
                         ),
                         IconButton(
-                          icon: const Icon(LucideIcons.pencil, size: 18, color: Colors.grey),
+                          icon: Icon(LucideIcons.pencil, size: 18, color: t.textMuted),
                           onPressed: () => _editarValoracion(
                             r['registroId'],
                             r['valoracion'] as int?,

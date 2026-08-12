@@ -298,20 +298,31 @@ NavigationBarThemeData barraNavegacionIdentidad(
   );
 }
 
-/// Cómo se pinta una celda del mini-heatmap en esta identidad.
+/// Cómo se pinta una celda de heatmap en esta identidad.
 ///
-/// Sólo decora: cuándo una celda está llena, cuándo es descanso y cuándo es
-/// hoy lo decide quien la llama, que es el único que sabe de días planificados
-/// y de metas.
+/// La misma celda en los dos sitios donde hay heatmap: los diez días de Hoy y
+/// el mes entero del detalle de un hábito. El layout es cosa de cada pantalla
+/// —una fila o una rejilla de siete—; la celda es esto.
+///
+/// Sólo decora: cuándo una celda está llena, cuándo es descanso, cuándo es hoy
+/// y cuándo está seleccionada lo decide quien la llama, que es el único que
+/// sabe de días planificados y de metas.
 BoxDecoration celdaHeatmap(
   IdentidadPaleta id,
   TokensContextuales t, {
   required Color color,
   required bool llena,
   required bool esHoy,
+  bool seleccionada = false,
 }) {
-  final borde =
-      esHoy ? Border.all(color: t.primary, width: 1.5) : null;
+  // La selección manda sobre el hoy: si el usuario ha tocado justo el día de
+  // hoy, lo que tiene que verse es que lo ha tocado. Va en el color de texto
+  // porque el primario ya está diciendo otra cosa a su lado.
+  final borde = seleccionada
+      ? Border.all(color: t.text, width: 2)
+      : esHoy
+          ? Border.all(color: t.primary, width: 1.5)
+          : null;
 
   return switch (id.forma) {
     // Profundidad — celda redondeada con brillo verde cuando está hecha.
@@ -338,12 +349,12 @@ BoxDecoration celdaHeatmap(
       ),
 
     // Alba — puntitos huecos: el día hecho se rellena, el resto es contorno.
+    // Aquí el contorno nunca falta, así que el de reposo es el del propio
+    // color en vez de nada.
     FormaIdentidad.hairline => BoxDecoration(
         shape: BoxShape.circle,
         color: llena ? color : Colors.transparent,
-        border: esHoy
-            ? Border.all(color: t.primary, width: 1.5)
-            : Border.all(color: color, width: 1),
+        border: borde ?? Border.all(color: color, width: 1),
       ),
 
     // Dulce — circulitos pastel, sin filo.
