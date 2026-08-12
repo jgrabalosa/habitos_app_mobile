@@ -5,6 +5,7 @@ import '../services/api_service_habitos.dart';
 import '../l10n/catalogos.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/habito.dart';
+import '../widgets/identidad_ui.dart';
 import 'habito_screen.dart';
 
 enum _Orden { recientes, masCumplidos }
@@ -168,12 +169,26 @@ class _HabitosScreenState extends State<HabitosScreen> {
     );
   }
 
+  /// Sigue siendo un `ChoiceChip` de Material —el filtrado no se toca— pero con
+  /// la figura de la identidad equipada: en Neotokyo+ corta la esquina como
+  /// todo lo demás, en Dulce es píldora completa.
   Widget _chip(String label, bool selected, VoidCallback onTap, TokensContextuales t) {
+    final id = identidad(context);
+
     return ChoiceChip(
       label: Text(label),
       selected: selected,
       onSelected: (_) => onTap(),
       selectedColor: t.primary.withValues(alpha: 0.2),
+      shape: formaDe(
+        id,
+        radio: 999,
+        lado: BorderSide(
+          color: selected
+              ? t.primary
+              : t.textMuted.withValues(alpha: 0.35),
+        ),
+      ) as OutlinedBorder,
       labelStyle: TextStyle(
           color: selected ? t.primary : t.textMuted, fontWeight: FontWeight.w600),
     );
@@ -190,39 +205,62 @@ class _HabitosScreenState extends State<HabitosScreen> {
     );
   }
 
+  /// La misma tarjeta de fila que Hoy: el radio, el corte y la sombra los pone
+  /// la identidad equipada; aquí sólo se dice que esto es una fila de hábito.
+  ///
+  /// Sin chip, a diferencia de Hoy: allí el chip lleva la frecuencia, que es la
+  /// dimensión de esa pantalla, y aquí la línea de debajo ya dice categoría y
+  /// completados en una sola frase traducida (`habitosSubtitulo`). Meterla en
+  /// un chip obligaría a partirla en dos textos nuevos para no decir nada más.
   Widget _tarjetaHabito(AppLocalizations l, Map<String, dynamic> r, TokensContextuales t) {
     final habito = r['habito'] as Habito;
     final total = r['totalCompletados'] as int;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Opacity(
-        opacity: habito.activo ? 1.0 : 0.5,
-        child: ListTile(
-          onTap: () async {
-            final result = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (_) => HabitoScreen(usuarioId: widget.usuarioId, habito: habito, categoriasIniciales: _categorias)),
-            );
-            if (result == true) _cargarDatos();
-          },
-          title: Text(habito.nombre,
-              style: TextStyle(fontWeight: FontWeight.bold, color: t.text)),
-          subtitle: Text(
-            l.habitosSubtitulo(
-              habito.categoriaNombre == null
-                  ? l.habSinCategoria
-                  : Catalogos.categoria(
-                      context, habito.categoriaCodigo, habito.categoriaNombre!),
-              total,
-            ),
-            style: TextStyle(color: t.textMuted, fontSize: 12),
-          ),
-          trailing: Switch(
-            value: habito.activo,
-            onChanged: (v) => v ? _activar(habito.habitoId) : _desactivar(habito.habitoId),
-            activeThumbColor: t.primary,
+    return Opacity(
+      opacity: habito.activo ? 1.0 : 0.5,
+      child: TarjetaIdentidad(
+        onTap: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (_) => HabitoScreen(usuarioId: widget.usuarioId, habito: habito, categoriasIniciales: _categorias)),
+          );
+          if (result == true) _cargarDatos();
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(habito.nombre,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, color: t.text)),
+                    const SizedBox(height: 4),
+                    Text(
+                      l.habitosSubtitulo(
+                        habito.categoriaNombre == null
+                            ? l.habSinCategoria
+                            : Catalogos.categoria(context,
+                                habito.categoriaCodigo, habito.categoriaNombre!),
+                        total,
+                      ),
+                      style: TextStyle(color: t.textMuted, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Switch(
+                value: habito.activo,
+                onChanged: (v) => v ? _activar(habito.habitoId) : _desactivar(habito.habitoId),
+                activeThumbColor: t.primary,
+              ),
+            ],
           ),
         ),
       ),
