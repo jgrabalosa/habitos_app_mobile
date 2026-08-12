@@ -80,6 +80,17 @@ class ApiServiceHabitos {
     return ApiServiceCore.parsear(() => jsonDecode(response.body) as List<dynamic>);
   }
 
+  static Future<Map<String, dynamic>> getSemana(int usuarioId, {String? desde}) async {
+    final headers = await ApiServiceCore.getHeaders();
+    final desdeParam = desde != null ? '?desde=$desde' : '';
+    final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.get(
+          Uri.parse('$_baseUrl/habitos/usuario/$usuarioId/semana$desdeParam'),
+          headers: headers,
+        ));
+    ApiServiceCore.verificar(response);
+    return ApiServiceCore.parsear(() => jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
   static Future<Map<String, dynamic>> getHabitoDetalle(int habitoId, {String? mes}) async {
     final headers = await ApiServiceCore.getHeaders();
     final mesParam = mes != null ? '?mes=$mes' : '';
