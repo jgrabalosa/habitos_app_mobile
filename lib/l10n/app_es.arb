@@ -156,15 +156,6 @@
   "dashTodoHecho": "¡Todo hecho por hoy!",
   "dashDisfruta": "Disfruta el resto del día.",
   "dashCompletados": "COMPLETADOS",
-  "dashEstaSemana": "ESTA SEMANA ({n})",
-  "@dashEstaSemana": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
-  "dashNoTocanHoy": "No tocan hoy, pero puedes adelantarlos",
   "dashProgresoPrimero": "¡Vamos a por el primero!",
   "dashProgresoPerfecto": "¡Día perfecto! 🎉",
   "dashProgresoCasi": "Ya casi lo tienes",
@@ -185,6 +176,19 @@
       }
     }
   },
+  "dashFlexiblesTitulo": "ESTA SEMANA",
+  "dashFlexibleProgreso": "{meta} veces esta semana · {hechos}/{meta} hechas",
+  "@dashFlexibleProgreso": {
+    "placeholders": {
+      "hechos": {
+        "type": "int"
+      },
+      "meta": {
+        "type": "int"
+      }
+    }
+  },
+  "dashDiaSinHabitos": "No hay hábitos programados este día.",
   "habitosTodas": "Todas",
   "habitosOrdenRecientes": "Recientes",
   "habitosOrdenMasCumplidos": "Más cumplidos",

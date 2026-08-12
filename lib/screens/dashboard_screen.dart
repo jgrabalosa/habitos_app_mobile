@@ -9,6 +9,7 @@ import 'package:in_app_review/in_app_review.dart';
 import '../models/habito.dart';
 import '../widgets/estados_hoy.dart';
 import '../widgets/identidad_ui.dart';
+import '../widgets/tira_semana.dart';
 import 'habito_detalle_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -25,6 +26,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _loading = true;
   int _usuarioId = 0;
   bool _yaPidioResena = false;
+
+  /// Los 7 días de la semana (lunes→domingo), crudos del backend, para la
+  /// tira de navegación. `_diaSeleccionado` e `_indiceHoy` son índices dentro
+  /// de esta lista, no días de la semana ISO.
+  List<Map<String, dynamic>> _dias = [];
+  List<Map<String, dynamic>> _flexibles = [];
+  int _diaSeleccionado = 0;
+  int _indiceHoy = 0;
 
   /// Si la última carga falló. Antes esto sólo era un SnackBar que se iba solo
   /// y una lista vacía detrás, que se lee igual que "no tienes hábitos": el
@@ -51,11 +60,57 @@ class _DashboardScreenState extends State<DashboardScreen> {
     setState(() {
       _usuarioId = usuario['usuarioId'] ?? 0;
     });
-    // En paralelo: el estado de reseña no depende de los hábitos
+    // En paralelo: el estado de reseña no depende de los hábitos, y la
+    // semana es un complemento de navegación, no una dependencia de Hoy.
     await Future.wait([
       _cargarHabitos(),
       _cargarEstadoResena(),
+      _cargarSemana(),
     ]);
+  }
+
+  /// La semana completa (lunes→domingo) para la tira de navegación y la fila
+  /// de flexibles. Es un complemento de Hoy, no su fuente: si falla, Hoy
+  /// sigue funcionando igual con los datos de [_cargarHabitos] — sólo no se
+  /// pinta la tira (`_dias` se queda vacía). Por eso no hay SnackBar propio:
+  /// uno ya lo pone [_cargarHabitos] si el fallo es de red en general.
+  Future<void> _cargarSemana() async {
+    try {
+      final data = await ApiServiceHabitos.getSemana(_usuarioId);
+
+      final List<Map<String, dynamic>> dias =
+          (data['dias'] as List<dynamic>).map<Map<String, dynamic>>((dia) {
+        final List<Map<String, dynamic>> habitosDia =
+            (dia['habitos'] as List<dynamic>).map<Map<String, dynamic>>((item) => {
+                  'habito': Habito.fromJson(item['habito']),
+                  'completado': item['completado'] == true,
+                }).toList();
+        return {
+          'fecha': dia['fecha'] as String,
+          'habitos': habitosDia,
+        };
+      }).toList();
+
+      final List<Map<String, dynamic>> flexibles =
+          (data['flexibles'] as List<dynamic>).map<Map<String, dynamic>>((item) => {
+                'habito': Habito.fromJson(item['habito']),
+                'completadosSemana': item['completadosSemana'] ?? 0,
+                'meta': item['meta'] ?? 1,
+              }).toList();
+
+      final hoyIso = DateTime.now().toIso8601String().split('T')[0];
+      final indiceHoy = dias.indexWhere((d) => d['fecha'] == hoyIso);
+
+      if (!mounted) return;
+      setState(() {
+        _dias = dias;
+        _flexibles = flexibles;
+        _indiceHoy = indiceHoy >= 0 ? indiceHoy : 0;
+        _diaSeleccionado = _indiceHoy;
+      });
+    } catch (_) {
+      // Ver comentario del método: Hoy no depende de esto.
+    }
   }
 
   Future<void> _cargarEstadoResena() async {
@@ -229,25 +284,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final t = tokens(context);
     final l = AppLocalizations.of(context)!;
 
-    // Reparto: diarios y semanales que tocan hoy → lista principal;
-    // semanales con días planificados que NO tocan hoy → "Esta semana"
+    // _habitos ya viene filtrado por el backend (sólo lo que toca hoy), así
+    // que ya no hace falta apartar aquí lo que no toca: todo lo que llega
+    // cuenta para el resumen del día.
     final pendientes = <Habito>[];
     final completados = <Habito>[];
-    final noTocaHoy = <Habito>[];
-    final hoyDia = DateTime.now().weekday; // 1=lunes..7=domingo, como diasPlanificados
     for (final h in _habitos) {
       if (_estaHecho(h)) {
         completados.add(h);
-      } else if (h.frecuencia == 'SEMANAL' &&
-          h.diasPlanificados.isNotEmpty &&
-          !h.diasPlanificados.contains(hoyDia)) {
-        noTocaHoy.add(h);
       } else {
         pendientes.add(h);
       }
     }
-    // El resumen del día solo cuenta lo que toca hoy
-    final totalHoy = _habitos.length - noTocaHoy.length;
+    final totalHoy = _habitos.length;
+
+    // Mientras la semana no ha cargado (o falló), la pantalla se comporta
+    // exactamente como antes: sólo Hoy, sin tira ni contenido de otro día.
+    final bool semanaLista = _dias.isNotEmpty;
+    final bool viendoHoy = !semanaLista || _diaSeleccionado == _indiceHoy;
+    final List<Map<String, dynamic>> habitosDelDiaSeleccionado =
+        semanaLista ? (_dias[_diaSeleccionado]['habitos'] as List<Map<String, dynamic>>) : const [];
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -304,48 +360,49 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
+                if (semanaLista) ...[
+                  TiraSemana(
+                    dias: _dias,
+                    diaSeleccionado: _diaSeleccionado,
+                    indiceHoy: _indiceHoy,
+                    onSeleccionar: (i) => setState(() => _diaSeleccionado = i),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                if (semanaLista && _flexibles.isNotEmpty) ...[
+                  _filaFlexibles(l, t),
+                  const SizedBox(height: 16),
+                ],
                 if (_errorCarga)
                   EstadoErrorHoy(onReintentar: _cargarHabitos)
-                else if (_habitos.isEmpty)
-                  const EstadoVacioHoy()
-                else ...[
-                  if (pendientes.isEmpty)
-                    const TarjetaTodoHecho()
-                  else
-                    ...pendientes.map((h) => _habitoCard(l, h, false, t)),
-                  if (completados.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    Text(l.dashCompletados,
-                        style: TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.w800,
-                            letterSpacing: 1, color: t.textMuted)),
-                    const SizedBox(height: 8),
-                    ...completados.map((h) => _habitoCard(l, h, true, t)),
+                else if (viendoHoy) ...[
+                  if (_habitos.isEmpty)
+                    const EstadoVacioHoy()
+                  else ...[
+                    if (pendientes.isEmpty)
+                      const TarjetaTodoHecho()
+                    else
+                      ...pendientes.map((h) => _habitoCard(l, h, false, t)),
+                    if (completados.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Text(l.dashCompletados,
+                          style: TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w800,
+                              letterSpacing: 1, color: t.textMuted)),
+                      const SizedBox(height: 8),
+                      ...completados.map((h) => _habitoCard(l, h, true, t)),
+                    ],
                   ],
-                  if (noTocaHoy.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    Theme(
-                      // Sin las líneas divisorias por defecto del ExpansionTile
-                      data: Theme.of(context)
-                          .copyWith(dividerColor: Colors.transparent),
-                      child: ExpansionTile(
-                        tilePadding: EdgeInsets.zero,
-                        title: Text(l.dashEstaSemana(noTocaHoy.length),
-                            style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 1,
-                                color: t.textMuted)),
-                        subtitle: Text(l.dashNoTocanHoy,
-                            style:
-                                TextStyle(fontSize: 11, color: t.textMuted)),
-                        children: noTocaHoy
-                            .map((h) => _habitoCard(l, h, false, t))
-                            .toList(),
-                      ),
-                    ),
-                  ],
-                ],
+                ] else if (habitosDelDiaSeleccionado.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Text(l.dashDiaSinHabitos,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: t.textMuted)),
+                  )
+                else
+                  ...habitosDelDiaSeleccionado.map((item) => _habitoCardOtroDia(
+                      l, item['habito'] as Habito, item['completado'] as bool, t)),
               ],
             ),
           ),
@@ -453,6 +510,109 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
           ),
+      ),
+    );
+  }
+
+  /// Fila corta con el progreso semanal de cada SEMANAL flexible: no tienen
+  /// un día fijo que los represente en la tira, así que van aparte y
+  /// siempre visibles, sea cual sea el día seleccionado arriba.
+  Widget _filaFlexibles(AppLocalizations l, TokensContextuales t) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(l.dashFlexiblesTitulo,
+            style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1,
+                color: t.textMuted)),
+        const SizedBox(height: 8),
+        ..._flexibles.map((item) {
+          final habito = item['habito'] as Habito;
+          final completadosSemana = item['completadosSemana'] as int;
+          final meta = item['meta'] as int;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(habito.nombre,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontWeight: FontWeight.w600, color: t.text)),
+                ),
+                const SizedBox(width: 8),
+                ChipIdentidad(
+                    texto: l.dashFlexibleProgreso(completadosSemana, meta)),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  /// Versión mínima de [_habitoCard] para un día que no es hoy: recibe el
+  /// par (hábito, completado) directamente de `_dias[i]`, en vez de leer de
+  /// `_progreso`/`_fechasCompletadas` — esos mapas son de hoy, no de
+  /// cualquier día. Sin mini-heatmap (es info de racha, no de "qué tocaba
+  /// ese día") y con el check apagado y no tocable: sólo se completa hoy.
+  Widget _habitoCardOtroDia(
+      AppLocalizations l, Habito h, bool completado, TokensContextuales t) {
+    return AnimatedOpacity(
+      duration: (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
+          ? Duration.zero
+          : const Duration(milliseconds: 400),
+      opacity: completado ? 0.72 : 1.0,
+      child: TarjetaIdentidad(
+        onTap: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => HabitoDetalleScreen(
+                  habitoId: h.habitoId, usuarioId: _usuarioId, nombre: h.nombre),
+            ),
+          );
+          _cargarSemana();
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: Text(h.nombre,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            decoration:
+                                completado ? TextDecoration.lineThrough : null,
+                            color: completado ? t.textMuted : t.text,
+                          )),
+                    ),
+                    const SizedBox(width: 8),
+                    ChipIdentidad(texto: _frecuenciaLegible(l, h.frecuencia)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Sólo se completa hoy: apagado y sin onTap en cualquier otro día.
+              Opacity(
+                opacity: 0.5,
+                child: CheckCircular(
+                  hecho: completado,
+                  onTap: null,
+                  color: t.primary,
+                  colorVacio: t.surface2,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
