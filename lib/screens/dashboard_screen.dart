@@ -6,6 +6,7 @@ import '../services/analytics_service.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:in_app_review/in_app_review.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/habito.dart';
 import '../widgets/estados_hoy.dart';
 import '../widgets/identidad_ui.dart';
@@ -115,8 +116,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _cargarEstadoResena() async {
     try {
-      final logros = await ApiServiceCore.getLogrosUsuario(_usuarioId);
-      final yaPidio = logros.any((l) => l['logro']?['codigo'] == 'INTERACCION_RESENA');
+      final prefs = await SharedPreferences.getInstance();
+      final yaPidio = prefs.getBool('resena_solicitada') ?? false;
       if (mounted) setState(() { _yaPidioResena = yaPidio; });
     } catch (_) {
       // Si falla, dejamos _yaPidioResena en false (se volverá a intentar pedir)
@@ -269,7 +270,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final InAppReview inAppReview = InAppReview.instance;
       if (await inAppReview.isAvailable()) {
         await inAppReview.requestReview();
-        await ApiServiceCore.registrarInteraccionResena(_usuarioId);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('resena_solicitada', true);
         if (mounted) {
           setState(() { _yaPidioResena = true; });
         }
