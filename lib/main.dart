@@ -69,9 +69,9 @@ class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
   Future<String?> _checkSession() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+    final token = await ApiServiceCore.getToken();
     if (token == null) return null;
+    final prefs = await SharedPreferences.getInstance();
     // Con sesión guardada, el aspecto lo manda el backend: puede haber
     // equipado otro tema desde otro dispositivo. No se puede hacer antes del
     // splash porque hasta aquí no hay ni usuarioId ni token.
