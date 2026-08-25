@@ -65,26 +65,35 @@ class HabitosApp extends StatelessWidget {
   }
 }
 
+/// Lo que el splash averigua antes de decidir a dónde ir.
+class _Sesion {
+  final String? token;
+  final int? usuarioId;
+  final bool? poseeIdentidad;
+  const _Sesion(this.token, this.usuarioId, this.poseeIdentidad);
+}
+
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
-  Future<String?> _checkSession() async {
+  Future<_Sesion> _checkSession() async {
     final token = await ApiServiceCore.getToken();
-    if (token == null) return null;
+    if (token == null) return const _Sesion(null, null, null);
     final prefs = await SharedPreferences.getInstance();
     // Con sesión guardada, el aspecto lo manda el backend: puede haber
     // equipado otro tema desde otro dispositivo. No se puede hacer antes del
     // splash porque hasta aquí no hay ni usuarioId ni token.
     final usuarioId = prefs.getInt('usuarioId');
+    bool? posee;
     if (usuarioId != null) {
-      await Equipamiento.cargarDeUsuarioSiSePuede(usuarioId);
+      posee = await Equipamiento.cargarDeUsuarioSiSePuede(usuarioId);
     }
-    return token;
+    return _Sesion(token, usuarioId, posee);
   }
 
   @override
   Widget build(BuildContext context) {
-    return SplashGenerico<String?>(
+    return SplashGenerico<_Sesion>(
       // Asset de esta app, no del paquete: el branding no se comparte.
       rutaImagen: 'assets/branding/simbolo_negativo.png',
       colorFondo: const Color(0xFF0A1628),
@@ -92,12 +101,13 @@ class SplashScreen extends StatelessWidget {
       anchoImagen: 220,
       tamanoWordmark: 32,
       tarea: _checkSession,
-      onListo: (context, token) {
+      onListo: (context, sesion) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => token != null
-                ? const HomeShell()
+            builder: (ctx) => sesion.token != null
+                ? destinoConIdentidad(
+                    ctx, false, sesion.poseeIdentidad, sesion.usuarioId ?? 0)
                 : const LoginScreen(destinoTrasLogin: destinoTrasLogin),
           ),
         );

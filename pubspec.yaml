@@ -17,7 +17,7 @@ dependencies:
   norday_flutter_core:
     git:
       url: https://github.com/jgrabalosa/norday_flutter_core.git
-      ref: main
+      ref: wip/onboarding-identidad
   intl: any
   cupertino_icons: ^1.0.8
   http: ^1.2.0

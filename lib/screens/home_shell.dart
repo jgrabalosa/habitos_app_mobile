@@ -16,6 +16,28 @@ import 'habitos_screen.dart';
 Widget destinoTrasLogin(BuildContext context, bool mostrarOnboarding) =>
     HomeShell(mostrarOnboarding: mostrarOnboarding);
 
+/// Igual que [destinoTrasLogin] pero intercalando la elección de identidad
+/// cuando el usuario no tiene ninguna.
+///
+/// [poseeIdentidad] viene de `Equipamiento.cargarDeUsuarioSiSePuede`: `null`
+/// significa que no se pudo averiguar, y entonces se deja pasar. Un corte de
+/// red al arrancar no puede encerrar a nadie en una pantalla sin salida, y la
+/// red de seguridad del backend ya cubre el caso persistente.
+Widget destinoConIdentidad(BuildContext context, bool mostrarOnboarding,
+    bool? poseeIdentidad, int usuarioId) {
+  if (poseeIdentidad == false) {
+    return EleccionIdentidadScreen(
+      usuarioId: usuarioId,
+      alElegir: () => Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+            builder: (_) => HomeShell(mostrarOnboarding: mostrarOnboarding)),
+      ),
+    );
+  }
+  return HomeShell(mostrarOnboarding: mostrarOnboarding);
+}
+
 class HomeShell extends StatefulWidget {
   final bool mostrarOnboarding;
   const HomeShell({super.key, this.mostrarOnboarding = false});
