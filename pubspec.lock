@@ -625,8 +625,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "wip/onboarding-identidad"
-      resolved-ref: "53488379f0112d6abcf3c122afd6590be3cce4e4"
+      ref: main
+      resolved-ref: c045a81d34487dc82b6d35c57d40896b4ca03665
       url: "https://github.com/jgrabalosa/norday_flutter_core.git"
     source: git
     version: "0.1.0"
