@@ -642,8 +642,14 @@ Widget _miniHeatmap(Habito h, TokensContextuales t) {
       return count >= meta;
     }
 
+    // Solo los días de la ventana que se pinta: `fechas` tiene todo el
+    // historial del hábito y anunciar su tamaño daría un número imposible.
+    final fechasVentana = List.generate(10, (i) => hoy.subtract(Duration(days: 9 - i)))
+        .where((d) => fechas.contains(iso(d)))
+        .length;
+
     return Semantics(
-      label: l.a11yResumenHeatmap(fechas.length),
+      label: l.a11yResumenHeatmap(fechasVentana),
       child: ExcludeSemantics(
         child: Padding(
           // Aire entre la heatmap y el check: la fila no llega al borde
