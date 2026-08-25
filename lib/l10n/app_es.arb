@@ -221,5 +221,35 @@
   "logroDescCategorias3": "Usa 3 categorías distintas en tus hábitos",
   "logroDescCategorias5": "Usa 5 categorías distintas",
   "logroDescPrimeraNota": "Añade una nota a un registro",
-  "habitosErrorEstado": "No se pudo cambiar el estado del hábito."
+  "habitosErrorEstado": "No se pudo cambiar el estado del hábito.",
+  "a11yCompletarHabito": "Completar {nombre}",
+  "@a11yCompletarHabito": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yDiaSemana": "{dia}, {estado}",
+  "@a11yDiaSemana": {
+    "placeholders": {
+      "dia": {
+        "type": "String"
+      },
+      "estado": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yDiaSeleccionado": "seleccionado",
+  "a11yDiaNoSeleccionado": "sin seleccionar",
+  "a11yResumenHeatmap": "{completados} de los últimos 10 días completados",
+  "@a11yResumenHeatmap": {
+    "placeholders": {
+      "completados": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yCargando": "Cargando hábitos"
 }

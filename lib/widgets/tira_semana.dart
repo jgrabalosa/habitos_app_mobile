@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 
+import '../l10n/app_localizations.dart';
 import 'identidad_ui.dart';
 
 /// La tira de 7 días (lunes a domingo) encima de Hoy, para navegar a otro
@@ -33,6 +34,7 @@ class TiraSemana extends StatelessWidget {
   Widget build(BuildContext context) {
     final id = identidad(context);
     final t = tokens(context);
+    final l = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).toLanguageTag();
     final sinAnimacion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
 
@@ -45,65 +47,72 @@ class TiraSemana extends StatelessWidget {
             habitosDelDia.every((h) => h['completado'] == true);
         final bool esHoy = i == indiceHoy;
         final bool seleccionado = i == diaSeleccionado;
+        final String nombreDia = DateFormat.E(locale).format(fecha);
 
         final Color colorCelda =
             seleccionado ? t.primary.withValues(alpha: 0.18) : t.surface2;
 
         return Expanded(
-          child: GestureDetector(
-            onTap: () => onSeleccionar(i),
-            behavior: HitTestBehavior.opaque,
-            child: Column(
-              children: [
-                Text(
-                  DateFormat.E(locale).format(fecha).toUpperCase(),
-                  style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: t.textMuted),
-                ),
-                const SizedBox(height: 6),
-                AnimatedContainer(
-                  duration: sinAnimacion
-                      ? Duration.zero
-                      : const Duration(milliseconds: 200),
-                  width: 36,
-                  height: 36,
-                  alignment: Alignment.center,
-                  decoration: celdaHeatmap(
-                    id,
-                    t,
-                    color: colorCelda,
-                    // La misma pieza que marca "hecho" en el heatmap marca
-                    // aquí "es el día activo": incorpora el glow/relieve de
-                    // la identidad al día que se está mirando.
-                    llena: seleccionado,
-                    esHoy: esHoy,
-                    seleccionada: seleccionado,
-                  ),
-                  child: Text(
-                    '${fecha.day}',
+          child: Semantics(
+            button: true,
+            selected: seleccionado,
+            label: l.a11yDiaSemana(nombreDia,
+                seleccionado ? l.a11yDiaSeleccionado : l.a11yDiaNoSeleccionado),
+            child: GestureDetector(
+              onTap: () => onSeleccionar(i),
+              behavior: HitTestBehavior.opaque,
+              child: Column(
+                children: [
+                  Text(
+                    nombreDia.toUpperCase(),
                     style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: (seleccionado || esHoy)
-                          ? FontWeight.w800
-                          : FontWeight.w600,
-                      color: t.text,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: t.textMuted),
+                  ),
+                  const SizedBox(height: 6),
+                  AnimatedContainer(
+                    duration: sinAnimacion
+                        ? Duration.zero
+                        : const Duration(milliseconds: 200),
+                    width: 36,
+                    height: 36,
+                    alignment: Alignment.center,
+                    decoration: celdaHeatmap(
+                      id,
+                      t,
+                      color: colorCelda,
+                      // La misma pieza que marca "hecho" en el heatmap marca
+                      // aquí "es el día activo": incorpora el glow/relieve de
+                      // la identidad al día que se está mirando.
+                      llena: seleccionado,
+                      esHoy: esHoy,
+                      seleccionada: seleccionado,
+                    ),
+                    child: Text(
+                      '${fecha.day}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: (seleccionado || esHoy)
+                            ? FontWeight.w800
+                            : FontWeight.w600,
+                        color: t.text,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                SizedBox(
-                  height: 6,
-                  width: 6,
-                  child: diaCompleto
-                      ? DecoratedBox(
-                          decoration:
-                              BoxDecoration(shape: BoxShape.circle, color: t.success),
-                        )
-                      : null,
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  SizedBox(
+                    height: 6,
+                    width: 6,
+                    child: diaCompleto
+                        ? DecoratedBox(
+                            decoration: BoxDecoration(
+                                shape: BoxShape.circle, color: t.success),
+                          )
+                        : null,
+                  ),
+                ],
+              ),
             ),
           ),
         );

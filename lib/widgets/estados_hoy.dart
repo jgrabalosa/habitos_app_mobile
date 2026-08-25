@@ -29,29 +29,35 @@ class SkeletonHoy extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SkeletonPulso(
-      child: ListView(
-        padding: padding,
-        children: [
-          // La cabecera: título, fecha y el aro del resumen.
-          Row(
+    final l = AppLocalizations.of(context)!;
+    return Semantics(
+      label: l.a11yCargando,
+      child: ExcludeSemantics(
+        child: SkeletonPulso(
+          child: ListView(
+            padding: padding,
             children: [
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SkeletonBox(width: 120, height: 22),
-                    SizedBox(height: 8),
-                    SkeletonBox(width: 180, height: 12),
-                  ],
-                ),
+              // La cabecera: título, fecha y el aro del resumen.
+              Row(
+                children: [
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SkeletonBox(width: 120, height: 22),
+                        SizedBox(height: 8),
+                        SkeletonBox(width: 180, height: 12),
+                      ],
+                    ),
+                  ),
+                  SkeletonBox(width: 64, height: 64, radius: 32),
+                ],
               ),
-              SkeletonBox(width: 64, height: 64, radius: 32),
+              const SizedBox(height: 24),
+              ...List.generate(cantidad, (_) => const _FilaSkeleton()),
             ],
           ),
-          const SizedBox(height: 24),
-          ...List.generate(cantidad, (_) => const _FilaSkeleton()),
-        ],
+        ),
       ),
     );
   }

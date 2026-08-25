@@ -508,6 +508,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   onTap: () => _completar(h.habitoId),
                   color: t.primary,
                   colorVacio: t.surface2,
+                  etiquetaSemantica: l.a11yCompletarHabito(h.nombre),
                 ),
               ],
             ),
@@ -621,6 +622,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 Widget _miniHeatmap(Habito h, TokensContextuales t) {
     final id = identidad(context);
+    final l = AppLocalizations.of(context)!;
     final fechas = _fechasCompletadas[h.habitoId] ?? {};
     final hoy = DateTime.now();
     final bool esSemanal = h.frecuencia == 'SEMANAL';
@@ -640,61 +642,66 @@ Widget _miniHeatmap(Habito h, TokensContextuales t) {
       return count >= meta;
     }
 
-    return Padding(
-      // Aire entre la heatmap y el check: la fila no llega al borde
-      padding: const EdgeInsets.only(right: 24),
-      child: Row(
-        children: List.generate(10, (i) {
-          final d = hoy.subtract(Duration(days: 9 - i));
-          final bool lleno = fechas.contains(iso(d));
-          final bool esHoy = i == 9;
-          final bool esDescanso =
-              conPlan && !lleno && !planificados.contains(d.weekday);
+    return Semantics(
+      label: l.a11yResumenHeatmap(fechas.length),
+      child: ExcludeSemantics(
+        child: Padding(
+          // Aire entre la heatmap y el check: la fila no llega al borde
+          padding: const EdgeInsets.only(right: 24),
+          child: Row(
+            children: List.generate(10, (i) {
+              final d = hoy.subtract(Duration(days: 9 - i));
+              final bool lleno = fechas.contains(iso(d));
+              final bool esHoy = i == 9;
+              final bool esDescanso =
+                  conPlan && !lleno && !planificados.contains(d.weekday);
 
-          final Widget celda;
-          if (esDescanso) {
-            // Día de descanso: punto pequeño, visualmente menor. La celda no
-            // se pinta —sólo marca el hoy, si toca— y el punto es el mismo en
-            // las cuatro identidades: un descanso significa lo mismo en todas.
-            celda = Container(
-              decoration: celdaHeatmap(id, t,
-                  color: Colors.transparent, llena: false, esHoy: esHoy),
-              child: Center(
-                child: FractionallySizedBox(
-                  widthFactor: 0.38,
-                  heightFactor: 0.38,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: t.surface2,
+              final Widget celda;
+              if (esDescanso) {
+                // Día de descanso: punto pequeño, visualmente menor. La celda no
+                // se pinta —sólo marca el hoy, si toca— y el punto es el mismo en
+                // las cuatro identidades: un descanso significa lo mismo en todas.
+                celda = Container(
+                  decoration: celdaHeatmap(id, t,
+                      color: Colors.transparent, llena: false, esHoy: esHoy),
+                  child: Center(
+                    child: FractionallySizedBox(
+                      widthFactor: 0.38,
+                      heightFactor: 0.38,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: t.surface2,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-            );
-          } else {
-            final Color color;
-            if (lleno) {
-              color = t.success;
-            } else if (esSemanal && semanaCumplida(d)) {
-              // Día vacío de una semana ganada: verde tenue, "no pasa nada"
-              color = t.success.withValues(alpha: 0.18);
-            } else {
-              color = t.surface2;
-            }
-            celda = Container(
-              decoration: celdaHeatmap(id, t,
-                  color: color, llena: lleno, esHoy: esHoy),
-            );
-          }
+                );
+              } else {
+                final Color color;
+                if (lleno) {
+                  color = t.success;
+                } else if (esSemanal && semanaCumplida(d)) {
+                  // Día vacío de una semana ganada: verde tenue, "no pasa nada"
+                  color = t.success.withValues(alpha: 0.18);
+                } else {
+                  color = t.surface2;
+                }
+                celda = Container(
+                  decoration: celdaHeatmap(id, t,
+                      color: color, llena: lleno, esHoy: esHoy),
+                );
+              }
 
-          return Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(right: i < 9 ? 5 : 0),
-              child: AspectRatio(aspectRatio: 1, child: celda),
-            ),
-          );
-        }),
+              return Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(right: i < 9 ? 5 : 0),
+                  child: AspectRatio(aspectRatio: 1, child: celda),
+                ),
+              );
+            }),
+          ),
+        ),
       ),
     );
   }

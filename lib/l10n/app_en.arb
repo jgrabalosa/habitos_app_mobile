@@ -136,5 +136,35 @@
   "logroDescCategorias3": "Use 3 different categories across your habits",
   "logroDescCategorias5": "Use 5 different categories",
   "logroDescPrimeraNota": "Add a note to an entry",
-  "habitosErrorEstado": "The habit's status couldn't be changed."
+  "habitosErrorEstado": "The habit's status couldn't be changed.",
+  "a11yCompletarHabito": "Complete {nombre}",
+  "@a11yCompletarHabito": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yDiaSemana": "{dia}, {estado}",
+  "@a11yDiaSemana": {
+    "placeholders": {
+      "dia": {
+        "type": "String"
+      },
+      "estado": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yDiaSeleccionado": "selected",
+  "a11yDiaNoSeleccionado": "not selected",
+  "a11yResumenHeatmap": "{completados} of the last 10 days completed",
+  "@a11yResumenHeatmap": {
+    "placeholders": {
+      "completados": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yCargando": "Loading habits"
 }
