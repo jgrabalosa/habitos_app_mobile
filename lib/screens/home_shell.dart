@@ -203,7 +203,15 @@ class _HomeShellState extends State<HomeShell> {
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
+        extendBodyBehindAppBar: true,
         appBar: AppBar(
+          // Transparente para que el cielo de FondoEstelar se vea a través de
+          // la barra en vez de quedar tapado por un AppBar opaco.
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          // Imprescindible: sin esto, Material 3 tiñe el AppBar en cuanto hay
+          // scroll debajo y vuelve a tapar el cielo.
+          scrolledUnderElevation: 0,
           title: _tabIndex == 0
               ? GestureDetector(
                   onTap: _abrirColeccion,
@@ -355,12 +363,27 @@ class _HomeShellState extends State<HomeShell> {
             ),
           ],
         ),
-        body: PageView(
-          controller: _pageController,
-          onPageChanged: (i) => setState(() => _tabIndex = i),
-          // Cada pestaña se mantiene viva al salir de pantalla, como hacía el
-          // IndexedStack: deslizar no debe recargar lo que ya estaba cargado.
-          children: [for (final tab in tabs) _MantenerVivo(child: tab)],
+        body: Stack(
+          // Un hijo no posicionado de Stack recibe constraints holgadas, no
+          // las ajustadas que daba body: directamente: sin esto el contenido
+          // se encogería a su tamaño mínimo.
+          fit: StackFit.expand,
+          children: [
+            const Positioned.fill(child: FondoEstelar()),
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(top: kToolbarHeight),
+                child: PageView(
+                  controller: _pageController,
+                  onPageChanged: (i) => setState(() => _tabIndex = i),
+                  // Cada pestaña se mantiene viva al salir de pantalla, como
+                  // hacía el IndexedStack: deslizar no debe recargar lo que
+                  // ya estaba cargado.
+                  children: [for (final tab in tabs) _MantenerVivo(child: tab)],
+                ),
+              ),
+            ),
+          ],
         ),
         // Lo único de la app que se ve en todo momento: la forma del indicador
         // y el color de lo activo salen de la identidad equipada.

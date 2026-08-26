@@ -77,7 +77,7 @@ class _FilaSkeleton extends StatelessWidget {
       decoration: ShapeDecoration(
         // Aunque no haya nada dentro, la silueta ya tiene la forma de la
         // identidad: el salto entre carga y contenido es sólo de contenido.
-        shape: formaDe(id, radio: id.radioSecundario),
+        shape: formaIdentidad(id, radio: id.radioSecundario),
         color: id.forma == FormaIdentidad.hairline ? null : t.surface,
       ),
       child: Row(

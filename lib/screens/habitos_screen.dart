@@ -180,7 +180,7 @@ class _HabitosScreenState extends State<HabitosScreen> {
       selected: selected,
       onSelected: (_) => onTap(),
       selectedColor: t.primary.withValues(alpha: 0.2),
-      shape: formaDe(
+      shape: formaIdentidad(
         id,
         radio: 999,
         lado: BorderSide(

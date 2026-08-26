@@ -9,93 +9,17 @@ import 'package:norday_flutter_core/norday_flutter_core.dart';
 /// sale del paquete es el idioma: se despacha por [FormaIdentidad] con un
 /// `switch` exhaustivo, igual que el halo, el terrario, el aro y el check, y
 /// los radios salen de [IdentidadPaleta], nunca de un número suelto.
-
-/// Rectángulo con las cuatro esquinas cortadas en recto, como [ShapeBorder]
-/// para que Material sepa recortarlo: así el `InkWell` de dentro moja la
-/// figura buena y no un rectángulo que se sale por las esquinas.
-class BordeChaflan extends OutlinedBorder {
-  final double chaflan;
-
-  const BordeChaflan({required this.chaflan, super.side = BorderSide.none});
-
-  /// El corte no puede comerse el lado entero: en un chip de 20px de alto, los
-  /// 10px de la identidad serían la mitad por arriba y por abajo.
-  double _corte(Rect rect) => chaflan.clamp(0.0, rect.shortestSide / 2);
-
-  Path _camino(Rect rect, double desplazamiento) {
-    final r = rect.deflate(desplazamiento);
-    final c = _corte(r);
-    return Path()
-      ..moveTo(r.left + c, r.top)
-      ..lineTo(r.right - c, r.top)
-      ..lineTo(r.right, r.top + c)
-      ..lineTo(r.right, r.bottom - c)
-      ..lineTo(r.right - c, r.bottom)
-      ..lineTo(r.left + c, r.bottom)
-      ..lineTo(r.left, r.bottom - c)
-      ..lineTo(r.left, r.top + c)
-      ..close();
-  }
-
-  @override
-  Path getOuterPath(Rect rect, {TextDirection? textDirection}) =>
-      _camino(rect, 0);
-
-  @override
-  Path getInnerPath(Rect rect, {TextDirection? textDirection}) =>
-      _camino(rect, side.width);
-
-  @override
-  void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {
-    if (side.style == BorderStyle.none) return;
-    canvas.drawPath(
-      _camino(rect, side.width / 2),
-      side.toPaint()..style = PaintingStyle.stroke,
-    );
-  }
-
-  @override
-  EdgeInsetsGeometry get dimensions => EdgeInsets.all(side.width);
-
-  @override
-  ShapeBorder scale(double t) =>
-      BordeChaflan(chaflan: chaflan * t, side: side.scale(t));
-
-  @override
-  BordeChaflan copyWith({BorderSide? side, double? chaflan}) =>
-      BordeChaflan(chaflan: chaflan ?? this.chaflan, side: side ?? this.side);
-
-  @override
-  bool operator ==(Object other) =>
-      other is BordeChaflan &&
-      other.chaflan == chaflan &&
-      other.side == side;
-
-  @override
-  int get hashCode => Object.hash(chaflan, side);
-}
-
-/// La figura de una superficie de esta identidad, al radio que se le pida.
-/// Sale de aquí y no de cada sitio para que la tarjeta, el chip y lo que venga
-/// después no puedan acabar cortando la esquina de formas distintas.
-ShapeBorder formaDe(
-  IdentidadPaleta id, {
-  required double radio,
-  BorderSide lado = BorderSide.none,
-}) =>
-    switch (id.forma) {
-      FormaIdentidad.chamfer => BordeChaflan(chaflan: id.chaflan, side: lado),
-      _ => RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(radio),
-          side: lado,
-        ),
-    };
+///
+/// El corte de esquina de Neotokyo+ y la figura de una superficie según la
+/// identidad ([formaIdentidad]) ya no se duplican aquí: son las del core
+/// (`superficie_identidad.dart`), que es donde vive el sistema de estratos.
 
 /// La tarjeta de una fila de la lista.
 ///
-/// Alba no la encajona: en su identidad el contenido secundario no vive dentro
-/// de cards en ningún sitio, así que aquí tampoco — una línea fina debajo y se
-/// acabó. Las otras tres sí son superficie, cada una con la suya.
+/// El aspecto lo decide ahora el core —[SuperficieIdentidad]—: esta clase
+/// sólo existe para nombrar en lenguaje de hábitos lo que el motor llama
+/// superficie, y para que las nueve llamadas repartidas por las pantallas no
+/// tengan que cambiar.
 class TarjetaIdentidad extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
@@ -109,81 +33,19 @@ class TarjetaIdentidad extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final id = identidad(context);
-    final t = tokens(context);
-
-    if (id.forma == FormaIdentidad.hairline) {
-      return Container(
-        margin: margen,
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(color: t.textMuted.withValues(alpha: 0.20)),
-          ),
-        ),
-        child: InkWell(onTap: onTap, child: child),
+  Widget build(BuildContext context) => SuperficieIdentidad(
+        margen: margen,
+        // TarjetaIdentidad no metía padding ninguno; el default de
+        // SuperficieIdentidad es EdgeInsets.all(16), así que hace falta
+        // anularlo explícitamente o se desmaquetan las nueve tarjetas.
+        relleno: EdgeInsets.zero,
+        protagonista: false,
+        // Lo que conserva el comportamiento de Alba: línea fina debajo en vez
+        // de tarjeta.
+        esFila: true,
+        onTap: onTap,
+        child: child,
       );
-    }
-
-    final forma = formaDe(
-      id,
-      radio: id.radioSecundario,
-      lado: switch (id.forma) {
-        // El filo claro es lo que hace que el cristal tenga canto.
-        FormaIdentidad.glass =>
-          BorderSide(color: Colors.white.withValues(alpha: 0.08)),
-        FormaIdentidad.chamfer =>
-          BorderSide(color: t.primary.withValues(alpha: 0.55), width: 1.2),
-        _ => BorderSide.none,
-      },
-    );
-
-    return Container(
-      margin: margen,
-      decoration: ShapeDecoration(
-        shape: forma,
-        // Profundidad es un degradado entre sus dos superficies; las otras dos
-        // son superficie plana. Un degradado y un color sólido no caben en el
-        // mismo campo, de ahí el reparto.
-        gradient: id.forma == FormaIdentidad.glass
-            ? LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [t.surface, t.surface2],
-              )
-            : null,
-        color: id.forma == FormaIdentidad.glass ? null : t.surface,
-        shadows: switch (id.forma) {
-          FormaIdentidad.glass => [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.28),
-                blurRadius: 14,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          // Dulce: la sombra es del color de la identidad, no negra. Es lo que
-          // convierte una sombra en un resplandor.
-          FormaIdentidad.pill => [
-              BoxShadow(
-                color: t.primary.withValues(alpha: 0.22),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          // Neotokyo+ no proyecta sombra: su relieve es el corte y el borde.
-          _ => const [],
-        },
-      ),
-      child: Material(
-        type: MaterialType.transparency,
-        child: InkWell(
-          onTap: onTap,
-          customBorder: forma,
-          child: child,
-        ),
-      ),
-    );
-  }
 }
 
 /// El chip de frecuencia. Mismo criterio que la tarjeta, en pequeño.
@@ -206,7 +68,7 @@ class ChipIdentidad extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       decoration: ShapeDecoration(
         color: relleno,
-        shape: formaDe(
+        shape: formaIdentidad(
           id,
           // Píldora completa salvo en Neotokyo+, que corta.
           radio: 999,
@@ -246,7 +108,7 @@ NavigationBarThemeData barraNavegacionIdentidad(
   final ({ShapeBorder forma, Color color}) indicador = switch (id.forma) {
     // Profundidad — pastilla redondeada con el radio de la identidad.
     FormaIdentidad.glass => (
-        forma: formaDe(id, radio: id.radioSecundario),
+        forma: formaIdentidad(id, radio: id.radioSecundario),
         color: t.primary.withValues(alpha: 0.18),
       ),
     // Neotokyo+ — el mismo corte de esquina de las tarjetas, con filo.
