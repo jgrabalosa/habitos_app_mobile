@@ -370,17 +370,18 @@ class _HomeShellState extends State<HomeShell> {
           fit: StackFit.expand,
           children: [
             const Positioned.fill(child: FondoEstelar()),
+            // `extendBodyBehindAppBar` ya mete la altura del AppBar en el
+            // padding del MediaQuery del body, así que este SafeArea aparta
+            // la barra de estado Y el AppBar. Añadir aquí kToolbarHeight
+            // reservaba el mismo espacio dos veces.
             SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.only(top: kToolbarHeight),
-                child: PageView(
-                  controller: _pageController,
-                  onPageChanged: (i) => setState(() => _tabIndex = i),
-                  // Cada pestaña se mantiene viva al salir de pantalla, como
-                  // hacía el IndexedStack: deslizar no debe recargar lo que
-                  // ya estaba cargado.
-                  children: [for (final tab in tabs) _MantenerVivo(child: tab)],
-                ),
+              child: PageView(
+                controller: _pageController,
+                onPageChanged: (i) => setState(() => _tabIndex = i),
+                // Cada pestaña se mantiene viva al salir de pantalla, como
+                // hacía el IndexedStack: deslizar no debe recargar lo que
+                // ya estaba cargado.
+                children: [for (final tab in tabs) _MantenerVivo(child: tab)],
               ),
             ),
           ],
