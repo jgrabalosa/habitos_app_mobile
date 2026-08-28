@@ -109,6 +109,10 @@ class _HabitosScreenState extends State<HabitosScreen> {
     final lista = _filtradosYOrdenados;
 
     return Scaffold(
+      // El shell ya pinta el FondoEstelar debajo de esta pestaña. Sin esto, el
+      // Scaffold anidado pinta scaffoldBackgroundColor opaco encima y tapa el
+      // cielo. Es la misma razón por la que dashboard_screen no lleva Scaffold.
+      backgroundColor: Colors.transparent,
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final result = await Navigator.push(
