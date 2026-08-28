@@ -29,7 +29,7 @@ class TarjetaIdentidad extends StatelessWidget {
     super.key,
     required this.child,
     this.onTap,
-    this.margen = const EdgeInsets.only(bottom: 8),
+    this.margen = const EdgeInsets.only(bottom: 12),
   });
 
   @override

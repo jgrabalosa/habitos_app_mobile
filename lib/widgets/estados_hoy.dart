@@ -232,19 +232,19 @@ class TarjetaTodoHecho extends StatelessWidget {
     return TarjetaIdentidad(
       margen: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
         child: Column(
           children: [
             SizedBox(
-              width: 92,
-              height: 92,
+              width: 72,
+              height: 72,
               child: Stack(
                 alignment: Alignment.center,
                 // El halo pinta algo más ancho que su caja a propósito.
                 clipBehavior: Clip.none,
                 children: [
-                  const HaloIdentidad(tamano: 92, intensidad: 0.85),
-                  Icon(icono, size: 44, color: t.success),
+                  const HaloIdentidad(tamano: 72, intensidad: 0.85),
+                  Icon(icono, size: 36, color: t.success),
                 ],
               ),
             ),

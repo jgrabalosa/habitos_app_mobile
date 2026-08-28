@@ -440,7 +440,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       duration: (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
           ? Duration.zero
           : const Duration(milliseconds: 400),
-      opacity: hecho ? 0.72 : 1.0,
+      // 0.80 y no 0.72: el relleno de la tarjeta baja a 0.80 en el core, y
+      // las dos opacidades se multiplican. Con 0.72 la fila completada
+      // quedaría en 0.58 reales, por debajo del 0.63 de antes, y ahí
+      // `textMuted` ya no pasa AA. Con 0.80 sale 0.64 y se queda como estaba.
+      // El arreglo bueno no es este número, es hundir la fila a surface2.
+      opacity: hecho ? 0.80 : 1.0,
       // El radio, el corte y la sombra los pone la identidad equipada; aquí
       // sólo se dice que esto es una tarjeta de fila.
       child: TarjetaIdentidad(
@@ -457,7 +462,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             _cargarHabitos();
           },
           child: Padding(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
             child: Row(
               children: [
                 Expanded(
@@ -567,7 +572,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       duration: (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
           ? Duration.zero
           : const Duration(milliseconds: 400),
-      opacity: completado ? 0.72 : 1.0,
+      opacity: completado ? 0.80 : 1.0,
       child: TarjetaIdentidad(
         onTap: () async {
           await Navigator.push(
@@ -580,7 +585,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           _cargarSemana();
         },
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
           child: Row(
             children: [
               Expanded(
