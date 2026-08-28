@@ -109,6 +109,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _indiceHoy = indiceHoy >= 0 ? indiceHoy : 0;
         _diaSeleccionado = _indiceHoy;
       });
+      _publicarProgreso();
     } catch (_) {
       // Ver comentario del método: Hoy no depende de esto.
     }
@@ -149,6 +150,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _loading = false;
         _errorCarga = false;
       });
+      _publicarProgreso();
     } catch (e) {
       if (!mounted) return;
       // El aviso efímero se queda: dice QUÉ ha fallado. Lo que añade el estado
@@ -223,6 +225,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
     _fechasCompletadas[habitoId]?.add(DateTime.now().toIso8601String().split('T')[0]);
     setState(() {}); // el cambio de progreso dispara la animación del check
+    _publicarProgreso();
 
     // Sincronización real en segundo plano (por si el conteo local se desviara)
     ApiServiceHabitos.getProgresoHoy(habitoId).then((prog) {
@@ -279,6 +282,51 @@ class _DashboardScreenState extends State<DashboardScreen> {
     } catch (e) {
       // Si falla, no bloqueamos nada
     }
+  }
+
+  /// Publica en el core cuántos hábitos hay y cuántos están hechos en el día
+  /// que la pantalla está mostrando, para que el fondo de la identidad pueda
+  /// dibujar con ello.
+  ///
+  /// Se llama desde los puntos donde el dato cambia de verdad —las cargas, el
+  /// completar y el cambio de día en la tira— y NUNCA desde `build`: notificar
+  /// a un `ValueNotifier` durante un `build` es excepción o frame perdido.
+  ///
+  /// Hay dos caminos a propósito, y no son intercambiables. Para hoy la verdad
+  /// está en `_habitos` + `_estaHecho`, que conoce metas y periodos. Para
+  /// cualquier otro día de la tira la verdad es la clave `'completado'` de
+  /// `_dias`, que viene resuelta del backend: `_progreso` y
+  /// `_fechasCompletadas` son de hoy y no valen para otro día.
+  void _publicarProgreso() {
+    // Sin semana cargada la pantalla sólo enseña hoy, y no hay ninguna fecha
+    // de la tira que consultar: la de hoy la pone el reloj.
+    if (_dias.isEmpty) {
+      publicarProgresoDia(
+        hechos: _habitos.where(_estaHecho).length,
+        total: _habitos.length,
+        fecha: DateTime.now(),
+      );
+      return;
+    }
+
+    final dia = _dias[_diaSeleccionado];
+    final fecha = DateTime.parse(dia['fecha'] as String);
+
+    if (_diaSeleccionado == _indiceHoy) {
+      publicarProgresoDia(
+        hechos: _habitos.where(_estaHecho).length,
+        total: _habitos.length,
+        fecha: fecha,
+      );
+      return;
+    }
+
+    final habitosDia = dia['habitos'] as List<Map<String, dynamic>>;
+    publicarProgresoDia(
+      hechos: habitosDia.where((h) => h['completado'] == true).length,
+      total: habitosDia.length,
+      fecha: fecha,
+    );
   }
 
   @override
@@ -367,7 +415,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     dias: _dias,
                     diaSeleccionado: _diaSeleccionado,
                     indiceHoy: _indiceHoy,
-                    onSeleccionar: (i) => setState(() => _diaSeleccionado = i),
+                    onSeleccionar: (i) {
+                      setState(() => _diaSeleccionado = i);
+                      // Fuera del setState pero dentro del callback: esto lo
+                      // dispara un gesto del usuario, no un build, así que
+                      // notificar aquí es seguro.
+                      _publicarProgreso();
+                    },
                   ),
                   const SizedBox(height: 16),
                 ],

@@ -165,6 +165,9 @@ class _HomeShellState extends State<HomeShell> {
 
   Future<void> _logout() async {
     await ApiServiceCore.logout();
+    // Si no, el cielo del usuario anterior sigue puesto mientras carga el
+    // siguiente.
+    limpiarProgresoDia();
     if (mounted) {
       Navigator.pushReplacement(
         context,
