@@ -505,7 +505,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         actual: completados.length,
                         total: totalHoy,
                         color: t.primary,
-                        colorPista: t.surface2,
+                        colorPista: t.inactivo,
                         colorTexto: t.text,
                       ),
                   ],
@@ -857,7 +857,7 @@ Widget _miniHeatmap(Habito h, TokensContextuales t) {
                       child: Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: t.surface2,
+                          color: t.inactivo,
                         ),
                       ),
                     ),
@@ -871,7 +871,7 @@ Widget _miniHeatmap(Habito h, TokensContextuales t) {
                   // Día vacío de una semana ganada: verde tenue, "no pasa nada"
                   color = t.success.withValues(alpha: 0.18);
                 } else {
-                  color = t.surface2;
+                  color = t.inactivo;
                 }
                 celda = Container(
                   decoration: celdaHeatmap(id, t,

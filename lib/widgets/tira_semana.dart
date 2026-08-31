@@ -50,7 +50,7 @@ class TiraSemana extends StatelessWidget {
         final String nombreDia = DateFormat.E(locale).format(fecha);
 
         final Color colorCelda =
-            seleccionado ? t.primary.withValues(alpha: 0.18) : t.surface2;
+            seleccionado ? t.primary.withValues(alpha: 0.18) : t.inactivo;
 
         return Expanded(
           child: Semantics(
