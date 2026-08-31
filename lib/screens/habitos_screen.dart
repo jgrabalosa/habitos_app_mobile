@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_service_habitos.dart';
+import '../services/habitos_refresh.dart';
 import '../l10n/catalogos.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/habito.dart';
@@ -55,6 +56,7 @@ class _HabitosScreenState extends State<HabitosScreen> {
     try {
       await ApiServiceHabitos.activarHabito(habitoId);
       _cargarDatos();
+      notificarHabitosCambiados();
     } catch (e) {
       _avisarError(e);
     }
@@ -64,6 +66,7 @@ class _HabitosScreenState extends State<HabitosScreen> {
     try {
       await ApiServiceHabitos.desactivarHabito(habitoId);
       _cargarDatos();
+      notificarHabitosCambiados();
     } catch (e) {
       _avisarError(e);
     }
@@ -123,7 +126,10 @@ class _HabitosScreenState extends State<HabitosScreen> {
               nombresHabitosExistentes: _resumen.map((r) => (r['habito'] as Habito).nombre).toList(),
             )),
           );
-          if (result == true) _cargarDatos();
+          if (result == true) {
+            _cargarDatos();
+            notificarHabitosCambiados();
+          }
         },
         child: const Icon(LucideIcons.plus),
       ),
@@ -229,7 +235,10 @@ class _HabitosScreenState extends State<HabitosScreen> {
             MaterialPageRoute(
                 builder: (_) => HabitoScreen(usuarioId: widget.usuarioId, habito: habito, categoriasIniciales: _categorias)),
           );
-          if (result == true) _cargarDatos();
+          if (result == true) {
+            _cargarDatos();
+            notificarHabitosCambiados();
+          }
         },
         child: Padding(
           padding: const EdgeInsets.all(14),

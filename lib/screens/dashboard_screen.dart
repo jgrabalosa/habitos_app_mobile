@@ -3,6 +3,7 @@ import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_service_habitos.dart';
 import '../services/analytics_service.dart';
+import '../services/habitos_refresh.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:in_app_review/in_app_review.dart';
@@ -52,6 +53,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
+    _cargarDatos();
+    habitosCambiadosNotifier.addListener(_alCambiarHabitos);
+  }
+
+  @override
+  void dispose() {
+    habitosCambiadosNotifier.removeListener(_alCambiarHabitos);
+    super.dispose();
+  }
+
+  /// Los hábitos han cambiado en otra pestaña. Se recarga todo, no sólo la
+  /// lista de hoy: dar de alta un hábito cambia también la tira de la semana.
+  void _alCambiarHabitos() {
+    if (!mounted) return;
     _cargarDatos();
   }
 
@@ -229,7 +244,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     // Sincronización real en segundo plano (por si el conteo local se desviara)
     ApiServiceHabitos.getProgresoHoy(habitoId).then((prog) {
-      if (mounted) setState(() { _progreso[habitoId] = prog; });
+      if (mounted) {
+        setState(() { _progreso[habitoId] = prog; });
+        // El servidor puede corregir el conteo optimista, y si esa corrección
+        // cruza la meta el hábito pasa a contar como hecho. Sin esto la
+        // estrella no se encendería hasta el siguiente refresco.
+        _publicarProgreso();
+      }
     }).catchError((_) {});
 
     await Future.delayed(const Duration(milliseconds: 400));
