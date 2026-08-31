@@ -387,6 +387,11 @@ class _HomeShellState extends State<HomeShell> {
                 children: [for (final tab in tabs) _MantenerVivo(child: tab)],
               ),
             ),
+            // La constelación va DELANTE del contenido, no detrás: detrás la
+            // tapaban las tarjetas. Se pinta con luz aditiva, así que no puede
+            // oscurecer nada de lo que queda debajo. Lleva IgnorePointer
+            // dentro, así que no roba los toques de las tarjetas.
+            const Positioned.fill(child: CapaConstelacion()),
           ],
         ),
         // Lo único de la app que se ve en todo momento: la forma del indicador
