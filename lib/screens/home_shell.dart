@@ -215,6 +215,36 @@ class _HomeShellState extends State<HomeShell> {
           // Imprescindible: sin esto, Material 3 tiñe el AppBar en cuanto hay
           // scroll debajo y vuelve a tapar el cielo.
           scrolledUnderElevation: 0,
+          // El body pasa por detrás de la barra (extendBodyBehindAppBar), y
+          // con la barra totalmente transparente el texto que sube se corta a
+          // media letra sin que nada indique que hay una capa encima. Este
+          // degradado es ese límite: el contenido se desvanece al entrar en la
+          // zona en vez de cortarse.
+          //
+          // No es opaco a propósito. Arriba deja pasar algo de cielo y abajo
+          // llega a cero, así que la barra sigue sin tapar el fondo. De paso
+          // mejora el nombre de usuario y los iconos, que son de los pocos
+          // textos de la app que van directos sobre el cielo sin superficie
+          // debajo.
+          //
+          // IgnorePointer es obligatorio: sin él el degradado se traga los
+          // toques del avatar y del menú.
+          flexibleSpace: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    t.bg.withValues(alpha: 0.92),
+                    t.bg.withValues(alpha: 0.55),
+                    t.bg.withValues(alpha: 0.0),
+                  ],
+                  stops: const [0.0, 0.6, 1.0],
+                ),
+              ),
+            ),
+          ),
           title: _tabIndex == 0
               ? GestureDetector(
                   onTap: _abrirColeccion,
