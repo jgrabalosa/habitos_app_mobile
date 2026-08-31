@@ -5,6 +5,7 @@ import '../services/api_service_habitos.dart';
 import '../services/analytics_service.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/habito.dart';
@@ -35,6 +36,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<Map<String, dynamic>> _flexibles = [];
   int _diaSeleccionado = 0;
   int _indiceHoy = 0;
+
+  /// Qué semana se está mirando: 0 es la de hoy, -1 la anterior, +1 la
+  /// siguiente. Sin límite a propósito: cada semana es una sola llamada, el
+  /// backend acepta cualquier lunes, y una flecha apagada sin motivo visible
+  /// confunde más de lo que protege. El freno es el botón de volver a hoy.
+  int _offsetSemana = 0;
 
   /// Si la última carga falló. Antes esto sólo era un SnackBar que se iba solo
   /// y una lista vacía detrás, que se lee igual que "no tienes hábitos": el
@@ -77,7 +84,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   /// uno ya lo pone [_cargarHabitos] si el fallo es de red en general.
   Future<void> _cargarSemana() async {
     try {
-      final data = await ApiServiceHabitos.getSemana(_usuarioId);
+      final lunesBase = DateTime.now().add(Duration(days: 7 * _offsetSemana));
+      final desde = lunesBase.toIso8601String().split('T')[0];
+      final data = await ApiServiceHabitos.getSemana(_usuarioId, desde: desde);
 
       final List<Map<String, dynamic>> dias =
           (data['dias'] as List<dynamic>).map<Map<String, dynamic>>((dia) {
@@ -106,13 +115,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
       setState(() {
         _dias = dias;
         _flexibles = flexibles;
-        _indiceHoy = indiceHoy >= 0 ? indiceHoy : 0;
-        _diaSeleccionado = _indiceHoy;
+        // -1 significa "hoy no está en esta semana", y hay que distinguirlo
+        // de "hoy es el lunes". Con el 0 de antes, el lunes de otra semana se
+        // comportaba como hoy.
+        _indiceHoy = indiceHoy;
+        _diaSeleccionado = indiceHoy >= 0 ? indiceHoy : 0;
       });
       _publicarProgreso();
     } catch (_) {
       // Ver comentario del método: Hoy no depende de esto.
     }
+  }
+
+  /// Cambia de semana. Recarga sólo la semana: los hábitos de hoy no dependen
+  /// de qué semana se esté mirando.
+  Future<void> _irASemana(int offset) async {
+    setState(() => _offsetSemana = offset);
+    await _cargarSemana();
   }
 
   Future<void> _cargarEstadoResena() async {
@@ -355,6 +374,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final List<Map<String, dynamic>> habitosDelDiaSeleccionado =
         semanaLista ? (_dias[_diaSeleccionado]['habitos'] as List<Map<String, dynamic>>) : const [];
 
+    // Futuro es estrictamente posterior a hoy: hoy mismo no es futuro. Ambas
+    // fechas normalizadas a medianoche para que la hora del reloj no decida.
+    final DateTime hoySinHora = () {
+      final ahora = DateTime.now();
+      return DateTime(ahora.year, ahora.month, ahora.day);
+    }();
+    final DateTime fechaSeleccionadaSinHora = () {
+      final fecha = _fechaSeleccionada();
+      return DateTime(fecha.year, fecha.month, fecha.day);
+    }();
+    final bool esFuturo = fechaSeleccionadaSinHora.isAfter(hoySinHora);
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final areaSize = constraints.biggest;
@@ -378,11 +409,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           // nada —ya sabes dónde estás por la pestaña marcada—
                           // y la altura que libera es justo donde tiene que
                           // respirar la constelación.
-                          Text(_tituloDelDia(context, l, viendoHoy),
-                              style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w700,
-                                  color: t.text)),
+                          Row(
+                            children: [
+                              // Las flechas van aquí y no en la tira porque la
+                              // tira es un Row de siete Expanded sin holgura, y
+                              // deslizar tampoco vale: el PageView del shell ya
+                              // se queda el arrastre horizontal para cambiar de
+                              // pestaña.
+                              IconButton(
+                                icon: const Icon(LucideIcons.chevronLeft),
+                                iconSize: 20,
+                                visualDensity: VisualDensity.compact,
+                                color: t.textMuted,
+                                onPressed: () => _irASemana(_offsetSemana - 1),
+                              ),
+                              Flexible(
+                                child: Text(_tituloDelDia(context, l, viendoHoy),
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w700,
+                                        color: t.text)),
+                              ),
+                              IconButton(
+                                icon: const Icon(LucideIcons.chevronRight),
+                                iconSize: 20,
+                                visualDensity: VisualDensity.compact,
+                                color: t.textMuted,
+                                onPressed: () => _irASemana(_offsetSemana + 1),
+                              ),
+                              // Sólo aparece cuando te has ido de esta semana:
+                              // con dos flechas es fácil perderse tres semanas
+                              // atrás, y volver no debe costar tres toques.
+                              if (_offsetSemana != 0)
+                                TextButton(
+                                  onPressed: () => _irASemana(0),
+                                  child: Text(l.navHoy),
+                                ),
+                            ],
+                          ),
                           if (viendoHoy && totalHoy > 0) ...[
                             const SizedBox(height: 4),
                             Text(
@@ -474,7 +538,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   )
                 else
                   ...habitosDelDiaSeleccionado.map((item) => _habitoCardOtroDia(
-                      l, item['habito'] as Habito, item['completado'] as bool, t)),
+                      l, item['habito'] as Habito, item['completado'] as bool, t,
+                      esFuturo: esFuturo)),
               ],
             ),
           ),
@@ -655,12 +720,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   /// cualquier día. Sin mini-heatmap (es info de racha, no de "qué tocaba
   /// ese día") y con el check apagado y no tocable: sólo se completa hoy.
   Widget _habitoCardOtroDia(
-      AppLocalizations l, Habito h, bool completado, TokensContextuales t) {
+      AppLocalizations l, Habito h, bool completado, TokensContextuales t,
+      {required bool esFuturo}) {
     return AnimatedOpacity(
       duration: (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
           ? Duration.zero
           : const Duration(milliseconds: 400),
-      opacity: completado ? 0.80 : 1.0,
+      opacity: esFuturo ? 0.45 : (completado ? 0.80 : 1.0),
       child: TarjetaIdentidad(
         onTap: () async {
           await Navigator.push(
