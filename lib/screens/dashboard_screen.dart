@@ -374,15 +374,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(l.navHoy,
+                          // Una sola línea: el título grande no informaba de
+                          // nada —ya sabes dónde estás por la pestaña marcada—
+                          // y la altura que libera es justo donde tiene que
+                          // respirar la constelación.
+                          Text(_tituloDelDia(context, l, viendoHoy),
                               style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w800,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w700,
                                   color: t.text)),
-                          Text(_fechaDeHoy(context),
-                              style:
-                                  TextStyle(fontSize: 13, color: t.textMuted)),
-                          if (totalHoy > 0) ...[
+                          if (viendoHoy && totalHoy > 0) ...[
                             const SizedBox(height: 4),
                             Text(
                               _fraseProgreso(l, completados.length, totalHoy),
@@ -394,6 +395,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   color: completados.length == totalHoy
                                       ? t.successText
                                       : t.textMuted),
+                            ),
+                          ] else if (!viendoHoy &&
+                              habitosDelDiaSeleccionado.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              _fraseProgreso(
+                                  l,
+                                  habitosDelDiaSeleccionado
+                                      .where((h) => h['completado'] == true)
+                                      .length,
+                                  habitosDelDiaSeleccionado.length),
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: t.textMuted),
                             ),
                           ],
                         ],
@@ -470,12 +486,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  /// Fecha en el idioma activo. MMMMEEEEd resuelve por sí solo el orden y
-  /// las preposiciones de cada idioma ("miércoles, 4 de junio" / "Wednesday,
-  /// June 4"), que es justo lo que una plantilla fija no puede hacer.
-  String _fechaDeHoy(BuildContext context) {
+  /// El título de la cabecera: el día que se está mirando, no siempre hoy.
+  ///
+  /// En hoy pone «Hoy, 30 de agosto» y no «Hoy, domingo, 30 de agosto»: en
+  /// español `MMMMEEEEd` ya trae su propia coma y el día de la semana sobra
+  /// cuando decimos «Hoy». En cualquier otro día va el formato largo con la
+  /// inicial en mayúscula, porque `DateFormat` la devuelve en minúscula y
+  /// aquí es un título.
+  String _tituloDelDia(BuildContext context, AppLocalizations l, bool viendoHoy) {
     final locale = Localizations.localeOf(context).toLanguageTag();
-    return DateFormat.MMMMEEEEd(locale).format(DateTime.now());
+    final fecha = _fechaSeleccionada();
+
+    if (viendoHoy) {
+      return '${l.navHoy}, ${DateFormat.MMMMd(locale).format(fecha)}';
+    }
+
+    final largo = DateFormat.MMMMEEEEd(locale).format(fecha);
+    return largo.isEmpty ? largo : largo[0].toUpperCase() + largo.substring(1);
+  }
+
+  /// La fecha del día seleccionado en la tira. Sin semana cargada, hoy: es
+  /// el mismo criterio que usa `_publicarProgreso`.
+  DateTime _fechaSeleccionada() {
+    if (_dias.isEmpty) return DateTime.now();
+    return DateTime.parse(_dias[_diaSeleccionado]['fecha'] as String);
   }
 
   String _fraseProgreso(AppLocalizations l, int hechos, int total) {
