@@ -168,10 +168,10 @@ title: Hero(
           Icon(LucideIcons.repeat, size: 14, color: t.textMuted),
           const SizedBox(width: 6),
           Text(texto,
-              style: TextStyle(
-                  fontSize: 13,
-                  color: t.textMuted,
-                  fontWeight: FontWeight.w500)),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: t.textMuted)),
         ],
       ),
     );
@@ -227,12 +227,17 @@ title: Hero(
               const SizedBox(width: 6),
               Text(
                 valor.toStringAsFixed(1).replaceAll('.', ','),
-                style: TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold, color: t.text),
+                style: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.copyWith(color: t.text),
               ),
               const SizedBox(width: 6),
               Text(l.detSatisfaccion,
-                  style: TextStyle(fontSize: 12, color: t.textMuted)),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: t.textMuted)),
             ],
           ),
         ),
@@ -254,10 +259,15 @@ title: Hero(
               Icon(icono, size: 18, color: color),
               const SizedBox(height: 4),
               Text(valor,
-                  style: TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineSmall
+                      ?.copyWith(color: color)),
               Text(label,
-                  style: TextStyle(fontSize: 10, color: t.textMuted),
+                  style: Theme.of(context)
+                      .textTheme
+                      .labelSmall
+                      ?.copyWith(color: t.textMuted),
                   textAlign: TextAlign.center),
             ],
           ),
@@ -302,7 +312,7 @@ title: Hero(
                 Text(
                     DateFormat.yMMMM(Localizations.localeOf(context).toLanguageTag())
                         .format(_mesActual),
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                    style: Theme.of(context).textTheme.titleMedium),
                 IconButton(
                   icon: const Icon(LucideIcons.chevronRight),
                   onPressed: _esMesActual ? null : () => _cambiarMes(1),
@@ -316,10 +326,10 @@ title: Hero(
                   .map((d) => Expanded(
                         child: Text(d,
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: t.textMuted)),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(color: t.textMuted)),
                       ))
                   .toList(),
             ),
@@ -367,15 +377,20 @@ title: Hero(
             if (_diaSeleccionado != null)
               Text(
                 _infoDia(_diaSeleccionado!, meta, conNiveles),
-                style: TextStyle(
-                    fontSize: 12, fontWeight: FontWeight.w600, color: t.text),
+                style: Theme.of(context)
+                    .textTheme
+                    .labelMedium
+                    ?.copyWith(color: t.text),
               )
             else
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text('${l.detMenos} ',
-                      style: TextStyle(fontSize: 10, color: t.textMuted)),
+                      style: Theme.of(context)
+                          .textTheme
+                          .labelSmall
+                          ?.copyWith(color: t.textMuted)),
                   ...[
                     t.surface2,
                     if (conNiveles) t.primary.withValues(alpha: 0.35),
@@ -392,7 +407,10 @@ title: Hero(
                             color: c, llena: c != t.surface2, esHoy: false),
                       )),
                   Text(' ${l.detMas}',
-                      style: TextStyle(fontSize: 10, color: t.textMuted)),
+                      style: Theme.of(context)
+                          .textTheme
+                          .labelSmall
+                          ?.copyWith(color: t.textMuted)),
                 ],
               ),
           ],
@@ -425,8 +443,10 @@ title: Hero(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(l.detUltimosRegistros,
-                style: TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 16, color: t.text)),
+                style: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.copyWith(color: t.text)),
             const SizedBox(height: 8),
             if (registros.isEmpty)
               Center(
@@ -438,13 +458,16 @@ title: Hero(
                           size: 36, color: tokens(context).textMuted),
                       const SizedBox(height: 8),
                       Text(l.detVacioTitulo,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: tokens(context).text)),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(color: tokens(context).text)),
                       Text(l.detVacioRegistro,
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 12, color: tokens(context).textMuted)),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: tokens(context).textMuted)),
                     ],
                   ),
                 ),
@@ -460,9 +483,10 @@ title: Hero(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(r['fecha'],
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: t.text)),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(color: t.text)),
                               if (r['valoracion'] != null)
                                 Row(
                                   children: List.generate(5, (i) => Icon(
@@ -475,8 +499,10 @@ title: Hero(
                                 ),
                               if (r['nota'] != null && r['nota'].toString().isNotEmpty)
                                 Text(r['nota'],
-                                    style: TextStyle(
-                                        fontSize: 12, color: t.textMuted)),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(color: t.textMuted)),
                             ],
                           ),
                         ),

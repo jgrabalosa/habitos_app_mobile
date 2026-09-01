@@ -101,9 +101,14 @@ class ChipIdentidad extends StatelessWidget {
 /// nota si se queda genérica. Lo que cambia es la forma del indicador de la
 /// pestaña activa y el color de lo seleccionado; la barra en sí sigue siendo
 /// una `NavigationBar` de Material, con su comportamiento y su accesibilidad.
+///
+/// El estilo base de las etiquetas lo resuelve el llamante, que es quien
+/// tiene contexto: aquí sólo se le añaden el peso y el color que dependen
+/// del estado.
 NavigationBarThemeData barraNavegacionIdentidad(
   IdentidadPaleta id,
   TokensContextuales t,
+  TextStyle? estiloEtiqueta,
 ) {
   final ({ShapeBorder forma, Color color}) indicador = switch (id.forma) {
     // Profundidad — pastilla redondeada con el radio de la identidad.
@@ -145,8 +150,7 @@ NavigationBarThemeData barraNavegacionIdentidad(
       ),
     ),
     labelTextStyle: WidgetStateProperty.resolveWith(
-      (estados) => TextStyle(
-        fontSize: 12,
+      (estados) => (estiloEtiqueta ?? const TextStyle()).copyWith(
         fontWeight: estados.contains(WidgetState.selected)
             ? FontWeight.w700
             : FontWeight.w500,

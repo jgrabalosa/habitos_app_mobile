@@ -65,10 +65,10 @@ class TiraSemana extends StatelessWidget {
                 children: [
                   Text(
                     nombreDia.toUpperCase(),
-                    style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: t.textMuted),
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleSmall
+                        ?.copyWith(color: t.textMuted),
                   ),
                   const SizedBox(height: 6),
                   AnimatedContainer(
@@ -91,8 +91,7 @@ class TiraSemana extends StatelessWidget {
                     ),
                     child: Text(
                       '${fecha.day}',
-                      style: TextStyle(
-                        fontSize: 13,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: (seleccionado || esHoy)
                             ? FontWeight.w800
                             : FontWeight.w600,

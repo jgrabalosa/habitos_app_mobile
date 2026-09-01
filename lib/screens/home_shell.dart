@@ -255,14 +255,12 @@ class _HomeShellState extends State<HomeShell> {
                       const SizedBox(width: 10),
                       Flexible(
                         child: Text(_nombre,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            overflow: TextOverflow.ellipsis),
                       ),
                     ],
                   ),
                 )
-              : Text(titulos[_tabIndex],
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              : Text(titulos[_tabIndex]),
           actions: [
             IconButton(
               tooltip: l.navColeccion,
@@ -427,7 +425,8 @@ class _HomeShellState extends State<HomeShell> {
         // Lo único de la app que se ve en todo momento: la forma del indicador
         // y el color de lo activo salen de la identidad equipada.
         bottomNavigationBar: NavigationBarTheme(
-          data: barraNavegacionIdentidad(identidad(context), t),
+          data: barraNavegacionIdentidad(
+              identidad(context), t, Theme.of(context).textTheme.labelMedium),
           child: NavigationBar(
             selectedIndex: _tabIndex,
             onDestinationSelected: _irAPestana,

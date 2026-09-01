@@ -199,8 +199,8 @@ class _HabitosScreenState extends State<HabitosScreen> {
               : t.textMuted.withValues(alpha: 0.35),
         ),
       ) as OutlinedBorder,
-      labelStyle: TextStyle(
-          color: selected ? t.primary : t.textMuted, fontWeight: FontWeight.w600),
+      labelStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
+          color: selected ? t.primary : t.textMuted),
     );
   }
 
@@ -251,8 +251,10 @@ class _HabitosScreenState extends State<HabitosScreen> {
                     Text(habito.nombre,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, color: t.text)),
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(color: t.text)),
                     const SizedBox(height: 4),
                     Text(
                       l.habitosSubtitulo(
@@ -262,7 +264,10 @@ class _HabitosScreenState extends State<HabitosScreen> {
                                 habito.categoriaCodigo, habito.categoriaNombre!),
                         total,
                       ),
-                      style: TextStyle(color: t.textMuted, fontSize: 12),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(color: t.textMuted),
                     ),
                   ],
                 ),

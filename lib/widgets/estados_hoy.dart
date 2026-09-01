@@ -186,12 +186,17 @@ class _PanelEstado extends StatelessWidget {
             const SizedBox(height: 14),
             Text(titulo,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 16, color: t.text)),
+                style: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.copyWith(color: t.text)),
             const SizedBox(height: 6),
             Text(cuerpo,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13, color: t.textMuted)),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: t.textMuted)),
             if (accion != null) ...[
               const SizedBox(height: 16),
               accion!,
@@ -251,12 +256,17 @@ class TarjetaTodoHecho extends StatelessWidget {
             const SizedBox(height: 10),
             Text(l.dashTodoHecho,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontWeight: FontWeight.w800, fontSize: 18, color: t.text)),
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineSmall
+                    ?.copyWith(color: t.text)),
             const SizedBox(height: 4),
             Text(l.dashDisfruta,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13, color: t.textMuted)),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: t.textMuted)),
           ],
         ),
       ),

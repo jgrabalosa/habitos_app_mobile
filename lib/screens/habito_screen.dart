@@ -314,7 +314,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(l.habDiasSemana,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         Row(
           children: List.generate(7, (i) {
@@ -336,8 +336,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                       alignment: Alignment.center,
                       child: Text(
                         _etiquetasDias[i],
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color: activo ? Colors.white : t.textMuted,
                         ),
                       ),
@@ -353,7 +352,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
           _diasSeleccionados.isEmpty
               ? l.habDiasAyudaSin
               : l.habDiasAyudaCon,
-          style: TextStyle(fontSize: 12, color: t.textMuted),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: t.textMuted),
         ),
       ],
     );
@@ -379,7 +378,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
               children: [
                 if (!_esEdicion && _plantillasDisponibles.isNotEmpty) ...[
                   Text(l.habRecomendados,
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                      style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 8),
                   SizedBox(
                     height: 56,
@@ -467,8 +466,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                     children: [
                       Text(l.habMeta),
                       Text(l.habDiasSemanaMeta(_diasSeleccionados.length),
-                          style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold)),
+                          style: Theme.of(context).textTheme.titleLarge),
                     ],
                   )
                 else
@@ -479,7 +477,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                         icon: const Icon(LucideIcons.minus),
                         onPressed: () => setState(() { if (_meta > 1) _meta--; }),
                       ),
-                      Text('$_meta', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text('$_meta', style: Theme.of(context).textTheme.headlineSmall),
                       IconButton(
                         icon: const Icon(LucideIcons.plus),
                         onPressed: () => setState(() { _meta++; }),
@@ -534,7 +532,10 @@ class _HabitoScreenState extends State<HabitoScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: Text(l.habBotonEliminar,
-                          style: TextStyle(color: Colors.red, fontSize: 16)),
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelLarge
+                              ?.copyWith(color: Colors.red)),
                     ),
                   ),
                 ],

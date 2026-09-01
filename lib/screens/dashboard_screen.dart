@@ -446,10 +446,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ),
                               Flexible(
                                 child: Text(_tituloDelDia(context, l, viendoHoy),
-                                    style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w700,
-                                        color: t.text)),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineMedium
+                                        ?.copyWith(color: t.text)),
                               ),
                               IconButton(
                                 icon: const Icon(LucideIcons.chevronRight),
@@ -472,9 +472,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             const SizedBox(height: 4),
                             Text(
                               _fraseProgreso(l, completados.length, totalHoy),
-                              style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
+                              style: Theme.of(context).textTheme.labelMedium?.copyWith(
                                   // Va como texto, no como relleno: el verde
                                   // del tema claro no contrasta ahí.
                                   color: completados.length == totalHoy
@@ -491,10 +489,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       .where((h) => h['completado'] == true)
                                       .length,
                                   habitosDelDiaSeleccionado.length),
-                              style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: t.textMuted),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelMedium
+                                  ?.copyWith(color: t.textMuted),
                             ),
                           ],
                         ],
@@ -543,9 +541,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     if (completados.isNotEmpty) ...[
                       const SizedBox(height: 16),
                       Text(l.dashCompletados,
-                          style: TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.w800,
-                              letterSpacing: 1, color: t.textMuted)),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(color: t.textMuted)),
                       const SizedBox(height: 8),
                       ...completados.map((h) => _habitoCard(l, h, true, t)),
                     ],
@@ -657,8 +656,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     // línea el chip les comía media frase.
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
                                       decoration: hecho
                                           ? TextDecoration.lineThrough
                                           : null,
@@ -704,11 +705,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(l.dashFlexiblesTitulo,
-            style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1,
-                color: t.textMuted)),
+            style: Theme.of(context)
+                .textTheme
+                .titleSmall
+                ?.copyWith(color: t.textMuted)),
         const SizedBox(height: 8),
         ..._flexibles.map((item) {
           final habito = item['habito'] as Habito;
@@ -722,7 +722,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Text(habito.nombre,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontWeight: FontWeight.w600, color: t.text)),
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(color: t.text)),
                 ),
                 const SizedBox(width: 8),
                 ChipIdentidad(
@@ -770,8 +773,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       child: Text(h.nombre,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             decoration:
                                 completado ? TextDecoration.lineThrough : null,
                             color: completado ? t.textMuted : t.text,
