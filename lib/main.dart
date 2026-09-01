@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/foundation.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import 'l10n/app_localizations.dart';
@@ -11,6 +14,32 @@ import 'screens/home_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Las nueve familias van empaquetadas en `google_fonts/`, así que no hay
+  // que salir a la red a por ellas. Con esto, un fichero que falte deja de
+  // ser un fallo invisible —la fuente del sistema en su lugar— y pasa a
+  // gritar en consola con el nombre exacto del que falta.
+  GoogleFonts.config.allowRuntimeFetching = false;
+
+  // La OFL obliga a distribuir la licencia con la fuente. Una por familia:
+  // los nombres llevan sufijo porque los nueve ficheros originales se llaman
+  // igual y se pisarían al estar todos en la misma carpeta.
+  LicenseRegistry.addLicense(() async* {
+    for (final familia in const [
+      'Caveat',
+      'Chakra_Petch',
+      'Fraunces',
+      'IBM_Plex_Sans',
+      'Manrope',
+      'Nunito',
+      'Quicksand',
+      'Space_Grotesk',
+      'Work_Sans',
+    ]) {
+      final texto = await rootBundle.loadString('google_fonts/OFL-$familia.txt');
+      yield LicenseEntryWithLineBreaks(['google_fonts'], texto);
+    }
+  });
+
   await Firebase.initializeApp();
   // Lo primero tras Firebase: si algo de lo de abajo revienta, ya hay red.
   await CrashlyticsService.inicializar();
