@@ -572,9 +572,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       AnilloProgreso(
                         actual: completados.length,
                         total: totalHoy,
-                        color: t.primary,
-                        colorPista: t.inactivo,
-                        colorTexto: t.text,
                       ),
                   ],
                 ),
