@@ -308,6 +308,76 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  /// Deshace el último completado de hoy.
+  ///
+  /// El `registroId` no viaja en el dashboard —`DashboardHabitoDTO` no lo
+  /// lleva— así que se pide en el momento. Es una acción rara, y así no hay un
+  /// id guardado que se quede rancio si el hábito se completó desde otro sitio.
+  Future<void> _deshacer(int habitoId) async {
+    final l = AppLocalizations.of(context)!;
+    final hoy = DateTime.now().toIso8601String().split('T')[0];
+
+    // Estado previo, para poder volver si el servidor dice que no.
+    final p = _progreso[habitoId];
+    final int completadosAntes = p?['completadosPeriodo'] ?? 0;
+    final bool completadoHoyAntes = p?['completadoHoy'] == true;
+    final bool teniaFechaHoy =
+        _fechasCompletadas[habitoId]?.contains(hoy) ?? false;
+
+    // Apagado local inmediato: el usuario ha tocado un check marcado y lo que
+    // espera es verlo apagarse, no esperar a la red.
+    if (p != null) {
+      p['completadoHoy'] = false;
+      p['completadosPeriodo'] = completadosAntes > 0 ? completadosAntes - 1 : 0;
+    }
+    _fechasCompletadas[habitoId]?.remove(hoy);
+    setState(() {});
+    _publicarProgreso();
+    HapticFeedback.selectionClick();
+
+    try {
+      final registros = await ApiServiceHabitos.getRegistrosHabito(habitoId);
+      int? ultimo;
+      for (final r in registros) {
+        final int id = r['registroId'];
+        if (ultimo == null || id > ultimo) ultimo = id;
+      }
+      if (ultimo == null) {
+        throw Exception('El hábito no tiene registros que deshacer');
+      }
+      await ApiServiceHabitos.deshacerRegistro(ultimo);
+    } catch (e) {
+      // El completado sigue vivo en el servidor: se restaura lo local.
+      if (p != null) {
+        p['completadoHoy'] = completadoHoyAntes;
+        p['completadosPeriodo'] = completadosAntes;
+      }
+      if (teniaFechaHoy) _fechasCompletadas[habitoId]?.add(hoy);
+      if (!mounted) return;
+      setState(() {});
+      _publicarProgreso();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              MensajesError.de(context, e, generico: l.dashDeshacerError)),
+        ),
+      );
+      return;
+    }
+
+    // Deshacer devuelve experiencia a la mascota y rehace la racha: quien la
+    // esté pintando no se entera solo.
+    solicitarRefrescoMascota();
+
+    // Y el servidor manda sobre el conteo optimista, igual que al completar.
+    ApiServiceHabitos.getProgresoHoy(habitoId).then((prog) {
+      if (mounted) {
+        setState(() { _progreso[habitoId] = prog; });
+        _publicarProgreso();
+      }
+    }).catchError((_) {});
+  }
+
   Future<void> _solicitarResena() async {
     try {
       final InAppReview inAppReview = InAppReview.instance;
@@ -688,9 +758,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 CheckCircular(
                   hecho: hecho,
                   onTap: () => _completar(h.habitoId),
+                  onDeshacer: () => _deshacer(h.habitoId),
                   color: t.primary,
                   colorVacio: t.surface2,
                   etiquetaSemantica: l.a11yCompletarHabito(h.nombre),
+                  etiquetaSemanticaDeshacer: l.a11yDeshacerHabito(h.nombre),
                 ),
               ],
             ),

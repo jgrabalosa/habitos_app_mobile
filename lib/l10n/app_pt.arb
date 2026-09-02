@@ -166,5 +166,14 @@
       }
     }
   },
-  "a11yCargando": "Carregando hábitos"
+  "a11yCargando": "Carregando hábitos",
+  "a11yDeshacerHabito": "Desfazer {nombre}",
+  "@a11yDeshacerHabito": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "dashDeshacerError": "Não foi possível desfazer esta conclusão."
 }

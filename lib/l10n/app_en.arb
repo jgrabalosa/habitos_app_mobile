@@ -166,5 +166,14 @@
       }
     }
   },
-  "a11yCargando": "Loading habits"
+  "a11yCargando": "Loading habits",
+  "a11yDeshacerHabito": "Undo {nombre}",
+  "@a11yDeshacerHabito": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "dashDeshacerError": "This entry could not be undone."
 }

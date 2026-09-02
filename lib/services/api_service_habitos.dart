@@ -143,6 +143,18 @@ class ApiServiceHabitos {
     return ApiServiceCore.parsear(() => jsonDecode(response.body) as List<dynamic>);
   }
 
+  /// Deshace un completado. El backend sólo lo permite si es el último
+  /// registro del hábito, si es de hoy en la zona del hábito, y si guardó su
+  /// reversión; en los tres casos contrarios responde 409.
+  static Future<void> deshacerRegistro(int registroId) async {
+    final headers = await ApiServiceCore.getHeaders();
+    final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.delete(
+          Uri.parse('$_baseUrl/registros/$registroId'),
+          headers: headers,
+        ));
+    ApiServiceCore.verificar(response);
+  }
+
   static Future<Map<String, dynamic>> completarHabito(int habitoId,
       {String nota = ''}) async {
     final headers = await ApiServiceCore.getHeaders();

@@ -251,5 +251,14 @@
       }
     }
   },
-  "a11yCargando": "Cargando hábitos"
+  "a11yCargando": "Cargando hábitos",
+  "a11yDeshacerHabito": "Deshacer {nombre}",
+  "@a11yDeshacerHabito": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "dashDeshacerError": "No se ha podido deshacer este completado."
 }
