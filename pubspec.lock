@@ -625,7 +625,7 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: main
+      ref: "v0.1.0"
       resolved-ref: b8ae8a7fe3f3669f36d8917b3c3476ed1a97addd
       url: "https://github.com/jgrabalosa/norday_flutter_core.git"
     source: git
