@@ -400,7 +400,7 @@ class _HomeShellState extends State<HomeShell> {
           // se encogería a su tamaño mínimo.
           fit: StackFit.expand,
           children: [
-            const Positioned.fill(child: FondoEstelar()),
+            const Positioned.fill(child: FondoIdentidad()),
             // `extendBodyBehindAppBar` ya mete la altura del AppBar en el
             // padding del MediaQuery del body, así que este SafeArea aparta
             // la barra de estado Y el AppBar. Añadir aquí kToolbarHeight
@@ -419,7 +419,7 @@ class _HomeShellState extends State<HomeShell> {
             // tapaban las tarjetas. Se pinta con luz aditiva, así que no puede
             // oscurecer nada de lo que queda debajo. Lleva IgnorePointer
             // dentro, así que no roba los toques de las tarjetas.
-            const Positioned.fill(child: CapaConstelacion()),
+            const Positioned.fill(child: CapaProgresoIdentidad()),
           ],
         ),
         // Lo único de la app que se ve en todo momento: la forma del indicador

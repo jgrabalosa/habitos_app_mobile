@@ -626,7 +626,7 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: "534bdaa706f512bbd57fb689b77ecbaf597c399b"
+      resolved-ref: "77f61c419a867a73d8fcadff1c4691437ac500a8"
       url: "https://github.com/jgrabalosa/norday_flutter_core.git"
     source: git
     version: "0.1.0"
