@@ -337,7 +337,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                       child: Text(
                         _etiquetasDias[i],
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: activo ? Colors.white : t.textMuted,
+                          color: activo ? t.tinta : t.textMuted,
                         ),
                       ),
                     ),
@@ -517,7 +517,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                   child: ElevatedButton(
                     onPressed: _loading ? null : _guardar,
                     child: _loading
-                        ? const CircularProgressIndicator(color: Colors.white)
+                        ? CircularProgressIndicator(color: t.tinta)
                         : Text(_esEdicion ? l.habBotonActualizar : l.habBotonCrear),
                   ),
                 ),
