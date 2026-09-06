@@ -104,7 +104,6 @@
   "detCompletado": "Completado",
   "detUltimosRegistros": "Últimos registros",
   "detVacioTitulo": "Tu historia empieza hoy",
-  "detVacioSubtitulo": "Completa este hábito y aquí verás tu progreso.",
   "detSemanalUnDia": "1 día/semana",
   "detDiarioMeta": "Diario · meta {n}/día",
   "@detDiarioMeta": {
