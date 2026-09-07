@@ -288,12 +288,20 @@ title: Hero(
     final t = tokens(context);
     final id = identidad(context);
 
+    // El cuarto escalón —meta superada— se mezcla hacia `t.text`, no hacia
+    // negro ni hacia blanco: en Profundidad y Neotokyo+ el texto es claro
+    // sobre fondo oscuro, así que sale MÁS CLARO que el primario; en Dulce y
+    // Alba es oscuro sobre fondo claro, así que sale MÁS OSCURO. La dirección
+    // se corrige sola y no hace falta un token nuevo. Al 50% la separación
+    // frente al primario va de 1.37 (Profundidad) a 2.07 (Dulce).
+    final superada = Color.lerp(t.primary, t.text, 0.5)!;
+
     Color colorDia(int veces) {
       if (veces == 0) return t.surface2;
       if (!conNiveles) return t.primary;
       if (veces < meta) return t.primary.withValues(alpha: 0.35);
       if (veces == meta) return t.primary;
-      return AppColors.primaryDark; // superada
+      return superada;
     }
 
     return TarjetaIdentidad(
@@ -395,7 +403,7 @@ title: Hero(
                     t.surface2,
                     if (conNiveles) t.primary.withValues(alpha: 0.35),
                     t.primary,
-                    if (conNiveles) AppColors.primaryDark,
+                    if (conNiveles) superada,
                   ].map((c) => Container(
                         width: 10,
                         height: 10,
