@@ -400,19 +400,27 @@ class _HomeShellState extends State<HomeShell> {
           // se encogería a su tamaño mínimo.
           fit: StackFit.expand,
           children: [
-            const Positioned.fill(child: FondoIdentidad()),
+            const Positioned.fill(
+              key: ValueKey('fondo'),
+              child: FondoIdentidad(),
+            ),
             // La constelación va DELANTE del contenido, no detrás: detrás la
             // tapaban las tarjetas. Se pinta con luz aditiva, así que no puede
             // oscurecer nada de lo que queda debajo. Lleva IgnorePointer
             // dentro, así que no roba los toques de las tarjetas.
             // En Mascota no hay tarjetas que tapar, y detrás es donde se ve
             // bien detrás de Nori.
-            if (_tabIndex == 1) const Positioned.fill(child: CapaProgresoIdentidad()),
+            if (_tabIndex == 1)
+              const Positioned.fill(
+                key: ValueKey('constelacion'),
+                child: CapaProgresoIdentidad(),
+              ),
             // `extendBodyBehindAppBar` ya mete la altura del AppBar en el
             // padding del MediaQuery del body, así que este SafeArea aparta
             // la barra de estado Y el AppBar. Añadir aquí kToolbarHeight
             // reservaba el mismo espacio dos veces.
             SafeArea(
+              key: const ValueKey('paginas'),
               child: PageView(
                 controller: _pageController,
                 onPageChanged: (i) => setState(() => _tabIndex = i),
@@ -422,7 +430,11 @@ class _HomeShellState extends State<HomeShell> {
                 children: [for (final tab in tabs) _MantenerVivo(child: tab)],
               ),
             ),
-            if (_tabIndex != 1) const Positioned.fill(child: CapaProgresoIdentidad()),
+            if (_tabIndex != 1)
+              const Positioned.fill(
+                key: ValueKey('constelacion'),
+                child: CapaProgresoIdentidad(),
+              ),
           ],
         ),
         // Lo único de la app que se ve en todo momento: la forma del indicador
