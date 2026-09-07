@@ -13,19 +13,6 @@ class ApiServiceHabitos {
   static const String _baseUrl = ApiServiceCore.baseUrl;
 
   // ── Hábitos ────────────────────────────────────────────
-  static Future<List<Habito>> getHabitosActivos(int usuarioId) async {
-    final headers = await ApiServiceCore.getHeaders();
-    final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.get(
-          Uri.parse('$_baseUrl/habitos/usuario/$usuarioId/activos'),
-          headers: headers,
-        ));
-    ApiServiceCore.verificar(response);
-    return ApiServiceCore.parsear(() {
-      final List<dynamic> data = jsonDecode(response.body);
-      return data.map((json) => Habito.fromJson(json)).toList();
-    });
-  }
-
   static Future<Habito> getHabito(int habitoId) async {
     final headers = await ApiServiceCore.getHeaders();
     final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.get(
@@ -111,16 +98,6 @@ class ApiServiceHabitos {
           body: jsonEncode({'nota': nota}),
         ));
     ApiServiceCore.verificar(response);
-  }
-
-  static Future<bool> estaCompletadoHoy(int habitoId) async {
-    final headers = await ApiServiceCore.getHeaders();
-    final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.get(
-          Uri.parse('$_baseUrl/registros/habito/$habitoId/hoy'),
-          headers: headers,
-        ));
-    ApiServiceCore.verificar(response);
-    return ApiServiceCore.parsear(() => jsonDecode(response.body)['completadoHoy'] as bool);
   }
 
   static Future<Map<String, dynamic>> getProgresoHoy(int habitoId) async {
