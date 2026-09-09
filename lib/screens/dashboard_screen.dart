@@ -72,6 +72,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   /// Los hábitos han cambiado en otra pestaña. Se recarga todo, no sólo la
   /// lista de hoy: dar de alta un hábito cambia también la tira de la semana.
+  /// Mientras la carga inicial está en vuelo, `_publicarProgreso` no publica.
+  ///
+  /// `_cargarDatos` lanza tres cargas en paralelo y dos de ellas publican al
+  /// terminar: `_cargarSemana` y `_cargarHabitos`. Es una carrera, y si gana
+  /// la semana el estado que se publica es `_dias` lleno con `_habitos` aún
+  /// vacío, o sea `total: 0`. Con `total` a cero la constelación no dibuja
+  /// nada, las burbujas de Dulce ninguna y la ciudad apaga las ventanas;
+  /// cuando llegan los hábitos se publica otra vez y el fondo entero aparece
+  /// de golpe. Ese es el parpadeo.
+  ///
+  /// No se quitan las llamadas de dentro de cada carga porque `_irASemana` y
+  /// el reintento del panel de error las llaman por su cuenta y sí deben
+  /// publicar.
+  bool _cargaInicialEnVuelo = false;
+
   void _alCambiarHabitos() {
     if (!mounted) return;
     _cargarDatos();
@@ -85,11 +100,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
     // En paralelo: el estado de reseña no depende de los hábitos, y la
     // semana es un complemento de navegación, no una dependencia de Hoy.
-    await Future.wait([
-      _cargarHabitos(),
-      _cargarEstadoResena(),
-      _cargarSemana(),
-    ]);
+    _cargaInicialEnVuelo = true;
+    try {
+      await Future.wait([
+        _cargarHabitos(),
+        _cargarEstadoResena(),
+        _cargarSemana(),
+      ]);
+    } finally {
+      // En `finally` a propósito: las tres cargas capturan sus propios
+      // errores, pero si alguna dejara escapar uno, el cerrojo no puede
+      // quedarse echado o la pantalla no volvería a publicar nunca.
+      _cargaInicialEnVuelo = false;
+      _publicarProgreso();
+    }
   }
 
   /// La semana completa (lunes→domingo) para la tira de navegación y la fila
@@ -408,6 +432,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   /// `_dias`, que viene resuelta del backend: `_progreso` y
   /// `_fechasCompletadas` son de hoy y no valen para otro día.
   void _publicarProgreso() {
+    // Ver `_cargaInicialEnVuelo`: durante la carga inicial se publica una
+    // sola vez, al final, en vez de una por cada carga que acabe.
+    if (_cargaInicialEnVuelo) return;
+
     // Sin semana cargada la pantalla sólo enseña hoy, y no hay ninguna fecha
     // de la tira que consultar: la de hoy la pone el reloj.
     if (_dias.isEmpty) {
