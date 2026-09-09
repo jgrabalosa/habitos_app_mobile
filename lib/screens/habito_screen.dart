@@ -182,6 +182,11 @@ class _HabitoScreenState extends State<HabitoScreen> {
       final confirmar = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
+          // La forma de la identidad, igual que los tres diálogos del core.
+          // Sin esto sale con las esquinas de Material y es la única
+          // superficie de la app que no habla el idioma de la identidad.
+          shape: formaIdentidad(identidad(context),
+              radio: identidad(context).radioHero),
           title: Text(l.habCambiarFrecTitulo),
           content: Text(l.habCambiarFrecCuerpo),
           actions: [
@@ -267,6 +272,8 @@ class _HabitoScreenState extends State<HabitoScreen> {
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
+        shape: formaIdentidad(identidad(context),
+            radio: identidad(context).radioHero),
         title: Text(l.habEliminarTitulo),
         content: Text(l.habEliminarCuerpo),
         actions: [
