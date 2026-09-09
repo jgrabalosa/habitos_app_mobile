@@ -70,8 +70,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.dispose();
   }
 
-  /// Los hábitos han cambiado en otra pestaña. Se recarga todo, no sólo la
-  /// lista de hoy: dar de alta un hábito cambia también la tira de la semana.
   /// Mientras la carga inicial está en vuelo, `_publicarProgreso` no publica.
   ///
   /// `_cargarDatos` lanza tres cargas en paralelo y dos de ellas publican al
@@ -87,6 +85,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   /// publicar.
   bool _cargaInicialEnVuelo = false;
 
+  /// Los hábitos han cambiado en otra pestaña. Se recarga todo, no sólo la
+  /// lista de hoy: dar de alta un hábito cambia también la tira de la semana.
   void _alCambiarHabitos() {
     if (!mounted) return;
     _cargarDatos();
