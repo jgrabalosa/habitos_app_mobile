@@ -849,12 +849,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _habitoCardOtroDia(
       AppLocalizations l, Habito h, bool completado, TokensContextuales t,
       {required bool esFuturo}) {
-    return AnimatedOpacity(
-      duration: (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
-          ? Duration.zero
-          : const Duration(milliseconds: 400),
-      opacity: esFuturo ? 0.45 : (completado ? 0.80 : 1.0),
-      child: TarjetaIdentidad(
+    // La atenuación va SÓLO en el check, no en la tarjeta entera.
+    //
+    // Antes un `AnimatedOpacity` envolvía todo y apagaba también el texto:
+    // el nombre del hábito de un día futuro quedaba a 4.13 de contraste en
+    // Profundidad, 3.99 en Neotokyo+, 2.58 en Alba y 2.54 en Dulce, y su
+    // chip en `textMuted` bajaba a 3.26 / 2.17 / 1.89 / 2.00. Las ocho
+    // cifras fuera de AA, y estas filas SON pulsables —llevan al detalle—,
+    // así que no valía la exención de contenido deshabilitado. Subir el
+    // número tampoco servía: a 0.70 el `textMuted` sigue cayendo en tres de
+    // las cuatro identidades.
+    //
+    // Que un día no sea hoy ya lo dicen el check apagado y sin `onTap`, la
+    // tira de arriba, y —si está completado— la tachadura y el `textMuted`
+    // del propio texto. No hacía falta apagar la información.
+    return TarjetaIdentidad(
         onTap: () async {
           await Navigator.push(
             context,
@@ -888,9 +897,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              // Sólo se completa hoy: apagado y sin onTap en cualquier otro día.
-              Opacity(
-                opacity: 0.5,
+              // Sólo se completa hoy: apagado y sin onTap en cualquier otro
+              // día, y más apagado aún si el día ni siquiera ha llegado.
+              // El 0.25 reproduce lo que se veía antes, cuando el 0.5 de aquí
+              // se multiplicaba por el 0.45 del envoltorio.
+              AnimatedOpacity(
+                duration: (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
+                    ? Duration.zero
+                    : const Duration(milliseconds: 400),
+                opacity: esFuturo ? 0.25 : 0.5,
                 child: CheckCircular(
                   hecho: completado,
                   onTap: null,
@@ -900,7 +915,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           ),
         ),
-      ),
     );
   }
 
