@@ -540,29 +540,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                           if (viendoHoy && totalHoy > 0) ...[
                             const SizedBox(height: 4),
-                            Text(
-                              _fraseProgreso(l, completados.length, totalHoy),
-                              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                  // Va como texto, no como relleno: el verde
-                                  // del tema claro no contrasta ahí.
-                                  color: completados.length == totalHoy
-                                      ? t.successText
-                                      : t.textMuted),
+                            // La frase va en la superficie de la identidad, no
+                            // suelta: cristal en Profundidad, panel cortado en
+                            // Neotokyo+, post-it en Dulce, itálica desnuda en
+                            // Alba. El color sólo se fuerza al completar el
+                            // día, que es la única señal cromática de que ya
+                            // está todo hecho; el resto del tiempo pinta cada
+                            // forma el suyo.
+                            BurbujaContexto(
+                              texto: _fraseProgreso(
+                                  l, completados.length, totalHoy),
+                              color: completados.length == totalHoy
+                                  ? t.successText
+                                  : null,
                             ),
                           ] else if (!viendoHoy &&
                               habitosDelDiaSeleccionado.isNotEmpty) ...[
                             const SizedBox(height: 4),
-                            Text(
-                              _fraseProgreso(
+                            BurbujaContexto(
+                              texto: _fraseProgreso(
                                   l,
                                   habitosDelDiaSeleccionado
                                       .where((h) => h['completado'] == true)
                                       .length,
                                   habitosDelDiaSeleccionado.length),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelMedium
-                                  ?.copyWith(color: t.textMuted),
                             ),
                           ],
                         ],
