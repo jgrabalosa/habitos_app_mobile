@@ -756,7 +756,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   hecho: hecho,
                   onTap: () => _completar(h.habitoId),
                   onDeshacer: () => _deshacer(h.habitoId),
-                  color: t.primary,
+                  // El hábito hecho se pinta con `success`, no con `primary`:
+                  // `primary` es lo que se puede tocar y esto es lo que ya
+                  // está. En tres identidades son el mismo color y no cambia
+                  // nada; en Dulce, `success` es la salvia.
+                  color: t.success,
                   etiquetaSemantica: l.a11yCompletarHabito(h.nombre),
                   etiquetaSemanticaDeshacer: l.a11yDeshacerHabito(h.nombre),
                 ),
@@ -861,7 +865,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: CheckCircular(
                   hecho: completado,
                   onTap: null,
-                  color: t.primary,
+                  color: t.success,
                 ),
               ),
             ],
