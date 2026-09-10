@@ -15,6 +15,20 @@ import '../widgets/identidad_ui.dart';
 import '../widgets/tira_semana.dart';
 import 'habito_detalle_screen.dart';
 
+String formatearTituloDelDia({
+  required DateTime fecha,
+  required String locale,
+  required String textoHoy,
+  required bool viendoHoy,
+}) {
+  if (viendoHoy) {
+    return '$textoHoy, ${DateFormat.MMMMd(locale).format(fecha)}';
+  }
+
+  final largo = DateFormat.MMMMEEEEd(locale).format(fecha);
+  return largo.isEmpty ? largo : largo[0].toUpperCase() + largo.substring(1);
+}
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -676,14 +690,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   /// aquí es un título.
   String _tituloDelDia(BuildContext context, AppLocalizations l, bool viendoHoy) {
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final fecha = _fechaSeleccionada();
-
-    if (viendoHoy) {
-      return '${l.navHoy}, ${DateFormat.MMMMd(locale).format(fecha)}';
-    }
-
-    final largo = DateFormat.MMMMEEEEd(locale).format(fecha);
-    return largo.isEmpty ? largo : largo[0].toUpperCase() + largo.substring(1);
+    return formatearTituloDelDia(
+      fecha: _fechaSeleccionada(),
+      locale: locale,
+      textoHoy: l.navHoy,
+      viendoHoy: viendoHoy,
+    );
   }
 
   /// La fecha del día seleccionado en la tira. Sin semana cargada, hoy: es
