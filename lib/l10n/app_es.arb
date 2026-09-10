@@ -54,6 +54,7 @@
   "habLabelDescripcion": "Descripción (opcional)",
   "habLabelCategoria": "Categoría (opcional)",
   "habSinCategoria": "Sin categoría",
+  "habErrorCategorias": "No se pudieron cargar las categorías.",
   "habLabelFrecuencia": "Frecuencia",
   "habDiasSemana": "Días de la semana (opcional)",
   "habDiasAyudaSin": "Sin días concretos: tú eliges cuándo, la meta marca cuántos.",

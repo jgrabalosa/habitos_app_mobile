@@ -192,7 +192,7 @@ class ApiServiceHabitos {
       'recordatorioHora': recordatorioHora,
     };
     if (categoriaId != null) {
-      body['tipo'] = {'categoriaId': categoriaId};
+      body['categoriaId'] = categoriaId;
     }
     final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.post(
           Uri.parse('$_baseUrl/habitos'),
@@ -222,7 +222,7 @@ class ApiServiceHabitos {
       'recordatorioHora': recordatorioHora,
     };
     if (categoriaId != null) {
-      body['tipo'] = {'categoriaId': categoriaId};
+      body['categoriaId'] = categoriaId;
     }
     final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.put(
           Uri.parse('$_baseUrl/habitos/$habitoId'),

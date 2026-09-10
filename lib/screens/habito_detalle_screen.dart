@@ -547,6 +547,9 @@ title: Hero(
 
     if (respuesta == null) return; // descartó sin guardar
 
+    // Se envían dos cosas seguidas. Si la primera se guarda y la segunda falla,
+    // la pantalla enseñaría datos viejos: el catch recarga sólo en ese caso.
+    var guardadoAlgo = false;
     try {
       final int? valoracion = respuesta['valoracion'];
       final String? nota = respuesta['nota'];
@@ -555,10 +558,12 @@ title: Hero(
       // (el backend no admite borrar una valoración existente)
       if (valoracion != null && valoracion != valoracionActual) {
         await ApiServiceHabitos.valorarRegistro(registroId, valoracion);
+        guardadoAlgo = true;
       }
       // La nota sí se puede vaciar: enviamos '' si la borró
       if ((nota ?? '') != (notaActual ?? '')) {
         await ApiServiceHabitos.actualizarNotaRegistro(registroId, nota ?? '');
+        guardadoAlgo = true;
       }
       _cargarDetalle();
     } catch (e) {
@@ -569,6 +574,7 @@ title: Hero(
                 generico: AppLocalizations.of(context)!.errorGuardar)),
           ),
         );
+        if (guardadoAlgo) _cargarDetalle();
       }
     }
   }

@@ -60,6 +60,8 @@ class _HabitoScreenState extends State<HabitoScreen> {
   List<dynamic> _categorias = [];
   int? _categoriaId;
   bool _categoriasLoading = true;
+  // Sólo es true si la carga falló y no hay categorías de antes que enseñar.
+  bool _categoriasError = false;
 
   bool get _esEdicion => widget.habito != null;
 
@@ -101,10 +103,48 @@ class _HabitoScreenState extends State<HabitoScreen> {
       setState(() {
         _categorias = categorias;
         _categoriasLoading = false;
+        _categoriasError = false;
       });
     } catch (e) {
-      if (mounted) setState(() { _categoriasLoading = false; });
+      // Con categorías de antes (las de `categoriasIniciales`) se quedan ésas:
+      // mejor una lista vieja que un error. Sin ninguna, se dice.
+      if (mounted) {
+        setState(() {
+          _categoriasLoading = false;
+          _categoriasError = _categorias.isEmpty;
+        });
+      }
     }
+  }
+
+  void _reintentarCategorias() {
+    setState(() {
+      _categoriasLoading = true;
+      _categoriasError = false;
+    });
+    _cargarCategorias();
+  }
+
+  /// Sustituye al desplegable cuando las categorías no han cargado y no hay
+  /// ninguna de antes. Sin desplegable no hay forma de quitarle la categoría
+  /// al hábito sin querer, y `_categoriaId` se conserva: si se guarda sin
+  /// reintentar, el hábito se queda con la que tenía.
+  Widget _filaErrorCategorias(AppLocalizations l) {
+    final t = tokens(context);
+    return Row(
+      children: [
+        Icon(LucideIcons.cloudOff, size: 18, color: t.textMuted),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(l.habErrorCategorias, style: TextStyle(color: t.textMuted)),
+        ),
+        TextButton.icon(
+          onPressed: _reintentarCategorias,
+          icon: const Icon(LucideIcons.rotateCw, size: 18),
+          label: Text(l.dashReintentar),
+        ),
+      ],
+    );
   }
 
   void _aplicarPlantilla(Map<String, dynamic> plantilla) {
@@ -431,7 +471,9 @@ class _HabitoScreenState extends State<HabitoScreen> {
                         padding: EdgeInsets.symmetric(vertical: 8),
                         child: LinearProgressIndicator(),
                       )
-                    : DropdownButtonFormField<int?>(
+                    : _categoriasError
+                        ? _filaErrorCategorias(l)
+                        : DropdownButtonFormField<int?>(
                         initialValue: _categoriaId,
                         decoration: InputDecoration(
                           labelText: l.habLabelCategoria,

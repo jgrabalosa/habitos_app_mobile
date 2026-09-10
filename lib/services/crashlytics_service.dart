@@ -9,10 +9,17 @@ class CrashlyticsService {
   /// los del framework (FlutterError) y los asincronos que no atrapa nadie
   /// (PlatformDispatcher). Llamar despues de Firebase.initializeApp().
   ///
-  /// [recogerEnDebug] a true envia tambien los crashes de las compilaciones
-  /// de debug, para poder probar la integracion antes de publicar.
-  static Future<void> inicializar({bool recogerEnDebug = true}) async {
-    await _crashlytics.setCrashlyticsCollectionEnabled(recogerEnDebug);
+  /// En release se recoge siempre. En debug y profile no, para que los fallos
+  /// de desarrollo no se mezclen en el panel con los de testers y usuarios.
+  /// [recogerEnDebug] a true recoge tambien fuera de release, solo para probar
+  /// la integracion.
+  ///
+  /// Ojo: setCrashlyticsCollectionEnabled vale para todas las builds. Pasarle
+  /// false a secas apagaria tambien release; por eso se combina con
+  /// kReleaseMode y nunca se pasa el parametro tal cual.
+  static Future<void> inicializar({bool recogerEnDebug = false}) async {
+    await _crashlytics.setCrashlyticsCollectionEnabled(
+        kReleaseMode || recogerEnDebug);
 
     // recordFlutterFatalError sigue llamando a FlutterError.presentError,
     // asi que la consola roja de debug no se pierde.
