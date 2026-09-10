@@ -294,6 +294,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         // estrella no se encendería hasta el siguiente refresco.
         _publicarProgreso();
       }
+    // Silencio a propósito: el servidor ya aceptó el completado y esto sólo
+    // corrige el conteo optimista. Si falla, se queda el local hasta el
+    // siguiente refresco; avisar de un error aquí confundiría.
     }).catchError((_) {});
 
     await Future.delayed(const Duration(milliseconds: 400));
@@ -399,6 +402,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         setState(() { _progreso[habitoId] = prog; });
         _publicarProgreso();
       }
+    // Mismo silencio que al completar: el deshacer ya está hecho en el
+    // servidor y esto sólo corrige el conteo.
     }).catchError((_) {});
   }
 
