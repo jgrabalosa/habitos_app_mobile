@@ -54,6 +54,7 @@
   "habLabelDescripcion": "Description (optional)",
   "habLabelCategoria": "Category (optional)",
   "habSinCategoria": "No category",
+  "habErrorCategorias": "Couldn't load your categories.",
   "habLabelFrecuencia": "Frequency",
   "habDiasSemana": "Days of the week (optional)",
   "habDiasAyudaSin": "No fixed days: you choose when, the goal sets how many.",
