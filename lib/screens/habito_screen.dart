@@ -323,7 +323,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(l.comunEliminar, style: const TextStyle(color: Colors.red)),
+            child: Text(l.comunEliminar, style: TextStyle(color: tonoError(context).texto)),
           ),
         ],
       ),
@@ -558,7 +558,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                   ),
                 if (_error != null) ...[
                   const SizedBox(height: 8),
-                  Text(_error!, style: const TextStyle(color: Colors.red)),
+                  Text(_error!, style: TextStyle(color: tonoError(context).texto)),
                 ],
                 const SizedBox(height: 16),
                 SizedBox(
@@ -577,14 +577,14 @@ class _HabitoScreenState extends State<HabitoScreen> {
                     child: OutlinedButton(
                       onPressed: _loading ? null : _eliminar,
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Colors.red),
+                        side: BorderSide(color: tonoError(context).borde),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: Text(l.habBotonEliminar,
                           style: Theme.of(context)
                               .textTheme
                               .labelLarge
-                              ?.copyWith(color: Colors.red)),
+                              ?.copyWith(color: tonoError(context).texto)),
                     ),
                   ),
                 ],

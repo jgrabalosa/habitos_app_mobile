@@ -633,8 +633,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "v0.9.0"
-      resolved-ref: "3f7450a93d4c849c80e166aaa0511345d4fc908e"
+      ref: "wip/colores-6-10"
+      resolved-ref: "9c2a16fa6147b71dbdd9383b24a3e502aa385b69"
       url: "https://github.com/jgrabalosa/norday_flutter_core.git"
     source: git
     version: "0.9.0"
