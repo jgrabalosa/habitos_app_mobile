@@ -96,6 +96,19 @@ void main() {
     expect(lunesDeLaSemanaDe(DateTime(2026, 11, 1)), DateTime(2026, 10, 26));
   });
 
+  test('isoDeSemanaDesplazadaDevuelveNullSinHoyDelServidor', () {
+    expect(isoDeSemanaDesplazada(null, 0), null);
+    expect(isoDeSemanaDesplazada(null, -1), null);
+    expect(isoDeSemanaDesplazada(null, 1), null);
+  });
+
+  test('isoDeSemanaDesplazadaCuentaSemanasDesdeElHoyDado', () {
+    expect(isoDeSemanaDesplazada('2026-09-12', 0), '2026-09-12');
+    expect(isoDeSemanaDesplazada('2026-09-12', -1), '2026-09-05');
+    expect(isoDeSemanaDesplazada('2026-09-12', 1), '2026-09-19');
+    expect(isoDeSemanaDesplazada('2026-11-01', -1), '2026-10-25');
+  });
+
   test('esAnteriorALaSemanaEnCurso compara contra el lunes de hoy', () {
     final hoy = DateTime(2026, 9, 9); // miércoles
 
