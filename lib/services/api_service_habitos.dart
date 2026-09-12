@@ -140,7 +140,9 @@ class ApiServiceHabitos {
           headers: headers,
           body: jsonEncode({
             'nota': nota,
-            if (fecha != null) 'fecha': fecha,
+            // Elemento null-aware: con `fecha` a null la clave no se envía,
+            // exactamente igual que con el `if` anterior.
+            'fecha': ?fecha,
           }),
         ));
     ApiServiceCore.verificar(response, ok: const [201]);

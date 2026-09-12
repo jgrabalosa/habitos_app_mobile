@@ -931,7 +931,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   /// par (hábito, completado) directamente de `_dias[i]`, en vez de leer de
   /// `_progreso`/`_fechasCompletadas` — esos mapas son de hoy, no de
   /// cualquier día. Sin mini-heatmap (es info de racha, no de "qué tocaba
-  /// ese día"). Un día pasado permite completar y deshacer.
+  /// ese día"). Un día de la semana en curso permite completar y deshacer;
+  /// un día futuro o de una semana anterior, no.
   Widget _habitoCardOtroDia(
       AppLocalizations l, Habito h, bool completado, TokensContextuales t,
       {required DateTime fecha, required bool esFuturo,
