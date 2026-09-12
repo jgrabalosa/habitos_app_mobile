@@ -29,6 +29,26 @@ String formatearTituloDelDia({
   return largo.isEmpty ? largo : largo[0].toUpperCase() + largo.substring(1);
 }
 
+/// Lunes de la semana ISO a la que pertenece [dia], a medianoche.
+///
+/// Se construye con el constructor de DateTime y no con
+/// `subtract(Duration(days: ...))` a propósito: Duration es tiempo absoluto,
+/// y en una zona cuyo cambio de horario cae a medianoche (varias de América
+/// del Sur, y `pt` es un idioma soportado) restar días puede aterrizar a las
+/// 23:00 del día anterior. El constructor normaliza el día fuera de rango y
+/// no depende de la duración real del día.
+DateTime lunesDeLaSemanaDe(DateTime dia) =>
+    DateTime(dia.year, dia.month, dia.day - (dia.weekday - 1));
+
+/// Si [fecha] cae antes del lunes de la semana de [hoy]. Es la misma regla
+/// que aplica el backend al completar y al deshacer (el suelo es el lunes de
+/// la semana en curso, lunes incluido). Está duplicada aquí porque el
+/// cliente necesita conocerla para apagar el check: un control que se puede
+/// tocar y siempre falla es peor que un control apagado.
+bool esAnteriorALaSemanaEnCurso(DateTime fecha, DateTime hoy) =>
+    DateTime(fecha.year, fecha.month, fecha.day)
+        .isBefore(lunesDeLaSemanaDe(DateTime(hoy.year, hoy.month, hoy.day)));
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -566,6 +586,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return DateTime(fecha.year, fecha.month, fecha.day);
     }();
     final bool esFuturo = fechaSeleccionadaSinHora.isAfter(hoySinHora);
+    // No se compara contra `_offsetSemana`: si la app se queda abierta
+    // cruzando la medianoche del domingo, el offset sigue valiendo 0 y ya
+    // apunta a la semana pasada. Se compara contra la fecha real.
+    final bool fueraDeSemana =
+        esAnteriorALaSemanaEnCurso(fechaSeleccionadaSinHora, hoySinHora);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -717,7 +742,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 else
                   ...habitosDelDiaSeleccionado.map((item) => _habitoCardOtroDia(
                       l, item['habito'] as Habito, item['completado'] as bool, t,
-                      fecha: _fechaSeleccionada(), esFuturo: esFuturo)),
+                      fecha: _fechaSeleccionada(), esFuturo: esFuturo,
+                      fueraDeSemana: fueraDeSemana)),
               ],
             ),
           ),
@@ -908,7 +934,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   /// ese día"). Un día pasado permite completar y deshacer.
   Widget _habitoCardOtroDia(
       AppLocalizations l, Habito h, bool completado, TokensContextuales t,
-      {required DateTime fecha, required bool esFuturo}) {
+      {required DateTime fecha, required bool esFuturo,
+       required bool fueraDeSemana}) {
     // La atenuación va SÓLO en el check, no en la tarjeta entera.
     //
     // Antes un `AnimatedOpacity` envolvía todo y apagaba también el texto:
@@ -957,21 +984,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              // Un día futuro no se puede completar. Un día pasado permite
-              // completar o deshacer según el estado de la fila.
+              // Sólo la semana en curso permite completar o deshacer, según
+              // el estado de la fila. Un día futuro o una fecha de una
+              // semana anterior van apagados y sin toque.
               // El 0.25 reproduce lo que se veía antes, cuando el 0.5 de aquí
               // se multiplicaba por el 0.45 del envoltorio.
               AnimatedOpacity(
                 duration: (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
                     ? Duration.zero
                     : const Duration(milliseconds: 400),
-                opacity: esFuturo ? 0.25 : 0.5,
+                opacity: (esFuturo || fueraDeSemana) ? 0.25 : 0.5,
                 child: CheckCircular(
                   hecho: completado,
-                  onTap: (!esFuturo && !completado)
+                  onTap: (!esFuturo && !fueraDeSemana && !completado)
                       ? () => _completar(h.habitoId, fecha: fecha)
                       : null,
-                  onDeshacer: (!esFuturo && completado)
+                  onDeshacer: (!esFuturo && !fueraDeSemana && completado)
                       ? () => _deshacerFecha(h.habitoId, fecha)
                       : null,
                   color: t.success,
