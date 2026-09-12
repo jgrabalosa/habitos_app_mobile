@@ -85,4 +85,23 @@ void main() {
       );
     });
   });
+
+  test('lunesDeLaSemanaDe devuelve el lunes de la semana ISO', () {
+    expect(lunesDeLaSemanaDe(DateTime(2026, 9, 9)), DateTime(2026, 9, 7));
+    expect(lunesDeLaSemanaDe(DateTime(2026, 9, 7)), DateTime(2026, 9, 7));
+    expect(lunesDeLaSemanaDe(DateTime(2026, 9, 13)), DateTime(2026, 9, 7));
+  });
+
+  test('lunesDeLaSemanaDe cruza el mes correctamente', () {
+    expect(lunesDeLaSemanaDe(DateTime(2026, 11, 1)), DateTime(2026, 10, 26));
+  });
+
+  test('esAnteriorALaSemanaEnCurso compara contra el lunes de hoy', () {
+    final hoy = DateTime(2026, 9, 9); // miércoles
+
+    expect(esAnteriorALaSemanaEnCurso(DateTime(2026, 9, 6), hoy), true);
+    expect(esAnteriorALaSemanaEnCurso(DateTime(2026, 9, 7), hoy), false);
+    expect(esAnteriorALaSemanaEnCurso(DateTime(2026, 9, 9), hoy), false);
+    expect(esAnteriorALaSemanaEnCurso(DateTime(2026, 9, 10), hoy), false);
+  });
 }

@@ -29,6 +29,26 @@ String formatearTituloDelDia({
   return largo.isEmpty ? largo : largo[0].toUpperCase() + largo.substring(1);
 }
 
+/// Lunes de la semana ISO a la que pertenece [dia], a medianoche.
+///
+/// Se construye con el constructor de DateTime y no con
+/// `subtract(Duration(days: ...))` a propósito: Duration es tiempo absoluto,
+/// y en una zona cuyo cambio de horario cae a medianoche (varias de América
+/// del Sur, y `pt` es un idioma soportado) restar días puede aterrizar a las
+/// 23:00 del día anterior. El constructor normaliza el día fuera de rango y
+/// no depende de la duración real del día.
+DateTime lunesDeLaSemanaDe(DateTime dia) =>
+    DateTime(dia.year, dia.month, dia.day - (dia.weekday - 1));
+
+/// Si [fecha] cae antes del lunes de la semana de [hoy]. Es la misma regla
+/// que aplica el backend al completar y al deshacer (el suelo es el lunes de
+/// la semana en curso, lunes incluido). Está duplicada aquí porque el
+/// cliente necesita conocerla para apagar el check: un control que se puede
+/// tocar y siempre falla es peor que un control apagado.
+bool esAnteriorALaSemanaEnCurso(DateTime fecha, DateTime hoy) =>
+    DateTime(fecha.year, fecha.month, fecha.day)
+        .isBefore(lunesDeLaSemanaDe(DateTime(hoy.year, hoy.month, hoy.day)));
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -250,18 +270,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return (p['completadosPeriodo'] ?? 0) >= (p['meta'] ?? 1);
   }
 
-  Future<void> _completar(int habitoId) async {
+  Future<void> _completar(int habitoId, {DateTime? fecha}) async {
     List<String> logrosOtorgados;
     int puntosGanados;
     int? registroId;
     bool mostrarValoracion;
     final habitoActual = _habitos.firstWhere((h) => h.habitoId == habitoId);
-    if (habitoActual.frecuencia == 'SEMANAL' &&
+    final fechaObjetivo = fecha ?? DateTime.now();
+    final fechaIso = fechaObjetivo.toIso8601String().split('T')[0];
+    final hoyIso = DateTime.now().toIso8601String().split('T')[0];
+    final esHoy = fechaIso == hoyIso;
+    if (esHoy && habitoActual.frecuencia == 'SEMANAL' &&
         _progreso[habitoId]?['completadoHoy'] == true) {
       return; // ya está hecho hoy: no se puede volver a completar
     }
     try {
-      final resultado = await ApiServiceHabitos.completarHabito(habitoId);
+      final resultado = await ApiServiceHabitos.completarHabito(
+          habitoId, fecha: esHoy ? null : fechaIso);
       logrosOtorgados = resultado['logros'];
       puntosGanados = resultado['puntosGanados'];
       registroId = resultado['registroId'];
@@ -289,13 +314,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     HapticFeedback.mediumImpact();
     SonidoService.reproducir('completar');
 
-    // Actualización local inmediata (sin esperar al servidor)
+    if (!esHoy) {
+      // El estado local de hoy no representa la fecha retroactiva. Recargamos
+      // la semana para que el check del día objetivo y sus contadores sean los
+      // que manda el servidor.
+      await _cargarSemana();
+    }
+
+    // Actualización local inmediata (sin esperar al servidor), solo para hoy.
     final p = _progreso[habitoId];
-    if (p != null) {
+    if (esHoy && p != null) {
       p['completadoHoy'] = true;
       p['completadosPeriodo'] = (p['completadosPeriodo'] ?? 0) + 1;
     }
-    _fechasCompletadas[habitoId]?.add(DateTime.now().toIso8601String().split('T')[0]);
+    if (esHoy) _fechasCompletadas[habitoId]?.add(hoyIso);
     setState(() {}); // el cambio de progreso dispara la animación del check
     _publicarProgreso();
 
@@ -421,6 +453,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }).catchError((_) {});
   }
 
+  /// Deshace un registro de un día que no es hoy. No hacemos optimismo sobre
+  /// los mapas de hoy: el servidor debe validar que el registro sea el último
+  /// y, tras el rollback, la semana se vuelve a cargar completa.
+  Future<void> _deshacerFecha(int habitoId, DateTime fecha) async {
+    final l = AppLocalizations.of(context)!;
+    final fechaIso = fecha.toIso8601String().split('T')[0];
+    try {
+      final registros = await ApiServiceHabitos.getRegistrosHabito(habitoId);
+      final candidatos = registros.cast<Map<String, dynamic>>()
+          .where((r) => r['fecha'] == fechaIso)
+          .toList();
+      final registro = candidatos.isEmpty
+          ? <String, dynamic>{}
+          : candidatos.reduce((a, b) =>
+              (a['registroId'] as int) > (b['registroId'] as int) ? a : b);
+      final registroId = registro['registroId'];
+      if (registroId is! int) {
+        throw Exception('No hay un registro en esa fecha');
+      }
+      await ApiServiceHabitos.deshacerRegistro(registroId);
+      solicitarRefrescoMascota();
+      await Future.wait([_cargarSemana(), _cargarHabitos()]);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(
+            MensajesError.de(context, e, generico: l.dashDeshacerError))),
+      );
+    }
+  }
+
   Future<void> _solicitarResena() async {
     try {
       final InAppReview inAppReview = InAppReview.instance;
@@ -523,6 +586,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return DateTime(fecha.year, fecha.month, fecha.day);
     }();
     final bool esFuturo = fechaSeleccionadaSinHora.isAfter(hoySinHora);
+    // No se compara contra `_offsetSemana`: si la app se queda abierta
+    // cruzando la medianoche del domingo, el offset sigue valiendo 0 y ya
+    // apunta a la semana pasada. Se compara contra la fecha real.
+    final bool fueraDeSemana =
+        esAnteriorALaSemanaEnCurso(fechaSeleccionadaSinHora, hoySinHora);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -674,7 +742,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 else
                   ...habitosDelDiaSeleccionado.map((item) => _habitoCardOtroDia(
                       l, item['habito'] as Habito, item['completado'] as bool, t,
-                      esFuturo: esFuturo)),
+                      fecha: _fechaSeleccionada(), esFuturo: esFuturo,
+                      fueraDeSemana: fueraDeSemana)),
               ],
             ),
           ),
@@ -862,10 +931,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   /// par (hábito, completado) directamente de `_dias[i]`, en vez de leer de
   /// `_progreso`/`_fechasCompletadas` — esos mapas son de hoy, no de
   /// cualquier día. Sin mini-heatmap (es info de racha, no de "qué tocaba
-  /// ese día") y con el check apagado y no tocable: sólo se completa hoy.
+  /// ese día"). Un día de la semana en curso permite completar y deshacer;
+  /// un día futuro o de una semana anterior, no.
   Widget _habitoCardOtroDia(
       AppLocalizations l, Habito h, bool completado, TokensContextuales t,
-      {required bool esFuturo}) {
+      {required DateTime fecha, required bool esFuturo,
+       required bool fueraDeSemana}) {
     // La atenuación va SÓLO en el check, no en la tarjeta entera.
     //
     // Antes un `AnimatedOpacity` envolvía todo y apagaba también el texto:
@@ -914,18 +985,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              // Sólo se completa hoy: apagado y sin onTap en cualquier otro
-              // día, y más apagado aún si el día ni siquiera ha llegado.
+              // Sólo la semana en curso permite completar o deshacer, según
+              // el estado de la fila. Un día futuro o una fecha de una
+              // semana anterior van apagados y sin toque.
               // El 0.25 reproduce lo que se veía antes, cuando el 0.5 de aquí
               // se multiplicaba por el 0.45 del envoltorio.
               AnimatedOpacity(
                 duration: (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
                     ? Duration.zero
                     : const Duration(milliseconds: 400),
-                opacity: esFuturo ? 0.25 : 0.5,
+                opacity: (esFuturo || fueraDeSemana) ? 0.25 : 0.5,
                 child: CheckCircular(
                   hecho: completado,
-                  onTap: null,
+                  onTap: (!esFuturo && !fueraDeSemana && !completado)
+                      ? () => _completar(h.habitoId, fecha: fecha)
+                      : null,
+                  onDeshacer: (!esFuturo && !fueraDeSemana && completado)
+                      ? () => _deshacerFecha(h.habitoId, fecha)
+                      : null,
                   color: t.success,
                 ),
               ),

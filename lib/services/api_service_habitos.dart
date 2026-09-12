@@ -121,8 +121,8 @@ class ApiServiceHabitos {
   }
 
   /// Deshace un completado. El backend sólo lo permite si es el último
-  /// registro del hábito, si es de hoy en la zona del hábito, y si guardó su
-  /// reversión; en los tres casos contrarios responde 409.
+  /// registro del hábito y si guardó su reversión; en los casos contrarios
+  /// responde 409. La fecha puede ser hoy o un día pasado.
   static Future<void> deshacerRegistro(int registroId) async {
     final headers = await ApiServiceCore.getHeaders();
     final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.delete(
@@ -133,12 +133,17 @@ class ApiServiceHabitos {
   }
 
   static Future<Map<String, dynamic>> completarHabito(int habitoId,
-      {String nota = ''}) async {
+      {String nota = '', String? fecha}) async {
     final headers = await ApiServiceCore.getHeaders();
     final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.post(
           Uri.parse('$_baseUrl/registros/completar/$habitoId'),
           headers: headers,
-          body: jsonEncode({'nota': nota}),
+          body: jsonEncode({
+            'nota': nota,
+            // Elemento null-aware: con `fecha` a null la clave no se envía,
+            // exactamente igual que con el `if` anterior.
+            'fecha': ?fecha,
+          }),
         ));
     ApiServiceCore.verificar(response, ok: const [201]);
     return ApiServiceCore.parsear(() {
