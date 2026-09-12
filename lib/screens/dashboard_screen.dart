@@ -49,6 +49,19 @@ bool esAnteriorALaSemanaEnCurso(DateTime fecha, DateTime hoy) =>
     DateTime(fecha.year, fecha.month, fecha.day)
         .isBefore(lunesDeLaSemanaDe(DateTime(hoy.year, hoy.month, hoy.day)));
 
+/// El ISO del día equivalente a [hoyIso] desplazado [offsetSemanas] semanas,
+/// o null si aún no se conoce el hoy del servidor.
+///
+/// Aritmética con el constructor de DateTime y no con `Duration`, por la
+/// misma razón que en [lunesDeLaSemanaDe]: Duration es tiempo absoluto y en
+/// una zona que cambia de hora a medianoche aterriza en el día anterior.
+String? isoDeSemanaDesplazada(String? hoyIso, int offsetSemanas) {
+  if (hoyIso == null) return null;
+  final hoy = DateTime.parse(hoyIso);
+  final base = DateTime(hoy.year, hoy.month, hoy.day + 7 * offsetSemanas);
+  return base.toIso8601String().split('T')[0];
+}
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -71,6 +84,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<Map<String, dynamic>> _flexibles = [];
   int _diaSeleccionado = 0;
   int _indiceHoy = 0;
+
+  /// Hoy según el servidor, en la zona del usuario. Null hasta la primera
+  /// respuesta de /semana. Es la única fuente de "qué día es hoy" para esta
+  /// pantalla: el reloj del dispositivo puede estar en otra zona.
+  String? _hoyIso;
 
   /// Qué semana se está mirando: 0 es la de hoy, -1 la anterior, +1 la
   /// siguiente. Sin límite a propósito: cada semana es una sola llamada, el
@@ -157,8 +175,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   /// uno ya lo pone [_cargarHabitos] si el fallo es de red en general.
   Future<void> _cargarSemana() async {
     try {
-      final lunesBase = DateTime.now().add(Duration(days: 7 * _offsetSemana));
-      final desde = lunesBase.toIso8601String().split('T')[0];
+      // La primera carga no manda `desde`: el backend responde con la semana
+      // de hoy en la zona del usuario y de paso declara cuál es ese hoy. A
+      // partir de ahí las semanas se cuentan desde esa fecha.
+      final desde = isoDeSemanaDesplazada(_hoyIso, _offsetSemana);
       final data = await ApiServiceHabitos.getSemana(_usuarioId, desde: desde);
 
       final List<Map<String, dynamic>> dias =
@@ -181,13 +201,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 'meta': item['meta'] ?? 1,
               }).toList();
 
-      final hoyIso = DateTime.now().toIso8601String().split('T')[0];
-      final indiceHoy = dias.indexWhere((d) => d['fecha'] == hoyIso);
+      // Hoy lo declara el servidor. Si no viniera, se conserva el que ya
+      // teníamos antes que caer al reloj del dispositivo: una fecha
+      // equivocada aquí marca el día que no es.
+      final hoyIso = (data['hoy'] as String?) ?? _hoyIso;
+      final indiceHoy =
+          hoyIso == null ? -1 : dias.indexWhere((d) => d['fecha'] == hoyIso);
 
       if (!mounted) return;
       setState(() {
         _dias = dias;
         _flexibles = flexibles;
+        _hoyIso = hoyIso;
         // -1 significa "hoy no está en esta semana", y hay que distinguirlo
         // de "hoy es el lunes". Con el 0 de antes, el lunes de otra semana se
         // comportaba como hoy.
@@ -276,10 +301,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     int? registroId;
     bool mostrarValoracion;
     final habitoActual = _habitos.firstWhere((h) => h.habitoId == habitoId);
-    final fechaObjetivo = fecha ?? DateTime.now();
-    final fechaIso = fechaObjetivo.toIso8601String().split('T')[0];
-    final hoyIso = DateTime.now().toIso8601String().split('T')[0];
-    final esHoy = fechaIso == hoyIso;
+    // Sin fecha explícita se completa "hoy", y quien decide cuál es hoy es
+    // el servidor: se manda `fecha: null` y lo resuelve él en la zona del
+    // usuario. Con fecha explícita se compara contra el hoy declarado.
+    final hoyIso = _hoyIso;
+    final fechaIso = fecha?.toIso8601String().split('T')[0];
+    final esHoy = fechaIso == null || fechaIso == hoyIso;
     if (esHoy && habitoActual.frecuencia == 'SEMANAL' &&
         _progreso[habitoId]?['completadoHoy'] == true) {
       return; // ya está hecho hoy: no se puede volver a completar
@@ -327,7 +354,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       p['completadoHoy'] = true;
       p['completadosPeriodo'] = (p['completadosPeriodo'] ?? 0) + 1;
     }
-    if (esHoy) _fechasCompletadas[habitoId]?.add(hoyIso);
+    if (esHoy && hoyIso != null) _fechasCompletadas[habitoId]?.add(hoyIso);
     setState(() {}); // el cambio de progreso dispara la animación del check
     _publicarProgreso();
 
@@ -577,7 +604,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     // Futuro es estrictamente posterior a hoy: hoy mismo no es futuro. Ambas
     // fechas normalizadas a medianoche para que la hora del reloj no decida.
+    // Hoy es el del servidor. Mientras la semana no ha cargado no se pinta
+    // ni la tira ni ninguna tarjeta de otro día, así que el valor de
+    // respaldo no llega a decidir nada visible.
     final DateTime hoySinHora = () {
+      final iso = _hoyIso;
+      if (iso != null) return DateTime.parse(iso);
       final ahora = DateTime.now();
       return DateTime(ahora.year, ahora.month, ahora.day);
     }();
