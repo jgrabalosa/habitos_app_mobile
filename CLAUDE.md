@@ -126,3 +126,91 @@ va por `ref: main` y pub cachea el commit resuelto.
 - Un paso a la vez, confirmar que compila antes de seguir.
 - Si algo admite varios diseños o no está claro, preguntar antes de
   decidir — no asumir.
+
+## Lecciones aprendidas
+
+Errores que ya se cometieron una vez. No se vuelven a cometer.
+
+### Flutter y tests
+
+- **En `flutter test` Firebase no está inicializado**: acceder a
+  `FirebaseAnalytics.instance` lanza `[core/no-app]`. Sirve para probar que un
+  servicio no deja escapar el fallo.
+- **`MaterialApp` interpola el tema con `AnimatedTheme`** y `TextStyle.lerp` no
+  mezcla familias: en tests que cambian de identidad, `pumpAndSettle`, no
+  `pump`.
+- **El ticker de una animación toma la hora de inicio en su primer tic**: en
+  tests de duración, un `pump()` sin duración antes de medir.
+- **`containsSemantics` está deprecado desde Flutter 3.40** en favor de
+  `isSemantics`, que tiene los mismos parámetros y también sólo comprueba lo
+  indicado.
+- **Tras editar un ARB, `flutter analyze` no regenera las traducciones**:
+  `flutter gen-l10n` antes.
+- **`setCrashlyticsCollectionEnabled` vale para todas las builds.** Combinar
+  con `kReleaseMode`, nunca pasar un flag «de debug» tal cual.
+- **El analizador de Dart promociona a no nulo a través de un `bool`
+  intermedio.** Si `final bool b = x != null && ...`, dentro de `if (b)` la
+  variable `x` ya es no nula: añadir `&& x != null` ahí dispara
+  `unnecessary_null_comparison`.
+- **Test en rojo antes del arreglo.** Si el test nuevo pasa contra el código
+  sin arreglar, no demuestra nada: parar.
+
+### Paquetes
+
+- **`flutter pub outdated` no lista los paquetes que ya están en su última
+  versión.** Las versiones resueltas se comprueban en `pubspec.lock`.
+- **Una versión resuelta no se da por supuesta.** `permission_handler ^12.0.3`
+  resolvió `permission_handler_android` 13.0.1, no la última 13.x.
+- **Los changelogs se leen de la caché de pub**, no de la web:
+  `dart pub cache add <paquete> --version <v>` sin tocar el proyecto. Las notas
+  publicadas en la web estaban incompletas o se contradecían.
+- **Una subida de mayor puede exigir más de lo que dice su nombre.**
+  `permission_handler` 13 pide `compileSdk` 37 y Flutter 3.44.4 usa 36
+  (`FlutterExtension.kt`). `flutter_secure_storage` 11.0.0 también lo pedía;
+  11.1.0 vuelve a `flutter.compileSdkVersion`.
+- **`flutter_secure_storage` 9→11 sin pasar por la 10**: lo guardado con la 9
+  queda ilegible. Con `resetOnError` y el `catch` de `getToken`, el arranque ve
+  `null` y manda al login: iniciar sesión una vez.
+
+### Dispositivo
+
+- **`adb shell pm revoke` falla en algunos fabricantes** con
+  `SecurityException` (falta `REVOKE_RUNTIME_PERMISSIONS`). Para probar
+  diálogos de permiso hace falta instalación limpia.
+- **`logout()` no llama a `signOut()` de Google**: tras cerrar sesión,
+  «Continuar con Google» entra con la misma cuenta sin selector.
+- **Google Sign-In no funciona en debug.** Para probarlo, APK de release.
+
+### Método de trabajo (vale para los cuatro repos)
+
+- **La primera línea de un prompt se comprueba, no se recuerda.** Los cuatro
+  repos están en `C:\Dev\Norday\`.
+- **Un solo agente por repo a la vez.** Todo lo que haga otro agente se revisa
+  en el remoto antes de mergear.
+- **Las cifras de verificación se cuentan contra el repositorio**, nunca se
+  copian del roadmap. Y son cifras exactas, no adjetivos.
+- **Enumerar sin asumir el patrón**: buscar por la forma que ya has visto sólo
+  encuentra lo que ya sabías.
+- **Un filtro que no encuentra nada no es un resultado.** Ante una salida
+  vacía, mirar la fuente completa antes de concluir.
+- **Un fichero de diagnóstico no prueba nada por existir.** Abrirlo y
+  comprobar que contiene el fallo antes de darlo por documentado.
+- **La base de una rama `wip` envejece.** Antes de dar una cifra, comprobar de
+  qué commit sale la rama.
+- **Al sustituir un bloque, incluir el comentario de encima.** Si no, el
+  comentario queda sobre otra declaración y describe algo que ya no es cierto.
+- **No escribir en el código el término cuya ausencia se va a verificar.**
+- **Mirar dónde se pega cada bloque.** Un bloque para la máquina local,
+  lanzado en el VPS, llegó a `git push` y pidió credenciales.
+- **`git diff` y `git log` abren paginador**: `git --no-pager`.
+- **`git diff HEAD~1` compara con el directorio de trabajo**: incluye lo no
+  commiteado. Para ver sólo el commit, `git diff HEAD~1 HEAD` o el remoto.
+- **Antes de `git tag`, `git --no-pager log -1`.** Se subió `v0.9.0` sobre el
+  commit de `v0.8.0` por saltarse el merge.
+- **Un tag anotado resuelve a su commit, no a sí mismo**:
+  `git rev-parse <tag>^{commit}`.
+- **PowerShell 5.1 lee los `.ps1` sin BOM como ANSI**: scripts sin acentos, o
+  guardados con BOM.
+- **`Set-Content` corrompió `login_screen.dart`** (219 secuencias dobles +
+  BOM). Reparación con `[IO.File]::ReadAllBytes` / `WriteAllText` y
+  `New-Object Text.UTF8Encoding $false`.
