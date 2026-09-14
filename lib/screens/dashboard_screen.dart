@@ -922,9 +922,12 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
 
     final id = identidad(context);
+    // Las dos ranuras pintan la MISMA fila ya completada —una yéndose, otra
+    // llegando—: `hecho` aquí sólo elige el papel (destino/origen), no el
+    // aspecto de la tarjeta, que siempre es el de "hecho".
     return AnimatedBuilder(
       animation: ctrl,
-      child: _habitoCard(l, h, hecho, t),
+      child: _habitoCard(l, h, true, t),
       builder: (context, child) => RanuraTransito(
         progreso: ctrl.value,
         papel: hecho ? PapelTransito.destino : PapelTransito.origen,
