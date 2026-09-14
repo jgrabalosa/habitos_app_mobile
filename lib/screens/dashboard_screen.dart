@@ -208,6 +208,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final indiceHoy =
           hoyIso == null ? -1 : dias.indexWhere((d) => d['fecha'] == hoyIso);
 
+      // Qué día se estaba mirando, por fecha y no por índice. Antes esto se
+      // reposicionaba en hoy en cada carga, y como completar o deshacer un
+      // día pasado recarga la semana, la tira saltaba sola bajo el dedo.
+      // Se lee de `_dias`, la lista vieja, antes de sustituirla; en el
+      // arranque está vacía y el índice es 0, de ahí la guarda de rango.
+      final String? fechaSeleccionada =
+          (_diaSeleccionado >= 0 && _diaSeleccionado < _dias.length)
+              ? _dias[_diaSeleccionado]['fecha'] as String?
+              : null;
+      final int indiceConservado = fechaSeleccionada == null
+          ? -1
+          : dias.indexWhere((d) => d['fecha'] == fechaSeleccionada);
+
       if (!mounted) return;
       setState(() {
         _dias = dias;
@@ -217,7 +230,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         // de "hoy es el lunes". Con el 0 de antes, el lunes de otra semana se
         // comportaba como hoy.
         _indiceHoy = indiceHoy;
-        _diaSeleccionado = indiceHoy >= 0 ? indiceHoy : 0;
+        // Si el día que se miraba sigue en la semana que acaba de llegar, se
+        // respeta. Si no —arranque, o cambio de semana con las flechas—, hoy;
+        // y si hoy tampoco está en esta semana, el lunes.
+        _diaSeleccionado = indiceConservado >= 0
+            ? indiceConservado
+            : (indiceHoy >= 0 ? indiceHoy : 0);
       });
       _publicarProgreso();
     } catch (_) {
