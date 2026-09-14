@@ -415,14 +415,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
   /// id guardado que se quede rancio si el hábito se completó desde otro sitio.
   Future<void> _deshacer(int habitoId) async {
     final l = AppLocalizations.of(context)!;
-    final hoy = DateTime.now().toIso8601String().split('T')[0];
+    // Hoy lo declara el servidor, no el dispositivo: `_fechasCompletadas`
+    // guarda fechas del servidor, y buscar en ese conjunto con la fecha
+    // local falla sin dar error cuando las zonas no coinciden. Es null sólo
+    // antes de la primera respuesta de /semana; en ese caso no se toca el
+    // conjunto y el resto del método funciona igual.
+    final hoy = _hoyIso;
 
     // Estado previo, para poder volver si el servidor dice que no.
     final p = _progreso[habitoId];
     final int completadosAntes = p?['completadosPeriodo'] ?? 0;
     final bool completadoHoyAntes = p?['completadoHoy'] == true;
     final bool teniaFechaHoy =
-        _fechasCompletadas[habitoId]?.contains(hoy) ?? false;
+        hoy != null && (_fechasCompletadas[habitoId]?.contains(hoy) ?? false);
 
     // Apagado local inmediato: el usuario ha tocado un check marcado y lo que
     // espera es verlo apagarse, no esperar a la red.
@@ -430,7 +435,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       p['completadoHoy'] = false;
       p['completadosPeriodo'] = completadosAntes > 0 ? completadosAntes - 1 : 0;
     }
-    _fechasCompletadas[habitoId]?.remove(hoy);
+    if (hoy != null) _fechasCompletadas[habitoId]?.remove(hoy);
     setState(() {});
     _publicarProgreso();
     HapticFeedback.selectionClick();
@@ -602,10 +607,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final List<Map<String, dynamic>> habitosDelDiaSeleccionado =
         semanaLista ? (_dias[_diaSeleccionado]['habitos'] as List<Map<String, dynamic>>) : const [];
 
-    // Futuro es estrictamente posterior a hoy: hoy mismo no es futuro. Ambas
-    // fechas normalizadas a medianoche para que la hora del reloj no decida.
-    // Hoy es el del servidor. Mientras la semana no ha cargado no se pinta
-    // ni la tira ni ninguna tarjeta de otro día, así que el valor de
+    // Hoy lo declara el servidor. Mientras la semana no ha cargado no se
+    // pinta ni la tira ni ninguna tarjeta de otro día, así que el valor de
     // respaldo no llega a decidir nada visible.
     final DateTime hoySinHora = () {
       final iso = _hoyIso;
@@ -617,6 +620,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final fecha = _fechaSeleccionada();
       return DateTime(fecha.year, fecha.month, fecha.day);
     }();
+    // Futuro es estrictamente posterior a hoy: hoy mismo no es futuro. Ambas
+    // fechas normalizadas a medianoche para que la hora del reloj no decida.
     final bool esFuturo = fechaSeleccionadaSinHora.isAfter(hoySinHora);
     // No se compara contra `_offsetSemana`: si la app se queda abierta
     // cruzando la medianoche del domingo, el offset sigue valiendo 0 y ya
