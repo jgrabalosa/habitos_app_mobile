@@ -183,8 +183,10 @@ Errores que ya se cometieron una vez. No se vuelven a cometer.
 
 ### Método de trabajo (vale para los cuatro repos)
 
-- **La primera línea de un prompt se comprueba, no se recuerda.** Los cuatro
-  repos están en `C:\Dev\Norday\`.
+- **La primera línea de un prompt se comprueba, no se recuerda.** Tres repos
+  están en `C:\Dev\Norday\` (`habitos-app`, `habitos_app_mobile`,
+  `norday_flutter_core`) y `conocimiento_app_mobile` está en
+  `C:\Dev\Conocimiento\`.
 - **Un solo agente por repo a la vez.** Todo lo que haga otro agente se revisa
   en el remoto antes de mergear.
 - **Las cifras de verificación se cuentan contra el repositorio**, nunca se
