@@ -49,7 +49,6 @@ class HomeShell extends StatefulWidget {
 class _HomeShellState extends State<HomeShell> {
   int _tabIndex = 0;
   int _usuarioId = 0;
-  String _nombre = '';
   bool _loading = true;
 
   /// Deslizar y tocar la barra mueven el mismo PageView, asi que el indice
@@ -139,28 +138,21 @@ class _HomeShellState extends State<HomeShell> {
     if (usuario == null || !mounted) return;
     setState(() {
       _usuarioId = usuario['usuarioId'] ?? 0;
-      _nombre = usuario['nombre'] ?? '';
       _loading = false;
     });
 
     if (widget.mostrarOnboarding) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _comprobarOnboarding());
+      WidgetsBinding.instance.addPostFrameCallback((_) => _mostrarOnboarding());
     }
   }
 
-  // Salvaguarda: en circunstancias normales un alta nueva siempre tiene 0
-  // avatares, pero si por lo que sea ya tiene alguno, no mostramos nada.
-  Future<void> _comprobarOnboarding() async {
+  // Antes esto preguntaba al backend si el usuario ya tenía algún avatar, para
+  // no enseñar el selector dos veces. Con los avatares retirados del catálogo
+  // esa pregunta devuelve siempre que no tiene ninguno, y el paso que los
+  // ofrecía ya no existe en el overlay: la condición dejó de significar nada.
+  void _mostrarOnboarding() {
     if (!mounted) return;
-    try {
-      final tieneAvatar = await SelectorAvatarGratis.tieneAlgunAvatar(_usuarioId);
-      if (!tieneAvatar && mounted) {
-        OnboardingOverlay.mostrar(context, usuarioId: _usuarioId);
-      }
-    } catch (_) {
-      // Sin conexion no se muestra el onboarding, pero tampoco se rompe el
-      // arranque: se volvera a intentar en el siguiente alta.
-    }
+    OnboardingOverlay.mostrar(context, usuarioId: _usuarioId);
   }
 
   Future<void> _logout() async {
@@ -245,22 +237,12 @@ class _HomeShellState extends State<HomeShell> {
               ),
             ),
           ),
-          title: _tabIndex == 0
-              ? GestureDetector(
-                  onTap: _abrirColeccion,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AvatarUsuario(nombre: _nombre, radius: 22),
-                      const SizedBox(width: 10),
-                      Flexible(
-                        child: Text(_nombre,
-                            overflow: TextOverflow.ellipsis),
-                      ),
-                    ],
-                  ),
-                )
-              : Text(titulos[_tabIndex]),
+          // En Hoy no va título: el avatar y el nombre se retiraron con los
+          // avatares, y la fecha no sube aquí porque dentro de Hoy es un
+          // navegador de semana, pegado a la tira que mueve. El hueco deja ver
+          // el fondo de la identidad. Colección sigue a un toque, en el botón
+          // de trofeo de `actions`.
+          title: _tabIndex == 0 ? null : Text(titulos[_tabIndex]),
           actions: [
             IconButton(
               tooltip: l.navColeccion,
