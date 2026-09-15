@@ -244,7 +244,7 @@
   },
   "a11yDiaSeleccionado": "seleccionado",
   "a11yDiaNoSeleccionado": "sin seleccionar",
-  "a11yResumenHeatmap": "{completados} de los últimos 10 días completados",
+  "a11yResumenHeatmap": "{completados} días completados esta semana",
   "@a11yResumenHeatmap": {
     "placeholders": {
       "completados": {

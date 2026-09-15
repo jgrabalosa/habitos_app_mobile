@@ -1002,7 +1002,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             _cargarHabitos();
           },
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+            padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
             child: Row(
               children: [
                 Expanded(
@@ -1217,11 +1217,20 @@ Widget _miniHeatmap(Habito h, TokensContextuales t) {
       return count >= meta;
     }
 
+    // La ventana es la semana natural, la misma que pinta TiraSemana arriba:
+    // así las siete casillas caen bajo los mismos días. Antes eran los diez
+    // últimos, que enseñaban lo que hubo pero no lo que queda.
+    //
+    // `lunesDeLaSemanaDe` y no `subtract(Duration(days:...))`: ver la nota de
+    // esa función sobre los cambios de horario a medianoche.
+    final lunesVentana = lunesDeLaSemanaDe(hoy);
+    final diasVentana =
+        List.generate(7, (i) => lunesVentana.add(Duration(days: i)));
+
     // Solo los días de la ventana que se pinta: `fechas` tiene todo el
     // historial del hábito y anunciar su tamaño daría un número imposible.
-    final fechasVentana = List.generate(10, (i) => hoy.subtract(Duration(days: 9 - i)))
-        .where((d) => fechas.contains(iso(d)))
-        .length;
+    final fechasVentana =
+        diasVentana.where((d) => fechas.contains(iso(d))).length;
 
     return Semantics(
       label: l.a11yResumenHeatmap(fechasVentana),
@@ -1230,12 +1239,23 @@ Widget _miniHeatmap(Habito h, TokensContextuales t) {
           // Aire entre la heatmap y el check: la fila no llega al borde
           padding: const EdgeInsets.only(right: 24),
           child: Row(
-            children: List.generate(10, (i) {
-              final d = hoy.subtract(Duration(days: 9 - i));
+            // Alineadas a la izquierda y con tamaño fijo, no repartiendo el
+            // ancho: con `Expanded` la altura de la celda la mandaba el ancho
+            // de la pantalla, y con siete celdas en vez de diez la fila habría
+            // CRECIDO un 43%. El bloque ya no llega hasta el check, pero todas
+            // las filas siguen alineadas entre sí porque el tamaño es el mismo.
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: List.generate(7, (i) {
+              final d = diasVentana[i];
               final bool lleno = fechas.contains(iso(d));
-              final bool esHoy = i == 9;
-              final bool esDescanso =
-                  conPlan && !lleno && !planificados.contains(d.weekday);
+              final bool esHoy = iso(d) == iso(hoy);
+              // Un día que todavía no ha llegado no puede pintarse como uno
+              // fallado. Se le da el mismo tratamiento que al día de descanso
+              // —punto pequeño, sin relleno—, que ya significa "aquí no se
+              // espera nada de ti".
+              final bool esFuturo = d.isAfter(hoy) && !lleno;
+              final bool esDescanso = esFuturo ||
+                  (conPlan && !lleno && !planificados.contains(d.weekday));
 
               final Widget celda;
               if (esDescanso) {
@@ -1274,11 +1294,9 @@ Widget _miniHeatmap(Habito h, TokensContextuales t) {
                 );
               }
 
-              return Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(right: i < 9 ? 5 : 0),
-                  child: AspectRatio(aspectRatio: 1, child: celda),
-                ),
+              return Padding(
+                padding: EdgeInsets.only(right: i < 6 ? 4 : 0),
+                child: SizedBox(width: 16, height: 16, child: celda),
               );
             }),
           ),

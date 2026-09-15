@@ -159,7 +159,7 @@
   },
   "a11yDiaSeleccionado": "selected",
   "a11yDiaNoSeleccionado": "not selected",
-  "a11yResumenHeatmap": "{completados} of the last 10 days completed",
+  "a11yResumenHeatmap": "{completados} days completed this week",
   "@a11yResumenHeatmap": {
     "placeholders": {
       "completados": {
