@@ -159,7 +159,7 @@
   },
   "a11yDiaSeleccionado": "selecionado",
   "a11yDiaNoSeleccionado": "não selecionado",
-  "a11yResumenHeatmap": "{completados} dos últimos 10 dias concluídos",
+  "a11yResumenHeatmap": "{completados} dias concluídos esta semana",
   "@a11yResumenHeatmap": {
     "placeholders": {
       "completados": {
