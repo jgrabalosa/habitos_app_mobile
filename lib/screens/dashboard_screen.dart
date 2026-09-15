@@ -814,8 +814,21 @@ class _DashboardScreenState extends State<DashboardScreen>
                               // con dos flechas es fácil perderse tres semanas
                               // atrás, y volver no debe costar tres toques.
                               if (_offsetSemana != 0)
-                                TextButton(
+                                FilledButton(
                                   onPressed: () => _irASemana(0),
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: t.primary,
+                                    foregroundColor: t.bg,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 0),
+                                    minimumSize: const Size(0, 32),
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    textStyle: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                   child: Text(l.navHoy),
                                 ),
                             ],
@@ -829,23 +842,27 @@ class _DashboardScreenState extends State<DashboardScreen>
                             // día, que es la única señal cromática de que ya
                             // está todo hecho; el resto del tiempo pinta cada
                             // forma el suyo.
-                            BurbujaContexto(
-                              texto: _fraseProgreso(
-                                  l, completados.length, totalHoy),
-                              color: completados.length == totalHoy
-                                  ? t.successText
-                                  : null,
+                            Center(
+                              child: BurbujaContexto(
+                                texto: _fraseProgreso(
+                                    l, completados.length, totalHoy),
+                                color: completados.length == totalHoy
+                                    ? t.successText
+                                    : null,
+                              ),
                             ),
                           ] else if (!viendoHoy &&
                               habitosDelDiaSeleccionado.isNotEmpty) ...[
                             const SizedBox(height: 4),
-                            BurbujaContexto(
-                              texto: _fraseProgreso(
-                                  l,
-                                  habitosDelDiaSeleccionado
-                                      .where((h) => h['completado'] == true)
-                                      .length,
-                                  habitosDelDiaSeleccionado.length),
+                            Center(
+                              child: BurbujaContexto(
+                                texto: _fraseProgreso(
+                                    l,
+                                    habitosDelDiaSeleccionado
+                                        .where((h) => h['completado'] == true)
+                                        .length,
+                                    habitosDelDiaSeleccionado.length),
+                              ),
                             ),
                           ],
                         ],
