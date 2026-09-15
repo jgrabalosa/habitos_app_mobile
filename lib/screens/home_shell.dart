@@ -176,59 +176,111 @@ class _HomeShellState extends State<HomeShell> {
     }
   }
 
-  /// El menú, que antes colgaba del AppBar. Abajo no cabe un desplegable, así
-  /// que es un panel que sube. No repite las tres pestañas: están en la misma
-  /// barra, a dos dedos. Los iconos y las claves de texto son los mismos que
-  /// tenía el PopupMenu, para que nada pueda divergir.
+  /// El menú, que antes colgaba del AppBar. Se ancla abajo a la derecha,
+  /// encima del botón que lo abre: el menú sale donde ha ido el dedo. Mide
+  /// lo que mide su entrada más larga, no el ancho de la pantalla. No
+  /// repite las tres pestañas: están en la misma barra, a dos dedos.
   void _abrirMenu() {
     final l = AppLocalizations.of(context)!;
     final t = tokens(context);
+    final id = identidad(context);
 
-    showModalBottomSheet<void>(
+    showDialog<void>(
       context: context,
-      backgroundColor: t.surface,
-      showDragHandle: true,
+      barrierColor: Colors.black.withValues(alpha: 0.35),
       builder: (hoja) {
         Widget entrada(IconData icono, String texto, VoidCallback alPulsar) {
-          return ListTile(
-            leading: Icon(icono, size: 20, color: t.text),
-            title: Text(texto, style: TextStyle(color: t.text)),
+          return InkWell(
             onTap: () {
-              // Se cierra la hoja ANTES de navegar: si no, la ruta nueva se
-              // empuja debajo del panel y queda tapada.
+              // Se cierra ANTES de navegar: si no, la ruta nueva se empuja
+              // debajo del panel y queda tapada.
               Navigator.pop(hoja);
               alPulsar();
             },
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Icon(icono, size: 18, color: t.points),
+                  const SizedBox(width: 12),
+                  Text(
+                    texto,
+                    style: TextStyle(color: t.text, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
           );
         }
 
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              entrada(LucideIcons.trophy, l.navColeccion, _abrirColeccion),
-              entrada(LucideIcons.medal, l.logrosTitulo, _abrirLogros),
-              entrada(
-                LucideIcons.store,
-                // El título sale del paquete, que es de quien es la pantalla:
-                // aquí no se duplica la clave.
-                NordayCoreLocalizations.of(context)!.tiendaTitulo,
-                _abrirTienda,
+        // En vez del Divider de borde a borde: un filo corto que se
+        // desvanece por los dos lados. Separa lo que uno abre por gusto de
+        // lo que uno abre por necesidad, sin cortar el panel en dos.
+        final filo = Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Center(
+            child: Container(
+              height: 1,
+              width: 48,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    t.points.withValues(alpha: 0.0),
+                    t.points.withValues(alpha: 0.45),
+                    t.points.withValues(alpha: 0.0),
+                  ],
+                ),
               ),
-              const Divider(height: 1),
-              entrada(LucideIcons.userRound, l.perfilTitulo, () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => PerfilScreen(
-                      usuarioId: _usuarioId,
-                      destinoTrasLogin: destinoTrasLogin,
+            ),
+          ),
+        );
+
+        return Align(
+          alignment: Alignment.bottomRight,
+          child: Padding(
+            // Justo encima de la barra de navegación, separado del borde.
+            padding: EdgeInsets.only(
+              right: 8,
+              bottom: MediaQuery.of(context).padding.bottom + 88,
+              left: 8,
+            ),
+            child: Material(
+              color: t.surface,
+              elevation: 8,
+              borderRadius: BorderRadius.circular(id.radioSecundario),
+              clipBehavior: Clip.antiAlias,
+              child: IntrinsicWidth(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    entrada(LucideIcons.trophy, l.navColeccion, _abrirColeccion),
+                    entrada(LucideIcons.medal, l.logrosTitulo, _abrirLogros),
+                    entrada(
+                      LucideIcons.store,
+                      // El título sale del paquete, que es de quien es la
+                      // pantalla: aquí no se duplica la clave.
+                      NordayCoreLocalizations.of(context)!.tiendaTitulo,
+                      _abrirTienda,
                     ),
-                  ),
-                );
-              }),
-              entrada(LucideIcons.logOut, l.shellCerrarSesion, _logout),
-            ],
+                    filo,
+                    entrada(LucideIcons.userRound, l.perfilTitulo, () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => PerfilScreen(
+                            usuarioId: _usuarioId,
+                            destinoTrasLogin: destinoTrasLogin,
+                          ),
+                        ),
+                      );
+                    }),
+                    entrada(LucideIcons.logOut, l.shellCerrarSesion, _logout),
+                  ],
+                ),
+              ),
+            ),
           ),
         );
       },
