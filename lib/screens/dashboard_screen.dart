@@ -814,8 +814,21 @@ class _DashboardScreenState extends State<DashboardScreen>
                               // con dos flechas es fácil perderse tres semanas
                               // atrás, y volver no debe costar tres toques.
                               if (_offsetSemana != 0)
-                                TextButton(
+                                FilledButton(
                                   onPressed: () => _irASemana(0),
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: t.primary,
+                                    foregroundColor: t.bg,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 0),
+                                    minimumSize: const Size(0, 32),
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    textStyle: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                   child: Text(l.navHoy),
                                 ),
                             ],
