@@ -13,6 +13,7 @@ import '../models/habito.dart';
 import '../widgets/estados_hoy.dart';
 import '../widgets/identidad_ui.dart';
 import '../widgets/tira_semana.dart';
+import '../widgets/transito_fila.dart';
 import 'habito_detalle_screen.dart';
 
 String formatearTituloDelDia({
@@ -69,7 +70,8 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends State<DashboardScreen>
+    with SingleTickerProviderStateMixin {
   List<Habito> _habitos = [];
   final Map<int, Map<String, dynamic>> _progreso = {}; // habitoId -> {completadoHoy, completadosPeriodo, meta}
   final Map<int, Set<String>> _fechasCompletadas = {}; // habitoId -> fechas ISO (mini-heatmap)
@@ -101,6 +103,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   /// usuario no podía distinguir un fallo de red de una cuenta recién creada.
   bool _errorCarga = false;
 
+  /// El tránsito visual de una fila de "pendientes" a "completados" al
+  /// completarse hoy, cuando quedan más pendientes detrás. `null` en reposo.
+  AnimationController? _ctrlTransito;
+  int? _habitoEnTransito;
+
   /// Caida al codigo crudo si llega una frecuencia desconocida, igual que
   /// hace Catalogos: nunca se deja al usuario sin texto.
   String _frecuenciaLegible(AppLocalizations l, String codigo) => switch (codigo) {
@@ -119,6 +126,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void dispose() {
     habitosCambiadosNotifier.removeListener(_alCambiarHabitos);
+    _ctrlTransito?.dispose();
     super.dispose();
   }
 
@@ -313,6 +321,42 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return (p['completadosPeriodo'] ?? 0) >= (p['meta'] ?? 1);
   }
 
+  /// Arranca el tránsito visual de la fila de `habitoId` de "pendientes" a
+  /// "completados". Devuelve la duración real del gesto (para que quien
+  /// celebra sepa cuánto esperar), o `Duration.zero` si no se ha animado
+  /// nada —con "reducir movimiento" la fila salta igual que antes.
+  Duration _arrancarTransito(int habitoId) {
+    if (MediaQuery.maybeDisableAnimationsOf(context) ?? false) {
+      return Duration.zero;
+    }
+
+    // Si ya había un tránsito en vuelo, se da por completado de golpe antes
+    // de empezar el nuevo: no se permiten dos a la vez.
+    _ctrlTransito?.dispose();
+    _ctrlTransito = null;
+    _habitoEnTransito = null;
+
+    // Mismo camino que ya usa este fichero para llegar a la identidad
+    // equipada (ver _miniHeatmap).
+    final id = identidad(context);
+    // Dos fases —hundimiento y traslado— sobre el mismo controller:
+    // RanuraTransito reparte 0.0-0.5 y 0.5-1.0 de su propio progreso.
+    final duracion = id.duracionTransicion * 2;
+
+    final ctrl = AnimationController(vsync: this, duration: duracion);
+    _ctrlTransito = ctrl;
+    _habitoEnTransito = habitoId;
+    ctrl.forward().then((_) {
+      if (!mounted) return;
+      setState(() {
+        _habitoEnTransito = null;
+      });
+      ctrl.dispose();
+      _ctrlTransito = null;
+    });
+    return duracion;
+  }
+
   Future<void> _completar(int habitoId, {DateTime? fecha}) async {
     List<String> logrosOtorgados;
     int puntosGanados;
@@ -374,6 +418,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
     if (esHoy && hoyIso != null) _fechasCompletadas[habitoId]?.add(hoyIso);
     setState(() {}); // el cambio de progreso dispara la animación del check
+
+    // El tránsito de la fila a "completados" sólo tiene sentido si se ve hoy
+    // y si queda al menos otra pendiente detrás: si esta era la última, ese
+    // caso lo trata otra tarea y aquí se comporta exactamente como hoy.
+    final quedanPendientes =
+        _habitos.any((h) => h.habitoId != habitoId && !_estaHecho(h));
+    final Duration duracionTransito = esHoy && quedanPendientes
+        ? _arrancarTransito(habitoId)
+        : Duration.zero;
+
     _publicarProgreso();
 
     // Sincronización real en segundo plano (por si el conteo local se desviara)
@@ -390,7 +444,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // siguiente refresco; avisar de un error aquí confundiría.
     }).catchError((_) {});
 
-    await Future.delayed(const Duration(milliseconds: 400));
+    // Si arrancó el tránsito de la fila (hundimiento + traslado), la
+    // celebración espera a que termine: con la pausa fija de 400 ms de antes
+    // entraría a mitad del gesto. Sin tránsito (última pendiente, "reducir
+    // movimiento", o un completado que no es de hoy) se conserva esa pausa.
+    await Future.delayed(duracionTransito > Duration.zero
+        ? duracionTransito
+        : const Duration(milliseconds: 400));
 
     // Secuencia: logro (si hay) → puntos → valoración (si toca)
     if (logrosOtorgados.isNotEmpty) {
@@ -607,14 +667,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // _habitos ya viene filtrado por el backend (sólo lo que toca hoy), así
     // que ya no hace falta apartar aquí lo que no toca: todo lo que llega
     // cuenta para el resumen del día.
+    // El hábito en tránsito (ver _arrancarTransito) se queda en su posición
+    // exacta de "pendientes" aunque _estaHecho ya diga true, y aparece
+    // ADEMÁS al final de "completados": las dos apariciones conviven
+    // mientras dura el gesto, una encogiéndose y otra creciendo. Ninguna de
+    // las dos listas se reordena para conseguirlo.
     final pendientes = <Habito>[];
     final completados = <Habito>[];
     for (final h in _habitos) {
-      if (_estaHecho(h)) {
+      if (_estaHecho(h) && h.habitoId != _habitoEnTransito) {
         completados.add(h);
       } else {
         pendientes.add(h);
       }
+    }
+    if (_habitoEnTransito != null) {
+      final indiceEnTransito =
+          _habitos.indexWhere((h) => h.habitoId == _habitoEnTransito);
+      if (indiceEnTransito != -1) completados.add(_habitos[indiceEnTransito]);
     }
     final totalHoy = _habitos.length;
 
@@ -775,7 +845,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     if (pendientes.isEmpty)
                       const TarjetaTodoHecho()
                     else
-                      ...pendientes.map((h) => _habitoCard(l, h, false, t)),
+                      ...pendientes.map((h) => _filaEnLista(l, h, false, t)),
                     if (completados.isNotEmpty) ...[
                       const SizedBox(height: 16),
                       Text(l.dashCompletados,
@@ -784,7 +854,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               .titleSmall
                               ?.copyWith(color: t.textMuted)),
                       const SizedBox(height: 8),
-                      ...completados.map((h) => _habitoCard(l, h, true, t)),
+                      ...completados.map((h) => _filaEnLista(l, h, true, t)),
                     ],
                   ],
                 ] else if (habitosDelDiaSeleccionado.isEmpty)
@@ -839,6 +909,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (hechos == total) return l.dashProgresoPerfecto;
     if (hechos / total >= 0.5) return l.dashProgresoCasi;
     return l.dashProgresoBuenRitmo;
+  }
+
+  /// Una fila de la lista de Hoy: la del hábito en tránsito (ver
+  /// `_arrancarTransito`) se pinta dentro de un `RanuraTransito` animado por
+  /// `_ctrlTransito`, una vez como origen (en pendientes) y otra como
+  /// destino (en completados); las demás se pintan tal cual, sin envolver.
+  Widget _filaEnLista(AppLocalizations l, Habito h, bool hecho, TokensContextuales t) {
+    final ctrl = _ctrlTransito;
+    if (ctrl == null || h.habitoId != _habitoEnTransito) {
+      return _habitoCard(l, h, hecho, t);
+    }
+
+    final id = identidad(context);
+    // Las dos ranuras pintan la MISMA fila ya completada —una yéndose, otra
+    // llegando—: `hecho` aquí sólo elige el papel (destino/origen), no el
+    // aspecto de la tarjeta, que siempre es el de "hecho".
+    return AnimatedBuilder(
+      animation: ctrl,
+      child: _habitoCard(l, h, true, t),
+      builder: (context, child) => RanuraTransito(
+        progreso: ctrl.value,
+        papel: hecho ? PapelTransito.destino : PapelTransito.origen,
+        curva: id.curvaTransicion,
+        child: child!,
+      ),
+    );
   }
 
   Widget _habitoCard(AppLocalizations l, Habito h, bool hecho, TokensContextuales t) {
