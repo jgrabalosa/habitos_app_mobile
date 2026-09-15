@@ -730,16 +730,38 @@ class _DashboardScreenState extends State<DashboardScreen>
               padding: EdgeInsets.fromLTRB(
                   16, 16, 16, 96 + MediaQuery.of(context).padding.bottom),
               children: [
+                // La tira va la primera, pegada al borde: es lo que más se
+                // toca y ahora no hay barra superior que la empuje hacia
+                // abajo. Debajo queda la franja de contexto —fecha, frase y
+                // anillo— como una sola banda.
+                //
+                // Las flechas siguen en la franja y no en la tira: la tira es
+                // un Row de siete Expanded sin holgura.
+                if (semanaLista) ...[
+                  TiraSemana(
+                    dias: _dias,
+                    diaSeleccionado: _diaSeleccionado,
+                    indiceHoy: _indiceHoy,
+                    onSeleccionar: (i) {
+                      setState(() => _diaSeleccionado = i);
+                      // Fuera del setState pero dentro del callback: esto lo
+                      // dispara un gesto del usuario, no un build, así que
+                      // notificar aquí es seguro.
+                      _publicarProgreso();
+                    },
+                  ),
+                  const SizedBox(height: 13),
+                ],
                 Row(
                   children: [
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Una sola línea: el título grande no informaba de
-                          // nada —ya sabes dónde estás por la pestaña marcada—
-                          // y la altura que libera es justo donde tiene que
-                          // respirar la constelación.
+                          // La fila de navegación del día: flechas, fecha, y
+                          // el botón de volver a esta semana cuando te has
+                          // ido. Va debajo de la tira, no encima, porque la
+                          // tira es lo que gobierna.
                           Row(
                             children: [
                               // Las flechas van aquí y no en la tira porque la
@@ -754,12 +776,32 @@ class _DashboardScreenState extends State<DashboardScreen>
                                 color: t.textMuted,
                                 onPressed: () => _irASemana(_offsetSemana - 1),
                               ),
+                              // Una línea siempre. `headlineMedium` partía
+                              // «Hoy, 15 de septiembre» en dos y dejaba las
+                              // flechas descolgadas respecto a la primera
+                              // mitad. `titleLarge` cabe en español, y el
+                              // FittedBox cubre lo que no puedo saber desde
+                              // aquí: los meses largos en pt y en, y el
+                              // escalado de fuente del sistema. Encoge sólo
+                              // cuando hace falta; si cabe, no toca nada.
+                              //
+                              // No se acorta el formato de la fecha: lo fijan
+                              // dos tests que comparan cadenas exactas en los
+                              // tres idiomas, y ese cambio va aparte.
                               Flexible(
-                                child: Text(_tituloDelDia(context, l, viendoHoy),
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    _tituloDelDia(context, l, viendoHoy),
+                                    maxLines: 1,
+                                    softWrap: false,
                                     style: Theme.of(context)
                                         .textTheme
-                                        .headlineMedium
-                                        ?.copyWith(color: t.text)),
+                                        .titleLarge
+                                        ?.copyWith(color: t.text),
+                                  ),
+                                ),
                               ),
                               IconButton(
                                 icon: const Icon(LucideIcons.chevronRight),
@@ -809,29 +851,19 @@ class _DashboardScreenState extends State<DashboardScreen>
                         ],
                       ),
                     ),
+                    // 64 en vez del tamaño por defecto: a su tamaño anterior
+                    // competía con la fecha y la empujaba contra el borde.
+                    // Sigue siendo el objeto redondo en un bloque de
+                    // rectángulos, que es lo que hace que se vea.
                     if (totalHoy > 0)
                       AnilloProgreso(
                         actual: completados.length,
                         total: totalHoy,
+                        tamano: 64,
                       ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                if (semanaLista) ...[
-                  TiraSemana(
-                    dias: _dias,
-                    diaSeleccionado: _diaSeleccionado,
-                    indiceHoy: _indiceHoy,
-                    onSeleccionar: (i) {
-                      setState(() => _diaSeleccionado = i);
-                      // Fuera del setState pero dentro del callback: esto lo
-                      // dispara un gesto del usuario, no un build, así que
-                      // notificar aquí es seguro.
-                      _publicarProgreso();
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                ],
                 if (semanaLista && _flexibles.isNotEmpty) ...[
                   _filaFlexibles(l, t),
                   const SizedBox(height: 16),
