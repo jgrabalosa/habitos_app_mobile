@@ -60,6 +60,12 @@ class _HomeShellState extends State<HomeShell> {
   List<String> _titulos(AppLocalizations l) =>
       [l.navHoy, l.navMascota, l.navHabitos];
 
+  /// Etiquetas de la barra inferior: las tres pestañas más el menú, que no es
+  /// una pestaña sino un panel. Va aparte de `_titulos` a propósito, porque
+  /// `_titulos` nombra páginas del PageView y el menú no lo es.
+  List<String> _etiquetasNav(AppLocalizations l) =>
+      [..._titulos(l), l.navMenu];
+
   DateTime? _ultimaPulsacionAtras;
 
   void _irAPestana(int i) {
@@ -170,6 +176,65 @@ class _HomeShellState extends State<HomeShell> {
     }
   }
 
+  /// El menú, que antes colgaba del AppBar. Abajo no cabe un desplegable, así
+  /// que es un panel que sube. No repite las tres pestañas: están en la misma
+  /// barra, a dos dedos. Los iconos y las claves de texto son los mismos que
+  /// tenía el PopupMenu, para que nada pueda divergir.
+  void _abrirMenu() {
+    final l = AppLocalizations.of(context)!;
+    final t = tokens(context);
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: t.surface,
+      showDragHandle: true,
+      builder: (hoja) {
+        Widget entrada(IconData icono, String texto, VoidCallback alPulsar) {
+          return ListTile(
+            leading: Icon(icono, size: 20, color: t.text),
+            title: Text(texto, style: TextStyle(color: t.text)),
+            onTap: () {
+              // Se cierra la hoja ANTES de navegar: si no, la ruta nueva se
+              // empuja debajo del panel y queda tapada.
+              Navigator.pop(hoja);
+              alPulsar();
+            },
+          );
+        }
+
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              entrada(LucideIcons.trophy, l.navColeccion, _abrirColeccion),
+              entrada(LucideIcons.medal, l.logrosTitulo, _abrirLogros),
+              entrada(
+                LucideIcons.store,
+                // El título sale del paquete, que es de quien es la pantalla:
+                // aquí no se duplica la clave.
+                NordayCoreLocalizations.of(context)!.tiendaTitulo,
+                _abrirTienda,
+              ),
+              const Divider(height: 1),
+              entrada(LucideIcons.userRound, l.perfilTitulo, () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => PerfilScreen(
+                      usuarioId: _usuarioId,
+                      destinoTrasLogin: destinoTrasLogin,
+                    ),
+                  ),
+                );
+              }),
+              entrada(LucideIcons.logOut, l.shellCerrarSesion, _logout),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -178,7 +243,8 @@ class _HomeShellState extends State<HomeShell> {
 
     final t = tokens(context);
     final l = AppLocalizations.of(context)!;
-    final titulos = _titulos(l);
+    final etiquetas = _etiquetasNav(l);
+    const indiceMenu = 3;
 
     // Colección ya no es pestaña: se abre desde el icono del AppBar, con su
     // propia cabecera. Aquí solo viven las tres que se deslizan.
@@ -198,184 +264,10 @@ class _HomeShellState extends State<HomeShell> {
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          // Transparente para que el cielo de FondoEstelar se vea a través de
-          // la barra en vez de quedar tapado por un AppBar opaco.
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          // Imprescindible: sin esto, Material 3 tiñe el AppBar en cuanto hay
-          // scroll debajo y vuelve a tapar el cielo.
-          scrolledUnderElevation: 0,
-          // El body pasa por detrás de la barra (extendBodyBehindAppBar), y
-          // con la barra totalmente transparente el texto que sube se corta a
-          // media letra sin que nada indique que hay una capa encima. Este
-          // degradado es ese límite: el contenido se desvanece al entrar en la
-          // zona en vez de cortarse.
-          //
-          // No es opaco a propósito. Arriba deja pasar algo de cielo y abajo
-          // llega a cero, así que la barra sigue sin tapar el fondo. De paso
-          // mejora el nombre de usuario y los iconos, que son de los pocos
-          // textos de la app que van directos sobre el cielo sin superficie
-          // debajo.
-          //
-          // IgnorePointer es obligatorio: sin él el degradado se traga los
-          // toques del avatar y del menú.
-          flexibleSpace: IgnorePointer(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    t.bg.withValues(alpha: 0.92),
-                    t.bg.withValues(alpha: 0.55),
-                    t.bg.withValues(alpha: 0.0),
-                  ],
-                  stops: const [0.0, 0.6, 1.0],
-                ),
-              ),
-            ),
-          ),
-          // En Hoy no va título: el avatar y el nombre se retiraron con los
-          // avatares, y la fecha no sube aquí porque dentro de Hoy es un
-          // navegador de semana, pegado a la tira que mueve. El hueco deja ver
-          // el fondo de la identidad. Colección sigue a un toque, en el botón
-          // de trofeo de `actions`.
-          title: _tabIndex == 0 ? null : Text(titulos[_tabIndex]),
-          actions: [
-            IconButton(
-              tooltip: l.navColeccion,
-              icon: Icon(LucideIcons.trophy, color: t.points),
-              onPressed: _abrirColeccion,
-            ),
-            IconButton(
-              tooltip: l.logrosTitulo,
-              icon: Icon(LucideIcons.medal, color: t.textMuted),
-              onPressed: _abrirLogros,
-            ),
-            PopupMenuButton<String>(
-              icon: Icon(LucideIcons.menu, color: t.textMuted),
-              onSelected: (valor) {
-                switch (valor) {
-                  case 'hoy':
-                    _irAPestana(0);
-                  case 'mascota':
-                    _irAPestana(1);
-                  case 'habitos':
-                    _irAPestana(2);
-                  case 'coleccion':
-                    _abrirColeccion();
-                  case 'logros':
-                    _abrirLogros();
-                  case 'tienda':
-                    _abrirTienda();
-                  case 'cuenta':
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => PerfilScreen(
-                          usuarioId: _usuarioId,
-                          destinoTrasLogin: destinoTrasLogin,
-                        ),
-                      ),
-                    );
-                  case 'logout':
-                    _logout();
-                }
-              },
-              // El menu lleva a todo: las tres pestañas que se deslizan y las
-              // dos pantallas que solo tenian icono arriba. Los iconos son los
-              // mismos que en la barra inferior y el AppBar, y los textos las
-              // mismas claves, para que nada pueda divergir.
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 'hoy',
-                  child: Row(
-                    children: [
-                      const Icon(LucideIcons.house, size: 20),
-                      const SizedBox(width: 12),
-                      Text(l.navHoy),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'mascota',
-                  child: Row(
-                    children: [
-                      const Icon(LucideIcons.pawPrint, size: 20),
-                      const SizedBox(width: 12),
-                      Text(l.navMascota),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'habitos',
-                  child: Row(
-                    children: [
-                      const Icon(LucideIcons.listChecks, size: 20),
-                      const SizedBox(width: 12),
-                      Text(l.navHabitos),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'coleccion',
-                  child: Row(
-                    children: [
-                      const Icon(LucideIcons.trophy, size: 20),
-                      const SizedBox(width: 12),
-                      Text(l.navColeccion),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'logros',
-                  child: Row(
-                    children: [
-                      const Icon(LucideIcons.medal, size: 20),
-                      const SizedBox(width: 12),
-                      Text(l.logrosTitulo),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'tienda',
-                  child: Row(
-                    children: [
-                      const Icon(LucideIcons.store, size: 20),
-                      const SizedBox(width: 12),
-                      // El título sale del paquete, que es de quien es la
-                      // pantalla: aquí no se duplica la clave.
-                      Text(NordayCoreLocalizations.of(context)!.tiendaTitulo),
-                    ],
-                  ),
-                ),
-                const PopupMenuDivider(),
-                PopupMenuItem(
-                  value: 'cuenta',
-                  child: Row(
-                    children: [
-                      const Icon(LucideIcons.userRound, size: 20),
-                      const SizedBox(width: 12),
-                      Text(l.perfilTitulo),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'logout',
-                  child: Row(
-                    children: [
-                      const Icon(LucideIcons.logOut, size: 20),
-                      const SizedBox(width: 12),
-                      Text(l.shellCerrarSesion),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+        // Sin barra superior. La tenía para el avatar y el nombre, que se
+        // fueron con los avatares, y para dos iconos que el menú ya lleva.
+        // Quitarla sube el contenido unos 56 px, que es lo que necesitaba la
+        // pantalla Hoy. El menú vive ahora en la barra inferior.
         body: Stack(
           // Un hijo no posicionado de Stack recibe constraints holgadas, no
           // las ajustadas que daba body: directamente: sin esto el contenido
@@ -397,10 +289,9 @@ class _HomeShellState extends State<HomeShell> {
                 key: ValueKey('constelacion'),
                 child: CapaProgresoIdentidad(),
               ),
-            // `extendBodyBehindAppBar` ya mete la altura del AppBar en el
-            // padding del MediaQuery del body, así que este SafeArea aparta
-            // la barra de estado Y el AppBar. Añadir aquí kToolbarHeight
-            // reservaba el mismo espacio dos veces.
+            // Sin AppBar, este SafeArea sólo aparta la barra de estado del
+            // sistema. Es lo único que separa el contenido del borde de
+            // arriba, así que no se puede quitar.
             SafeArea(
               key: const ValueKey('paginas'),
               child: PageView(
@@ -425,12 +316,22 @@ class _HomeShellState extends State<HomeShell> {
           data: barraNavegacionIdentidad(
               identidad(context), t, Theme.of(context).textTheme.labelMedium),
           child: NavigationBar(
+            // `selectedIndex` sigue valiendo 0, 1 o 2: el menú es el cuarto
+            // destino pero nunca queda seleccionado, porque no es una página.
+            // Al volver de la hoja, la pestaña marcada es la que ya estaba.
             selectedIndex: _tabIndex,
-            onDestinationSelected: _irAPestana,
+            onDestinationSelected: (i) {
+              if (i == indiceMenu) {
+                _abrirMenu();
+                return;
+              }
+              _irAPestana(i);
+            },
             destinations: [
-              NavigationDestination(icon: const Icon(LucideIcons.house), label: titulos[0]),
-              NavigationDestination(icon: const Icon(LucideIcons.pawPrint), label: titulos[1]),
-              NavigationDestination(icon: const Icon(LucideIcons.listChecks), label: titulos[2]),
+              NavigationDestination(icon: const Icon(LucideIcons.house), label: etiquetas[0]),
+              NavigationDestination(icon: const Icon(LucideIcons.pawPrint), label: etiquetas[1]),
+              NavigationDestination(icon: const Icon(LucideIcons.listChecks), label: etiquetas[2]),
+              NavigationDestination(icon: const Icon(LucideIcons.menu), label: etiquetas[3]),
             ],
           ),
         ),
