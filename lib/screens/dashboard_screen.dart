@@ -829,23 +829,27 @@ class _DashboardScreenState extends State<DashboardScreen>
                             // día, que es la única señal cromática de que ya
                             // está todo hecho; el resto del tiempo pinta cada
                             // forma el suyo.
-                            BurbujaContexto(
-                              texto: _fraseProgreso(
-                                  l, completados.length, totalHoy),
-                              color: completados.length == totalHoy
-                                  ? t.successText
-                                  : null,
+                            Center(
+                              child: BurbujaContexto(
+                                texto: _fraseProgreso(
+                                    l, completados.length, totalHoy),
+                                color: completados.length == totalHoy
+                                    ? t.successText
+                                    : null,
+                              ),
                             ),
                           ] else if (!viendoHoy &&
                               habitosDelDiaSeleccionado.isNotEmpty) ...[
                             const SizedBox(height: 4),
-                            BurbujaContexto(
-                              texto: _fraseProgreso(
-                                  l,
-                                  habitosDelDiaSeleccionado
-                                      .where((h) => h['completado'] == true)
-                                      .length,
-                                  habitosDelDiaSeleccionado.length),
+                            Center(
+                              child: BurbujaContexto(
+                                texto: _fraseProgreso(
+                                    l,
+                                    habitosDelDiaSeleccionado
+                                        .where((h) => h['completado'] == true)
+                                        .length,
+                                    habitosDelDiaSeleccionado.length),
+                              ),
                             ),
                           ],
                         ],
