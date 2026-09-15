@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 
+/// Cuánto se amplifica la parte de la curva que sobrepasa 1 (el
+/// rebote de `easeOutBack`, la curva de Dulce). El rango base de
+/// escala es de sólo 0.04, así que sin amplificar, un overshoot
+/// del 10% quedaba en un 0.4% de escala y no se veía.
+const double _factorRebote = 0.30;
+
 /// A qué lado del tránsito pertenece esta ranura: la posición que la fila
 /// abandona (`origen`) o la que va a ocupar (`destino`). Las dos existen a la
 /// vez mientras dura el gesto — es lo que hace posible que se crucen.
@@ -68,7 +74,10 @@ class RanuraTransito extends StatelessWidget {
     final alturaDestino = t.clamp(0.0, 1.0);
     return switch (papel) {
       PapelTransito.origen => (1.0 - alturaDestino, 0.96),
-      PapelTransito.destino => (alturaDestino, 0.96 + 0.04 * t),
+      PapelTransito.destino => (
+        alturaDestino,
+        0.96 + 0.04 * alturaDestino + (t - alturaDestino) * _factorRebote,
+      ),
     };
   }
 

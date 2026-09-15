@@ -34,6 +34,37 @@ Future<double> alturaDe(
   return tester.getSize(find.byType(RanuraTransito)).height;
 }
 
+/// Escala real que aplica la ranura para un `progreso`/`papel`/`curva`
+/// dados, leyendo la matriz del `Transform` que monta `RanuraTransito` en
+/// vez del cálculo interno: es lo que demuestra que el rebote llega de
+/// verdad a la pantalla, no sólo a la fórmula.
+Future<double> escalaDe(
+  WidgetTester tester, {
+  required double progreso,
+  required PapelTransito papel,
+  required Curve curva,
+}) async {
+  await tester.pumpWidget(MaterialApp(
+    home: Scaffold(
+      body: Column(
+        children: [
+          RanuraTransito(
+            progreso: progreso,
+            papel: papel,
+            curva: curva,
+            child: const SizedBox(height: 100, width: 50),
+          ),
+        ],
+      ),
+    ),
+  ));
+  final transform = tester.widget<Transform>(find.descendant(
+    of: find.byType(RanuraTransito),
+    matching: find.byType(Transform),
+  ));
+  return transform.transform.getMaxScaleOnAxis();
+}
+
 void main() {
   const curvas = [
     Curves.easeOutCubic,
@@ -110,6 +141,44 @@ void main() {
       ));
 
       expect(tester.takeException(), isNull, reason: 'progreso=$progreso');
+    }
+  });
+
+  testWidgets(
+      'con Curves.easeOutBack la escala del destino supera 1.0 y llega '
+      'al menos a 1.02', (tester) async {
+    double maxEscala = 0.0;
+
+    for (int i = 0; i <= 20; i++) {
+      final progreso = i * 0.05;
+      final escala = await escalaDe(tester,
+          progreso: progreso,
+          papel: PapelTransito.destino,
+          curva: Curves.easeOutBack);
+      if (escala > maxEscala) maxEscala = escala;
+    }
+
+    expect(maxEscala, greaterThanOrEqualTo(1.02));
+  });
+
+  testWidgets(
+      'sin rebote en la curva, la escala del destino no supera 1.0 en '
+      'ningún punto del recorrido', (tester) async {
+    const curvasSinRebote = [
+      Curves.easeOutCubic,
+      Curves.easeOutExpo,
+      Curves.easeInOutSine,
+    ];
+
+    for (final curva in curvasSinRebote) {
+      for (int i = 0; i <= 20; i++) {
+        final progreso = i * 0.05;
+        final escala = await escalaDe(tester,
+            progreso: progreso, papel: PapelTransito.destino, curva: curva);
+
+        expect(escala, lessThanOrEqualTo(1.0),
+            reason: 'curva=$curva progreso=$progreso');
+      }
     }
   });
 }
