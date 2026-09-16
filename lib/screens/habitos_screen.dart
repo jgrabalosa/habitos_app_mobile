@@ -132,6 +132,9 @@ class _HabitosScreenState extends State<HabitosScreen> {
           // este botón se ha podido pulsar es porque era su turno.
           final recorrido = RecorridoOnboarding.instancia;
           if (recorrido.activo) recorrido.avanzar();
+          // Y se apaga mientras la creación está abierta: esa pantalla se usa
+          // entera, así que no puede haber un velo tapándole el guardar.
+          recorrido.pausar();
 
           final result = await Navigator.push(
             context,
@@ -152,6 +155,8 @@ class _HabitosScreenState extends State<HabitosScreen> {
             // marca vuelve a este botón.
             recorrido.retroceder();
           }
+          // Se reanuda al final, cuando el paso ya es el que toca.
+          recorrido.reanudar();
         },
         child: const Icon(LucideIcons.plus),
       ),
