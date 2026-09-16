@@ -147,6 +147,10 @@ class _HabitosScreenState extends State<HabitosScreen> {
             // Guardado: el recorrido pasa a la marca del check, que vive en
             // Hoy. Devolver al usuario a esa pestaña es cosa del shell.
             if (recorrido.activo) recorrido.avanzar();
+          } else if (recorrido.activo) {
+            // Se volvió sin guardar: se deshace el avance de arriba y la
+            // marca vuelve a este botón.
+            recorrido.retroceder();
           }
         },
         child: const Icon(LucideIcons.plus),
