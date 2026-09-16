@@ -64,7 +64,12 @@ String? isoDeSemanaDesplazada(String? hoyIso, int offsetSemanas) {
 }
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+  /// True cuando Hoy es la pestaña visible. El `PageView` la mantiene viva,
+  /// así que su `initState` no se repite al volver: este es el único aviso.
+  /// Mismo mecanismo que `activa` en `MascotaScreen`.
+  final bool activa;
+
+  const DashboardScreen({super.key, this.activa = true});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -121,6 +126,36 @@ class _DashboardScreenState extends State<DashboardScreen>
     super.initState();
     _cargarDatos();
     habitosCambiadosNotifier.addListener(_alCambiarHabitos);
+  }
+
+  @override
+  void didUpdateWidget(covariant DashboardScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.activa && !oldWidget.activa) {
+      _volverAHoy();
+    }
+  }
+
+  /// Al volver a la pestaña se vuelve siempre al día de hoy. Sin esto, el día
+  /// y la semana que estuvieras mirando sobreviven al cambio de pestaña,
+  /// porque la pantalla no se destruye.
+  Future<void> _volverAHoy() async {
+    if (!mounted) return;
+    if (_offsetSemana == 0) {
+      // La semana de hoy ya está en pantalla: basta con mover el día. Sin
+      // recarga, que no hace falta y parpadearía.
+      if (_indiceHoy >= 0 && _diaSeleccionado != _indiceHoy) {
+        setState(() => _diaSeleccionado = _indiceHoy);
+      }
+      return;
+    }
+    // Otra semana: hay que traerla. No se toca `_diaSeleccionado` a mano
+    // porque no hace falta: la conservación por fecha de `_cargarSemana`
+    // buscará un día que es de la semana vieja, no lo encontrará, y caerá
+    // sola en `_indiceHoy`. Ponerlo a -1 aquí reventaría el build de en
+    // medio, que indexa `_dias[_diaSeleccionado]` sin guarda.
+    setState(() => _offsetSemana = 0);
+    await _cargarSemana();
   }
 
   @override
