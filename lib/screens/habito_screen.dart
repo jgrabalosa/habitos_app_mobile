@@ -6,6 +6,8 @@ import '../services/analytics_service.dart';
 import '../l10n/catalogos.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/habito.dart';
+import '../services/anclas_recorrido.dart';
+import '../services/recorrido_onboarding.dart';
 
 class HabitoScreen extends StatefulWidget {
   final int usuarioId;
@@ -428,6 +430,13 @@ class _HabitoScreenState extends State<HabitoScreen> {
                       style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 8),
                   SizedBox(
+                    // Ancla del recorrido guiado. Sólo se engancha mientras el
+                    // recorrido corre: una GlobalKey no puede estar en dos
+                    // widgets a la vez, y esta pantalla puede abrirse otra vez
+                    // para editar.
+                    key: RecorridoOnboarding.instancia.activo
+                        ? AnclasRecorrido.recomendados
+                        : null,
                     height: 56,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
