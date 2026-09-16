@@ -76,6 +76,21 @@ class RecorridoOnboarding extends ChangeNotifier {
       return;
     }
     _reintentos = 0;
+    notifyListeners();
+    _repintarTrasElFrame();
+  }
+
+  /// Un paso atrás. Existe para deshacer un avance que se dio por supuesto y
+  /// no llegó a ocurrir: se abre la pantalla de creación, se avanza a su
+  /// marca, y el usuario se vuelve con el botón de atrás sin guardar. Sin
+  /// esto, la marca se quedaría velando una pantalla que ya no está.
+  ///
+  /// No baja del primer paso.
+  void retroceder() {
+    if (!activo || _indice == 0) return;
+    _indice--;
+    _reintentos = 0;
+    notifyListeners();
     _repintarTrasElFrame();
   }
 
