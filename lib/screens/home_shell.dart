@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../widgets/identidad_ui.dart';
 import '../services/anclas_recorrido.dart';
 import '../services/recorrido_onboarding.dart';
+import '../services/api_service_habitos.dart';
 import 'dashboard_screen.dart';
 import 'habitos_screen.dart';
 
@@ -260,8 +261,28 @@ class _HomeShellState extends State<HomeShell> {
   /// cuenta como primera vez. Es el caso de los testers.
   Future<void> _recorridoSiNoSeHaVisto() async {
     if (await RecorridoService.yaHecho()) return;
+    await _arrancarSegunHabitos();
+  }
+
+  /// Arranca el recorrido eligiendo su longitud por lo que el usuario tiene,
+  /// no por si acaba de registrarse.
+  ///
+  /// Sin hábitos hay que enseñarle a crear uno, y además la marca del check no
+  /// tendría a qué apuntar. Con hábitos, empujarle a crear otro no tiene
+  /// sentido y basta el tramo de explicación.
+  ///
+  /// Si la llamada falla no se arranca nada. No se puede adivinar qué enseñar,
+  /// y como la marca de «hecho» no se pone, el recorrido vuelve a intentarlo
+  /// en el siguiente arranque. Es preferible a enseñar un paso que miente.
+  Future<void> _arrancarSegunHabitos() async {
+    final List<Map<String, dynamic>> resumen;
+    try {
+      resumen = await ApiServiceHabitos.getResumenHabitos(_usuarioId);
+    } catch (_) {
+      return;
+    }
     if (!mounted) return;
-    _iniciarRecorrido(completo: false);
+    _iniciarRecorrido(completo: resumen.isEmpty);
   }
 
   // Antes esto preguntaba al backend si el usuario ya tenía algún avatar, para
@@ -382,7 +403,7 @@ class _HomeShellState extends State<HomeShell> {
                     ),
                     filo,
                     entrada(LucideIcons.compass, l.recMenu,
-                        () => _iniciarRecorrido(completo: false)),
+                        () => _arrancarSegunHabitos()),
                     entrada(LucideIcons.userRound, l.perfilTitulo, () {
                       Navigator.push(
                         context,
