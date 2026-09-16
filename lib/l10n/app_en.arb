@@ -176,5 +176,18 @@
       }
     }
   },
-  "dashDeshacerError": "This entry could not be undone."
+  "dashDeshacerError": "This entry could not be undone.",
+  "recSaltar": "Skip",
+  "recSiguiente": "Next",
+  "recFin": "Got it",
+  "recPaso1Titulo": "Your habits",
+  "recPaso1Cuerpo": "Everything you want to repeat lives here. Tap to open.",
+  "recPaso2Titulo": "Create your first one",
+  "recPaso2Cuerpo": "Tap the button to add a habit.",
+  "recPaso3Titulo": "Pick one or write your own",
+  "recPaso3Cuerpo": "These come ready. Adjust anything and save.",
+  "recPaso4Titulo": "Tick off what you do",
+  "recPaso4Cuerpo": "Each day, tap the habit's circle.",
+  "recPaso5Titulo": "Nori grows with you",
+  "recPaso5Cuerpo": "Completing habits earns points, and points buy food in the shop."
 }

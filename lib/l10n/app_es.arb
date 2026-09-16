@@ -261,5 +261,18 @@
       }
     }
   },
-  "dashDeshacerError": "No se ha podido deshacer este completado."
+  "dashDeshacerError": "No se ha podido deshacer este completado.",
+  "recSaltar": "Saltar",
+  "recSiguiente": "Siguiente",
+  "recFin": "Entendido",
+  "recPaso1Titulo": "Tus hábitos",
+  "recPaso1Cuerpo": "Aquí vive todo lo que quieres repetir. Toca para entrar.",
+  "recPaso2Titulo": "Crea el primero",
+  "recPaso2Cuerpo": "Toca el botón para añadir un hábito.",
+  "recPaso3Titulo": "Elige uno o escribe el tuyo",
+  "recPaso3Cuerpo": "Estos vienen listos. Ajusta lo que quieras y guarda.",
+  "recPaso4Titulo": "Marca lo que cumplas",
+  "recPaso4Cuerpo": "Cada día, toca el círculo del hábito.",
+  "recPaso5Titulo": "Nori crece contigo",
+  "recPaso5Cuerpo": "Cumplir hábitos da puntos, y con los puntos se compra comida en la tienda."
 }

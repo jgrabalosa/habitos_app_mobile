@@ -176,5 +176,18 @@
       }
     }
   },
-  "dashDeshacerError": "Não foi possível desfazer esta conclusão."
+  "dashDeshacerError": "Não foi possível desfazer esta conclusão.",
+  "recSaltar": "Saltar",
+  "recSiguiente": "Seguinte",
+  "recFin": "Entendido",
+  "recPaso1Titulo": "Os teus hábitos",
+  "recPaso1Cuerpo": "Aqui vive tudo o que queres repetir. Toca para entrar.",
+  "recPaso2Titulo": "Cria o primeiro",
+  "recPaso2Cuerpo": "Toca no botão para adicionar um hábito.",
+  "recPaso3Titulo": "Escolhe um ou escreve o teu",
+  "recPaso3Cuerpo": "Estes já vêm prontos. Ajusta o que quiseres e guarda.",
+  "recPaso4Titulo": "Marca o que cumprires",
+  "recPaso4Cuerpo": "Todos os dias, toca no círculo do hábito.",
+  "recPaso5Titulo": "A Nori cresce contigo",
+  "recPaso5Cuerpo": "Cumprir hábitos dá pontos, e com os pontos compras comida na loja."
 }
