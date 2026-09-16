@@ -158,6 +158,7 @@ class _HomeShellState extends State<HomeShell> {
             ]
           : [_pasoCheck!, _pasoAlimentar!],
       textoSaltar: l.recSaltar,
+      textoContinuar: l.recSiguiente,
     );
   }
 

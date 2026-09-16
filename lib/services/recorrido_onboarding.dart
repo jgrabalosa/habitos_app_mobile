@@ -41,7 +41,26 @@ class RecorridoOnboarding extends ChangeNotifier {
   int _indice = 0;
   OverlayEntry? _entrada;
   String? _textoSaltar;
+  String? _textoContinuar;
   int _reintentos = 0;
+  bool _buscando = false;
+
+  /// True cuando se ha agotado el margen sin encontrar el ancla del paso. El
+  /// paso saca entonces un botón para seguir, también si es de acción.
+  bool _anclaPerdida = false;
+
+  /// Último rectángulo pintado. Se guarda para no repintar en cada frame
+  /// mientras se busca: sólo cuando cambia de verdad.
+  Rect? _foco;
+
+  /// Frames de gracia antes de ofrecer una salida. No detiene la búsqueda:
+  /// es el margen a partir del cual el paso deja de fiarse del hueco.
+  static const int _margenSalida = 60;
+
+  /// Frames tras los cuales se deja de buscar. Generoso a propósito —unos
+  /// cinco segundos—, pero acotado: buscar para siempre significa pedir un
+  /// frame nuevo en cada frame, y eso es la pantalla repintándose sin parar.
+  static const int _limiteBusqueda = 300;
 
   /// True mientras el recorrido está en pantalla. Lo consultan las pantallas
   /// para engancharse su ancla y el shell para bloquear la navegación.
@@ -54,16 +73,17 @@ class RecorridoOnboarding extends ChangeNotifier {
     BuildContext context, {
     required List<PasoRecorrido> pasos,
     String? textoSaltar,
+    String? textoContinuar,
   }) {
     if (activo || pasos.isEmpty) return;
     _pasos = pasos;
     _indice = 0;
     _textoSaltar = textoSaltar;
-    _reintentos = 0;
+    _textoContinuar = textoContinuar;
     _entrada = OverlayEntry(builder: _construir);
     Overlay.of(context, rootOverlay: true).insert(_entrada!);
     notifyListeners();
-    _repintarTrasElFrame();
+    _buscarAncla();
   }
 
   /// Un paso adelante. La llaman tanto el botón de los pasos de explicación
@@ -75,9 +95,8 @@ class RecorridoOnboarding extends ChangeNotifier {
       terminar();
       return;
     }
-    _reintentos = 0;
     notifyListeners();
-    _repintarTrasElFrame();
+    _buscarAncla();
   }
 
   /// Un paso atrás. Existe para deshacer un avance que se dio por supuesto y
@@ -89,9 +108,8 @@ class RecorridoOnboarding extends ChangeNotifier {
   void retroceder() {
     if (!activo || _indice == 0) return;
     _indice--;
-    _reintentos = 0;
     notifyListeners();
-    _repintarTrasElFrame();
+    _buscarAncla();
   }
 
   /// Termina el recorrido, se haya completado o abandonado. En los dos casos
@@ -104,35 +122,78 @@ class RecorridoOnboarding extends ChangeNotifier {
     _pasos = const [];
     _indice = 0;
     _textoSaltar = null;
+    _textoContinuar = null;
+    _foco = null;
+    _anclaPerdida = false;
     RecorridoService.marcarHecho();
     notifyListeners();
   }
 
-  /// La ancla del paso puede no estar pintada todavía: se acaba de cambiar de
-  /// pestaña, o la ruta aún se está abriendo. Se reintenta unos frames y, si
-  /// no aparece, el paso se enseña sin hueco. Feo, pero no deja al usuario
-  /// encerrado mirando un velo negro sin explicación.
-  void _repintarTrasElFrame() {
+  /// Empieza a buscar el ancla del paso actual. Sólo puede haber una búsqueda
+  /// en marcha: si ya la hay, seguirá sola con el paso nuevo.
+  void _buscarAncla() {
+    _reintentos = 0;
+    _anclaPerdida = false;
+    _foco = null;
+    if (_buscando) return;
+    _buscando = true;
+    _intentar();
+  }
+
+  /// El ancla del paso puede no estar pintada todavía: se acaba de cambiar de
+  /// pestaña, la ruta aún se está abriendo, o la bienvenida está terminando su
+  /// animación de cierre.
+  ///
+  /// Se busca frame a frame. Pasado [_margenSalida] el paso saca un botón para
+  /// seguir sin dejar de buscar, porque un paso de acción sin hueco no tiene
+  /// nada que tocar: las barreras del velo cubren toda la pantalla y el
+  /// usuario queda encerrado. Pasado [_limiteBusqueda] se deja de buscar, ya
+  /// con la salida puesta.
+  void _intentar() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!activo) return;
-      _entrada!.markNeedsBuild();
-      final ancla = pasoActual?.ancla;
-      if (ancla != null && rectDeAncla(ancla) == null && _reintentos < 20) {
-        _reintentos++;
-        _repintarTrasElFrame();
+      if (!activo) {
+        _buscando = false;
+        return;
       }
+
+      final ancla = pasoActual?.ancla;
+      final rect = ancla == null ? null : rectDeAncla(ancla);
+      if (rect != _foco) {
+        _foco = rect;
+        _entrada!.markNeedsBuild();
+      }
+
+      if (ancla == null || rect != null) {
+        _buscando = false;
+        return;
+      }
+
+      _reintentos++;
+      if (_reintentos == _margenSalida) {
+        _anclaPerdida = true;
+        _entrada!.markNeedsBuild();
+      }
+      if (_reintentos >= _limiteBusqueda) {
+        _buscando = false;
+        return;
+      }
+      _intentar();
     });
   }
 
   Widget _construir(BuildContext context) {
     final paso = pasoActual;
     if (paso == null) return const SizedBox.shrink();
+    // Un paso de acción no lleva botón, pero si su ancla no aparece hay que
+    // darle uno: sin hueco no hay nada que tocar.
+    final textoBoton =
+        paso.textoBoton ?? (_anclaPerdida ? _textoContinuar : null);
     return CoachMark(
-      foco: paso.ancla == null ? null : rectDeAncla(paso.ancla!),
+      foco: _foco,
       titulo: paso.titulo,
       cuerpo: paso.cuerpo,
-      textoBoton: paso.textoBoton,
-      onBoton: paso.textoBoton == null ? null : avanzar,
+      textoBoton: textoBoton,
+      onBoton: textoBoton == null ? null : avanzar,
       textoSaltar: _textoSaltar,
       onSaltar: terminar,
     );
