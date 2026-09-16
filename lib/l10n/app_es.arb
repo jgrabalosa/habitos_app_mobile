@@ -274,5 +274,6 @@
   "recPaso4Titulo": "Marca lo que cumplas",
   "recPaso4Cuerpo": "Cada día, toca el círculo del hábito.",
   "recPaso5Titulo": "Nori crece contigo",
-  "recPaso5Cuerpo": "Cumplir hábitos da puntos, y con los puntos se compra comida en la tienda."
+  "recPaso5Cuerpo": "Cumplir hábitos da puntos, y con los puntos se compra comida en la tienda.",
+  "recMenu": "Ver el recorrido"
 }
