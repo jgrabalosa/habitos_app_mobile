@@ -44,6 +44,7 @@ class RecorridoOnboarding extends ChangeNotifier {
   String? _textoContinuar;
   int _reintentos = 0;
   bool _buscando = false;
+  bool _pausado = false;
 
   /// True cuando se ha agotado el margen sin encontrar el ancla del paso. El
   /// paso saca entonces un botón para seguir, también si es de acción.
@@ -112,6 +113,25 @@ class RecorridoOnboarding extends ChangeNotifier {
     _buscarAncla();
   }
 
+  /// Deja de pintar sin perder el sitio. Para cuando el usuario tiene que
+  /// poder usar una pantalla entera —rellenar un formulario y guardarlo—: el
+  /// velo se lleva por delante todo lo que no sea el hueco, y ahí eso estorba
+  /// más de lo que ayuda.
+  ///
+  /// No cambia [activo]: el recorrido sigue en marcha y las anclas siguen
+  /// enganchadas.
+  void pausar() {
+    if (!activo || _pausado) return;
+    _pausado = true;
+    _entrada!.markNeedsBuild();
+  }
+
+  void reanudar() {
+    if (!activo || !_pausado) return;
+    _pausado = false;
+    _buscarAncla();
+  }
+
   /// Termina el recorrido, se haya completado o abandonado. En los dos casos
   /// se marca como hecho: quien lo salta no quiere que le vuelva a saltar
   /// solo en el siguiente arranque. Para volver a verlo está el menú.
@@ -125,6 +145,7 @@ class RecorridoOnboarding extends ChangeNotifier {
     _textoContinuar = null;
     _foco = null;
     _anclaPerdida = false;
+    _pausado = false;
     RecorridoService.marcarHecho();
     notifyListeners();
   }
@@ -183,7 +204,7 @@ class RecorridoOnboarding extends ChangeNotifier {
 
   Widget _construir(BuildContext context) {
     final paso = pasoActual;
-    if (paso == null) return const SizedBox.shrink();
+    if (paso == null || _pausado) return const SizedBox.shrink();
     // Un paso de acción no lleva botón, pero si su ancla no aparece hay que
     // darle uno: sin hueco no hay nada que tocar.
     final textoBoton =
