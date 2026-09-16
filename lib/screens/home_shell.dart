@@ -4,6 +4,8 @@ import '../l10n/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../widgets/identidad_ui.dart';
+import '../services/anclas_recorrido.dart';
+import '../services/recorrido_onboarding.dart';
 import 'dashboard_screen.dart';
 import 'habitos_screen.dart';
 
@@ -68,6 +70,97 @@ class _HomeShellState extends State<HomeShell> {
 
   DateTime? _ultimaPulsacionAtras;
 
+  final _recorrido = RecorridoOnboarding.instancia;
+
+  /// Referencias a los dos pasos que viven en una pestaña concreta. Se guardan
+  /// para reconocerlos por identidad al cambiar de paso: el controlador no
+  /// numera los pasos a propósito, porque la lista no siempre es la misma.
+  PasoRecorrido? _pasoPestanaHabitos;
+  PasoRecorrido? _pasoCheck;
+  PasoRecorrido? _pasoAlimentar;
+
+  /// En qué pestaña se puede ver la marca de este paso, o null si da igual.
+  int? _pestanaDe(PasoRecorrido paso) {
+    if (paso == _pasoCheck) return 0;
+    if (paso == _pasoAlimentar) return 1;
+    return null;
+  }
+
+  /// El controlador ha cambiado de paso (o ha arrancado, o ha terminado).
+  ///
+  /// El shell hace dos cosas aquí y sólo él puede hacerlas: llevar al usuario
+  /// a la pestaña donde vive la marca siguiente —tras guardar el hábito se
+  /// sigue en Hábitos y la marca del check está en Hoy—, y repintarse, porque
+  /// las anclas sólo se enganchan mientras el recorrido está activo.
+  void _alCambiarPaso() {
+    if (!mounted) return;
+    final paso = _recorrido.pasoActual;
+    if (paso != null) {
+      final destino = _pestanaDe(paso);
+      if (destino != null && destino != _tabIndex) _irAPestana(destino);
+    }
+    setState(() {});
+  }
+
+  /// Monta los pasos y arranca.
+  ///
+  /// `completo` distingue al usuario recién creado, que no tiene nada y pasa
+  /// por el recorrido entero, del que reinstala con una cuenta que ya existe
+  /// y por tanto ya tiene hábitos: a ése se le enseña sólo el tramo de
+  /// explicación, porque empujarle a crear un segundo hábito no tendría
+  /// sentido. Es una aproximación deliberada: se deduce de `mostrarOnboarding`
+  /// en vez de preguntarle al backend cuántos hábitos hay.
+  ///
+  /// Al arrancar, las anclas todavía no están enganchadas —lo estarán en el
+  /// repintado que provoca este mismo arranque—, y por eso el controlador
+  /// reintenta medirlas unos frames antes de rendirse.
+  void _iniciarRecorrido({required bool completo}) {
+    if (!mounted) return;
+    final l = AppLocalizations.of(context)!;
+
+    _pasoPestanaHabitos = PasoRecorrido(
+      ancla: AnclasRecorrido.pestanaHabitos,
+      titulo: l.recPaso1Titulo,
+      cuerpo: l.recPaso1Cuerpo,
+    );
+    final pasoNuevo = PasoRecorrido(
+      ancla: AnclasRecorrido.botonNuevoHabito,
+      titulo: l.recPaso2Titulo,
+      cuerpo: l.recPaso2Cuerpo,
+    );
+    final pasoRecomendados = PasoRecorrido(
+      ancla: AnclasRecorrido.recomendados,
+      titulo: l.recPaso3Titulo,
+      cuerpo: l.recPaso3Cuerpo,
+    );
+    _pasoCheck = PasoRecorrido(
+      ancla: AnclasRecorrido.checkHabito,
+      titulo: l.recPaso4Titulo,
+      cuerpo: l.recPaso4Cuerpo,
+      textoBoton: l.recSiguiente,
+    );
+    _pasoAlimentar = PasoRecorrido(
+      ancla: AnclasRecorrido.alimentar,
+      titulo: l.recPaso5Titulo,
+      cuerpo: l.recPaso5Cuerpo,
+      textoBoton: l.recFin,
+    );
+
+    _recorrido.iniciar(
+      context,
+      pasos: completo
+          ? [
+              _pasoPestanaHabitos!,
+              pasoNuevo,
+              pasoRecomendados,
+              _pasoCheck!,
+              _pasoAlimentar!,
+            ]
+          : [_pasoCheck!, _pasoAlimentar!],
+      textoSaltar: l.recSaltar,
+    );
+  }
+
   void _irAPestana(int i) {
     _pageController.animateToPage(
       i,
@@ -102,6 +195,10 @@ class _HomeShellState extends State<HomeShell> {
   // Botón atrás Android: si no estás en "Hoy", vuelve ahí primero.
   // Si ya estás en "Hoy", hace falta pulsar dos veces seguidas para salir.
   Future<void> _manejarAtras() async {
+    // Lo único que el velo del recorrido no bloquea por sí solo: el atrás no
+    // pasa por el hit-test de la pantalla. La salida es el botón de saltar.
+    if (_recorrido.activo) return;
+
     if (_tabIndex != 0) {
       _irAPestana(0);
       return;
@@ -130,11 +227,13 @@ class _HomeShellState extends State<HomeShell> {
   @override
   void initState() {
     super.initState();
+    _recorrido.addListener(_alCambiarPaso);
     _cargarUsuario();
   }
 
   @override
   void dispose() {
+    _recorrido.removeListener(_alCambiarPaso);
     _pageController.dispose();
     super.dispose();
   }
@@ -149,7 +248,19 @@ class _HomeShellState extends State<HomeShell> {
 
     if (widget.mostrarOnboarding) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _mostrarOnboarding());
+    } else {
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _recorridoSiNoSeHaVisto());
     }
+  }
+
+  /// Sin alta nueva no hay bienvenida, pero el recorrido puede no haberse
+  /// visto nunca en ESTE móvil: la marca es local, así que una reinstalación
+  /// cuenta como primera vez. Es el caso de los testers.
+  Future<void> _recorridoSiNoSeHaVisto() async {
+    if (await RecorridoService.yaHecho()) return;
+    if (!mounted) return;
+    _iniciarRecorrido(completo: false);
   }
 
   // Antes esto preguntaba al backend si el usuario ya tenía algún avatar, para
@@ -158,7 +269,11 @@ class _HomeShellState extends State<HomeShell> {
   // ofrecía ya no existe en el overlay: la condición dejó de significar nada.
   void _mostrarOnboarding() {
     if (!mounted) return;
-    OnboardingOverlay.mostrar(context, usuarioId: _usuarioId);
+    // La bienvenida y el recorrido son un solo flujo: en cuanto se cierra el
+    // overlay arranca el recorrido, sin que el usuario tenga que hacer nada
+    // en medio.
+    OnboardingOverlay.mostrar(context, usuarioId: _usuarioId)
+        .then((_) => _iniciarRecorrido(completo: true));
   }
 
   Future<void> _logout() async {
@@ -265,6 +380,8 @@ class _HomeShellState extends State<HomeShell> {
                       _abrirTienda,
                     ),
                     filo,
+                    entrada(LucideIcons.compass, l.recMenu,
+                        () => _iniciarRecorrido(completo: false)),
                     entrada(LucideIcons.userRound, l.perfilTitulo, () {
                       Navigator.push(
                         context,
@@ -304,7 +421,15 @@ class _HomeShellState extends State<HomeShell> {
       DashboardScreen(activa: _tabIndex == 0),
       // `activa` es lo que hace que la mascota se recargue al volver a su
       // pestaña: el PageView la mantiene viva y su initState no se repite.
-      MascotaScreen(usuarioId: _usuarioId, embebida: true, activa: _tabIndex == 1),
+      MascotaScreen(
+        usuarioId: _usuarioId,
+        embebida: true,
+        activa: _tabIndex == 1,
+        // El core no puede conocer AnclasRecorrido, así que la key entra por
+        // parámetro. Sólo mientras el recorrido corre.
+        anclaAlimentar:
+            _recorrido.activo ? AnclasRecorrido.alimentar : null,
+      ),
       HabitosScreen(usuarioId: _usuarioId),
     ];
 
@@ -348,7 +473,13 @@ class _HomeShellState extends State<HomeShell> {
               key: const ValueKey('paginas'),
               child: PageView(
                 controller: _pageController,
-                onPageChanged: (i) => setState(() => _tabIndex = i),
+                onPageChanged: (i) {
+                  setState(() => _tabIndex = i);
+                  // Paso de acción: llegar a Hábitos ES la acción.
+                  if (_recorrido.pasoActual == _pasoPestanaHabitos && i == 2) {
+                    _recorrido.avanzar();
+                  }
+                },
                 // Cada pestaña se mantiene viva al salir de pantalla, como
                 // hacía el IndexedStack: deslizar no debe recargar lo que
                 // ya estaba cargado.
@@ -382,7 +513,12 @@ class _HomeShellState extends State<HomeShell> {
             destinations: [
               NavigationDestination(icon: const Icon(LucideIcons.house), label: etiquetas[0]),
               NavigationDestination(icon: const Icon(LucideIcons.pawPrint), label: etiquetas[1]),
-              NavigationDestination(icon: const Icon(LucideIcons.listChecks), label: etiquetas[2]),
+              NavigationDestination(
+                  icon: Icon(LucideIcons.listChecks,
+                      key: _recorrido.activo
+                          ? AnclasRecorrido.pestanaHabitos
+                          : null),
+                  label: etiquetas[2]),
               NavigationDestination(icon: const Icon(LucideIcons.menu), label: etiquetas[3]),
             ],
           ),
