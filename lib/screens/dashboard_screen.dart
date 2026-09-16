@@ -10,6 +10,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/habito.dart';
+import '../services/anclas_recorrido.dart';
+import '../services/recorrido_onboarding.dart';
 import '../widgets/estados_hoy.dart';
 import '../widgets/identidad_ui.dart';
 import '../widgets/tira_semana.dart';
@@ -929,7 +931,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                     if (pendientes.isEmpty)
                       const TarjetaTodoHecho()
                     else
-                      ...pendientes.map((h) => _filaEnLista(l, h, false, t)),
+                      ...pendientes.asMap().entries.map((e) => _filaEnLista(
+                          l, e.value, false, t,
+                          primera: e.key == 0)),
                     if (completados.isNotEmpty) ...[
                       const SizedBox(height: 16),
                       Text(l.dashCompletados,
@@ -999,10 +1003,11 @@ class _DashboardScreenState extends State<DashboardScreen>
   /// `_arrancarTransito`) se pinta dentro de un `RanuraTransito` animado por
   /// `_ctrlTransito`, una vez como origen (en pendientes) y otra como
   /// destino (en completados); las demás se pintan tal cual, sin envolver.
-  Widget _filaEnLista(AppLocalizations l, Habito h, bool hecho, TokensContextuales t) {
+  Widget _filaEnLista(AppLocalizations l, Habito h, bool hecho, TokensContextuales t,
+      {bool primera = false}) {
     final ctrl = _ctrlTransito;
     if (ctrl == null || h.habitoId != _habitoEnTransito) {
-      return _habitoCard(l, h, hecho, t);
+      return _habitoCard(l, h, hecho, t, primera: primera);
     }
 
     final id = identidad(context);
@@ -1021,7 +1026,10 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  Widget _habitoCard(AppLocalizations l, Habito h, bool hecho, TokensContextuales t) {
+  /// `primera` marca la primera tarjeta de pendientes, que es donde el
+  /// recorrido guiado señala el check. Sólo eso: no cambia nada visual.
+  Widget _habitoCard(AppLocalizations l, Habito h, bool hecho, TokensContextuales t,
+      {bool primera = false}) {
     final p = _progreso[h.habitoId] ?? {'completadosPeriodo': 0, 'meta': 1};
 
     return AnimatedOpacity(
@@ -1103,6 +1111,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
                 const SizedBox(width: 12),
                 CheckCircular(
+                  key: primera && RecorridoOnboarding.instancia.activo
+                      ? AnclasRecorrido.checkHabito
+                      : null,
                   hecho: hecho,
                   onTap: () => _completar(h.habitoId),
                   onDeshacer: () => _deshacer(h.habitoId),
