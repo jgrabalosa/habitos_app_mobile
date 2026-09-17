@@ -291,12 +291,18 @@ class _HabitoScreenState extends State<HabitoScreen> {
         );
         await AnalyticsHabitos.habitoCreado(_frecuencia);
         if (logrosOtorgados.isNotEmpty) {
-          // Antes esto iba después del pop. La celebración es una ruta, y al
-          // salir justo cuando el recorrido guiado se reanuda quedaba debajo
-          // de su velo, sin poder cerrarse. Aquí sale con el recorrido todavía
-          // en pausa y con la pantalla de creación aún abierta, que además es
-          // donde se acaba de ganar el logro.
-          await CelebracionService.mostrar(logrosOtorgados);
+          final recorrido = RecorridoOnboarding.instancia;
+          if (recorrido.activo) {
+            // Durante el recorrido la celebración se guarda y sale al final:
+            // es una ruta, el recorrido se pinta por encima de todas, y aun
+            // pudiéndose ver se comería la atención en mitad de una
+            // explicación.
+            recorrido.aplazarCelebracion(logrosOtorgados);
+          } else {
+            // Fuera del recorrido sale aquí, antes de cerrar: es donde se
+            // acaba de ganar.
+            await CelebracionService.mostrar(logrosOtorgados);
+          }
         }
         if (mounted) Navigator.pop(context, true);
       }

@@ -46,6 +46,9 @@ class RecorridoOnboarding extends ChangeNotifier {
   bool _buscando = false;
   bool _pausado = false;
 
+  /// Logros ganados durante el recorrido, a la espera de que acabe.
+  final List<String> _celebracionesAplazadas = [];
+
   /// True cuando se ha agotado el margen sin encontrar el ancla del paso. El
   /// paso saca entonces un botón para seguir, también si es de acción.
   bool _anclaPerdida = false;
@@ -108,6 +111,15 @@ class RecorridoOnboarding extends ChangeNotifier {
     _buscarAncla();
   }
 
+  /// Guarda unos logros para celebrarlos al terminar el recorrido.
+  ///
+  /// Una celebración es una ruta, y el recorrido se pinta por encima de todas
+  /// ellas: saldría tapada, y encima se comería la atención en mitad de una
+  /// explicación. Al final del recorrido el usuario está libre para mirarla.
+  void aplazarCelebracion(List<String> codigos) {
+    _celebracionesAplazadas.addAll(codigos);
+  }
+
   /// Deja de pintar sin perder el sitio. Para cuando el usuario tiene que
   /// poder usar una pantalla entera —rellenar un formulario y guardarlo—: el
   /// velo se lleva por delante todo lo que no sea el hueco, y ahí eso estorba
@@ -143,6 +155,12 @@ class RecorridoOnboarding extends ChangeNotifier {
     _pausado = false;
     RecorridoService.marcarHecho();
     notifyListeners();
+
+    if (_celebracionesAplazadas.isNotEmpty) {
+      final pendientes = List<String>.from(_celebracionesAplazadas);
+      _celebracionesAplazadas.clear();
+      CelebracionService.mostrar(pendientes);
+    }
   }
 
   /// Empieza a buscar el ancla del paso actual. Sólo puede haber una búsqueda
