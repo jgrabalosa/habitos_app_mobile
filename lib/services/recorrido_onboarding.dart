@@ -230,6 +230,12 @@ class RecorridoOnboarding extends ChangeNotifier {
         paso.textoBoton ?? (_anclaPerdida ? _textoContinuar : null);
     return CoachMark(
       foco: _foco,
+      // Los puntitos de progreso, los mismos que en la bienvenida. El
+      // recorrido no siempre tiene la misma longitud —el tramo de creación se
+      // salta si el usuario ya tiene hábitos—, así que el total sale de la
+      // lista real, no de una constante.
+      paso: _indice,
+      total: _pasos.length,
       titulo: paso.titulo,
       cuerpo: paso.cuerpo,
       textoBoton: textoBoton,
