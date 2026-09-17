@@ -58,11 +58,6 @@ class RecorridoOnboarding extends ChangeNotifier {
   /// es el margen a partir del cual el paso deja de fiarse del hueco.
   static const int _margenSalida = 60;
 
-  /// Frames tras los cuales se deja de buscar. Generoso a propósito —unos
-  /// cinco segundos—, pero acotado: buscar para siempre significa pedir un
-  /// frame nuevo en cada frame, y eso es la pantalla repintándose sin parar.
-  static const int _limiteBusqueda = 300;
-
   /// True mientras el recorrido está en pantalla. Lo consultan las pantallas
   /// para engancharse su ancla y el shell para bloquear la navegación.
   bool get activo => _entrada != null;
@@ -161,15 +156,20 @@ class RecorridoOnboarding extends ChangeNotifier {
     _intentar();
   }
 
-  /// El ancla del paso puede no estar pintada todavía: se acaba de cambiar de
-  /// pestaña, la ruta aún se está abriendo, o la bienvenida está terminando su
-  /// animación de cierre.
+  /// Vigila el ancla del paso, frame a frame, mientras el paso siga vivo.
   ///
-  /// Se busca frame a frame. Pasado [_margenSalida] el paso saca un botón para
-  /// seguir sin dejar de buscar, porque un paso de acción sin hueco no tiene
-  /// nada que tocar: las barreras del velo cubren toda la pantalla y el
-  /// usuario queda encerrado. Pasado [_limiteBusqueda] se deja de buscar, ya
-  /// con la salida puesta.
+  /// No basta con encontrarla una vez: la pantalla se mueve debajo —la lista
+  /// termina de cargar, el botón flotante se recoloca— y un rectángulo medido
+  /// al principio acaba cortando el elemento por la mitad.
+  ///
+  /// Puede tardar en aparecer: se acaba de cambiar de pestaña, la ruta aún se
+  /// está abriendo, o la bienvenida está terminando su animación. Pasado
+  /// [_margenSalida] sin encontrarla, el paso saca un botón para seguir,
+  /// porque un paso de acción sin hueco no tiene nada que tocar: las barreras
+  /// del velo cubren toda la pantalla y el usuario queda encerrado.
+  ///
+  /// Que esto pida un frame por frame es deliberado: el recorrido dura un
+  /// minuto y se hace una vez, y un hueco mal puesto cuesta más.
   void _intentar() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!activo) {
@@ -184,19 +184,20 @@ class RecorridoOnboarding extends ChangeNotifier {
         _entrada!.markNeedsBuild();
       }
 
-      if (ancla == null || rect != null) {
+      // Un paso sin ancla no tiene nada que vigilar.
+      if (ancla == null) {
         _buscando = false;
         return;
       }
 
-      _reintentos++;
-      if (_reintentos == _margenSalida) {
-        _anclaPerdida = true;
-        _entrada!.markNeedsBuild();
-      }
-      if (_reintentos >= _limiteBusqueda) {
-        _buscando = false;
-        return;
+      if (rect == null) {
+        _reintentos++;
+        if (_reintentos == _margenSalida) {
+          _anclaPerdida = true;
+          _entrada!.markNeedsBuild();
+        }
+      } else {
+        _reintentos = 0;
       }
       _intentar();
     });

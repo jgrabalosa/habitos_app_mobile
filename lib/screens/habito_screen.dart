@@ -290,10 +290,15 @@ class _HabitoScreenState extends State<HabitoScreen> {
           recordatorioHora: recordatorioHora,
         );
         await AnalyticsHabitos.habitoCreado(_frecuencia);
-        if (mounted) Navigator.pop(context, true);
         if (logrosOtorgados.isNotEmpty) {
-          CelebracionService.mostrar(logrosOtorgados);
+          // Antes esto iba después del pop. La celebración es una ruta, y al
+          // salir justo cuando el recorrido guiado se reanuda quedaba debajo
+          // de su velo, sin poder cerrarse. Aquí sale con el recorrido todavía
+          // en pausa y con la pantalla de creación aún abierta, que además es
+          // donde se acaba de ganar el logro.
+          await CelebracionService.mostrar(logrosOtorgados);
         }
+        if (mounted) Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
