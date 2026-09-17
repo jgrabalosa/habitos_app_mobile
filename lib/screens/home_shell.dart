@@ -135,20 +135,20 @@ class _HomeShellState extends State<HomeShell> {
       titulo: l.recPaso3Titulo,
       cuerpo: l.recPaso3Cuerpo,
     );
+    // De acción: se avanza marcando el hábito. Lo dispara dashboard_screen al
+    // completarlo.
     _pasoCheck = PasoRecorrido(
       ancla: AnclasRecorrido.checkHabito,
       titulo: l.recPaso4Titulo,
       cuerpo: l.recPaso4Cuerpo,
-      textoBoton: l.recSiguiente,
     );
-    // Señala el mismo check que el paso anterior: la hoja de valoración sale
-    // después de marcar, es una ruta, y el recorrido se pinta por encima de
-    // todas. No hay forma de apuntarle, así que se cuenta antes.
+    // Señala la hoja de valoración, que se abre sola al marcar el hábito. El
+    // core no conoce el recorrido, así que el ancla entra por parámetro desde
+    // dashboard_screen. También de acción: se avanza al cerrar la hoja.
     _pasoValoracion = PasoRecorrido(
-      ancla: AnclasRecorrido.checkHabito,
+      ancla: AnclasRecorrido.valoracion,
       titulo: l.recValoracionTitulo,
       cuerpo: l.recValoracionCuerpo,
-      textoBoton: l.recSiguiente,
     );
     _pasoAlimentar = PasoRecorrido(
       ancla: AnclasRecorrido.alimentar,

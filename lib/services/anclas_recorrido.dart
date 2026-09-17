@@ -29,4 +29,6 @@ class AnclasRecorrido {
       GlobalKey(debugLabel: 'recorrido: check del hábito');
   static final GlobalKey alimentar =
       GlobalKey(debugLabel: 'recorrido: botón de alimentar');
+  static final GlobalKey valoracion =
+      GlobalKey(debugLabel: 'recorrido: hoja de valoración');
 }
