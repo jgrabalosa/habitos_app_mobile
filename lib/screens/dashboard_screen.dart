@@ -491,7 +491,16 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     // Secuencia: logro (si hay) → puntos → valoración (si toca)
     if (logrosOtorgados.isNotEmpty) {
-      await CelebracionService.mostrar(logrosOtorgados);
+      final recorrido = RecorridoOnboarding.instancia;
+      if (recorrido.activo) {
+        // Durante el recorrido guiado se guarda y sale al final. El paso del
+        // check deja el hueco abierto, así que se puede completar un hábito
+        // ahí mismo; la celebración es una ruta y quedaría bajo el velo, sin
+        // poder cerrarse.
+        recorrido.aplazarCelebracion(logrosOtorgados);
+      } else {
+        await CelebracionService.mostrar(logrosOtorgados);
+      }
     }
     if (puntosGanados > 0 && mounted) {
       AnimacionPuntos.mostrar(context, puntosGanados);
