@@ -44,6 +44,7 @@
   "habCambiarFrecTitulo": "¿Cambiar la frecuencia?",
   "habCambiarFrecCuerpo": "Cambiar la frecuencia reiniciará tu racha actual a 0.\nTu mejor racha se conserva.",
   "habNombreObligatorio": "El nombre es obligatorio",
+  "habHoraObligatoria": "Elige una hora para el recordatorio o desactívalo",
   "habErrorCrear": "Error al crear el hábito",
   "habErrorActualizar": "Error al actualizar el hábito",
   "habErrorEliminar": "Error al eliminar el hábito",

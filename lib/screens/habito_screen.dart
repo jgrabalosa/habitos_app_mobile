@@ -258,6 +258,14 @@ class _HabitoScreenState extends State<HabitoScreen> {
       return;
     }
 
+    // Recordatorio activo sin hora: el backend lo acepta y luego no notifica
+    // nunca (ver Habito.java, "null = sin hora elegida todavía"). Silencioso
+    // y con el interruptor en verde, que es la peor combinación.
+    if (_recordatorioActivo && _recordatorioHora == null) {
+      setState(() { _error = l.habHoraObligatoria; });
+      return;
+    }
+
     // Días solo si es SEMANAL y hay elegidos; null = semanal flexible o diario.
     // Ordenados para un CSV estable ("2,4,6").
     final String? diasSemana = _metaDerivada

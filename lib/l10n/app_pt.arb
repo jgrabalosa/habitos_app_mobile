@@ -44,6 +44,7 @@
   "habCambiarFrecTitulo": "Alterar a frequência?",
   "habCambiarFrecCuerpo": "Alterar a frequência vai reiniciar a tua sequência atual para 0.\nA tua melhor sequência mantém-se.",
   "habNombreObligatorio": "O nome é obrigatório",
+  "habHoraObligatoria": "Escolhe uma hora para o lembrete ou desativa-o",
   "habErrorCrear": "Não foi possível criar o hábito",
   "habErrorActualizar": "Não foi possível atualizar o hábito",
   "habErrorEliminar": "Não foi possível eliminar o hábito",
