@@ -17,6 +17,7 @@ import '../widgets/identidad_ui.dart';
 import '../widgets/tira_semana.dart';
 import '../widgets/transito_fila.dart';
 import 'habito_detalle_screen.dart';
+import 'dashboard_logica.dart';
 
 String formatearTituloDelDia({
   required DateTime fecha,
@@ -226,61 +227,25 @@ class _DashboardScreenState extends State<DashboardScreen>
       final desde = isoDeSemanaDesplazada(_hoyIso, _offsetSemana);
       final data = await ApiServiceHabitos.getSemana(_usuarioId, desde: desde);
 
-      final List<Map<String, dynamic>> dias =
-          (data['dias'] as List<dynamic>).map<Map<String, dynamic>>((dia) {
-        final List<Map<String, dynamic>> habitosDia =
-            (dia['habitos'] as List<dynamic>).map<Map<String, dynamic>>((item) => {
-                  'habito': Habito.fromJson(item['habito']),
-                  'completado': item['completado'] == true,
-                }).toList();
-        return {
-          'fecha': dia['fecha'] as String,
-          'habitos': habitosDia,
-        };
-      }).toList();
-
-      final List<Map<String, dynamic>> flexibles =
-          (data['flexibles'] as List<dynamic>).map<Map<String, dynamic>>((item) => {
-                'habito': Habito.fromJson(item['habito']),
-                'completadosSemana': item['completadosSemana'] ?? 0,
-                'meta': item['meta'] ?? 1,
-              }).toList();
-
-      // Hoy lo declara el servidor. Si no viniera, se conserva el que ya
-      // teníamos antes que caer al reloj del dispositivo: una fecha
-      // equivocada aquí marca el día que no es.
-      final hoyIso = (data['hoy'] as String?) ?? _hoyIso;
-      final indiceHoy =
-          hoyIso == null ? -1 : dias.indexWhere((d) => d['fecha'] == hoyIso);
-
-      // Qué día se estaba mirando, por fecha y no por índice. Antes esto se
-      // reposicionaba en hoy en cada carga, y como completar o deshacer un
-      // día pasado recarga la semana, la tira saltaba sola bajo el dedo.
-      // Se lee de `_dias`, la lista vieja, antes de sustituirla; en el
-      // arranque está vacía y el índice es 0, de ahí la guarda de rango.
-      final String? fechaSeleccionada =
-          (_diaSeleccionado >= 0 && _diaSeleccionado < _dias.length)
-              ? _dias[_diaSeleccionado]['fecha'] as String?
-              : null;
-      final int indiceConservado = fechaSeleccionada == null
-          ? -1
-          : dias.indexWhere((d) => d['fecha'] == fechaSeleccionada);
+      // Lectura, hoy y día seleccionado: ver dashboard_logica.dart.
+      final semana = leerSemana(data, hoyAnterior: _hoyIso);
+      final fechasNuevas = semana.fechas;
+      final indiceHoy = indiceDeHoy(fechasNuevas, semana.hoyIso);
+      // Se lee de `_dias`, la lista vieja, antes de sustituirla.
+      final seleccion = diaASeleccionar(
+        fechasAnteriores: _dias.map((d) => d['fecha'] as String).toList(),
+        seleccionAnterior: _diaSeleccionado,
+        fechasNuevas: fechasNuevas,
+        indiceHoy: indiceHoy,
+      );
 
       if (!mounted) return;
       setState(() {
-        _dias = dias;
-        _flexibles = flexibles;
-        _hoyIso = hoyIso;
-        // -1 significa "hoy no está en esta semana", y hay que distinguirlo
-        // de "hoy es el lunes". Con el 0 de antes, el lunes de otra semana se
-        // comportaba como hoy.
+        _dias = semana.dias;
+        _flexibles = semana.flexibles;
+        _hoyIso = semana.hoyIso;
         _indiceHoy = indiceHoy;
-        // Si el día que se miraba sigue en la semana que acaba de llegar, se
-        // respeta. Si no —arranque, o cambio de semana con las flechas—, hoy;
-        // y si hoy tampoco está en esta semana, el lunes.
-        _diaSeleccionado = indiceConservado >= 0
-            ? indiceConservado
-            : (indiceHoy >= 0 ? indiceHoy : 0);
+        _diaSeleccionado = seleccion;
       });
       _publicarProgreso();
     } catch (_) {
@@ -350,13 +315,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
-  bool _estaHecho(Habito h) {
-    final p = _progreso[h.habitoId];
-    if (p == null) return false;
-    // Semanal: si ya se completó hoy, está hecho por hoy (el Dashboard es el resumen del día)
-    if (h.frecuencia == 'SEMANAL' && p['completadoHoy'] == true) return true;
-    return (p['completadosPeriodo'] ?? 0) >= (p['meta'] ?? 1);
-  }
+  bool _estaHecho(Habito h) => estaHecho(h, _progreso[h.habitoId]);
 
   /// Arranca el tránsito visual de la fila de `habitoId` de "pendientes" a
   /// "completados". Devuelve la duración real del gesto (para que quien
@@ -1015,12 +974,13 @@ class _DashboardScreenState extends State<DashboardScreen>
     return DateTime.parse(_dias[_diaSeleccionado]['fecha'] as String);
   }
 
-  String _fraseProgreso(AppLocalizations l, int hechos, int total) {
-    if (hechos == 0) return l.dashProgresoPrimero;
-    if (hechos == total) return l.dashProgresoPerfecto;
-    if (hechos / total >= 0.5) return l.dashProgresoCasi;
-    return l.dashProgresoBuenRitmo;
-  }
+  String _fraseProgreso(AppLocalizations l, int hechos, int total) =>
+      switch (fraseProgreso(hechos, total)) {
+        FraseProgreso.primero => l.dashProgresoPrimero,
+        FraseProgreso.perfecto => l.dashProgresoPerfecto,
+        FraseProgreso.casi => l.dashProgresoCasi,
+        FraseProgreso.buenRitmo => l.dashProgresoBuenRitmo,
+      };
 
   /// Una fila de la lista de Hoy: la del hábito en tránsito (ver
   /// `_arrancarTransito`) se pinta dentro de un `RanuraTransito` animado por
