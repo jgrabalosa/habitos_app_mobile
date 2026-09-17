@@ -78,11 +78,12 @@ class _HomeShellState extends State<HomeShell> {
   /// numera los pasos a propósito, porque la lista no siempre es la misma.
   PasoRecorrido? _pasoPestanaHabitos;
   PasoRecorrido? _pasoCheck;
+  PasoRecorrido? _pasoValoracion;
   PasoRecorrido? _pasoAlimentar;
 
   /// En qué pestaña se puede ver la marca de este paso, o null si da igual.
   int? _pestanaDe(PasoRecorrido paso) {
-    if (paso == _pasoCheck) return 0;
+    if (paso == _pasoCheck || paso == _pasoValoracion) return 0;
     if (paso == _pasoAlimentar) return 1;
     return null;
   }
@@ -140,6 +141,15 @@ class _HomeShellState extends State<HomeShell> {
       cuerpo: l.recPaso4Cuerpo,
       textoBoton: l.recSiguiente,
     );
+    // Señala el mismo check que el paso anterior: la hoja de valoración sale
+    // después de marcar, es una ruta, y el recorrido se pinta por encima de
+    // todas. No hay forma de apuntarle, así que se cuenta antes.
+    _pasoValoracion = PasoRecorrido(
+      ancla: AnclasRecorrido.checkHabito,
+      titulo: l.recValoracionTitulo,
+      cuerpo: l.recValoracionCuerpo,
+      textoBoton: l.recSiguiente,
+    );
     _pasoAlimentar = PasoRecorrido(
       ancla: AnclasRecorrido.alimentar,
       titulo: l.recPaso5Titulo,
@@ -155,9 +165,10 @@ class _HomeShellState extends State<HomeShell> {
               pasoNuevo,
               pasoRecomendados,
               _pasoCheck!,
+              _pasoValoracion!,
               _pasoAlimentar!,
             ]
-          : [_pasoCheck!, _pasoAlimentar!],
+          : [_pasoCheck!, _pasoValoracion!, _pasoAlimentar!],
       textoSaltar: l.recSaltar,
       textoContinuar: l.recSiguiente,
     );
