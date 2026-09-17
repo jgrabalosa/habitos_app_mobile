@@ -506,11 +506,22 @@ class _DashboardScreenState extends State<DashboardScreen>
       AnimacionPuntos.mostrar(context, puntosGanados);
     }
 
+    // El recorrido guiado pasa aquí del check a la valoración. Si este
+    // completado no abre la hoja —el backend sólo la pide al llegar a la meta
+    // del día, y siempre en los semanales— se entra y se sale del paso sin
+    // que llegue a verse, porque no habría nada a lo que apuntar.
+    final recorridoGuiado = RecorridoOnboarding.instancia;
+    final enRecorrido = recorridoGuiado.activo;
+    if (enRecorrido) recorridoGuiado.avanzar();
+
     if (mostrarValoracion && registroId != null && mounted) {
       // Pequeña pausa para no pisar la animación de puntos
       await Future.delayed(const Duration(milliseconds: 250));
       if (!mounted) return;
-      final respuesta = await ValoracionSheet.mostrar(context);
+      final respuesta = await ValoracionSheet.mostrar(
+        context,
+        ancla: enRecorrido ? AnclasRecorrido.valoracion : null,
+      );
       if (respuesta != null) {
         try {
           final int? valoracion = respuesta['valoracion'];
@@ -526,6 +537,9 @@ class _DashboardScreenState extends State<DashboardScreen>
         }
       }
     }
+
+    // Cerrada la hoja —o no abierta— el recorrido sigue hacia la mascota.
+    if (enRecorrido && recorridoGuiado.activo) recorridoGuiado.avanzar();
 
     if (!_yaPidioResena) {
       _solicitarResena();

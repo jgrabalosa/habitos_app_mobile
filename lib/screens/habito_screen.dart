@@ -201,8 +201,15 @@ class _HabitoScreenState extends State<HabitoScreen> {
     });
   }
 
-  List<Map<String, dynamic>> get _plantillasDisponibles =>
-      _plantillas.where((p) => !_yaExiste(p['id'])).toList();
+  List<Map<String, dynamic>> get _plantillasDisponibles => _plantillas
+      .where((p) => !_yaExiste(p['id']))
+      // Durante el recorrido guiado se esconde la plantilla semanal con días
+      // fijos: un hábito así sólo sale en Hoy los días que toca, y el paso
+      // siguiente señala su check en la lista de hoy. Creado un lunes, no
+      // habría nada que señalar. Fuera del recorrido se sigue ofreciendo.
+      .where((p) =>
+          !RecorridoOnboarding.instancia.activo || p['id'] != 'ejercicio')
+      .toList();
 
   void _alternarDia(int dia) {
     setState(() {
