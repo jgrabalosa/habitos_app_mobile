@@ -275,5 +275,7 @@
   "recPaso4Cuerpo": "Cada día, toca el círculo del hábito.",
   "recPaso5Titulo": "Nori crece contigo",
   "recPaso5Cuerpo": "Cumplir hábitos da puntos, y con los puntos se compra comida en la tienda.",
-  "recMenu": "Ver el recorrido"
+  "recMenu": "Ver el recorrido",
+  "recValoracionTitulo": "Cuenta qué tal fue",
+  "recValoracionCuerpo": "Al marcar un hábito te preguntamos cómo ha ido. Las estrellas construyen tu media, y en la nota puedes dejar escrito el día."
 }
