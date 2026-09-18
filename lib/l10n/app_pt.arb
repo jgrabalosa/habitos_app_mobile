@@ -191,6 +191,8 @@
   "recPaso4Cuerpo": "Todos os dias, toca no círculo do hábito.",
   "recPaso5Titulo": "A Nori cresce contigo",
   "recPaso5Cuerpo": "Cumprir hábitos dá pontos, e com os pontos compras comida na loja.",
+  "recDeshacerTitulo": "Enganaste-te?",
+  "recDeshacerCuerpo": "Toca outra vez no círculo e o dia fica por marcar.",
   "recMenu": "Ver o percurso",
   "recValoracionTitulo": "Conta como correu",
   "recValoracionCuerpo": "As estrelas constroem a tua média, e na nota podes deixar escrito como correu o dia."
