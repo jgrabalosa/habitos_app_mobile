@@ -79,11 +79,14 @@ class _HomeShellState extends State<HomeShell> {
   PasoRecorrido? _pasoPestanaHabitos;
   PasoRecorrido? _pasoCheck;
   PasoRecorrido? _pasoValoracion;
+  PasoRecorrido? _pasoDeshacer;
   PasoRecorrido? _pasoAlimentar;
 
   /// En qué pestaña se puede ver la marca de este paso, o null si da igual.
   int? _pestanaDe(PasoRecorrido paso) {
-    if (paso == _pasoCheck || paso == _pasoValoracion) return 0;
+    if (paso == _pasoCheck ||
+        paso == _pasoValoracion ||
+        paso == _pasoDeshacer) return 0;
     if (paso == _pasoAlimentar) return 1;
     return null;
   }
@@ -150,6 +153,16 @@ class _HomeShellState extends State<HomeShell> {
       titulo: l.recValoracionTitulo,
       cuerpo: l.recValoracionCuerpo,
     );
+    // Señala otra vez el círculo del hábito, ya marcado. Va aquí y no en el
+    // paso del check porque aquél es de acción: avanza en cuanto se toca el
+    // círculo, así que allí no habría manera de probar lo que se explica.
+    _pasoDeshacer = PasoRecorrido(
+      ancla: AnclasRecorrido.checkHabito,
+      titulo: l.recDeshacerTitulo,
+      cuerpo: l.recDeshacerCuerpo,
+      textoBoton: l.recSiguiente,
+    );
+
     _pasoAlimentar = PasoRecorrido(
       ancla: AnclasRecorrido.alimentar,
       titulo: l.recPaso5Titulo,
@@ -166,9 +179,15 @@ class _HomeShellState extends State<HomeShell> {
               pasoRecomendados,
               _pasoCheck!,
               _pasoValoracion!,
+              _pasoDeshacer!,
               _pasoAlimentar!,
             ]
-          : [_pasoCheck!, _pasoValoracion!, _pasoAlimentar!],
+          : [
+              _pasoCheck!,
+              _pasoValoracion!,
+              _pasoDeshacer!,
+              _pasoAlimentar!,
+            ],
       textoSaltar: l.recSaltar,
       textoContinuar: l.recSiguiente,
     );
