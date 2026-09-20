@@ -1039,7 +1039,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                 builder: (_) => HabitoDetalleScreen(
                     habitoId: h.habitoId,
                     usuarioId: _usuarioId,
-                    nombre: h.nombre),
+                    nombre: h.nombre,
+                    descripcion: h.descripcion),
               ),
             );
             _cargarHabitos();
@@ -1186,7 +1187,10 @@ class _DashboardScreenState extends State<DashboardScreen>
             context,
             MaterialPageRoute(
               builder: (_) => HabitoDetalleScreen(
-                  habitoId: h.habitoId, usuarioId: _usuarioId, nombre: h.nombre),
+                  habitoId: h.habitoId,
+                  usuarioId: _usuarioId,
+                  nombre: h.nombre,
+                  descripcion: h.descripcion),
             ),
           );
           _cargarSemana();

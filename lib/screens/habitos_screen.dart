@@ -296,6 +296,21 @@ class _HabitosScreenState extends State<HabitosScreen> {
                           .bodySmall
                           ?.copyWith(color: t.textMuted),
                     ),
+                    // Una sola línea: esta pantalla es para encontrar un
+                    // hábito, no para leerlo. Quien quiera más entra al
+                    // detalle. Si no hay descripción no se reserva espacio.
+                    if ((habito.descripcion ?? '').trim().isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        habito.descripcion!.trim(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(color: t.textMuted),
+                      ),
+                    ],
                   ],
                 ),
               ),
