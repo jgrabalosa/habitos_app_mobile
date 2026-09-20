@@ -85,7 +85,17 @@ class _DashboardScreenState extends State<DashboardScreen>
   final Map<int, Set<String>> _fechasCompletadas = {}; // habitoId -> fechas ISO (mini-heatmap)
   bool _loading = true;
   int _usuarioId = 0;
-  bool _yaPidioResena = false;
+  /// Días distintos en los que el usuario ha completado algún hábito. No es
+  /// el número de checks: varios el mismo día cuentan como uno. Mide que
+  /// vuelva, que es lo que da sentido a pedirle una reseña.
+  int _diasUsoResena = 0;
+
+  /// El último día ya contado, en `AAAA-MM-DD`, para no sumar dos veces.
+  String _ultimaFechaResena = '';
+
+  /// Días de uso en los que se pide la reseña. En el último se acaba: si a
+  /// la tercera no la ha dejado, insistir sólo molesta.
+  static const List<int> _hitosResena = [3, 15, 30];
 
   /// Los 7 días de la semana (lunes→domingo), crudos del backend, para la
   /// tira de navegación. `_diaSeleccionado` e `_indiceHoy` son índices dentro
@@ -263,10 +273,17 @@ class _DashboardScreenState extends State<DashboardScreen>
   Future<void> _cargarEstadoResena() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final yaPidio = prefs.getBool('resena_solicitada') ?? false;
-      if (mounted) setState(() { _yaPidioResena = yaPidio; });
+      final dias = prefs.getInt('resena_dias_uso') ?? 0;
+      final ultima = prefs.getString('resena_ultima_fecha') ?? '';
+      if (mounted) {
+        setState(() {
+          _diasUsoResena = dias;
+          _ultimaFechaResena = ultima;
+        });
+      }
     } catch (_) {
-      // Si falla, dejamos _yaPidioResena en false (se volverá a intentar pedir)
+      // Si falla, se queda en cero: como mucho se le pedirá más tarde de la
+      // cuenta, que es el lado bueno por el que equivocarse.
     }
   }
 
@@ -500,9 +517,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     // Cerrada la hoja —o no abierta— el recorrido sigue hacia la mascota.
     if (enRecorrido && recorridoGuiado.activo) recorridoGuiado.avanzar();
 
-    if (!_yaPidioResena) {
-      _solicitarResena();
-    }
+    _registrarDiaDeUso();
   }
 
   /// Deshace el último completado de hoy.
@@ -613,16 +628,44 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
+  /// Suma un día de uso si hoy no estaba contado, y pide la reseña si con
+  /// eso se alcanza uno de los hitos.
+  ///
+  /// Se llama al completar un hábito, no al abrir la app: abrirla y no hacer
+  /// nada no es usarla.
+  Future<void> _registrarDiaDeUso() async {
+    try {
+      final ahora = DateTime.now();
+      final hoy = '${ahora.year.toString().padLeft(4, '0')}-'
+          '${ahora.month.toString().padLeft(2, '0')}-'
+          '${ahora.day.toString().padLeft(2, '0')}';
+      if (hoy == _ultimaFechaResena) return;
+
+      final dias = _diasUsoResena + 1;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('resena_dias_uso', dias);
+      await prefs.setString('resena_ultima_fecha', hoy);
+      if (mounted) {
+        setState(() {
+          _diasUsoResena = dias;
+          _ultimaFechaResena = hoy;
+        });
+      }
+
+      if (_hitosResena.contains(dias)) await _solicitarResena();
+    } catch (_) {
+      // Contar días no es crítico: si falla, no se molesta al usuario.
+    }
+  }
+
   Future<void> _solicitarResena() async {
     try {
       final InAppReview inAppReview = InAppReview.instance;
       if (await inAppReview.isAvailable()) {
+        // `requestReview()` no dice si se mostró el diálogo ni si el usuario
+        // valoró —Google aplica su propia cuota y calla—, así que los
+        // reintentos de los hitos siguientes van a ciegas a propósito.
         await inAppReview.requestReview();
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('resena_solicitada', true);
-        if (mounted) {
-          setState(() { _yaPidioResena = true; });
-        }
       }
     } catch (e) {
       // Si falla, no bloqueamos nada
