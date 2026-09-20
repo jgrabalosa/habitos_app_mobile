@@ -192,8 +192,8 @@
   },
   "dashDiaSinHabitos": "No hay hábitos programados este día.",
   "habitosTodas": "Todas",
-  "habitosOrdenRecientes": "Recientes",
-  "habitosOrdenMasCumplidos": "Más cumplidos",
+  "habitosOrdenRecientes": "Nuevos primero",
+  "habitosOrdenMasCumplidos": "Más veces hechos",
   "habitosSinFiltro": "No hay hábitos con este filtro",
   "habitosSubtitulo": "{categoria} · {n, plural, =1{1 completado} other{{n} completados}}",
   "@habitosSubtitulo": {
