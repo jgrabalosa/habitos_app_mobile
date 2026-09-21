@@ -481,6 +481,17 @@ class _HomeShellState extends State<HomeShell> {
         // parámetro. Sólo mientras el recorrido corre.
         anclaAlimentar:
             _recorrido.activo ? AnclasRecorrido.alimentar : null,
+        // Los textos los pone la app: el core no puede nombrar hábitos.
+        ayudaAnimo: AyudaCampo(
+          texto: l.mascotaAyudaAnimo,
+          etiquetaSemantica: l.mascotaAyudaAnimoEtiqueta,
+          superindice: true,
+        ),
+        ayudaXp: AyudaCampo(
+          texto: l.mascotaAyudaXp,
+          etiquetaSemantica: l.mascotaAyudaXpEtiqueta,
+          superindice: true,
+        ),
       ),
       HabitosScreen(usuarioId: _usuarioId),
     ];
