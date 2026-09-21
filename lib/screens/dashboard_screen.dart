@@ -1152,6 +1152,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                   etiquetaSemantica: l.a11yCompletarHabito(h.nombre),
                   etiquetaSemanticaDeshacer: l.a11yDeshacerHabito(h.nombre),
                 ),
+                // El mismo chevron que la tarjeta de otros días. Se puso sólo
+                // en aquélla, y en Hoy —que es donde se mira casi siempre—
+                // seguía sin haber nada que anunciara el detalle.
+                const SizedBox(width: 4),
+                Icon(LucideIcons.chevronRight, size: 18, color: t.textMuted),
               ],
             ),
           ),

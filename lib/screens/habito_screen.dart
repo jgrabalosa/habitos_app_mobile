@@ -558,10 +558,15 @@ class _HabitoScreenState extends State<HabitoScreen> {
                 if (_metaDerivada)
                   Row(
                     children: [
-                      Text(l.habMeta),
+                      // `trimRight`: el texto trae un espacio detrás de los
+                      // dos puntos, y el interrogante va pegado a ellos como
+                      // un exponente. El aire hasta lo siguiente ya lo da
+                      // su propia caja.
+                      Text(l.habMeta.trimRight()),
                       AyudaCampo(
                         texto: l.habAyudaMetaDias,
                         etiquetaSemantica: l.habAyudaMetaEtiqueta,
+                        superindice: true,
                       ),
                       Text(l.habDiasSemanaMeta(_diasSeleccionados.length),
                           style: Theme.of(context).textTheme.titleLarge),
@@ -570,7 +575,8 @@ class _HabitoScreenState extends State<HabitoScreen> {
                 else
                   Row(
                     children: [
-                      Text(l.habMeta),
+                      // `trimRight`: ver la fila de los días marcados.
+                      Text(l.habMeta.trimRight()),
                       AyudaCampo(
                         // Diario: veces al día. Semanal sin días marcados:
                         // veces por semana, el día que sea. Con días
@@ -579,6 +585,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                             ? l.habAyudaMetaDiaria
                             : l.habAyudaMetaSemanal,
                         etiquetaSemantica: l.habAyudaMetaEtiqueta,
+                        superindice: true,
                       ),
                       IconButton(
                         icon: const Icon(LucideIcons.minus),
