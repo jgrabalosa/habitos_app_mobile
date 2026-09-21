@@ -278,7 +278,7 @@
   "recPaso5Cuerpo": "Cumplir hábitos da puntos, y con los puntos se compra comida en la tienda.",
   "recDeshacerTitulo": "¿Te has equivocado?",
   "recDeshacerCuerpo": "Vuelve a tocar el círculo y el día se desmarca.",
-  "recMenu": "Ver el recorrido",
+  "recMenu": "Ver tutorial",
   "recValoracionTitulo": "Cuenta qué tal fue",
   "recValoracionCuerpo": "Las estrellas construyen tu media, y en la nota puedes dejar escrito cómo ha ido el día."
 }
