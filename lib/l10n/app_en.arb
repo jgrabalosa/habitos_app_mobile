@@ -117,7 +117,7 @@
   "dashFlexibleProgreso": "{meta} times this week · {hechos}/{meta} done",
   "dashDiaSinHabitos": "No habits scheduled for this day.",
   "habitosTodas": "All",
-  "habitosOrdenRecientes": "Recent",
+  "habitosOrdenRecientes": "Newest first",
   "habitosOrdenMasCumplidos": "Most completed",
   "habitosSinFiltro": "No habits match this filter",
   "habitosSubtitulo": "{categoria} · {n, plural, =1{1 completion} other{{n} completions}}",
