@@ -212,7 +212,12 @@ title: Hero(
     return Row(
       children: [
         _statCard(LucideIcons.flame, _detalle!['rachaActual'].toString(),
-            l.detRachaActual, t.streakText),
+            l.detRachaActual, t.streakText,
+            ayuda: AyudaCampo(
+              texto: l.detAyudaRacha,
+              etiquetaSemantica: l.detAyudaRachaEtiqueta,
+              superindice: true,
+            )),
         const SizedBox(width: 8),
         _statCard(LucideIcons.trophy, _detalle!['rachaMaxima'].toString(),
             l.detMejorRacha, t.streakText),
@@ -260,6 +265,11 @@ title: Hero(
                       .textTheme
                       .bodySmall
                       ?.copyWith(color: t.textMuted)),
+              AyudaCampo(
+                texto: l.detAyudaSatisfaccion,
+                etiquetaSemantica: l.detAyudaSatisfaccionEtiqueta,
+                superindice: true,
+              ),
             ],
           ),
         ),
@@ -269,7 +279,8 @@ title: Hero(
 
   /// El `color` es el de la cifra, y llega ya resuelto para texto: quien
   /// llama pasa `successText`, no `success`.
-  Widget _statCard(IconData icono, String valor, String label, Color color) {
+  Widget _statCard(IconData icono, String valor, String label, Color color,
+      {Widget? ayuda}) {
     final t = tokens(context);
     return Expanded(
       child: TarjetaIdentidad(
@@ -285,12 +296,23 @@ title: Hero(
                       .textTheme
                       .headlineSmall
                       ?.copyWith(color: color)),
-              Text(label,
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelSmall
-                      ?.copyWith(color: t.textMuted),
-                  textAlign: TextAlign.center),
+              // La etiqueta puede partirse en dos líneas: la tarjeta es un
+              // cuarto de pantalla y, con ayuda, comparte fila con el
+              // interrogante.
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Flexible(
+                    child: Text(label,
+                        style: Theme.of(context)
+                            .textTheme
+                            .labelSmall
+                            ?.copyWith(color: t.textMuted),
+                        textAlign: TextAlign.center),
+                  ),
+                  ?ayuda,
+                ],
+              ),
             ],
           ),
         ),
