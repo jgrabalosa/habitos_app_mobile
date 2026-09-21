@@ -116,7 +116,11 @@ title: Hero(
     ),
   ],
 ),
-      body: _loading
+      // Los últimos registros quedaban debajo de los botones de Android.
+      // Arriba ya se encarga el AppBar.
+      body: SafeArea(
+        top: false,
+        child: _loading
           ? const Center(child: CircularProgressIndicator())
           : _detalle == null
               ? Center(child: Text(l.detErrorCargarDetalle))
@@ -133,6 +137,7 @@ title: Hero(
                     const SizedBox(height: 48),
                   ],
                 ),
+      ),
     );
   }
 

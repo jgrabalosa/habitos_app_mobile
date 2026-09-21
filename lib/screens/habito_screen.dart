@@ -442,7 +442,12 @@ class _HabitoScreenState extends State<HabitoScreen> {
       appBar: AppBar(
         title: Text(_esEdicion ? l.habTituloEditar : l.habTituloNuevo),
       ),
-      body: SingleChildScrollView(
+      // Sin AppBar abajo que lo aparte, el final del formulario —el botón de
+      // guardar— quedaba debajo de los botones de Android. Arriba ya se
+      // encarga el AppBar.
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Card(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -627,6 +632,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
             ),
           ),
         ),
+      ),
       ),
     );
   }
