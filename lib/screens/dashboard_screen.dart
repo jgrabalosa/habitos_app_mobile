@@ -99,6 +99,18 @@ class _DashboardScreenState extends State<DashboardScreen>
   /// la tercera no la ha dejado, insistir sólo molesta.
   static const List<int> _hitosResena = [3, 15, 30];
 
+  /// El último día en que salió el cierre del día, en `AAAA-MM-DD`: sale una
+  /// sola vez al día aunque se desmarque y se vuelva a marcar. Va por
+  /// usuario, así que una cuenta nueva en el mismo móvil tiene el suyo.
+  String _ultimaFechaCierre = '';
+
+  /// Entre el último check del día y el final de su secuencia. Mientras
+  /// tanto el día no se marca cerrado: el realce de la constelación no debe
+  /// llegar antes que la fugaz, los logros y la valoración.
+  bool _cierrePendiente = false;
+
+  String get _claveCierre => 'cierre_dia_fecha_$_usuarioId';
+
   /// Los 7 días de la semana (lunes→domingo), crudos del backend, para la
   /// tira de navegación. `_diaSeleccionado` e `_indiceHoy` son índices dentro
   /// de esta lista, no días de la semana ISO.
@@ -216,6 +228,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       await Future.wait([
         _cargarHabitos(),
         _cargarEstadoResena(),
+        _cargarEstadoCierre(),
         _cargarSemana(),
       ]);
     } finally {
@@ -271,6 +284,15 @@ class _DashboardScreenState extends State<DashboardScreen>
   Future<void> _irASemana(int offset) async {
     setState(() => _offsetSemana = offset);
     await _cargarSemana();
+  }
+
+  Future<void> _cargarEstadoCierre() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _ultimaFechaCierre = prefs.getString(_claveCierre) ?? '';
+    } catch (_) {
+      // Si falla, como mucho el cierre saldría otra vez hoy.
+    }
   }
 
   Future<void> _cargarEstadoResena() async {
@@ -444,6 +466,12 @@ class _DashboardScreenState extends State<DashboardScreen>
         ? _arrancarTransito(habitoId)
         : Duration.zero;
 
+    // Si con este check el día queda completo, el cierre espera al final de
+    // la secuencia (ver `_cierrePendiente`).
+    final diaCompleto =
+        esHoy && _habitos.isNotEmpty && _habitos.every(_estaHecho);
+    if (diaCompleto) _cierrePendiente = true;
+
     _publicarProgreso();
 
     // Sincronización real en segundo plano (por si el conteo local se desviara)
@@ -520,7 +548,51 @@ class _DashboardScreenState extends State<DashboardScreen>
     // Cerrada la hoja —o no abierta— el recorrido sigue hacia la mascota.
     if (enRecorrido && recorridoGuiado.activo) recorridoGuiado.avanzar();
 
+    if (diaCompleto) await _cerrarDia(enRecorrido: enRecorrido);
+
     _registrarDiaDeUso();
+  }
+
+  /// El cierre del día, al final de toda la secuencia del último check: la
+  /// ceremonia —que sólo existe en Profundidad y la decide el core— y
+  /// después el día queda cerrado. Una vez al día, y nunca en el recorrido
+  /// guiado. Va antes de la reseña de Play para que no se coma el momento.
+  Future<void> _cerrarDia({required bool enRecorrido}) async {
+    final hoy = _fechaDeHoy();
+    final sigueCompleto = _habitos.isNotEmpty && _habitos.every(_estaHecho);
+    if (mounted &&
+        sigueCompleto &&
+        !enRecorrido &&
+        !RecorridoOnboarding.instancia.activo &&
+        hoy != _ultimaFechaCierre) {
+      _ultimaFechaCierre = hoy;
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_claveCierre, hoy);
+      } catch (_) {
+        // Si no se guarda, como mucho saldría otra vez hoy.
+      }
+      // Desde aquí el día ya cuenta como cerrado: la ceremonia enciende el
+      // realce, y cualquier refresco a media ceremonia lo tiene que respetar.
+      _cierrePendiente = false;
+      if (mounted) {
+        final l = AppLocalizations.of(context)!;
+        await mostrarCierreDelDia(
+          titulo: l.dashTodoHecho,
+          despedida: l.dashDisfruta,
+        );
+      }
+    }
+    _cierrePendiente = false;
+    if (mounted) _publicarProgreso();
+  }
+
+  /// Hoy en el reloj del móvil, en `AAAA-MM-DD`.
+  static String _fechaDeHoy() {
+    final ahora = DateTime.now();
+    return '${ahora.year.toString().padLeft(4, '0')}-'
+        '${ahora.month.toString().padLeft(2, '0')}-'
+        '${ahora.day.toString().padLeft(2, '0')}';
   }
 
   /// Deshace el último completado de hoy.
@@ -675,6 +747,24 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
+  /// En Profundidad, con el día cerrado, la tarjeta se vuelve invisible pero
+  /// conserva su hueco: ese hueco es el sitio de la constelación. Un lector
+  /// de pantalla la sigue leyendo.
+  Widget _tarjetaTodoHecho() {
+    return ValueListenableBuilder<bool>(
+      valueListenable: diaCerradoNotifier,
+      builder: (context, cerrado, child) => Opacity(
+        opacity: cerrado &&
+                identidad(context).fondo == FondoIdentidadTipo.cielo
+            ? 0
+            : 1,
+        alwaysIncludeSemantics: true,
+        child: child,
+      ),
+      child: const TarjetaTodoHecho(),
+    );
+  }
+
   /// Publica en el core cuántos hábitos hay y cuántos están hechos en el día
   /// que la pantalla está mostrando, para que el fondo de la identidad pueda
   /// dibujar con ello.
@@ -701,6 +791,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         total: _habitos.length,
         fecha: DateTime.now(),
       );
+      _publicarCierre();
       return;
     }
 
@@ -713,6 +804,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         total: _habitos.length,
         fecha: fecha,
       );
+      _publicarCierre();
       return;
     }
 
@@ -722,6 +814,16 @@ class _DashboardScreenState extends State<DashboardScreen>
       total: habitosDia.length,
       fecha: fecha,
     );
+    // Otro día de la tira, aunque esté completo, se ve normal.
+    marcarDiaCerrado(false);
+  }
+
+  /// Hoy, completo y con su secuencia terminada, es un día cerrado. Sólo se
+  /// llama cuando la pantalla muestra hoy.
+  void _publicarCierre() {
+    marcarDiaCerrado(!_cierrePendiente &&
+        _habitos.isNotEmpty &&
+        _habitos.every(_estaHecho));
   }
 
   @override
@@ -957,7 +1059,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     const EstadoVacioHoy()
                   else ...[
                     if (pendientes.isEmpty)
-                      const TarjetaTodoHecho()
+                      _tarjetaTodoHecho()
                     else
                       ...pendientes.asMap().entries.map((e) => _filaEnLista(
                           l, e.value, false, t,

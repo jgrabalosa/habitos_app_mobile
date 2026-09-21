@@ -549,42 +549,57 @@ class _HomeShellState extends State<HomeShell> {
                 children: [for (final tab in tabs) _MantenerVivo(child: tab)],
               ),
             ),
+            // El cierre del día va ENTRE las páginas y la constelación: su
+            // velo oscurece el contenido y las estrellas brillan por encima.
+            // Sin cierre en curso no pinta nada ni roba toques.
+            const Positioned.fill(
+              key: ValueKey('cierre'),
+              child: CapaCierreDelDia(),
+            ),
             if (_tabIndex != 1)
-              const Positioned.fill(
-                key: ValueKey('constelacion'),
-                child: CapaProgresoIdentidad(),
+              Positioned.fill(
+                key: const ValueKey('constelacion'),
+                child: CapaProgresoIdentidad(enHoy: _tabIndex == 0),
               ),
           ],
         ),
         // Lo único de la app que se ve en todo momento: la forma del indicador
         // y el color de lo activo salen de la identidad equipada.
-        bottomNavigationBar: NavigationBarTheme(
-          data: barraNavegacionIdentidad(
-              identidad(context), t, Theme.of(context).textTheme.labelMedium),
-          child: NavigationBar(
-            // `selectedIndex` sigue valiendo 0, 1 o 2: el menú es el cuarto
-            // destino pero nunca queda seleccionado, porque no es una página.
-            // Al volver de la hoja, la pestaña marcada es la que ya estaba.
-            selectedIndex: _tabIndex,
-            onDestinationSelected: (i) {
-              if (i == indiceMenu) {
-                _abrirMenu();
-                return;
-              }
-              _irAPestana(i);
-            },
-            destinations: [
-              NavigationDestination(icon: const Icon(LucideIcons.house), label: etiquetas[0]),
-              NavigationDestination(icon: const Icon(LucideIcons.pawPrint), label: etiquetas[1]),
-              NavigationDestination(
-                  icon: Icon(LucideIcons.listChecks,
-                      key: _recorrido.activo
-                          ? AnclasRecorrido.pestanaHabitos
-                          : null),
-                  label: etiquetas[2]),
-              NavigationDestination(icon: const Icon(LucideIcons.menu), label: etiquetas[3]),
-            ],
-          ),
+        // La barra va fuera del Stack: el velo del cierre del día la cubre
+        // con su propia pieza, que además impide cambiar de pestaña a media
+        // ceremonia.
+        bottomNavigationBar: Stack(
+          children: [
+            NavigationBarTheme(
+              data: barraNavegacionIdentidad(
+                  identidad(context), t, Theme.of(context).textTheme.labelMedium),
+              child: NavigationBar(
+                // `selectedIndex` sigue valiendo 0, 1 o 2: el menú es el cuarto
+                // destino pero nunca queda seleccionado, porque no es una página.
+                // Al volver de la hoja, la pestaña marcada es la que ya estaba.
+                selectedIndex: _tabIndex,
+                onDestinationSelected: (i) {
+                  if (i == indiceMenu) {
+                    _abrirMenu();
+                    return;
+                  }
+                  _irAPestana(i);
+                },
+                destinations: [
+                  NavigationDestination(icon: const Icon(LucideIcons.house), label: etiquetas[0]),
+                  NavigationDestination(icon: const Icon(LucideIcons.pawPrint), label: etiquetas[1]),
+                  NavigationDestination(
+                      icon: Icon(LucideIcons.listChecks,
+                          key: _recorrido.activo
+                              ? AnclasRecorrido.pestanaHabitos
+                              : null),
+                      label: etiquetas[2]),
+                  NavigationDestination(icon: const Icon(LucideIcons.menu), label: etiquetas[3]),
+                ],
+              ),
+            ),
+            const Positioned.fill(child: VeloBarraCierreDelDia()),
+          ],
         ),
       ),
     );
