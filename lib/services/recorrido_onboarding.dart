@@ -111,11 +111,13 @@ class RecorridoOnboarding extends ChangeNotifier {
     _buscarAncla();
   }
 
-  /// Guarda unos logros para celebrarlos al terminar el recorrido.
+  /// Retiene los logros ganados durante el recorrido para que no se celebren.
   ///
   /// Una celebración es una ruta, y el recorrido se pinta por encima de todas
   /// ellas: saldría tapada, y encima se comería la atención en mitad de una
-  /// explicación. Al final del recorrido el usuario está libre para mirarla.
+  /// explicación. Tampoco se sueltan al terminar: en el recorrido caen tres o
+  /// cuatro de golpe y era demasiado. Los logros ya están concedidos en el
+  /// backend, así que siguen en la pantalla de logros y sus puntos llegan igual.
   void aplazarCelebracion(List<String> codigos) {
     _celebracionesAplazadas.addAll(codigos);
   }
@@ -156,11 +158,8 @@ class RecorridoOnboarding extends ChangeNotifier {
     RecorridoService.marcarHecho();
     notifyListeners();
 
-    if (_celebracionesAplazadas.isNotEmpty) {
-      final pendientes = List<String>.from(_celebracionesAplazadas);
-      _celebracionesAplazadas.clear();
-      CelebracionService.mostrar(pendientes);
-    }
+    // Se descartan sin celebrar: ver aplazarCelebracion.
+    _celebracionesAplazadas.clear();
   }
 
   /// Empieza a buscar el ancla del paso actual. Sólo puede haber una búsqueda
