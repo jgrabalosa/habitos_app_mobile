@@ -537,9 +537,8 @@ class _HabitoScreenState extends State<HabitoScreen> {
                         onChanged: (v) => setState(() { _categoriaId = v; }),
                       ),
                 const SizedBox(height: 12),
-                // El título va fuera del recuadro, como «Días de la semana» y
-                // «Meta»: los tres campos con ayuda la llevan igual, pegada al
-                // título como un exponente.
+                // El título va fuera del recuadro, como «Días de la semana», y
+                // la ayuda va pegada a él como un exponente, igual que en «Meta».
                 Row(
                   children: [
                     Text(l.habLabelFrecuencia,

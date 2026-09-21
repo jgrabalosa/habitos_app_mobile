@@ -1185,11 +1185,20 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l.dashFlexiblesTitulo,
-            style: Theme.of(context)
-                .textTheme
-                .titleSmall
-                ?.copyWith(color: t.textMuted)),
+        Row(
+          children: [
+            Text(l.dashFlexiblesTitulo,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleSmall
+                    ?.copyWith(color: t.textMuted)),
+            AyudaCampo(
+              texto: l.dashAyudaFlexibles,
+              etiquetaSemantica: l.dashAyudaFlexiblesEtiqueta,
+              superindice: true,
+            ),
+          ],
+        ),
         const SizedBox(height: 8),
         ..._flexibles.map((item) {
           final habito = item['habito'] as Habito;
