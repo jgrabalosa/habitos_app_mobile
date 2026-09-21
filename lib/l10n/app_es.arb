@@ -65,6 +65,8 @@
   "habAyudaMetaDiaria": "Cuántas veces al día quieres hacerlo. Beber agua puede ser 4; meditar, 1.",
   "habAyudaMetaSemanal": "Cuántas veces por semana, el día que te venga bien. Si marcas días concretos, la meta sale de ellos.",
   "habAyudaMetaDias": "Con días concretos, la meta son esos días: uno por cada día marcado.",
+  "habAyudaFrecuenciaEtiqueta": "Ayuda sobre la frecuencia",
+  "habAyudaFrecuencia": "Diario: cada día. Semanal: unas veces por semana, los días que mejor te vengan.",
   "habRecordatorio": "Recordatorio",
   "habEligeHora": "Elige una hora",
   "habDesactivado": "Desactivado",
