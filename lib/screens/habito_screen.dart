@@ -388,8 +388,17 @@ class _HabitoScreenState extends State<HabitoScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l.habDiasSemana,
-            style: Theme.of(context).textTheme.titleMedium),
+        Row(
+          children: [
+            Text(l.habDiasSemana,
+                style: Theme.of(context).textTheme.titleMedium),
+            AyudaCampo(
+              texto: l.habAyudaDias,
+              etiquetaSemantica: l.habAyudaDiasEtiqueta,
+              superindice: true,
+            ),
+          ],
+        ),
         const SizedBox(height: 8),
         Row(
           children: List.generate(7, (i) {
@@ -537,11 +546,25 @@ class _HabitoScreenState extends State<HabitoScreen> {
                         onChanged: (v) => setState(() { _categoriaId = v; }),
                       ),
                 const SizedBox(height: 12),
+                // El título va fuera del recuadro, como «Días de la semana» y
+                // «Meta»: los tres campos con ayuda la llevan igual, pegada al
+                // título como un exponente.
+                Row(
+                  children: [
+                    Text(l.habLabelFrecuencia,
+                        style: Theme.of(context).textTheme.titleMedium),
+                    AyudaCampo(
+                      texto: l.habAyudaFrecuencia,
+                      etiquetaSemantica: l.habAyudaFrecuenciaEtiqueta,
+                      superindice: true,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
                   initialValue: _frecuencia,
-                  decoration: InputDecoration(
-                    labelText: l.habLabelFrecuencia,
-                    border: const OutlineInputBorder(),
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
                   ),
                   items: ['DIARIO', 'SEMANAL']
                       .map((f) => DropdownMenuItem(
