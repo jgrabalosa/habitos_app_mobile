@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_service_habitos.dart';
+import '../services/descubrimiento_detalle.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/habito.dart';
@@ -31,6 +32,8 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
   @override
   void initState() {
     super.initState();
+    // Basta con entrar una vez para que el chevron de Hoy deje de empujar.
+    marcarDetalleDescubierto();
     _cargarDetalle();
   }
 

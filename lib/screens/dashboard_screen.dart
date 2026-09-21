@@ -16,6 +16,8 @@ import '../widgets/estados_hoy.dart';
 import '../widgets/identidad_ui.dart';
 import '../widgets/tira_semana.dart';
 import '../widgets/transito_fila.dart';
+import '../services/descubrimiento_detalle.dart';
+import '../widgets/chevron_detalle.dart';
 import 'habito_detalle_screen.dart';
 import 'dashboard_logica.dart';
 
@@ -138,6 +140,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   void initState() {
     super.initState();
     _cargarDatos();
+    cargarDetalleDescubierto();
     habitosCambiadosNotifier.addListener(_alCambiarHabitos);
   }
 
@@ -1129,6 +1132,22 @@ class _DashboardScreenState extends State<DashboardScreen>
                                 p['completadosPeriodo'] ?? 0,
                                 p['meta'] ?? 1),
                           ),
+                          // Detrás de la etiqueta y no al final de la
+                          // tarjeta: cierra la línea del nombre, que es la
+                          // que lleva al detalle, y deja el borde derecho
+                          // sólo para el check. En `primary` porque es lo
+                          // que se puede tocar. Sólo empuja la primera
+                          // tarjeta, y sólo hasta que se entra en un detalle
+                          // por primera vez: seis empujando serían ruido.
+                          const SizedBox(width: 6),
+                          ValueListenableBuilder<bool>(
+                            valueListenable: detalleDescubiertoNotifier,
+                            builder: (context, descubierto, child) =>
+                                ChevronDetalle(
+                              color: t.primary,
+                              empujar: primera && !descubierto,
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -1152,11 +1171,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                   etiquetaSemantica: l.a11yCompletarHabito(h.nombre),
                   etiquetaSemanticaDeshacer: l.a11yDeshacerHabito(h.nombre),
                 ),
-                // El mismo chevron que la tarjeta de otros días. Se puso sólo
-                // en aquélla, y en Hoy —que es donde se mira casi siempre—
-                // seguía sin haber nada que anunciara el detalle.
-                const SizedBox(width: 4),
-                Icon(LucideIcons.chevronRight, size: 18, color: t.textMuted),
               ],
             ),
           ),
@@ -1262,6 +1276,10 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ),
                     const SizedBox(width: 8),
                     ChipIdentidad(texto: _frecuenciaLegible(l, h.frecuencia)),
+                    // El mismo sitio y color que en la tarjeta de hoy, sin
+                    // empujón: ése es sólo para la primera tarjeta de hoy.
+                    const SizedBox(width: 6),
+                    ChevronDetalle(color: t.primary),
                   ],
                 ),
               ),
@@ -1287,13 +1305,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                   color: t.success,
                 ),
               ),
-              // La fila entera abre el detalle, pero sin esto nadie lo
-              // descubría: el check era lo único que parecía tocable, y el
-              // resto de la tarjeta no anunciaba que llevara a ningún sitio.
-              // En `textMuted` a propósito, para que se vea sin disputarle
-              // al check el papel de acción principal.
-              const SizedBox(width: 4),
-              Icon(LucideIcons.chevronRight, size: 18, color: t.textMuted),
             ],
           ),
         ),
