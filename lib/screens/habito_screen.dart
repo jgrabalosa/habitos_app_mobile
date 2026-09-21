@@ -388,17 +388,8 @@ class _HabitoScreenState extends State<HabitoScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text(l.habDiasSemana,
-                style: Theme.of(context).textTheme.titleMedium),
-            AyudaCampo(
-              texto: l.habAyudaDias,
-              etiquetaSemantica: l.habAyudaDiasEtiqueta,
-              superindice: true,
-            ),
-          ],
-        ),
+        Text(l.habDiasSemana,
+            style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         Row(
           children: List.generate(7, (i) {
