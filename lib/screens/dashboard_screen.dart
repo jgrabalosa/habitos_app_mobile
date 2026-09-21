@@ -1235,6 +1235,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                   color: t.success,
                 ),
               ),
+              // La fila entera abre el detalle, pero sin esto nadie lo
+              // descubría: el check era lo único que parecía tocable, y el
+              // resto de la tarjeta no anunciaba que llevara a ningún sitio.
+              // En `textMuted` a propósito, para que se vea sin disputarle
+              // al check el papel de acción principal.
+              const SizedBox(width: 4),
+              Icon(LucideIcons.chevronRight, size: 18, color: t.textMuted),
             ],
           ),
         ),
