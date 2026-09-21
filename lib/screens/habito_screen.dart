@@ -549,6 +549,10 @@ class _HabitoScreenState extends State<HabitoScreen> {
                   Row(
                     children: [
                       Text(l.habMeta),
+                      AyudaCampo(
+                        texto: l.habAyudaMetaDias,
+                        etiquetaSemantica: l.habAyudaMetaEtiqueta,
+                      ),
                       Text(l.habDiasSemanaMeta(_diasSeleccionados.length),
                           style: Theme.of(context).textTheme.titleLarge),
                     ],
@@ -557,6 +561,15 @@ class _HabitoScreenState extends State<HabitoScreen> {
                   Row(
                     children: [
                       Text(l.habMeta),
+                      AyudaCampo(
+                        // Diario: veces al día. Semanal sin días marcados:
+                        // veces por semana, el día que sea. Con días
+                        // marcados no se llega aquí: es la otra fila.
+                        texto: _frecuencia == 'DIARIO'
+                            ? l.habAyudaMetaDiaria
+                            : l.habAyudaMetaSemanal,
+                        etiquetaSemantica: l.habAyudaMetaEtiqueta,
+                      ),
                       IconButton(
                         icon: const Icon(LucideIcons.minus),
                         onPressed: () => setState(() { if (_meta > 1) _meta--; }),
