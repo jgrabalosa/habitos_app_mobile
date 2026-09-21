@@ -12,7 +12,11 @@ class HabitoDetalleScreen extends StatefulWidget {
   final int habitoId;
   final int usuarioId;
   final String? nombre; // para el Hero: título visible desde el primer frame
-  const HabitoDetalleScreen({super.key, required this.habitoId, required this.usuarioId, this.nombre});
+
+  /// Llega por parámetro porque `HabitoDetalleDTO` no la trae: quien abre
+  /// esta pantalla ya tiene el hábito entero en la mano.
+  final String? descripcion;
+  const HabitoDetalleScreen({super.key, required this.habitoId, required this.usuarioId, this.nombre, this.descripcion});
 
   @override
   State<HabitoDetalleScreen> createState() => _HabitoDetalleScreenState();
@@ -123,6 +127,16 @@ title: Hero(
               : ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
+                    if ((widget.descripcion ?? '').trim().isNotEmpty) ...[
+                      Text(
+                        widget.descripcion!.trim(),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(color: tokens(context).textMuted),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                     _buildLineaFrecuencia(),
                     _buildStatCards(),
                     _buildValoracionMedia(),

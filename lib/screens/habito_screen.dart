@@ -495,6 +495,11 @@ class _HabitoScreenState extends State<HabitoScreen> {
                 TextField(
                   controller: _descripcionController,
                   textCapitalization: TextCapitalization.sentences,
+                  // Limitado para que lo que se escribe quepa donde se ve: una
+                  // línea en el listado y sin ocupar media pantalla en el
+                  // detalle. Antes no había tope y cabía un párrafo entero.
+                  maxLength: 120,
+                  maxLines: 2,
                   decoration: InputDecoration(
                     labelText: l.habLabelDescripcion,
                     border: const OutlineInputBorder(),
