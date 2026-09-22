@@ -1,9 +1,10 @@
 # Norday — Contexto del proyecto (Flutter / Mobile)
 
-Esta app (Norday Hábitos) es la primera de un ecosistema de apps Norday.
+Esta app (Norday Habits) es la primera de un ecosistema de apps Norday.
 El motor genérico ya **no vive aquí**: está extraído en el paquete
 [norday_flutter_core](https://github.com/jgrabalosa/norday_flutter_core),
-que esta app consume como dependencia Git.
+que esta app consume como dependencia Git, por tag (`ref: vX.Y.Z`).
+Qué hace la app, para quien no la conozca: ver el `README.md`.
 
 ## Regla de arquitectura obligatoria: Motor vs Disparadores
 
@@ -18,26 +19,42 @@ Antes de escribir algo genérico aquí, para: probablemente va en el paquete.
 
 ### Qué vive en el paquete
 
-`ApiServiceCore` (sesión, usuario, preferencias, gamificación, tienda,
-mascota, notificaciones), `ApiException`, `AnalyticsCore`,
-`CelebracionService`, `SonidoService`, `IdiomaService`, `ZonaService`,
-`AppTheme` y tokens, `IdentidadPaleta` y `catalogoIdentidades`,
-`catalogoAvatares`, `Equipamiento`,
-`assetMascota`, `Usuario`, los widgets genéricos, las 7 pantallas
-genéricas (login, recuperación, tienda, mascota, logros, colección, perfil),
-`NordayCoreLocalizations`, `CatalogosCore`, y los assets de animations,
-sounds, mascota y avatares.
+Sesión, usuario, preferencias, gamificación, tienda, mascota y
+notificaciones (`ApiServiceCore`), los servicios genéricos (celebración,
+sonido, idioma, zona, recorrido guiado), el tema y las identidades, los
+widgets genéricos, los fondos de cada identidad, el cierre del día, las 8
+pantallas genéricas (login, recuperación, elección de identidad, tienda,
+mascota, logros, colección, perfil), `NordayCoreLocalizations`,
+`CatalogosCore`, y los assets de animations, sounds y mascota. La lista
+completa, en el `CLAUDE.md` del paquete.
 
 ### Qué vive aquí
 
-`ApiServiceHabitos`, `AnalyticsHabitos`, `Habito`, `HomeShell`, dashboard,
-lista de hábitos, detalle de hábito, alta/edición de hábito, `Catalogos`
-(categorías y logros de hábito), `CrashlyticsService`, `AppLocalizations`, y
-`assets/branding/` — que es lo único de assets que **no** se comparte.
+- `screens/` — `HomeShell` (las pestañas Hoy, Mascota y Hábitos, y el menú),
+  `DashboardScreen` (Hoy) y `dashboard_logica.dart` (sus decisiones sin
+  widgets ni red, para poder probarlas), la lista de hábitos, el detalle y el
+  alta/edición.
+- `services/` — `ApiServiceHabitos`, `AnalyticsHabitos`,
+  `CrashlyticsService`, el recorrido guiado (`recorrido_onboarding.dart`,
+  con sus pasos, y `anclas_recorrido.dart`, las anclas en un solo sitio),
+  `descubrimiento_detalle.dart` (si el usuario ya entró alguna vez en un
+  detalle) y `habitos_refresh.dart` (aviso de que la lista ha cambiado).
+- `models/habito.dart`.
+- `l10n/` — `AppLocalizations` y `Catalogos` (categorías y logros de hábito).
+- `widgets/` — ver abajo.
+- `assets/branding/` — lo único de assets que **no** se comparte.
+- `store/` — los gráficos de la ficha de Play: icono, icono adaptativo,
+  banner, gráfico de funciones, logo horizontal y símbolos. El icono de la
+  app y el splash salen de aquí (`flutter_launcher_icons` y
+  `flutter_native_splash`, en el `pubspec.yaml`).
 
 También `lib/widgets/identidad_ui.dart` (tarjeta de hábito, chip de frecuencia,
 celda del heatmap y tema de la barra inferior) y `lib/widgets/estados_hoy.dart`
-(los cuatro estados de Hoy: carga, vacío, error y todo hecho). Son UI genérica de aspecto pero de dominio
+(los cuatro estados de Hoy: carga, vacío, error y todo hecho), junto con
+`tira_semana.dart` (los siete días encima de Hoy, sin recargar red),
+`chevron_detalle.dart` (el que anuncia que una tarjeta abre su detalle) y
+`transito_fila.dart` (el paso de una fila de pendiente a hecha sin que la
+lista dé tirones). Son UI genérica de aspecto pero de dominio
 en lo que dicen, así que se quedan aquí. Despachan por `FormaIdentidad` con un
 `switch` exhaustivo y sacan los radios de `IdentidadPaleta` — el mismo patrón
 que el paquete usa en el halo, el terrario, el aro y el check. Al añadir una
@@ -45,25 +62,56 @@ pieza nueva a Hoy, seguirlo en vez de escribir números sueltos.
 
 ### Lo que esta app le enchufa al paquete
 
-El paquete no puede importar de aquí, así que hay tres puntos de conexión:
+El paquete no puede importar de aquí, así que la app se conecta por estos
+puntos:
 
 1. **`destinoTrasLogin`** (función suelta en `home_shell.dart`) — se le pasa a
    `LoginScreen` y a `PerfilScreen`, que no pueden conocer `HomeShell`.
-2. **`Catalogos.registrarEnElMotor()`** en `main()` — le da al motor los ~32
-   logros de hábitos. En el paquete solo viven los cuatro sin dominio
+2. **`Catalogos.registrarEnElMotor()`** en `main()` — le da al motor los
+   logros de hábitos. Hoy traduce 16; el backend siembra 32 de dominio, y
+   **faltan los 16 de racha intermedios** (`RACHA_10`…`RACHA_90`, sin el
+   30), que salen en español en cualquier idioma. Al arreglarlo, borrar esta
+   frase. En el paquete sólo viven los que no saben de dominio
    (`BIENVENIDO`, `PRIMEROS_PASOS`, `LOGIN_GOOGLE`, `INTERACCION_RESENA`).
 3. **`nordayNavigatorKey`** — `MaterialApp` usa el del paquete en vez de uno
    propio, porque `CelebracionService` lo necesita.
+4. **`MascotaScreen.ayudaAnimo` y `ayudaXp`** — `HomeShell` le pasa dos
+   `AyudaCampo` con los textos que explican el ánimo de Nori y de dónde sale
+   la XP, que hablan de hábitos.
+5. **`EleccionIdentidadScreen.alElegir`** — tras elegir la identidad gratis
+   del onboarding, a `HomeShell`.
+6. **El progreso del día** — `DashboardScreen` publica cuántos hay y cuántos
+   hechos con `publicarProgresoDia`; `HomeShell` monta `FondoIdentidad` y
+   `CapaProgresoIdentidad`, y llama a `limpiarProgresoDia` al salir.
+7. **El cierre del día** — `HomeShell` monta `CapaCierreDelDia` y
+   `DashboardScreen` llama a `mostrarCierreDelDia` al completar lo último del
+   día. Sale una vez al día por usuario (fecha guardada en el dispositivo,
+   `cierre_dia_fecha_<usuarioId>`) y nunca durante el recorrido guiado.
+8. **`SplashGenerico.rutaImagen`** — el símbolo de la brújula,
+   `assets/branding/simbolo_negativo.png`.
 
 ## Identidad de marca (aplicar siempre en UI nueva)
 
-- Tipografía: Manrope (única familia, distintos pesos).
-- Paleta: Azul Noche `#0A1628`, Azul Acero `#23395D`, Verde Esmeralda
+- **Nombre**: **Norday Habits**, en todos los idiomas. **Norday** es la
+  marca del ecosistema. (El `android:label` del manifest aún dice «Norday
+  Hábitos»: cambia con la versionCode 3. Al cambiarlo, borrar este
+  paréntesis.)
+- **Símbolo**: la brújula con la N. Hoy es el icono de la app y su splash
+  (`store/` y `assets/branding/`).
+- **Nori** es la mascota y una funcionalidad central, y también aparece como
+  presencia de marca en el login. **Si la cara de Norday es la brújula o Nori
+  está por decidir**, después de la prueba cerrada con testers. Hasta
+  entonces, no dar ninguna de las dos como decidida.
+- **Identidades**: salen tres, Profundidad, Neotokyo+ y Dulce. Alba está
+  retirada desde el 6-sep-2026. Cada identidad trae sus colores, tipografía,
+  formas y fondo; el detalle, en el `CLAUDE.md` del paquete.
+- **Tipografía**: la guía original fijaba Manrope como única familia. Hoy el
+  tema por defecto usa Space Grotesk para titulares y Manrope para el
+  cuerpo, y cada identidad trae las suyas.
+- **Paleta**: Azul Noche `#0A1628`, Azul Acero `#23395D`, Verde Esmeralda
   `#27C76F` (nunca como texto pequeño sobre fondo claro — usar Verde
   Oscuro `#1EA85B` en ese caso), Gris Muy Claro `#EEF2F6`.
-- Iconos: Lucide Icons (Material Icons ya sustituido).
-- La mascota es una funcionalidad, no la identidad de marca (eso es el
-  logo/brújula).
+- **Iconos**: Lucide Icons (Material Icons ya sustituido).
 
 ## Idioma y zona horaria
 
@@ -82,11 +130,14 @@ ya en el paquete.
 - Tras iniciar sesión, el backend manda la última palabra: puede haberlas
   cambiado desde otro dispositivo.
 
-## Tema y avatar equipados
+## Identidad equipada
 
 La fuente de verdad es el backend, no el dispositivo: `Equipamiento`
 (en el paquete) lee `getInventarioProductos()` y casa el `codigo` del
-producto contra los catálogos locales. Ya no se usa `SharedPreferences`.
+producto contra `catalogoIdentidades`. Ya no se usa `SharedPreferences`.
+
+Los avatares están retirados desde el 15-sep-2026: la app no los usa y el
+avatar del usuario es Nori.
 
 No se puede cargar en `main()`: antes del login no hay ni `usuarioId` ni
 token. Va tras el login y en el splash cuando ya hay sesión guardada, así
@@ -112,14 +163,18 @@ versionan. (En el paquete sí se versionan los suyos — ver su CLAUDE.md.)
 Los catálogos llegan del backend con `codigo`. Categorías de hábito con
 `Catalogos.categoria`; productos, niveles y logros con `CatalogosCore`.
 **Caída obligatoria**: si el código no está traducido o viene a `null` —caso
-de las categorías que crea el usuario— se muestra el nombre que manda el
-backend. Nunca un código crudo.
+de las categorías que crea el usuario, que el backend admite aunque la app
+hoy no permita crearlas— se muestra el nombre que manda el backend. Nunca un
+código crudo.
 
 ## Tocar el paquete
 
-Un cambio en `norday_flutter_core` no llega solo: hay que hacer push allí y
-luego `flutter pub upgrade norday_flutter_core` aquí, porque la dependencia
-va por `ref: main` y pub cachea el commit resuelto.
+Un cambio en `norday_flutter_core` no llega solo: se mergea y se tagea
+allí, se cambia aquí el `ref:` al tag nuevo y se hace
+`flutter pub upgrade norday_flutter_core`, porque pub cachea el commit
+resuelto. Antes de probar, comprobar el `resolved-ref` del `pubspec.lock`.
+Para probar una rama del core sin tag, `pubspec_overrides.yaml` con
+`path: ../norday_flutter_core`, que no se commitea.
 
 ## Estilo de trabajo con el usuario
 
