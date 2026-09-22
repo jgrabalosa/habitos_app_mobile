@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
-        android:label="Norday Hábitos"
+        android:label="Norday Habits"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
