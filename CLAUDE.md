@@ -72,7 +72,8 @@ puntos:
    **faltan los 16 de racha intermedios** (`RACHA_10`…`RACHA_90`, sin el
    30), que salen en español en cualquier idioma. Al arreglarlo, borrar esta
    frase. En el paquete sólo viven los que no saben de dominio
-   (`BIENVENIDO`, `PRIMEROS_PASOS`, `LOGIN_GOOGLE`, `INTERACCION_RESENA`).
+   (`BIENVENIDO`, `PRIMEROS_PASOS`, `LOGIN_GOOGLE`, los tres de identidad,
+   los dos de la mascota e `INTERACCION_RESENA`, retirado).
 3. **`nordayNavigatorKey`** — `MaterialApp` usa el del paquete en vez de uno
    propio, porque `CelebracionService` lo necesita.
 4. **`MascotaScreen.ayudaAnimo` y `ayudaXp`** — `HomeShell` le pasa dos
@@ -93,9 +94,7 @@ puntos:
 ## Identidad de marca (aplicar siempre en UI nueva)
 
 - **Nombre**: **Norday Habits**, en todos los idiomas. **Norday** es la
-  marca del ecosistema. (El `android:label` del manifest aún dice «Norday
-  Hábitos»: cambia con la versionCode 3. Al cambiarlo, borrar este
-  paréntesis.)
+  marca del ecosistema.
 - **Símbolo**: la brújula con la N. Hoy es el icono de la app y su splash
   (`store/` y `assets/branding/`).
 - **Nori** es la mascota y una funcionalidad central, y también aparece como
