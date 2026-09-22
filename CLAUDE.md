@@ -68,10 +68,8 @@ puntos:
 1. **`destinoTrasLogin`** (función suelta en `home_shell.dart`) — se le pasa a
    `LoginScreen` y a `PerfilScreen`, que no pueden conocer `HomeShell`.
 2. **`Catalogos.registrarEnElMotor()`** en `main()` — le da al motor los
-   logros de hábitos. Hoy traduce 16; el backend siembra 32 de dominio, y
-   **faltan los 16 de racha intermedios** (`RACHA_10`…`RACHA_90`, sin el
-   30), que salen en español en cualquier idioma. Al arreglarlo, borrar esta
-   frase. En el paquete sólo viven los que no saben de dominio
+   logros de hábitos: los 32 de dominio que siembra el backend. En el
+   paquete sólo viven los que no saben de dominio
    (`BIENVENIDO`, `PRIMEROS_PASOS`, `LOGIN_GOOGLE`, los tres de identidad,
    los dos de la mascota e `INTERACCION_RESENA`, retirado).
 3. **`nordayNavigatorKey`** — `MaterialApp` usa el del paquete en vez de uno
