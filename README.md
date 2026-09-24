@@ -52,6 +52,48 @@ flutter run
 
 Los `app_localizations*.dart` se generan al compilar y no se versionan.
 
+## Build de release para Google Play
+
+Se compila siempre desde un `main` limpio e igual al remoto. En PowerShell,
+desde la raíz del repo:
+
+```powershell
+git status --short                      # vacío, y sin pubspec_overrides.yaml
+git fetch origin
+git log -1 --format="%h %s"             # el mismo commit que origin/main
+Select-String -Path pubspec.yaml -Pattern "^version:","ref: v0"
+Select-String -Path pubspec.lock -Pattern "resolved-ref"
+Select-String -Path android/app/src/main/AndroidManifest.xml -Pattern "android:label"
+```
+
+Antes de seguir, comprobar:
+
+- **`version:`** lleva un versionCode (el número tras el `+`) que no se haya
+  subido nunca a Play. Un versionCode no se reutiliza jamás, ni aunque la
+  versión anterior se descartara.
+- **`ref:`** del core apunta a un tag, y `resolved-ref` es el commit de ese
+  tag. Se busca sólo el hash, sin prefijo.
+- **`android:label`** es «Norday Habits».
+
+Después:
+
+```powershell
+flutter clean
+flutter pub get
+flutter build appbundle --release
+Get-Item build\app\outputs\bundle\release\app-release.aab | Select-Object Name, Length, LastWriteTime
+keytool -printcert -jarfile build\app\outputs\bundle\release\app-release.aab | Select-String "SHA1"
+```
+
+La huella tiene que ser la de la **clave de subida**, la del keystore que
+indica `android/key.properties`. Sin ese fichero la build de release falla.
+
+En Play Console: Probar y publicar → Pruebas → canal → Crear nueva versión →
+subir el `.aab` → comprobar el número de versión → notas con las etiquetas
+`<es-ES>`, `<en-US>` y `<pt-PT>` → Siguiente → **Guardar, no enviar**. Los
+cambios de ficha se hacen entonces, y todo se manda junto desde Resumen de
+publicación. Mientras hay una revisión en curso no se toca nada.
+
 ## Documentación
 
 - [`CLAUDE.md`](CLAUDE.md) — arquitectura, reglas obligatorias y lecciones aprendidas.

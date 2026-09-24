@@ -231,7 +231,10 @@ Errores que ya se cometieron una vez. No se vuelven a cometer.
   diálogos de permiso hace falta instalación limpia.
 - **`logout()` no llama a `signOut()` de Google**: tras cerrar sesión,
   «Continuar con Google» entra con la misma cuenta sin selector.
-- **Google Sign-In no funciona en debug.** Para probarlo, APK de release.
+- **Google Sign-In en debug necesita la huella de depuración de esa
+  máquina**: su SHA-1 en Firebase y un cliente OAuth Android propio en Google
+  Cloud (Firebase sola no basta). Cada máquina tiene su clave de depuración,
+  así que cada una necesita su cliente. Sin eso, se prueba con APK de release.
 
 ### Método de trabajo (vale para los cuatro repos)
 
