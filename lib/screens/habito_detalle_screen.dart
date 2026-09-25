@@ -37,6 +37,14 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     _cargarDetalle();
   }
 
+  /// La del backend en cuanto llega, para que se refresque al volver de
+  /// editar; mientras tanto, o si el backend aún no la manda, la que trajo la
+  /// pantalla.
+  String? get _descripcion =>
+      _detalle != null && _detalle!.containsKey('descripcion')
+          ? _detalle!['descripcion'] as String?
+          : widget.descripcion;
+
   Future<void> _cargarDetalle() async {
     setState(() { _loading = true; });
     try {
@@ -134,9 +142,9 @@ title: Hero(
               : ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
-                    if ((widget.descripcion ?? '').trim().isNotEmpty) ...[
+                    if ((_descripcion ?? '').trim().isNotEmpty) ...[
                       Text(
-                        widget.descripcion!.trim(),
+                        _descripcion!.trim(),
                         style: Theme.of(context)
                             .textTheme
                             .bodyMedium

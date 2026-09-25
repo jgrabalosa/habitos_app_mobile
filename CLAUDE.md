@@ -229,8 +229,6 @@ Errores que ya se cometieron una vez. No se vuelven a cometer.
 - **`adb shell pm revoke` falla en algunos fabricantes** con
   `SecurityException` (falta `REVOKE_RUNTIME_PERMISSIONS`). Para probar
   diálogos de permiso hace falta instalación limpia.
-- **`logout()` no llama a `signOut()` de Google**: tras cerrar sesión,
-  «Continuar con Google» entra con la misma cuenta sin selector.
 - **Google Sign-In en debug necesita la huella de depuración de esa
   máquina**: su SHA-1 en Firebase y un cliente OAuth Android propio en Google
   Cloud (Firebase sola no basta). Cada máquina tiene su clave de depuración,

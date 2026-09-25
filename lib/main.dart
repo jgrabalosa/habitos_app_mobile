@@ -51,6 +51,19 @@ void main() async {
   // Obligatorio: sin esto DateFormat lanza LocaleDataException para es/en/pt.
   // GlobalMaterialLocalizations no cubre los símbolos de fecha de intl.
   await initializeDateFormatting();
+  // Si la sesión caduca con la app abierta, el core ya la ha borrado: aquí
+  // sólo se lleva al login con el aviso, quitando todo lo que había debajo.
+  ApiServiceCore.alCaducarSesion = () {
+    // Si no, el cielo del usuario sigue puesto en el login.
+    limpiarProgresoDia();
+    nordayNavigatorKey.currentState?.pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => const LoginScreen(
+            destinoTrasLogin: destinoTrasLogin, sesionCaducada: true),
+      ),
+      (_) => false,
+    );
+  };
   runApp(const HabitosApp());
 }
 
@@ -99,13 +112,23 @@ class _Sesion {
   final String? token;
   final int? usuarioId;
   final bool? poseeIdentidad;
-  const _Sesion(this.token, this.usuarioId, this.poseeIdentidad);
+
+  /// Había sesión, pero el token ya había caducado: se va al login con el
+  /// aviso.
+  final bool caducada;
+  const _Sesion(this.token, this.usuarioId, this.poseeIdentidad,
+      {this.caducada = false});
 }
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
   Future<_Sesion> _checkSession() async {
+    // Antes que nada: con un token caducado, cualquier petición de aquí abajo
+    // la rechazaría el backend mientras el splash aún decide a dónde ir.
+    if (await ApiServiceCore.descartarSesionCaducada()) {
+      return const _Sesion(null, null, null, caducada: true);
+    }
     final token = await ApiServiceCore.getToken();
     if (token == null) return const _Sesion(null, null, null);
     final prefs = await SharedPreferences.getInstance();
@@ -137,7 +160,9 @@ class SplashScreen extends StatelessWidget {
             builder: (ctx) => sesion.token != null
                 ? destinoConIdentidad(
                     ctx, false, sesion.poseeIdentidad, sesion.usuarioId ?? 0)
-                : const LoginScreen(destinoTrasLogin: destinoTrasLogin),
+                : LoginScreen(
+                    destinoTrasLogin: destinoTrasLogin,
+                    sesionCaducada: sesion.caducada),
           ),
         );
       },
