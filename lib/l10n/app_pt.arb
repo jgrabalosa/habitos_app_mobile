@@ -150,7 +150,7 @@
   "dashDiaSinHabitos": "Nenhum hábito programado para este dia.",
   "habitosTodas": "Todas",
   "habitosOrdenRecientes": "Mais recentes",
-  "habitosOrdenMasCumplidos": "Mais vezes feitos",
+  "habitosOrdenMasCumplidos": "Mais realizados",
   "habitosSinFiltro": "Nenhum hábito com este filtro",
   "habitosSubtitulo": "{categoria} · {n, plural, =1{1 conclusão} other{{n} conclusões}}",
   "logrosTitulo": "Minhas conquistas",
