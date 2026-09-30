@@ -633,11 +633,11 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "v0.25.1"
-      resolved-ref: "1df30bfc535519e0b281e541fb375f184e5a4032"
+      ref: "v0.26.0"
+      resolved-ref: "7144eaca233cc44732c56bb546700559002fd872"
       url: "https://github.com/jgrabalosa/norday_flutter_core.git"
     source: git
-    version: "0.25.1"
+    version: "0.26.0"
   objective_c:
     dependency: transitive
     description:
@@ -774,6 +774,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.2.0"
+  play_install_referrer:
+    dependency: transitive
+    description:
+      name: play_install_referrer
+      sha256: "7dd808236d35d15199d5e7a5b55488e4343c1b67c4694902d6b95196b22b19cd"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.5.0"
   plugin_platform_interface:
     dependency: transitive
     description:
