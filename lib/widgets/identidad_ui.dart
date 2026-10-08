@@ -40,9 +40,6 @@ class TarjetaIdentidad extends StatelessWidget {
         // anularlo explícitamente o se desmaquetan las nueve tarjetas.
         relleno: EdgeInsets.zero,
         protagonista: false,
-        // Lo que conserva el comportamiento de Alba: línea fina debajo en vez
-        // de tarjeta.
-        esFila: true,
         onTap: onTap,
         child: child,
       );
@@ -59,10 +56,7 @@ class ChipIdentidad extends StatelessWidget {
     final id = identidad(context);
     final t = tokens(context);
 
-    // Alba no rellena: un chip de color sería la única mancha de la fila.
-    final relleno = id.forma == FormaIdentidad.hairline
-        ? null
-        : t.primary.withValues(alpha: 0.12);
+    final relleno = t.primary.withValues(alpha: 0.12);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
@@ -74,8 +68,6 @@ class ChipIdentidad extends StatelessWidget {
           radio: 999,
           lado: switch (id.forma) {
             FormaIdentidad.chamfer => BorderSide(color: t.primary, width: 1),
-            FormaIdentidad.hairline => BorderSide(
-                color: t.primary.withValues(alpha: 0.45), width: 1),
             _ => BorderSide.none,
           },
         ),
@@ -123,14 +115,6 @@ NavigationBarThemeData barraNavegacionIdentidad(
           side: BorderSide(color: t.primary, width: 1.2),
         ),
         color: t.primary.withValues(alpha: 0.20),
-      ),
-    // Alba no rellena nada: la pestaña activa se marca con un contorno fino,
-    // igual que sus tarjetas se marcan con una línea y no con una superficie.
-    FormaIdentidad.hairline => (
-        forma: StadiumBorder(
-          side: BorderSide(color: t.primary.withValues(alpha: 0.55)),
-        ),
-        color: Colors.transparent,
       ),
     // Dulce — píldora completa y de color, que es su forma en todo.
     FormaIdentidad.pill => (
@@ -212,15 +196,6 @@ BoxDecoration celdaHeatmap(
                 BoxShadow(color: color.withValues(alpha: 0.35), blurRadius: 14),
               ]
             : null,
-      ),
-
-    // Alba — puntitos huecos: el día hecho se rellena, el resto es contorno.
-    // Aquí el contorno nunca falta, así que el de reposo es el del propio
-    // color en vez de nada.
-    FormaIdentidad.hairline => BoxDecoration(
-        shape: BoxShape.circle,
-        color: llena ? color : Colors.transparent,
-        border: borde ?? Border.all(color: color, width: 1),
       ),
 
     // Dulce — circulitos pastel, sin filo.

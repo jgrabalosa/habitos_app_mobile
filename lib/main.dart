@@ -14,6 +14,9 @@ import 'screens/home_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // El core es compartido por varias apps; esta app fija su dominio antes
+  // de que cualquier catálogo pueda hacer una petición.
+  ApiServiceCore.appId = 'habitos';
   // Las nueve familias van empaquetadas en `google_fonts/`, así que no hay
   // que salir a la red a por ellas. Con esto, un fichero que falte deja de
   // ser un fallo invisible —la fuente del sistema en su lugar— y pasa a
@@ -35,7 +38,9 @@ void main() async {
       'Space_Grotesk',
       'Work_Sans',
     ]) {
-      final texto = await rootBundle.loadString('google_fonts/OFL-$familia.txt');
+      final texto = await rootBundle.loadString(
+        'google_fonts/OFL-$familia.txt',
+      );
       yield LicenseEntryWithLineBreaks(['google_fonts'], texto);
     }
   });
@@ -48,6 +53,7 @@ void main() async {
   Catalogos.registrarEnElMotor();
   // Antes de runApp: si no, el primer frame se pinta en el idioma equivocado
   await IdiomaService.cargarAlArrancar();
+  await SonidoService.cargarPreferencia();
   // Obligatorio: sin esto DateFormat lanza LocaleDataException para es/en/pt.
   // GlobalMaterialLocalizations no cubre los símbolos de fecha de intl.
   await initializeDateFormatting();
@@ -59,7 +65,9 @@ void main() async {
     nordayNavigatorKey.currentState?.pushAndRemoveUntil(
       MaterialPageRoute(
         builder: (_) => const LoginScreen(
-            destinoTrasLogin: destinoTrasLogin, sesionCaducada: true),
+          destinoTrasLogin: destinoTrasLogin,
+          sesionCaducada: true,
+        ),
       ),
       (_) => false,
     );
@@ -116,8 +124,12 @@ class _Sesion {
   /// Había sesión, pero el token ya había caducado: se va al login con el
   /// aviso.
   final bool caducada;
-  const _Sesion(this.token, this.usuarioId, this.poseeIdentidad,
-      {this.caducada = false});
+  const _Sesion(
+    this.token,
+    this.usuarioId,
+    this.poseeIdentidad, {
+    this.caducada = false,
+  });
 }
 
 class SplashScreen extends StatelessWidget {
@@ -159,10 +171,15 @@ class SplashScreen extends StatelessWidget {
           MaterialPageRoute(
             builder: (ctx) => sesion.token != null
                 ? destinoConIdentidad(
-                    ctx, false, sesion.poseeIdentidad, sesion.usuarioId ?? 0)
+                    ctx,
+                    false,
+                    sesion.poseeIdentidad,
+                    sesion.usuarioId ?? 0,
+                  )
                 : LoginScreen(
                     destinoTrasLogin: destinoTrasLogin,
-                    sesionCaducada: sesion.caducada),
+                    sesionCaducada: sesion.caducada,
+                  ),
           ),
         );
       },

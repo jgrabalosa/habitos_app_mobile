@@ -62,6 +62,9 @@ pieza nueva a Hoy, seguirlo en vez de escribir números sueltos.
 
 ### Lo que esta app le enchufa al paquete
 
+La app debe fijar `ApiServiceCore.appId = 'habitos'` antes de `runApp`.
+El core no puede asumir el dominio de esta aplicación por defecto.
+
 El paquete no puede importar de aquí, así que la app se conecta por estos
 puntos:
 

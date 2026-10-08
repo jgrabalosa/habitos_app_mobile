@@ -78,7 +78,7 @@ class _FilaSkeleton extends StatelessWidget {
         // Aunque no haya nada dentro, la silueta ya tiene la forma de la
         // identidad: el salto entre carga y contenido es sólo de contenido.
         shape: formaIdentidad(id, radio: id.radioSecundario),
-        color: id.forma == FormaIdentidad.hairline ? null : t.surface,
+        color: t.surface,
       ),
       child: Row(
         children: [
@@ -225,12 +225,10 @@ class TarjetaTodoHecho extends StatelessWidget {
     final id = identidad(context);
     final t = tokens(context);
 
-    // El icono del remate cambia con la identidad, no sólo su color: es el
-    // único adorno de la tarjeta y decir "hecho" no se parece en las cuatro.
+    // El icono del remate cambia con la identidad, no sólo su color.
     final icono = switch (id.forma) {
       FormaIdentidad.glass => LucideIcons.circleCheckBig,
       FormaIdentidad.chamfer => LucideIcons.zap,
-      FormaIdentidad.hairline => LucideIcons.sun,
       FormaIdentidad.pill => LucideIcons.heart,
     };
 

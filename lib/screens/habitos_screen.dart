@@ -3,6 +3,7 @@ import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_service_habitos.dart';
 import '../services/habitos_refresh.dart';
+import '../services/app_refresh.dart';
 import '../l10n/catalogos.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/habito.dart';
@@ -23,7 +24,8 @@ class HabitosScreen extends StatefulWidget {
 
 class _HabitosScreenState extends State<HabitosScreen> {
   bool _loading = true;
-  List<Map<String, dynamic>> _resumen = []; // {habito: Habito, totalCompletados: int}
+  List<Map<String, dynamic>> _resumen =
+      []; // {habito: Habito, totalCompletados: int}
   List<dynamic> _categorias = [];
   int? _filtroCategoriaId; // null = todas
   _Orden _orden = _Orden.recientes;
@@ -32,6 +34,17 @@ class _HabitosScreenState extends State<HabitosScreen> {
   void initState() {
     super.initState();
     _cargarDatos();
+    appRefreshNotifier.addListener(_alRefrescoApp);
+  }
+
+  void _alRefrescoApp() {
+    if (mounted) _cargarDatos();
+  }
+
+  @override
+  void dispose() {
+    appRefreshNotifier.removeListener(_alRefrescoApp);
+    super.dispose();
   }
 
   Future<void> _cargarDatos() async {
@@ -78,8 +91,13 @@ class _HabitosScreenState extends State<HabitosScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(MensajesError.de(context, e,
-            generico: AppLocalizations.of(context)!.habitosErrorEstado)),
+        content: Text(
+          MensajesError.de(
+            context,
+            e,
+            generico: AppLocalizations.of(context)!.habitosErrorEstado,
+          ),
+        ),
       ),
     );
   }
@@ -88,16 +106,25 @@ class _HabitosScreenState extends State<HabitosScreen> {
     var lista = _filtroCategoriaId == null
         ? _resumen
         : _resumen
-            .where((r) => (r['habito'] as Habito).categoriaId == _filtroCategoriaId)
-            .toList();
+              .where(
+                (r) =>
+                    (r['habito'] as Habito).categoriaId == _filtroCategoriaId,
+              )
+              .toList();
 
     lista = List.of(lista);
     if (_orden == _Orden.recientes) {
-      lista.sort((a, b) =>
-          (b['habito'] as Habito).habitoId.compareTo((a['habito'] as Habito).habitoId));
+      lista.sort(
+        (a, b) => (b['habito'] as Habito).habitoId.compareTo(
+          (a['habito'] as Habito).habitoId,
+        ),
+      );
     } else {
-      lista.sort((a, b) =>
-          (b['totalCompletados'] as int).compareTo(a['totalCompletados'] as int));
+      lista.sort(
+        (a, b) => (b['totalCompletados'] as int).compareTo(
+          a['totalCompletados'] as int,
+        ),
+      );
     }
     return lista;
   }
@@ -138,11 +165,15 @@ class _HabitosScreenState extends State<HabitosScreen> {
 
           final result = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => HabitoScreen(
-              usuarioId: widget.usuarioId,
-              categoriasIniciales: _categorias,
-              nombresHabitosExistentes: _resumen.map((r) => (r['habito'] as Habito).nombre).toList(),
-            )),
+            MaterialPageRoute(
+              builder: (_) => HabitoScreen(
+                usuarioId: widget.usuarioId,
+                categoriasIniciales: _categorias,
+                nombresHabitosExistentes: _resumen
+                    .map((r) => (r['habito'] as Habito).nombre)
+                    .toList(),
+              ),
+            ),
           );
           if (result == true) {
             _cargarDatos();
@@ -173,8 +204,10 @@ class _HabitosScreenState extends State<HabitosScreen> {
               Center(
                 child: Padding(
                   padding: const EdgeInsets.only(top: 40),
-                  child: Text(l.habitosSinFiltro,
-                      style: TextStyle(color: t.textMuted)),
+                  child: Text(
+                    l.habitosSinFiltro,
+                    style: TextStyle(color: t.textMuted),
+                  ),
                 ),
               )
             else
@@ -190,12 +223,18 @@ class _HabitosScreenState extends State<HabitosScreen> {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _chip(l.habitosTodas, _filtroCategoriaId == null, () => setState(() => _filtroCategoriaId = null), t),
+          _chip(
+            l.habitosTodas,
+            _filtroCategoriaId == null,
+            () => setState(() => _filtroCategoriaId = null),
+            t,
+          ),
           for (final c in _categorias)
             Padding(
               padding: const EdgeInsets.only(left: 8),
               child: _chip(
-                '${c['icono'] ?? ''} ${Catalogos.categoria(context, c['codigo'], c['nombre'])}'.trim(),
+                '${c['icono'] ?? ''} ${Catalogos.categoria(context, c['codigo'], c['nombre'])}'
+                    .trim(),
                 _filtroCategoriaId == c['categoriaId'],
                 () => setState(() => _filtroCategoriaId = c['categoriaId']),
                 t,
@@ -209,7 +248,12 @@ class _HabitosScreenState extends State<HabitosScreen> {
   /// Sigue siendo un `ChoiceChip` de Material —el filtrado no se toca— pero con
   /// la figura de la identidad equipada: en Neotokyo+ corta la esquina como
   /// todo lo demás, en Dulce es píldora completa.
-  Widget _chip(String label, bool selected, VoidCallback onTap, TokensContextuales t) {
+  Widget _chip(
+    String label,
+    bool selected,
+    VoidCallback onTap,
+    TokensContextuales t,
+  ) {
     final id = identidad(context);
 
     return ChoiceChip(
@@ -217,25 +261,34 @@ class _HabitosScreenState extends State<HabitosScreen> {
       selected: selected,
       onSelected: (_) => onTap(),
       selectedColor: t.primary.withValues(alpha: 0.2),
-      shape: formaIdentidad(
-        id,
-        radio: 999,
-        lado: BorderSide(
-          color: selected
-              ? t.primary
-              : t.textMuted.withValues(alpha: 0.35),
-        ),
-      ) as OutlinedBorder,
+      shape:
+          formaIdentidad(
+                id,
+                radio: 999,
+                lado: BorderSide(
+                  color: selected
+                      ? t.primary
+                      : t.textMuted.withValues(alpha: 0.35),
+                ),
+              )
+              as OutlinedBorder,
       labelStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
-          color: selected ? t.primary : t.textMuted),
+        color: selected ? t.primary : t.textMuted,
+      ),
     );
   }
 
   Widget _selectorOrden(AppLocalizations l) {
     return SegmentedButton<_Orden>(
       segments: [
-        ButtonSegment(value: _Orden.recientes, label: Text(l.habitosOrdenRecientes)),
-        ButtonSegment(value: _Orden.masCumplidos, label: Text(l.habitosOrdenMasCumplidos)),
+        ButtonSegment(
+          value: _Orden.recientes,
+          label: Text(l.habitosOrdenRecientes),
+        ),
+        ButtonSegment(
+          value: _Orden.masCumplidos,
+          label: Text(l.habitosOrdenMasCumplidos),
+        ),
       ],
       selected: {_orden},
       onSelectionChanged: (nuevo) => setState(() => _orden = nuevo.first),
@@ -249,7 +302,11 @@ class _HabitosScreenState extends State<HabitosScreen> {
   /// dimensión de esa pantalla, y aquí la línea de debajo ya dice categoría y
   /// completados en una sola frase traducida (`habitosSubtitulo`). Meterla en
   /// un chip obligaría a partirla en dos textos nuevos para no decir nada más.
-  Widget _tarjetaHabito(AppLocalizations l, Map<String, dynamic> r, TokensContextuales t) {
+  Widget _tarjetaHabito(
+    AppLocalizations l,
+    Map<String, dynamic> r,
+    TokensContextuales t,
+  ) {
     final habito = r['habito'] as Habito;
     final total = r['totalCompletados'] as int;
 
@@ -260,7 +317,12 @@ class _HabitosScreenState extends State<HabitosScreen> {
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (_) => HabitoScreen(usuarioId: widget.usuarioId, habito: habito, categoriasIniciales: _categorias)),
+              builder: (_) => HabitoScreen(
+                usuarioId: widget.usuarioId,
+                habito: habito,
+                categoriasIniciales: _categorias,
+              ),
+            ),
           );
           if (result == true) {
             _cargarDatos();
@@ -275,26 +337,29 @@ class _HabitosScreenState extends State<HabitosScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(habito.nombre,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(color: t.text)),
+                    Text(
+                      habito.nombre,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.titleMedium?.copyWith(color: t.text),
+                    ),
                     const SizedBox(height: 4),
                     Text(
                       l.habitosSubtitulo(
                         habito.categoriaNombre == null
                             ? l.habSinCategoria
-                            : Catalogos.categoria(context,
-                                habito.categoriaCodigo, habito.categoriaNombre!),
+                            : Catalogos.categoria(
+                                context,
+                                habito.categoriaCodigo,
+                                habito.categoriaNombre!,
+                              ),
                         total,
                       ),
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: t.textMuted),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: t.textMuted),
                     ),
                     // Una sola línea: esta pantalla es para encontrar un
                     // hábito, no para leerlo. Quien quiera más entra al
@@ -305,10 +370,9 @@ class _HabitosScreenState extends State<HabitosScreen> {
                         habito.descripcion!.trim(),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(color: t.textMuted),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(color: t.textMuted),
                       ),
                     ],
                   ],
@@ -317,7 +381,9 @@ class _HabitosScreenState extends State<HabitosScreen> {
               const SizedBox(width: 8),
               Switch(
                 value: habito.activo,
-                onChanged: (v) => v ? _activar(habito.habitoId) : _desactivar(habito.habitoId),
+                onChanged: (v) => v
+                    ? _activar(habito.habitoId)
+                    : _desactivar(habito.habitoId),
                 activeThumbColor: t.primary,
               ),
             ],

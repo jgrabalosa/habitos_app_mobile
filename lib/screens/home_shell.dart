@@ -7,6 +7,7 @@ import '../widgets/identidad_ui.dart';
 import '../services/anclas_recorrido.dart';
 import '../services/recorrido_onboarding.dart';
 import '../services/api_service_habitos.dart';
+import '../services/app_refresh.dart';
 import 'dashboard_screen.dart';
 import 'habitos_screen.dart';
 
@@ -26,15 +27,20 @@ Widget destinoTrasLogin(BuildContext context, bool mostrarOnboarding) =>
 /// significa que no se pudo averiguar, y entonces se deja pasar. Un corte de
 /// red al arrancar no puede encerrar a nadie en una pantalla sin salida, y la
 /// red de seguridad del backend ya cubre el caso persistente.
-Widget destinoConIdentidad(BuildContext context, bool mostrarOnboarding,
-    bool? poseeIdentidad, int usuarioId) {
+Widget destinoConIdentidad(
+  BuildContext context,
+  bool mostrarOnboarding,
+  bool? poseeIdentidad,
+  int usuarioId,
+) {
   if (poseeIdentidad == false) {
     return EleccionIdentidadScreen(
       usuarioId: usuarioId,
       alElegir: () => Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-            builder: (_) => HomeShell(mostrarOnboarding: mostrarOnboarding)),
+          builder: (_) => HomeShell(mostrarOnboarding: mostrarOnboarding),
+        ),
       ),
     );
   }
@@ -49,7 +55,7 @@ class HomeShell extends StatefulWidget {
   State<HomeShell> createState() => _HomeShellState();
 }
 
-class _HomeShellState extends State<HomeShell> {
+class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   int _tabIndex = 0;
   int _usuarioId = 0;
   bool _loading = true;
@@ -60,14 +66,16 @@ class _HomeShellState extends State<HomeShell> {
 
   /// El titulo del AppBar y la etiqueta de la pestaña son el mismo texto:
   /// se leen de aqui para que no puedan divergir.
-  List<String> _titulos(AppLocalizations l) =>
-      [l.navHoy, l.navMascota, l.navHabitos];
+  List<String> _titulos(AppLocalizations l) => [
+    l.navHoy,
+    l.navMascota,
+    l.navHabitos,
+  ];
 
   /// Etiquetas de la barra inferior: las tres pestañas más el menú, que no es
   /// una pestaña sino un panel. Va aparte de `_titulos` a propósito, porque
   /// `_titulos` nombra páginas del PageView y el menú no lo es.
-  List<String> _etiquetasNav(AppLocalizations l) =>
-      [..._titulos(l), l.navMenu];
+  List<String> _etiquetasNav(AppLocalizations l) => [..._titulos(l), l.navMenu];
 
   DateTime? _ultimaPulsacionAtras;
 
@@ -86,7 +94,9 @@ class _HomeShellState extends State<HomeShell> {
   int? _pestanaDe(PasoRecorrido paso) {
     if (paso == _pasoCheck ||
         paso == _pasoValoracion ||
-        paso == _pasoDeshacer) return 0;
+        paso == _pasoDeshacer) {
+      return 0;
+    }
     if (paso == _pasoAlimentar) return 1;
     return null;
   }
@@ -182,12 +192,7 @@ class _HomeShellState extends State<HomeShell> {
               _pasoDeshacer!,
               _pasoAlimentar!,
             ]
-          : [
-              _pasoCheck!,
-              _pasoValoracion!,
-              _pasoDeshacer!,
-              _pasoAlimentar!,
-            ],
+          : [_pasoCheck!, _pasoValoracion!, _pasoDeshacer!, _pasoAlimentar!],
       textoSaltar: l.recSaltar,
       textoContinuar: l.recSiguiente,
     );
@@ -237,7 +242,8 @@ class _HomeShellState extends State<HomeShell> {
     }
 
     final ahora = DateTime.now();
-    final esSegundaPulsacion = _ultimaPulsacionAtras != null &&
+    final esSegundaPulsacion =
+        _ultimaPulsacionAtras != null &&
         ahora.difference(_ultimaPulsacionAtras!) < const Duration(seconds: 2);
 
     if (esSegundaPulsacion) {
@@ -259,12 +265,21 @@ class _HomeShellState extends State<HomeShell> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _recorrido.addListener(_alCambiarPaso);
     _cargarUsuario();
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      solicitarRefrescoApp();
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _recorrido.removeListener(_alCambiarPaso);
     _pageController.dispose();
     super.dispose();
@@ -281,8 +296,9 @@ class _HomeShellState extends State<HomeShell> {
     if (widget.mostrarOnboarding) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _mostrarOnboarding());
     } else {
-      WidgetsBinding.instance
-          .addPostFrameCallback((_) => _recorridoSiNoSeHaVisto());
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _recorridoSiNoSeHaVisto(),
+      );
     }
   }
 
@@ -324,8 +340,10 @@ class _HomeShellState extends State<HomeShell> {
     // La bienvenida y el recorrido son un solo flujo: en cuanto se cierra el
     // overlay arranca el recorrido, sin que el usuario tenga que hacer nada
     // en medio.
-    OnboardingOverlay.mostrar(context, usuarioId: _usuarioId)
-        .then((_) => _iniciarRecorrido(completo: true));
+    OnboardingOverlay.mostrar(
+      context,
+      usuarioId: _usuarioId,
+    ).then((_) => _iniciarRecorrido(completo: true));
   }
 
   Future<void> _logout() async {
@@ -337,8 +355,8 @@ class _HomeShellState extends State<HomeShell> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-            builder: (_) =>
-                const LoginScreen(destinoTrasLogin: destinoTrasLogin)),
+          builder: (_) => const LoginScreen(destinoTrasLogin: destinoTrasLogin),
+        ),
       );
     }
   }
@@ -365,16 +383,12 @@ class _HomeShellState extends State<HomeShell> {
               alPulsar();
             },
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 children: [
                   Icon(icono, size: 18, color: t.points),
                   const SizedBox(width: 12),
-                  Text(
-                    texto,
-                    style: TextStyle(color: t.text, fontSize: 14),
-                  ),
+                  Text(texto, style: TextStyle(color: t.text, fontSize: 14)),
                 ],
               ),
             ),
@@ -422,7 +436,11 @@ class _HomeShellState extends State<HomeShell> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    entrada(LucideIcons.trophy, l.navColeccion, _abrirColeccion),
+                    entrada(
+                      LucideIcons.trophy,
+                      l.navColeccion,
+                      _abrirColeccion,
+                    ),
                     entrada(LucideIcons.medal, l.logrosTitulo, _abrirLogros),
                     entrada(
                       LucideIcons.store,
@@ -432,8 +450,11 @@ class _HomeShellState extends State<HomeShell> {
                       _abrirTienda,
                     ),
                     filo,
-                    entrada(LucideIcons.compass, l.recMenu,
-                        () => _arrancarSegunHabitos()),
+                    entrada(
+                      LucideIcons.compass,
+                      l.recMenu,
+                      () => _arrancarSegunHabitos(),
+                    ),
                     entrada(LucideIcons.userRound, l.perfilTitulo, () {
                       Navigator.push(
                         context,
@@ -479,8 +500,7 @@ class _HomeShellState extends State<HomeShell> {
         activa: _tabIndex == 1,
         // El core no puede conocer AnclasRecorrido, así que la key entra por
         // parámetro. Sólo mientras el recorrido corre.
-        anclaAlimentar:
-            _recorrido.activo ? AnclasRecorrido.alimentar : null,
+        anclaAlimentar: _recorrido.activo ? AnclasRecorrido.alimentar : null,
         // Los textos los pone la app: el core no puede nombrar hábitos.
         ayudaAnimo: AyudaCampo(
           texto: l.mascotaAyudaAnimo,
@@ -572,7 +592,10 @@ class _HomeShellState extends State<HomeShell> {
           children: [
             NavigationBarTheme(
               data: barraNavegacionIdentidad(
-                  identidad(context), t, Theme.of(context).textTheme.labelMedium),
+                identidad(context),
+                t,
+                Theme.of(context).textTheme.labelMedium,
+              ),
               child: NavigationBar(
                 // `selectedIndex` sigue valiendo 0, 1 o 2: el menú es el cuarto
                 // destino pero nunca queda seleccionado, porque no es una página.
@@ -586,15 +609,27 @@ class _HomeShellState extends State<HomeShell> {
                   _irAPestana(i);
                 },
                 destinations: [
-                  NavigationDestination(icon: const Icon(LucideIcons.house), label: etiquetas[0]),
-                  NavigationDestination(icon: const Icon(LucideIcons.pawPrint), label: etiquetas[1]),
                   NavigationDestination(
-                      icon: Icon(LucideIcons.listChecks,
-                          key: _recorrido.activo
-                              ? AnclasRecorrido.pestanaHabitos
-                              : null),
-                      label: etiquetas[2]),
-                  NavigationDestination(icon: const Icon(LucideIcons.menu), label: etiquetas[3]),
+                    icon: const Icon(LucideIcons.house),
+                    label: etiquetas[0],
+                  ),
+                  NavigationDestination(
+                    icon: const Icon(LucideIcons.pawPrint),
+                    label: etiquetas[1],
+                  ),
+                  NavigationDestination(
+                    icon: Icon(
+                      LucideIcons.listChecks,
+                      key: _recorrido.activo
+                          ? AnclasRecorrido.pestanaHabitos
+                          : null,
+                    ),
+                    label: etiquetas[2],
+                  ),
+                  NavigationDestination(
+                    icon: const Icon(LucideIcons.menu),
+                    label: etiquetas[3],
+                  ),
                 ],
               ),
             ),
