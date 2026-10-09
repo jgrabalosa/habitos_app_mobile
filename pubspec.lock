@@ -632,10 +632,12 @@ packages:
   norday_flutter_core:
     dependency: "direct main"
     description:
-      path: "../norday_flutter_core"
-      relative: true
-    source: path
-    version: "0.26.0"
+      path: "."
+      ref: "v0.27.0"
+      resolved-ref: "43d6585c2d9eee02c3cd3d58f1cea869bf976835"
+      url: "https://github.com/jgrabalosa/norday_flutter_core.git"
+    source: git
+    version: "0.27.0"
   objective_c:
     dependency: transitive
     description:
