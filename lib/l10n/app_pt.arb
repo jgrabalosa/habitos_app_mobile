@@ -187,6 +187,7 @@
   "logroDescCategorias5": "Usa 5 categorias diferentes",
   "logroDescPrimeraNota": "Adiciona uma nota a um registo",
   "habitosErrorEstado": "Não foi possível alterar o estado do hábito.",
+  "verDetalle": "Ver detalhe",
   "a11yCompletarHabito": "Concluir {nombre}",
   "@a11yCompletarHabito": {
     "placeholders": {

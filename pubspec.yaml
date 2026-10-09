@@ -46,11 +46,7 @@ flutter:
     # así que basta con listarlas aquí: NO van en la sección `fonts:`, y sus
     # nombres no se pueden tocar porque el paquete las busca por el nombre con
     # el que las sirve la API de Google.
-    # Sin itálicas salvo Fraunces. La única rama que pide `FontStyle.italic`
-    # es `FormaIdentidad.hairline`, exclusiva de Alba, y sus cuatro sitios
-    # piden `fontDisplay` (Fraunces), nunca `fontBody` (Work Sans). Salen a
-    # Play tres identidades; Alba está desactivada pero viva en código, y por
-    # eso Fraunces conserva las suyas.
+    # Sin itálicas: ninguna identidad pide `FontStyle.italic`.
     - google_fonts/
 
 flutter_launcher_icons:

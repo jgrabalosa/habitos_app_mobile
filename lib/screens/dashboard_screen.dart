@@ -166,7 +166,22 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   void _alRefrescoApp() {
     if (!mounted) return;
-    _volverAHoy();
+    _recargarDesdeApp();
+  }
+
+  /// Al volver a la app desde fuera se recarga todo porque puede haber
+  /// pasado la medianoche. La guarda final evita dejar el día seleccionado
+  /// en -1 si la semana no se ha podido cargar, porque el build indexa la
+  /// lista directamente.
+  Future<void> _recargarDesdeApp() async {
+    if (!mounted) return;
+    setState(() => _offsetSemana = 0);
+    await _cargarDatos();
+    if (!mounted) return;
+    if (_indiceHoy >= 0 && _indiceHoy < _dias.length &&
+        _diaSeleccionado != _indiceHoy) {
+      setState(() => _diaSeleccionado = _indiceHoy);
+    }
   }
 
   @override
@@ -182,12 +197,21 @@ class _DashboardScreenState extends State<DashboardScreen>
   /// porque la pantalla no se destruye.
   Future<void> _volverAHoy() async {
     if (!mounted) return;
-    setState(() => _offsetSemana = 0);
-    await _cargarDatos();
-    if (!mounted || _dias.isEmpty) return;
-    if (_diaSeleccionado != _indiceHoy) {
-      setState(() => _diaSeleccionado = _indiceHoy);
+    if (_offsetSemana == 0) {
+      // La semana de hoy ya está en pantalla: basta con mover el día. Sin
+      // recarga, que no hace falta y parpadearía.
+      if (_indiceHoy >= 0 && _diaSeleccionado != _indiceHoy) {
+        setState(() => _diaSeleccionado = _indiceHoy);
+      }
+      return;
     }
+    // Otra semana: hay que traerla. No se toca `_diaSeleccionado` a mano
+    // porque no hace falta: la conservación por fecha de `_cargarSemana`
+    // buscará un día que es de la semana vieja, no lo encontrará, y caerá
+    // sola en `_indiceHoy`. Ponerlo a -1 aquí reventaría el build de en
+    // medio, que indexa `_dias[_diaSeleccionado]` sin guarda.
+    setState(() => _offsetSemana = 0);
+    await _cargarSemana();
   }
 
   @override
@@ -1329,14 +1353,37 @@ class _DashboardScreenState extends State<DashboardScreen>
                             p['meta'] ?? 1,
                           ),
                         ),
-                        // Detrás de la etiqueta y no al final de la
-                        // tarjeta: cierra la línea del nombre, que es la
-                        // que lleva al detalle, y deja el borde derecho
-                        // sólo para el check. En `primary` porque es lo
-                        // que se puede tocar. Sólo empuja la primera
-                        // tarjeta, y sólo hasta que se entra en un detalle
-                        // por primera vez: seis empujando serían ruido.
-                        const SizedBox(width: 6),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        _miniHeatmap(h, t),
+                        const SizedBox(width: 8),
+                        // "Ver detalle" va en todas las filas, pero en voz
+                        // baja: el texto en `textMuted` y sin negrita, y sólo
+                        // el chevron en `primary`, que es lo que se puede
+                        // tocar. Seis etiquetas en color competirían con los
+                        // nombres de los hábitos. Sin `Semantics` propio: el
+                        // toque es de la tarjeta entera y el texto se lee
+                        // como parte de ella. Si no cabe, se corta; no se
+                        // encoge.
+                        Expanded(
+                          child: Text(
+                            l.verDetalle,
+                            textAlign: TextAlign.end,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.labelMedium
+                                ?.copyWith(
+                                  color: t.textMuted,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                          ),
+                        ),
+                        const SizedBox(width: 2),
+                        // Sólo empuja la primera tarjeta, y sólo hasta que se
+                        // entra en un detalle por primera vez.
                         ValueListenableBuilder<bool>(
                           valueListenable: detalleDescubiertoNotifier,
                           builder: (context, descubierto, child) =>
@@ -1347,8 +1394,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    _miniHeatmap(h, t),
                   ],
                 ),
               ),

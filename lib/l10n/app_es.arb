@@ -272,6 +272,7 @@
   "logroDescCategorias5": "Usa 5 categorías distintas",
   "logroDescPrimeraNota": "Añade una nota a un registro",
   "habitosErrorEstado": "No se pudo cambiar el estado del hábito.",
+  "verDetalle": "Ver detalle",
   "a11yCompletarHabito": "Completar {nombre}",
   "@a11yCompletarHabito": {
     "placeholders": {

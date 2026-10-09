@@ -187,6 +187,7 @@
   "logroDescCategorias5": "Use 5 different categories",
   "logroDescPrimeraNota": "Add a note to an entry",
   "habitosErrorEstado": "The habit's status couldn't be changed.",
+  "verDetalle": "View details",
   "a11yCompletarHabito": "Complete {nombre}",
   "@a11yCompletarHabito": {
     "placeholders": {

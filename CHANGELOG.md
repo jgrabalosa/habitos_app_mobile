@@ -25,10 +25,17 @@ Estado: en preparación.
 
 ### Novedades
 
+- Control de sonido: un paso nuevo en la bienvenida para activar o silenciar el sonido, y un interruptor en Usuario, junto al idioma.
+- Enlace «Ver detalle» en cada hábito de Hoy.
 - Nuevos textos de bienvenida y de ordenación de hábitos.
 
 ### Mejoras
 
+- Idioma, Zona horaria y Sonido se muestran con el mismo aspecto en Usuario.
+- Al volver a la app, Hoy se actualiza y vuelve al día actual.
+- Textos en portugués europeo.
+- Nori ocupa menos zona táctil y deja tocar los hábitos que quedan debajo.
+- La nota de contexto de Hoy ya no aparece inclinada.
 - El cierre de sesión vuelve a iniciar correctamente el recorrido de acceso.
 - La sesión de Google permite elegir de nuevo la cuenta al volver a entrar.
 
@@ -37,4 +44,4 @@ Estado: en preparación.
 - La descripción de un hábito se actualiza después de editarla.
 - Las sesiones caducadas llevan al usuario al login con un aviso.
 
-Para anunciar: nada; versión centrada en mejoras y arreglos.
+Para anunciar: el control de sonido.
