@@ -406,10 +406,11 @@ class _HabitoScreenState extends State<HabitoScreen> {
     } finally {
       // En el camino bueno ya se ha hecho Navigator.pop: la pantalla puede
       // estar desmontada cuando llega este finally.
-      if (mounted)
+      if (mounted) {
         setState(() {
           _loading = false;
         });
+      }
     }
   }
 
