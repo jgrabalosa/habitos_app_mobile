@@ -184,23 +184,22 @@ class _PanelEstado extends StatelessWidget {
           children: [
             Icon(icono, size: 44, color: colorIcono),
             const SizedBox(height: 14),
-            Text(titulo,
-                textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleLarge
-                    ?.copyWith(color: t.text)),
+            Text(
+              titulo,
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(color: t.text),
+            ),
             const SizedBox(height: 6),
-            Text(cuerpo,
-                textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: t.textMuted)),
-            if (accion != null) ...[
-              const SizedBox(height: 16),
-              accion!,
-            ],
+            Text(
+              cuerpo,
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: t.textMuted),
+            ),
+            if (accion != null) ...[const SizedBox(height: 16), accion!],
           ],
         ),
       ),
@@ -252,19 +251,21 @@ class TarjetaTodoHecho extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            Text(l.dashTodoHecho,
-                textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineSmall
-                    ?.copyWith(color: t.text)),
+            Text(
+              l.dashTodoHecho,
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(color: t.text),
+            ),
             const SizedBox(height: 4),
-            Text(l.dashDisfruta,
-                textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: t.textMuted)),
+            Text(
+              l.dashDisfruta,
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: t.textMuted),
+            ),
           ],
         ),
       ),

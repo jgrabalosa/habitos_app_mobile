@@ -13,11 +13,7 @@ class ChevronDetalle extends StatefulWidget {
   final Color color;
   final bool empujar;
 
-  const ChevronDetalle({
-    super.key,
-    required this.color,
-    this.empujar = false,
-  });
+  const ChevronDetalle({super.key, required this.color, this.empujar = false});
 
   @override
   State<ChevronDetalle> createState() => _ChevronDetalleState();
@@ -34,13 +30,17 @@ class _ChevronDetalleState extends State<ChevronDetalle>
 
   late final Animation<double> _dx = TweenSequence<double>([
     TweenSequenceItem(
-      tween: Tween(begin: 0.0, end: 3.0)
-          .chain(CurveTween(curve: Curves.easeOut)),
+      tween: Tween(
+        begin: 0.0,
+        end: 3.0,
+      ).chain(CurveTween(curve: Curves.easeOut)),
       weight: 12,
     ),
     TweenSequenceItem(
-      tween: Tween(begin: 3.0, end: 0.0)
-          .chain(CurveTween(curve: Curves.easeIn)),
+      tween: Tween(
+        begin: 3.0,
+        end: 0.0,
+      ).chain(CurveTween(curve: Curves.easeIn)),
       weight: 13,
     ),
     TweenSequenceItem(tween: ConstantTween(0.0), weight: 75),
@@ -80,10 +80,8 @@ class _ChevronDetalleState extends State<ChevronDetalle>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _dx,
-      builder: (context, child) => Transform.translate(
-        offset: Offset(_dx.value, 0),
-        child: child,
-      ),
+      builder: (context, child) =>
+          Transform.translate(offset: Offset(_dx.value, 0), child: child),
       child: Icon(LucideIcons.chevronRight, size: 16, color: widget.color),
     );
   }

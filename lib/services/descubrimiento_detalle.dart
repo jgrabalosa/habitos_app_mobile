@@ -16,8 +16,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 ///
 /// Empieza en `true` a propósito: hasta leer la preferencia no se sabe, y
 /// ante la duda es mejor no empujar que empujar a quien ya lo sabe.
-final ValueNotifier<bool> detalleDescubiertoNotifier =
-    ValueNotifier<bool>(true);
+final ValueNotifier<bool> detalleDescubiertoNotifier = ValueNotifier<bool>(
+  true,
+);
 
 const _clave = 'detalle_habito_descubierto';
 

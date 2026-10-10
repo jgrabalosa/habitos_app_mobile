@@ -178,7 +178,8 @@ class _DashboardScreenState extends State<DashboardScreen>
     setState(() => _offsetSemana = 0);
     await _cargarDatos();
     if (!mounted) return;
-    if (_indiceHoy >= 0 && _indiceHoy < _dias.length &&
+    if (_indiceHoy >= 0 &&
+        _indiceHoy < _dias.length &&
         _diaSeleccionado != _indiceHoy) {
       setState(() => _diaSeleccionado = _indiceHoy);
     }

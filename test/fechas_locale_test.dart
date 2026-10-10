@@ -24,13 +24,31 @@ void main() {
   });
 
   test('yMMMM y MMMMd cambian con el locale', () {
-    expect(DateFormat.yMMMM('es').format(fecha).toLowerCase(), contains('junio'));
-    expect(DateFormat.yMMMM('en').format(fecha).toLowerCase(), contains('june'));
-    expect(DateFormat.yMMMM('pt').format(fecha).toLowerCase(), contains('junho'));
+    expect(
+      DateFormat.yMMMM('es').format(fecha).toLowerCase(),
+      contains('junio'),
+    );
+    expect(
+      DateFormat.yMMMM('en').format(fecha).toLowerCase(),
+      contains('june'),
+    );
+    expect(
+      DateFormat.yMMMM('pt').format(fecha).toLowerCase(),
+      contains('junho'),
+    );
 
-    expect(DateFormat.MMMMd('es').format(fecha).toLowerCase(), contains('junio'));
-    expect(DateFormat.MMMMd('en').format(fecha).toLowerCase(), contains('june'));
-    expect(DateFormat.MMMMd('pt').format(fecha).toLowerCase(), contains('junho'));
+    expect(
+      DateFormat.MMMMd('es').format(fecha).toLowerCase(),
+      contains('junio'),
+    );
+    expect(
+      DateFormat.MMMMd('en').format(fecha).toLowerCase(),
+      contains('june'),
+    );
+    expect(
+      DateFormat.MMMMd('pt').format(fecha).toLowerCase(),
+      contains('junho'),
+    );
   });
 
   // Lo que ve el usuario, en cadenas literales. Decidido el 10-sep-2026:

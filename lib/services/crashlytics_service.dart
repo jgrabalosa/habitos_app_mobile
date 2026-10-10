@@ -19,7 +19,8 @@ class CrashlyticsService {
   /// kReleaseMode y nunca se pasa el parametro tal cual.
   static Future<void> inicializar({bool recogerEnDebug = false}) async {
     await _crashlytics.setCrashlyticsCollectionEnabled(
-        kReleaseMode || recogerEnDebug);
+      kReleaseMode || recogerEnDebug,
+    );
 
     // recordFlutterFatalError sigue llamando a FlutterError.presentError,
     // asi que la consola roja de debug no se pierde.

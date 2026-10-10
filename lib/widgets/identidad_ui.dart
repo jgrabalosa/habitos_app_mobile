@@ -34,15 +34,15 @@ class TarjetaIdentidad extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SuperficieIdentidad(
-        margen: margen,
-        // TarjetaIdentidad no metía padding ninguno; el default de
-        // SuperficieIdentidad es EdgeInsets.all(16), así que hace falta
-        // anularlo explícitamente o se desmaquetan las nueve tarjetas.
-        relleno: EdgeInsets.zero,
-        protagonista: false,
-        onTap: onTap,
-        child: child,
-      );
+    margen: margen,
+    // TarjetaIdentidad no metía padding ninguno; el default de
+    // SuperficieIdentidad es EdgeInsets.all(16), así que hace falta
+    // anularlo explícitamente o se desmaquetan las nueve tarjetas.
+    relleno: EdgeInsets.zero,
+    protagonista: false,
+    onTap: onTap,
+    child: child,
+  );
 }
 
 /// El chip de frecuencia. Mismo criterio que la tarjeta, en pequeño.
@@ -105,22 +105,22 @@ NavigationBarThemeData barraNavegacionIdentidad(
   final ({ShapeBorder forma, Color color}) indicador = switch (id.forma) {
     // Profundidad — pastilla redondeada con el radio de la identidad.
     FormaIdentidad.glass => (
-        forma: formaIdentidad(id, radio: id.radioSecundario),
-        color: t.primary.withValues(alpha: 0.18),
-      ),
+      forma: formaIdentidad(id, radio: id.radioSecundario),
+      color: t.primary.withValues(alpha: 0.18),
+    ),
     // Neotokyo+ — el mismo corte de esquina de las tarjetas, con filo.
     FormaIdentidad.chamfer => (
-        forma: BordeChaflan(
-          chaflan: id.chaflan,
-          side: BorderSide(color: t.primary, width: 1.2),
-        ),
-        color: t.primary.withValues(alpha: 0.20),
+      forma: BordeChaflan(
+        chaflan: id.chaflan,
+        side: BorderSide(color: t.primary, width: 1.2),
       ),
+      color: t.primary.withValues(alpha: 0.20),
+    ),
     // Dulce — píldora completa y de color, que es su forma en todo.
     FormaIdentidad.pill => (
-        forma: const StadiumBorder(),
-        color: t.primary.withValues(alpha: 0.22),
-      ),
+      forma: const StadiumBorder(),
+      color: t.primary.withValues(alpha: 0.22),
+    ),
   };
 
   return NavigationBarThemeData(
@@ -171,41 +171,41 @@ BoxDecoration celdaHeatmap(
   final borde = seleccionada
       ? Border.all(color: t.text, width: 2)
       : esHoy
-          ? Border.all(color: t.primary, width: 1.5)
-          : null;
+      ? Border.all(color: t.primary, width: 1.5)
+      : null;
 
   return switch (id.forma) {
     // Profundidad — celda redondeada con brillo verde cuando está hecha.
     FormaIdentidad.glass => BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(5),
-        border: borde,
-        boxShadow: llena
-            ? [BoxShadow(color: color.withValues(alpha: 0.55), blurRadius: 6)]
-            : null,
-      ),
+      color: color,
+      borderRadius: BorderRadius.circular(5),
+      border: borde,
+      boxShadow: llena
+          ? [BoxShadow(color: color.withValues(alpha: 0.55), blurRadius: 6)]
+          : null,
+    ),
 
     // Neotokyo+ — LED: esquina viva y halo cuando enciende.
     FormaIdentidad.chamfer => BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(1),
-        border: borde,
-        boxShadow: llena
-            ? [
-                BoxShadow(color: color.withValues(alpha: 0.85), blurRadius: 8),
-                BoxShadow(color: color.withValues(alpha: 0.35), blurRadius: 14),
-              ]
-            : null,
-      ),
+      color: color,
+      borderRadius: BorderRadius.circular(1),
+      border: borde,
+      boxShadow: llena
+          ? [
+              BoxShadow(color: color.withValues(alpha: 0.85), blurRadius: 8),
+              BoxShadow(color: color.withValues(alpha: 0.35), blurRadius: 14),
+            ]
+          : null,
+    ),
 
     // Dulce — circulitos pastel, sin filo.
     FormaIdentidad.pill => BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-        border: borde,
-        boxShadow: llena
-            ? [BoxShadow(color: color.withValues(alpha: 0.45), blurRadius: 7)]
-            : null,
-      ),
+      shape: BoxShape.circle,
+      color: color,
+      border: borde,
+      boxShadow: llena
+          ? [BoxShadow(color: color.withValues(alpha: 0.45), blurRadius: 7)]
+          : null,
+    ),
   };
 }

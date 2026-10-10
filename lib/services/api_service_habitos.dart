@@ -15,109 +15,156 @@ class ApiServiceHabitos {
   // ── Hábitos ────────────────────────────────────────────
   static Future<Habito> getHabito(int habitoId) async {
     final headers = await ApiServiceCore.getHeaders();
-    final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.get(
-          Uri.parse('$_baseUrl/habitos/$habitoId'),
-          headers: headers,
-        ));
+    final response = await ApiServiceCore.enviar(
+      () => ApiServiceCore.cliente.get(
+        Uri.parse('$_baseUrl/habitos/$habitoId'),
+        headers: headers,
+      ),
+    );
     ApiServiceCore.verificar(response);
-    return ApiServiceCore.parsear(() => Habito.fromJson(jsonDecode(response.body)));
+    return ApiServiceCore.parsear(
+      () => Habito.fromJson(jsonDecode(response.body)),
+    );
   }
 
-  static Future<List<Map<String, dynamic>>> getResumenHabitos(int usuarioId) async {
+  static Future<List<Map<String, dynamic>>> getResumenHabitos(
+    int usuarioId,
+  ) async {
     final headers = await ApiServiceCore.getHeaders();
-    final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.get(
-          Uri.parse('$_baseUrl/habitos/usuario/$usuarioId/resumen'),
-          headers: headers,
-        ));
+    final response = await ApiServiceCore.enviar(
+      () => ApiServiceCore.cliente.get(
+        Uri.parse('$_baseUrl/habitos/usuario/$usuarioId/resumen'),
+        headers: headers,
+      ),
+    );
     ApiServiceCore.verificar(response);
     return ApiServiceCore.parsear(() {
       final List<dynamic> data = jsonDecode(response.body);
-      return data.map((item) => {
-        'habito': Habito.fromJson(item['habito']),
-        'totalCompletados': item['totalCompletados'] ?? 0,
-      }).toList();
+      return data
+          .map(
+            (item) => {
+              'habito': Habito.fromJson(item['habito']),
+              'totalCompletados': item['totalCompletados'] ?? 0,
+            },
+          )
+          .toList();
     });
   }
 
   static Future<void> activarHabito(int habitoId) async {
     final headers = await ApiServiceCore.getHeaders();
-    final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.patch(
-          Uri.parse('$_baseUrl/habitos/$habitoId/activar'),
-          headers: headers,
-        ));
+    final response = await ApiServiceCore.enviar(
+      () => ApiServiceCore.cliente.patch(
+        Uri.parse('$_baseUrl/habitos/$habitoId/activar'),
+        headers: headers,
+      ),
+    );
     ApiServiceCore.verificar(response);
   }
 
   static Future<void> desactivarHabito(int habitoId) async {
     final headers = await ApiServiceCore.getHeaders();
-    final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.patch(
-          Uri.parse('$_baseUrl/habitos/$habitoId/desactivar'),
-          headers: headers,
-        ));
+    final response = await ApiServiceCore.enviar(
+      () => ApiServiceCore.cliente.patch(
+        Uri.parse('$_baseUrl/habitos/$habitoId/desactivar'),
+        headers: headers,
+      ),
+    );
     ApiServiceCore.verificar(response);
   }
 
   static Future<List<dynamic>> getDashboard(int usuarioId) async {
     final headers = await ApiServiceCore.getHeaders();
-    final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.get(
-          Uri.parse('$_baseUrl/habitos/usuario/$usuarioId/dashboard'),
-          headers: headers,
-        ));
+    final response = await ApiServiceCore.enviar(
+      () => ApiServiceCore.cliente.get(
+        Uri.parse('$_baseUrl/habitos/usuario/$usuarioId/dashboard'),
+        headers: headers,
+      ),
+    );
     ApiServiceCore.verificar(response);
-    return ApiServiceCore.parsear(() => jsonDecode(response.body) as List<dynamic>);
+    return ApiServiceCore.parsear(
+      () => jsonDecode(response.body) as List<dynamic>,
+    );
   }
 
-  static Future<Map<String, dynamic>> getSemana(int usuarioId, {String? desde}) async {
+  static Future<Map<String, dynamic>> getSemana(
+    int usuarioId, {
+    String? desde,
+  }) async {
     final headers = await ApiServiceCore.getHeaders();
     final desdeParam = desde != null ? '?desde=$desde' : '';
-    final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.get(
-          Uri.parse('$_baseUrl/habitos/usuario/$usuarioId/semana$desdeParam'),
-          headers: headers,
-        ));
+    final response = await ApiServiceCore.enviar(
+      () => ApiServiceCore.cliente.get(
+        Uri.parse('$_baseUrl/habitos/usuario/$usuarioId/semana$desdeParam'),
+        headers: headers,
+      ),
+    );
     ApiServiceCore.verificar(response);
-    return ApiServiceCore.parsear(() => jsonDecode(response.body) as Map<String, dynamic>);
+    return ApiServiceCore.parsear(
+      () => jsonDecode(response.body) as Map<String, dynamic>,
+    );
   }
 
-  static Future<Map<String, dynamic>> getHabitoDetalle(int habitoId, {String? mes}) async {
+  static Future<Map<String, dynamic>> getHabitoDetalle(
+    int habitoId, {
+    String? mes,
+  }) async {
     final headers = await ApiServiceCore.getHeaders();
     final mesParam = mes != null ? '?mes=$mes' : '';
-    final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.get(
-          Uri.parse('$_baseUrl/habitos/$habitoId/detalle$mesParam'),
-          headers: headers,
-        ));
+    final response = await ApiServiceCore.enviar(
+      () => ApiServiceCore.cliente.get(
+        Uri.parse('$_baseUrl/habitos/$habitoId/detalle$mesParam'),
+        headers: headers,
+      ),
+    );
     ApiServiceCore.verificar(response);
-    return ApiServiceCore.parsear(() => jsonDecode(response.body) as Map<String, dynamic>);
+    return ApiServiceCore.parsear(
+      () => jsonDecode(response.body) as Map<String, dynamic>,
+    );
   }
 
   // ── Registros ──────────────────────────────────────────
-  static Future<void> actualizarNotaRegistro(int registroId, String nota) async {
+  static Future<void> actualizarNotaRegistro(
+    int registroId,
+    String nota,
+  ) async {
     final headers = await ApiServiceCore.getHeaders();
-    final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.put(
-          Uri.parse('$_baseUrl/registros/$registroId/nota'),
-          headers: headers,
-          body: jsonEncode({'nota': nota}),
-        ));
+    final response = await ApiServiceCore.enviar(
+      () => ApiServiceCore.cliente.put(
+        Uri.parse('$_baseUrl/registros/$registroId/nota'),
+        headers: headers,
+        body: jsonEncode({'nota': nota}),
+      ),
+    );
     ApiServiceCore.verificar(response);
   }
 
   static Future<Map<String, dynamic>> getProgresoHoy(int habitoId) async {
     final headers = await ApiServiceCore.getHeaders();
-    final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.get(
-          Uri.parse('$_baseUrl/registros/habito/$habitoId/hoy'),
-          headers: headers,
-        ));
+    final response = await ApiServiceCore.enviar(
+      () => ApiServiceCore.cliente.get(
+        Uri.parse('$_baseUrl/registros/habito/$habitoId/hoy'),
+        headers: headers,
+      ),
+    );
     ApiServiceCore.verificar(response);
-    return ApiServiceCore.parsear(() => jsonDecode(response.body) as Map<String, dynamic>);
+    return ApiServiceCore.parsear(
+      () => jsonDecode(response.body) as Map<String, dynamic>,
+    );
   }
 
   static Future<List<dynamic>> getRegistrosHabito(int habitoId) async {
     final headers = await ApiServiceCore.getHeaders();
-    final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.get(
-          Uri.parse('$_baseUrl/registros/habito/$habitoId'),
-          headers: headers,
-        ));
+    final response = await ApiServiceCore.enviar(
+      () => ApiServiceCore.cliente.get(
+        Uri.parse('$_baseUrl/registros/habito/$habitoId'),
+        headers: headers,
+      ),
+    );
     ApiServiceCore.verificar(response);
-    return ApiServiceCore.parsear(() => jsonDecode(response.body) as List<dynamic>);
+    return ApiServiceCore.parsear(
+      () => jsonDecode(response.body) as List<dynamic>,
+    );
   }
 
   /// Deshace un completado. El backend sólo lo permite si es el último
@@ -125,26 +172,33 @@ class ApiServiceHabitos {
   /// responde 409. La fecha puede ser hoy o un día pasado.
   static Future<void> deshacerRegistro(int registroId) async {
     final headers = await ApiServiceCore.getHeaders();
-    final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.delete(
-          Uri.parse('$_baseUrl/registros/$registroId'),
-          headers: headers,
-        ));
+    final response = await ApiServiceCore.enviar(
+      () => ApiServiceCore.cliente.delete(
+        Uri.parse('$_baseUrl/registros/$registroId'),
+        headers: headers,
+      ),
+    );
     ApiServiceCore.verificar(response);
   }
 
-  static Future<Map<String, dynamic>> completarHabito(int habitoId,
-      {String nota = '', String? fecha}) async {
+  static Future<Map<String, dynamic>> completarHabito(
+    int habitoId, {
+    String nota = '',
+    String? fecha,
+  }) async {
     final headers = await ApiServiceCore.getHeaders();
-    final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.post(
-          Uri.parse('$_baseUrl/registros/completar/$habitoId'),
-          headers: headers,
-          body: jsonEncode({
-            'nota': nota,
-            // Elemento null-aware: con `fecha` a null la clave no se envía,
-            // exactamente igual que con el `if` anterior.
-            'fecha': ?fecha,
-          }),
-        ));
+    final response = await ApiServiceCore.enviar(
+      () => ApiServiceCore.cliente.post(
+        Uri.parse('$_baseUrl/registros/completar/$habitoId'),
+        headers: headers,
+        body: jsonEncode({
+          'nota': nota,
+          // Elemento null-aware: con `fecha` a null la clave no se envía,
+          // exactamente igual que con el `if` anterior.
+          'fecha': ?fecha,
+        }),
+      ),
+    );
     ApiServiceCore.verificar(response, ok: const [201]);
     return ApiServiceCore.parsear(() {
       final data = jsonDecode(response.body);
@@ -162,29 +216,43 @@ class ApiServiceHabitos {
 
   static Future<void> valorarRegistro(int registroId, int valoracion) async {
     final headers = await ApiServiceCore.getHeaders();
-    final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.put(
-          Uri.parse('$_baseUrl/registros/$registroId/valoracion'),
-          headers: headers,
-          body: jsonEncode({'valoracion': valoracion}),
-        ));
+    final response = await ApiServiceCore.enviar(
+      () => ApiServiceCore.cliente.put(
+        Uri.parse('$_baseUrl/registros/$registroId/valoracion'),
+        headers: headers,
+        body: jsonEncode({'valoracion': valoracion}),
+      ),
+    );
     ApiServiceCore.verificar(response);
   }
 
   // ── Categorías ─────────────────────────────────────────
   static Future<List<dynamic>> getCategoriasUsuario(int usuarioId) async {
     final headers = await ApiServiceCore.getHeaders();
-    final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.get(
-          Uri.parse('$_baseUrl/categorias/usuario/$usuarioId'),
-          headers: headers,
-        ));
+    final response = await ApiServiceCore.enviar(
+      () => ApiServiceCore.cliente.get(
+        Uri.parse('$_baseUrl/categorias/usuario/$usuarioId'),
+        headers: headers,
+      ),
+    );
     ApiServiceCore.verificar(response);
-    return ApiServiceCore.parsear(() => jsonDecode(response.body) as List<dynamic>);
+    return ApiServiceCore.parsear(
+      () => jsonDecode(response.body) as List<dynamic>,
+    );
   }
 
   // ── Alta / edición / baja ──────────────────────────────
-  static Future<List<String>> crearHabito(String nombre, String descripcion,
-      String frecuencia, int meta, int usuarioId, int? categoriaId,
-      {String? diasSemana, bool recordatorioActivo = true, String? recordatorioHora}) async {
+  static Future<List<String>> crearHabito(
+    String nombre,
+    String descripcion,
+    String frecuencia,
+    int meta,
+    int usuarioId,
+    int? categoriaId, {
+    String? diasSemana,
+    bool recordatorioActivo = true,
+    String? recordatorioHora,
+  }) async {
     final headers = await ApiServiceCore.getHeaders();
     final body = {
       'nombre': nombre,
@@ -199,11 +267,13 @@ class ApiServiceHabitos {
     if (categoriaId != null) {
       body['categoriaId'] = categoriaId;
     }
-    final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.post(
-          Uri.parse('$_baseUrl/habitos'),
-          headers: headers,
-          body: jsonEncode(body),
-        ));
+    final response = await ApiServiceCore.enviar(
+      () => ApiServiceCore.cliente.post(
+        Uri.parse('$_baseUrl/habitos'),
+        headers: headers,
+        body: jsonEncode(body),
+      ),
+    );
     ApiServiceCore.verificar(response, ok: const [201]);
     return ApiServiceCore.parsear(() {
       final data = jsonDecode(response.body);
@@ -212,9 +282,18 @@ class ApiServiceHabitos {
     });
   }
 
-  static Future<void> actualizarHabito(int habitoId, String nombre, String descripcion,
-      String frecuencia, int meta, int usuarioId, int? categoriaId,
-      {String? diasSemana, bool recordatorioActivo = true, String? recordatorioHora}) async {
+  static Future<void> actualizarHabito(
+    int habitoId,
+    String nombre,
+    String descripcion,
+    String frecuencia,
+    int meta,
+    int usuarioId,
+    int? categoriaId, {
+    String? diasSemana,
+    bool recordatorioActivo = true,
+    String? recordatorioHora,
+  }) async {
     final headers = await ApiServiceCore.getHeaders();
     final body = {
       'nombre': nombre,
@@ -229,20 +308,24 @@ class ApiServiceHabitos {
     if (categoriaId != null) {
       body['categoriaId'] = categoriaId;
     }
-    final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.put(
-          Uri.parse('$_baseUrl/habitos/$habitoId'),
-          headers: headers,
-          body: jsonEncode(body),
-        ));
+    final response = await ApiServiceCore.enviar(
+      () => ApiServiceCore.cliente.put(
+        Uri.parse('$_baseUrl/habitos/$habitoId'),
+        headers: headers,
+        body: jsonEncode(body),
+      ),
+    );
     ApiServiceCore.verificar(response);
   }
 
   static Future<void> eliminarHabito(int habitoId) async {
     final headers = await ApiServiceCore.getHeaders();
-    final response = await ApiServiceCore.enviar(() => ApiServiceCore.cliente.delete(
-          Uri.parse('$_baseUrl/habitos/$habitoId'),
-          headers: headers,
-        ));
+    final response = await ApiServiceCore.enviar(
+      () => ApiServiceCore.cliente.delete(
+        Uri.parse('$_baseUrl/habitos/$habitoId'),
+        headers: headers,
+      ),
+    );
     ApiServiceCore.verificar(response);
   }
 }

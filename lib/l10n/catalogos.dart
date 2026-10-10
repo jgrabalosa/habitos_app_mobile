@@ -28,8 +28,11 @@ class Catalogos {
     );
   }
 
-  static String categoria(BuildContext context, String? codigo, String nombreBackend) =>
-      CatalogosCore.traducir(_categorias(context), codigo, nombreBackend);
+  static String categoria(
+    BuildContext context,
+    String? codigo,
+    String nombreBackend,
+  ) => CatalogosCore.traducir(_categorias(context), codigo, nombreBackend);
 
   static Map<String, String> _categorias(BuildContext context) {
     final l = AppLocalizations.of(context)!;
