@@ -17,7 +17,13 @@ class HabitoDetalleScreen extends StatefulWidget {
   /// Llega por parámetro porque `HabitoDetalleDTO` no la trae: quien abre
   /// esta pantalla ya tiene el hábito entero en la mano.
   final String? descripcion;
-  const HabitoDetalleScreen({super.key, required this.habitoId, required this.usuarioId, this.nombre, this.descripcion});
+  const HabitoDetalleScreen({
+    super.key,
+    required this.habitoId,
+    required this.usuarioId,
+    this.nombre,
+    this.descripcion,
+  });
 
   @override
   State<HabitoDetalleScreen> createState() => _HabitoDetalleScreenState();
@@ -42,15 +48,20 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
   /// pantalla.
   String? get _descripcion =>
       _detalle != null && _detalle!.containsKey('descripcion')
-          ? _detalle!['descripcion'] as String?
-          : widget.descripcion;
+      ? _detalle!['descripcion'] as String?
+      : widget.descripcion;
 
   Future<void> _cargarDetalle() async {
-    setState(() { _loading = true; });
+    setState(() {
+      _loading = true;
+    });
     try {
       final mesParam =
           '${_mesActual.year}-${_mesActual.month.toString().padLeft(2, '0')}';
-      final detalle = await ApiServiceHabitos.getHabitoDetalle(widget.habitoId, mes: mesParam);
+      final detalle = await ApiServiceHabitos.getHabitoDetalle(
+        widget.habitoId,
+        mes: mesParam,
+      );
       if (!mounted) return;
       setState(() {
         _detalle = detalle;
@@ -58,11 +69,18 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() { _loading = false; });
+      setState(() {
+        _loading = false;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(MensajesError.de(context, e,
-              generico: AppLocalizations.of(context)!.detErrorCargarDetalle)),
+          content: Text(
+            MensajesError.de(
+              context,
+              e,
+              generico: AppLocalizations.of(context)!.detErrorCargarDetalle,
+            ),
+          ),
         ),
       );
     }
@@ -75,7 +93,8 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
       final result = await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => HabitoScreen(usuarioId: widget.usuarioId, habito: habito),
+          builder: (_) =>
+              HabitoScreen(usuarioId: widget.usuarioId, habito: habito),
         ),
       );
       if (result == true) _cargarDetalle();
@@ -83,8 +102,13 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(MensajesError.de(context, e,
-                generico: AppLocalizations.of(context)!.detErrorCargar)),
+            content: Text(
+              MensajesError.de(
+                context,
+                e,
+                generico: AppLocalizations.of(context)!.detErrorCargar,
+              ),
+            ),
           ),
         );
       }
@@ -108,10 +132,10 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return Scaffold(
-   resizeToAvoidBottomInset: false,   
-appBar: AppBar(
-  // El Hero envuelve al condicional del texto
-title: Hero(
+      resizeToAvoidBottomInset: false,
+      appBar: AppBar(
+        // El Hero envuelve al condicional del texto
+        title: Hero(
           tag: 'habito-nombre-${widget.habitoId}',
           child: Material(
             color: Colors.transparent,
@@ -122,46 +146,45 @@ title: Hero(
             ),
           ),
         ),
-  elevation: 1,
-  actions: [
-    IconButton(
-      icon: const Icon(LucideIcons.pencil),
-      tooltip: l.habTituloEditar,
-      onPressed: _abrirEdicion,
-    ),
-  ],
-),
+        elevation: 1,
+        actions: [
+          IconButton(
+            icon: const Icon(LucideIcons.pencil),
+            tooltip: l.habTituloEditar,
+            onPressed: _abrirEdicion,
+          ),
+        ],
+      ),
       // Los últimos registros quedaban debajo de los botones de Android.
       // Arriba ya se encarga el AppBar.
       body: SafeArea(
         top: false,
         child: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _detalle == null
-              ? Center(child: Text(l.detErrorCargarDetalle))
-              : ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    if ((_descripcion ?? '').trim().isNotEmpty) ...[
-                      Text(
-                        _descripcion!.trim(),
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(color: tokens(context).textMuted),
+            ? const Center(child: CircularProgressIndicator())
+            : _detalle == null
+            ? Center(child: Text(l.detErrorCargarDetalle))
+            : ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  if ((_descripcion ?? '').trim().isNotEmpty) ...[
+                    Text(
+                      _descripcion!.trim(),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: tokens(context).textMuted,
                       ),
-                      const SizedBox(height: 12),
-                    ],
-                    _buildLineaFrecuencia(),
-                    _buildStatCards(),
-                    _buildValoracionMedia(),
-                    const SizedBox(height: 16),
-                    _buildHeatmap(),
-                    const SizedBox(height: 16),
-                    _buildUltimosRegistros(),
-                    const SizedBox(height: 48),
+                    ),
+                    const SizedBox(height: 12),
                   ],
-                ),
+                  _buildLineaFrecuencia(),
+                  _buildStatCards(),
+                  _buildValoracionMedia(),
+                  const SizedBox(height: 16),
+                  _buildHeatmap(),
+                  const SizedBox(height: 16),
+                  _buildUltimosRegistros(),
+                  const SizedBox(height: 48),
+                ],
+              ),
       ),
     );
   }
@@ -197,11 +220,12 @@ title: Hero(
         children: [
           Icon(LucideIcons.repeat, size: 14, color: t.textMuted),
           const SizedBox(width: 6),
-          Text(texto,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: t.textMuted)),
+          Text(
+            texto,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: t.textMuted),
+          ),
         ],
       ),
     );
@@ -219,23 +243,38 @@ title: Hero(
     final t = tokens(context);
     return Row(
       children: [
-        _statCard(LucideIcons.flame, _detalle!['rachaActual'].toString(),
-            l.detRachaActual, t.streakText,
-            ayuda: AyudaCampo(
-              texto: l.detAyudaRacha,
-              etiquetaSemantica: l.detAyudaRachaEtiqueta,
-              superindice: true,
-            )),
+        _statCard(
+          LucideIcons.flame,
+          _detalle!['rachaActual'].toString(),
+          l.detRachaActual,
+          t.streakText,
+          ayuda: AyudaCampo(
+            texto: l.detAyudaRacha,
+            etiquetaSemantica: l.detAyudaRachaEtiqueta,
+            superindice: true,
+          ),
+        ),
         const SizedBox(width: 8),
-        _statCard(LucideIcons.trophy, _detalle!['rachaMaxima'].toString(),
-            l.detMejorRacha, t.streakText),
+        _statCard(
+          LucideIcons.trophy,
+          _detalle!['rachaMaxima'].toString(),
+          l.detMejorRacha,
+          t.streakText,
+        ),
         const SizedBox(width: 8),
-        _statCard(LucideIcons.chartColumn,
-            _detalle!['totalCompletados'].toString(), l.detTotal, t.successText),
+        _statCard(
+          LucideIcons.chartColumn,
+          _detalle!['totalCompletados'].toString(),
+          l.detTotal,
+          t.successText,
+        ),
         const SizedBox(width: 8),
-        _statCard(LucideIcons.calendarDays,
-            (_detalle!['completadosMesActual'] ?? 0).toString(),
-            _esMesActual ? l.detDiasEsteMes : l.detDiasDelMes, t.successText),
+        _statCard(
+          LucideIcons.calendarDays,
+          (_detalle!['completadosMesActual'] ?? 0).toString(),
+          _esMesActual ? l.detDiasEsteMes : l.detDiasDelMes,
+          t.successText,
+        ),
       ],
     );
   }
@@ -262,17 +301,17 @@ title: Hero(
               const SizedBox(width: 6),
               Text(
                 valor.toStringAsFixed(1).replaceAll('.', ','),
-                style: Theme.of(context)
-                    .textTheme
-                    .titleLarge
-                    ?.copyWith(color: t.text),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(color: t.text),
               ),
               const SizedBox(width: 6),
-              Text(l.detSatisfaccion,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: t.textMuted)),
+              Text(
+                l.detSatisfaccion,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: t.textMuted),
+              ),
               AyudaCampo(
                 texto: l.detAyudaSatisfaccion,
                 etiquetaSemantica: l.detAyudaSatisfaccionEtiqueta,
@@ -287,8 +326,13 @@ title: Hero(
 
   /// El `color` es el de la cifra, y llega ya resuelto para texto: quien
   /// llama pasa `successText`, no `success`.
-  Widget _statCard(IconData icono, String valor, String label, Color color,
-      {Widget? ayuda}) {
+  Widget _statCard(
+    IconData icono,
+    String valor,
+    String label,
+    Color color, {
+    Widget? ayuda,
+  }) {
     final t = tokens(context);
     return Expanded(
       child: TarjetaIdentidad(
@@ -299,11 +343,12 @@ title: Hero(
             children: [
               Icon(icono, size: 18, color: color),
               const SizedBox(height: 4),
-              Text(valor,
-                  style: Theme.of(context)
-                      .textTheme
-                      .headlineSmall
-                      ?.copyWith(color: color)),
+              Text(
+                valor,
+                style: Theme.of(
+                  context,
+                ).textTheme.headlineSmall?.copyWith(color: color),
+              ),
               // La etiqueta puede partirse en dos líneas: la tarjeta es un
               // cuarto de pantalla y, con ayuda, comparte fila con el
               // interrogante.
@@ -311,12 +356,13 @@ title: Hero(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Flexible(
-                    child: Text(label,
-                        style: Theme.of(context)
-                            .textTheme
-                            .labelSmall
-                            ?.copyWith(color: t.textMuted),
-                        textAlign: TextAlign.center),
+                    child: Text(
+                      label,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.labelSmall?.copyWith(color: t.textMuted),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                   ?ayuda,
                 ],
@@ -370,9 +416,11 @@ title: Hero(
                   onPressed: () => _cambiarMes(-1),
                 ),
                 Text(
-                    DateFormat.yMMMM(Localizations.localeOf(context).toLanguageTag())
-                        .format(_mesActual),
-                    style: Theme.of(context).textTheme.titleMedium),
+                  DateFormat.yMMMM(
+                    Localizations.localeOf(context).toLanguageTag(),
+                  ).format(_mesActual),
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 IconButton(
                   icon: const Icon(LucideIcons.chevronRight),
                   onPressed: _esMesActual ? null : () => _cambiarMes(1),
@@ -383,14 +431,17 @@ title: Hero(
             // Etiquetas de días de la semana
             Row(
               children: ['L', 'M', 'X', 'J', 'V', 'S', 'D']
-                  .map((d) => Expanded(
-                        child: Text(d,
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleSmall
-                                ?.copyWith(color: t.textMuted)),
-                      ))
+                  .map(
+                    (d) => Expanded(
+                      child: Text(
+                        d,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.titleSmall?.copyWith(color: t.textMuted),
+                      ),
+                    ),
+                  )
                   .toList(),
             ),
             const SizedBox(height: 6),
@@ -406,8 +457,10 @@ title: Hero(
               itemBuilder: (context, index) {
                 if (index < diaSemana) return const SizedBox();
                 final dia = heatmap[index - diaSemana];
-                final int veces = dia['veces'] ?? (dia['completado'] == true ? 1 : 0);
-                final esHoy = dia['fecha'] ==
+                final int veces =
+                    dia['veces'] ?? (dia['completado'] == true ? 1 : 0);
+                final esHoy =
+                    dia['fecha'] ==
                     DateTime.now().toIso8601String().split('T')[0];
                 final seleccionado = _diaSeleccionado?['fecha'] == dia['fecha'];
                 return GestureDetector(
@@ -437,40 +490,48 @@ title: Hero(
             if (_diaSeleccionado != null)
               Text(
                 _infoDia(_diaSeleccionado!, meta, conNiveles),
-                style: Theme.of(context)
-                    .textTheme
-                    .labelMedium
-                    ?.copyWith(color: t.text),
+                style: Theme.of(
+                  context,
+                ).textTheme.labelMedium?.copyWith(color: t.text),
               )
             else
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('${l.detMenos} ',
-                      style: Theme.of(context)
-                          .textTheme
-                          .labelSmall
-                          ?.copyWith(color: t.textMuted)),
+                  Text(
+                    '${l.detMenos} ',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.labelSmall?.copyWith(color: t.textMuted),
+                  ),
                   ...[
                     t.surface2,
                     if (conNiveles) t.primary.withValues(alpha: 0.35),
                     t.primary,
                     if (conNiveles) superada,
-                  ].map((c) => Container(
-                        width: 10,
-                        height: 10,
-                        margin: const EdgeInsets.symmetric(horizontal: 1.5),
-                        // La leyenda son celdas en pequeño, así que se pintan
-                        // con la misma función: si la rejilla son puntos y la
-                        // leyenda cuadraditos, la leyenda deja de explicarla.
-                        decoration: celdaHeatmap(id, t,
-                            color: c, llena: c != t.surface2, esHoy: false),
-                      )),
-                  Text(' ${l.detMas}',
-                      style: Theme.of(context)
-                          .textTheme
-                          .labelSmall
-                          ?.copyWith(color: t.textMuted)),
+                  ].map(
+                    (c) => Container(
+                      width: 10,
+                      height: 10,
+                      margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                      // La leyenda son celdas en pequeño, así que se pintan
+                      // con la misma función: si la rejilla son puntos y la
+                      // leyenda cuadraditos, la leyenda deja de explicarla.
+                      decoration: celdaHeatmap(
+                        id,
+                        t,
+                        color: c,
+                        llena: c != t.surface2,
+                        esHoy: false,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    ' ${l.detMas}',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.labelSmall?.copyWith(color: t.textMuted),
+                  ),
                 ],
               ),
           ],
@@ -482,8 +543,9 @@ title: Hero(
   String _infoDia(Map<String, dynamic> dia, int meta, bool conNiveles) {
     final fecha = DateTime.parse(dia['fecha']);
     final int veces = dia['veces'] ?? (dia['completado'] == true ? 1 : 0);
-    final base = DateFormat.MMMMd(Localizations.localeOf(context).toLanguageTag())
-        .format(fecha);
+    final base = DateFormat.MMMMd(
+      Localizations.localeOf(context).toLanguageTag(),
+    ).format(fecha);
     final l = AppLocalizations.of(context)!;
     if (veces == 0) return '$base · ${l.detSinCompletar}';
     if (conNiveles) return '$base · ${l.detProgresoDia(veces, meta)}';
@@ -502,11 +564,12 @@ title: Hero(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l.detUltimosRegistros,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleLarge
-                    ?.copyWith(color: t.text)),
+            Text(
+              l.detUltimosRegistros,
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(color: t.text),
+            ),
             const SizedBox(height: 8),
             if (registros.isEmpty)
               Center(
@@ -514,83 +577,103 @@ title: Hero(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Column(
                     children: [
-                      Icon(LucideIcons.calendarHeart,
-                          size: 36, color: tokens(context).textMuted),
+                      Icon(
+                        LucideIcons.calendarHeart,
+                        size: 36,
+                        color: tokens(context).textMuted,
+                      ),
                       const SizedBox(height: 8),
-                      Text(l.detVacioTitulo,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(color: tokens(context).text)),
-                      Text(l.detVacioRegistro,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(color: tokens(context).textMuted)),
+                      Text(
+                        l.detVacioTitulo,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(color: tokens(context).text),
+                      ),
+                      Text(
+                        l.detVacioRegistro,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: tokens(context).textMuted,
+                        ),
+                      ),
                     ],
                   ),
                 ),
               )
             else
-              ...registros.map((r) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(r['fecha'],
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
-                                      ?.copyWith(color: t.text)),
-                              if (r['valoracion'] != null)
-                                Row(
-                                  children: List.generate(5, (i) => Icon(
+              ...registros.map(
+                (r) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              r['fecha'],
+                              style: Theme.of(
+                                context,
+                              ).textTheme.titleMedium?.copyWith(color: t.text),
+                            ),
+                            if (r['valoracion'] != null)
+                              Row(
+                                children: List.generate(
+                                  5,
+                                  (i) => Icon(
                                     LucideIcons.star,
                                     size: 14,
                                     color: i < (r['valoracion'] as int)
                                         ? t.points
                                         : t.textMuted.withValues(alpha: 0.3),
-                                  )),
+                                  ),
                                 ),
-                              if (r['nota'] != null && r['nota'].toString().isNotEmpty)
-                                Text(r['nota'],
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.copyWith(color: t.textMuted)),
-                            ],
-                          ),
+                              ),
+                            if (r['nota'] != null &&
+                                r['nota'].toString().isNotEmpty)
+                              Text(
+                                r['nota'],
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(color: t.textMuted),
+                              ),
+                          ],
                         ),
-                        Icon(
-                          r['completado'] ? LucideIcons.circleCheck : LucideIcons.circleX,
-                          // Como icono basta el verde de relleno; el que hace
-                          // falta oscurecer es el que se escribe.
-                          color: r['completado'] ? t.success : t.textMuted,
+                      ),
+                      Icon(
+                        r['completado']
+                            ? LucideIcons.circleCheck
+                            : LucideIcons.circleX,
+                        // Como icono basta el verde de relleno; el que hace
+                        // falta oscurecer es el que se escribe.
+                        color: r['completado'] ? t.success : t.textMuted,
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          LucideIcons.pencil,
+                          size: 18,
+                          color: t.textMuted,
                         ),
-                        IconButton(
-                          icon: Icon(LucideIcons.pencil, size: 18, color: t.textMuted),
-                          onPressed: () => _editarValoracion(
-                            r['registroId'],
-                            r['valoracion'] as int?,
-                            r['nota'] as String?,
-                          ),
+                        onPressed: () => _editarValoracion(
+                          r['registroId'],
+                          r['valoracion'] as int?,
+                          r['nota'] as String?,
                         ),
-                      ],
-                    ),
-                  )),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
           ],
         ),
       ),
     );
   }
 
- Future<void> _editarValoracion(
-      int registroId, int? valoracionActual, String? notaActual) async {
+  Future<void> _editarValoracion(
+    int registroId,
+    int? valoracionActual,
+    String? notaActual,
+  ) async {
     final respuesta = await ValoracionSheet.mostrar(
       context,
       valoracionInicial: valoracionActual,
@@ -622,8 +705,13 @@ title: Hero(
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(MensajesError.de(context, e,
-                generico: AppLocalizations.of(context)!.errorGuardar)),
+            content: Text(
+              MensajesError.de(
+                context,
+                e,
+                generico: AppLocalizations.of(context)!.errorGuardar,
+              ),
+            ),
           ),
         );
         if (guardadoAlgo) _cargarDetalle();

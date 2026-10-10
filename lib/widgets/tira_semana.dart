@@ -41,23 +41,28 @@ class TiraSemana extends StatelessWidget {
     return Row(
       children: List.generate(dias.length, (i) {
         final fecha = DateTime.parse(dias[i]['fecha'] as String);
-        final habitosDelDia = (dias[i]['habitos'] as List<Map<String, dynamic>>);
+        final habitosDelDia =
+            (dias[i]['habitos'] as List<Map<String, dynamic>>);
         // Vacío (nada programado ese día) no es "completado": no hay señal.
-        final bool diaCompleto = habitosDelDia.isNotEmpty &&
+        final bool diaCompleto =
+            habitosDelDia.isNotEmpty &&
             habitosDelDia.every((h) => h['completado'] == true);
         final bool esHoy = i == indiceHoy;
         final bool seleccionado = i == diaSeleccionado;
         final String nombreDia = DateFormat.E(locale).format(fecha);
 
-        final Color colorCelda =
-            seleccionado ? t.primary.withValues(alpha: 0.18) : t.inactivo;
+        final Color colorCelda = seleccionado
+            ? t.primary.withValues(alpha: 0.18)
+            : t.inactivo;
 
         return Expanded(
           child: Semantics(
             button: true,
             selected: seleccionado,
-            label: l.a11yDiaSemana(nombreDia,
-                seleccionado ? l.a11yDiaSeleccionado : l.a11yDiaNoSeleccionado),
+            label: l.a11yDiaSemana(
+              nombreDia,
+              seleccionado ? l.a11yDiaSeleccionado : l.a11yDiaNoSeleccionado,
+            ),
             child: GestureDetector(
               onTap: () => onSeleccionar(i),
               behavior: HitTestBehavior.opaque,
@@ -65,10 +70,9 @@ class TiraSemana extends StatelessWidget {
                 children: [
                   Text(
                     nombreDia.toUpperCase(),
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleSmall
-                        ?.copyWith(color: t.textMuted),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleSmall?.copyWith(color: t.textMuted),
                   ),
                   const SizedBox(height: 6),
                   AnimatedContainer(
@@ -106,7 +110,9 @@ class TiraSemana extends StatelessWidget {
                     child: diaCompleto
                         ? DecoratedBox(
                             decoration: BoxDecoration(
-                                shape: BoxShape.circle, color: t.success),
+                              shape: BoxShape.circle,
+                              color: t.success,
+                            ),
                           )
                         : null,
                   ),

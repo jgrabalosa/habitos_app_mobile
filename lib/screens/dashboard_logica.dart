@@ -47,8 +47,8 @@ int diaASeleccionar({
 }) {
   final String? fechaQueSeMiraba =
       (seleccionAnterior >= 0 && seleccionAnterior < fechasAnteriores.length)
-          ? fechasAnteriores[seleccionAnterior]
-          : null;
+      ? fechasAnteriores[seleccionAnterior]
+      : null;
   final int conservado = fechaQueSeMiraba == null
       ? -1
       : fechasNuevas.indexOf(fechaQueSeMiraba);
@@ -75,25 +75,31 @@ class SemanaLeida {
 /// viniera, se conserva [hoyAnterior] antes que caer al reloj del
 /// dispositivo: una fecha equivocada aquí marca el día que no es.
 SemanaLeida leerSemana(Map<String, dynamic> data, {String? hoyAnterior}) {
-  final List<Map<String, dynamic>> dias =
-      (data['dias'] as List<dynamic>).map<Map<String, dynamic>>((dia) {
-    final List<Map<String, dynamic>> habitosDia =
-        (dia['habitos'] as List<dynamic>).map<Map<String, dynamic>>((item) => {
-              'habito': Habito.fromJson(item['habito']),
-              'completado': item['completado'] == true,
-            }).toList();
-    return {
-      'fecha': dia['fecha'] as String,
-      'habitos': habitosDia,
-    };
-  }).toList();
+  final List<Map<String, dynamic>> dias = (data['dias'] as List<dynamic>)
+      .map<Map<String, dynamic>>((dia) {
+        final List<Map<String, dynamic>> habitosDia =
+            (dia['habitos'] as List<dynamic>)
+                .map<Map<String, dynamic>>(
+                  (item) => {
+                    'habito': Habito.fromJson(item['habito']),
+                    'completado': item['completado'] == true,
+                  },
+                )
+                .toList();
+        return {'fecha': dia['fecha'] as String, 'habitos': habitosDia};
+      })
+      .toList();
 
   final List<Map<String, dynamic>> flexibles =
-      (data['flexibles'] as List<dynamic>).map<Map<String, dynamic>>((item) => {
-            'habito': Habito.fromJson(item['habito']),
-            'completadosSemana': item['completadosSemana'] ?? 0,
-            'meta': item['meta'] ?? 1,
-          }).toList();
+      (data['flexibles'] as List<dynamic>)
+          .map<Map<String, dynamic>>(
+            (item) => {
+              'habito': Habito.fromJson(item['habito']),
+              'completadosSemana': item['completadosSemana'] ?? 0,
+              'meta': item['meta'] ?? 1,
+            },
+          )
+          .toList();
 
   return SemanaLeida(
     dias: dias,

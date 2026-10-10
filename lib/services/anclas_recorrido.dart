@@ -19,16 +19,22 @@ import 'package:flutter/widgets.dart';
 class AnclasRecorrido {
   AnclasRecorrido._();
 
-  static final GlobalKey pestanaHabitos =
-      GlobalKey(debugLabel: 'recorrido: pestaña Hábitos');
-  static final GlobalKey botonNuevoHabito =
-      GlobalKey(debugLabel: 'recorrido: botón nuevo hábito');
-  static final GlobalKey recomendados =
-      GlobalKey(debugLabel: 'recorrido: hábitos recomendados');
-  static final GlobalKey checkHabito =
-      GlobalKey(debugLabel: 'recorrido: check del hábito');
-  static final GlobalKey alimentar =
-      GlobalKey(debugLabel: 'recorrido: botón de alimentar');
-  static final GlobalKey valoracion =
-      GlobalKey(debugLabel: 'recorrido: hoja de valoración');
+  static final GlobalKey pestanaHabitos = GlobalKey(
+    debugLabel: 'recorrido: pestaña Hábitos',
+  );
+  static final GlobalKey botonNuevoHabito = GlobalKey(
+    debugLabel: 'recorrido: botón nuevo hábito',
+  );
+  static final GlobalKey recomendados = GlobalKey(
+    debugLabel: 'recorrido: hábitos recomendados',
+  );
+  static final GlobalKey checkHabito = GlobalKey(
+    debugLabel: 'recorrido: check del hábito',
+  );
+  static final GlobalKey alimentar = GlobalKey(
+    debugLabel: 'recorrido: botón de alimentar',
+  );
+  static final GlobalKey valoracion = GlobalKey(
+    debugLabel: 'recorrido: hoja de valoración',
+  );
 }

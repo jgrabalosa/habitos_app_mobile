@@ -14,7 +14,13 @@ class HabitoScreen extends StatefulWidget {
   final Habito? habito;
   final List<dynamic>? categoriasIniciales;
   final List<String>? nombresHabitosExistentes;
-  const HabitoScreen({super.key, required this.usuarioId, this.habito, this.categoriasIniciales, this.nombresHabitosExistentes});
+  const HabitoScreen({
+    super.key,
+    required this.usuarioId,
+    this.habito,
+    this.categoriasIniciales,
+    this.nombresHabitosExistentes,
+  });
 
   @override
   State<HabitoScreen> createState() => _HabitoScreenState();
@@ -25,29 +31,80 @@ class _HabitoScreenState extends State<HabitoScreen> {
   /// casa por CÓDIGO, no por nombre — el nombre que manda el backend puede
   /// venir traducido o cambiar, el código no.
   static const List<Map<String, dynamic>> _plantillas = [
-    {'emoji': '💧', 'id': 'beberAgua', 'frecuencia': 'DIARIO', 'meta': 4, 'categoriaCodigo': 'CAT_SALUD'},
-    {'emoji': '📖', 'id': 'leer20Min', 'frecuencia': 'DIARIO', 'meta': 1, 'categoriaCodigo': 'CAT_ESTUDIO'},
-    {'emoji': '🏃', 'id': 'ejercicio', 'frecuencia': 'SEMANAL', 'meta': 3, 'dias': '2,4,6', 'categoriaCodigo': 'CAT_DEPORTE'},
-    {'emoji': '🧘', 'id': 'meditar', 'frecuencia': 'DIARIO', 'meta': 1, 'categoriaCodigo': 'CAT_MENTE'},
-    {'emoji': '😴', 'id': 'dormir8h', 'frecuencia': 'DIARIO', 'meta': 1, 'categoriaCodigo': 'CAT_SUENO'},
-    {'emoji': '🚶', 'id': 'caminar', 'frecuencia': 'DIARIO', 'meta': 1, 'categoriaCodigo': 'CAT_SALUD'},
-    {'emoji': '📓', 'id': 'escribirDiario', 'frecuencia': 'DIARIO', 'meta': 1, 'categoriaCodigo': 'CAT_MENTE'},
+    {
+      'emoji': '💧',
+      'id': 'beberAgua',
+      'frecuencia': 'DIARIO',
+      'meta': 4,
+      'categoriaCodigo': 'CAT_SALUD',
+    },
+    {
+      'emoji': '📖',
+      'id': 'leer20Min',
+      'frecuencia': 'DIARIO',
+      'meta': 1,
+      'categoriaCodigo': 'CAT_ESTUDIO',
+    },
+    {
+      'emoji': '🏃',
+      'id': 'ejercicio',
+      'frecuencia': 'SEMANAL',
+      'meta': 3,
+      'dias': '2,4,6',
+      'categoriaCodigo': 'CAT_DEPORTE',
+    },
+    {
+      'emoji': '🧘',
+      'id': 'meditar',
+      'frecuencia': 'DIARIO',
+      'meta': 1,
+      'categoriaCodigo': 'CAT_MENTE',
+    },
+    {
+      'emoji': '😴',
+      'id': 'dormir8h',
+      'frecuencia': 'DIARIO',
+      'meta': 1,
+      'categoriaCodigo': 'CAT_SUENO',
+    },
+    {
+      'emoji': '🚶',
+      'id': 'caminar',
+      'frecuencia': 'DIARIO',
+      'meta': 1,
+      'categoriaCodigo': 'CAT_SALUD',
+    },
+    {
+      'emoji': '📓',
+      'id': 'escribirDiario',
+      'frecuencia': 'DIARIO',
+      'meta': 1,
+      'categoriaCodigo': 'CAT_MENTE',
+    },
   ];
 
   /// Nombre de una plantilla en un idioma concreto.
   static String _nombrePlantilla(AppLocalizations l, String id) => switch (id) {
-        'beberAgua' => l.plantillaBeberAgua,
-        'leer20Min' => l.plantillaLeer20Min,
-        'ejercicio' => l.plantillaEjercicio,
-        'meditar' => l.plantillaMeditar,
-        'dormir8h' => l.plantillaDormir8h,
-        'caminar' => l.plantillaCaminar,
-        'escribirDiario' => l.plantillaEscribirDiario,
-        _ => id,
-      };
+    'beberAgua' => l.plantillaBeberAgua,
+    'leer20Min' => l.plantillaLeer20Min,
+    'ejercicio' => l.plantillaEjercicio,
+    'meditar' => l.plantillaMeditar,
+    'dormir8h' => l.plantillaDormir8h,
+    'caminar' => l.plantillaCaminar,
+    'escribirDiario' => l.plantillaEscribirDiario,
+    _ => id,
+  };
 
   // Etiquetas L-D en orden ISO (1=lunes .. 7=domingo)
-  static const List<String> _etiquetasDias = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+  static const List<String> _etiquetasDias = [
+    'L',
+    'M',
+    'X',
+    'J',
+    'V',
+    'S',
+    'D',
+  ];
 
   final _nombreController = TextEditingController();
   final _descripcionController = TextEditingController();
@@ -100,7 +157,9 @@ class _HabitoScreenState extends State<HabitoScreen> {
 
   Future<void> _cargarCategorias() async {
     try {
-      final categorias = await ApiServiceHabitos.getCategoriasUsuario(widget.usuarioId);
+      final categorias = await ApiServiceHabitos.getCategoriasUsuario(
+        widget.usuarioId,
+      );
       if (!mounted) return;
       setState(() {
         _categorias = categorias;
@@ -138,7 +197,10 @@ class _HabitoScreenState extends State<HabitoScreen> {
         Icon(LucideIcons.cloudOff, size: 18, color: t.textMuted),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(l.habErrorCategorias, style: TextStyle(color: t.textMuted)),
+          child: Text(
+            l.habErrorCategorias,
+            style: TextStyle(color: t.textMuted),
+          ),
         ),
         TextButton.icon(
           onPressed: _reintentarCategorias,
@@ -207,8 +269,9 @@ class _HabitoScreenState extends State<HabitoScreen> {
       // fijos: un hábito así sólo sale en Hoy los días que toca, y el paso
       // siguiente señala su check en la lista de hoy. Creado un lunes, no
       // habría nada que señalar. Fuera del recorrido se sigue ofreciendo.
-      .where((p) =>
-          !RecorridoOnboarding.instancia.activo || p['id'] != 'ejercicio')
+      .where(
+        (p) => !RecorridoOnboarding.instancia.activo || p['id'] != 'ejercicio',
+      )
       .toList();
 
   void _alternarDia(int dia) {
@@ -234,8 +297,10 @@ class _HabitoScreenState extends State<HabitoScreen> {
           // La forma de la identidad, igual que los tres diálogos del core.
           // Sin esto sale con las esquinas de Material y es la única
           // superficie de la app que no habla el idioma de la identidad.
-          shape: formaIdentidad(identidad(context),
-              radio: identidad(context).radioHero),
+          shape: formaIdentidad(
+            identidad(context),
+            radio: identidad(context).radioHero,
+          ),
           title: Text(l.habCambiarFrecTitulo),
           content: Text(l.habCambiarFrecCuerpo),
           actions: [
@@ -254,7 +319,9 @@ class _HabitoScreenState extends State<HabitoScreen> {
     }
 
     if (_nombreController.text.isEmpty) {
-      setState(() { _error = l.habNombreObligatorio; });
+      setState(() {
+        _error = l.habNombreObligatorio;
+      });
       return;
     }
 
@@ -262,7 +329,9 @@ class _HabitoScreenState extends State<HabitoScreen> {
     // nunca (ver Habito.java, "null = sin hora elegida todavía"). Silencioso
     // y con el interruptor en verde, que es la peor combinación.
     if (_recordatorioActivo && _recordatorioHora == null) {
-      setState(() { _error = l.habHoraObligatoria; });
+      setState(() {
+        _error = l.habHoraObligatoria;
+      });
       return;
     }
 
@@ -276,7 +345,10 @@ class _HabitoScreenState extends State<HabitoScreen> {
         ? null
         : '${_recordatorioHora!.hour.toString().padLeft(2, '0')}:${_recordatorioHora!.minute.toString().padLeft(2, '0')}';
 
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       if (_esEdicion) {
         await ApiServiceHabitos.actualizarHabito(
@@ -324,14 +396,21 @@ class _HabitoScreenState extends State<HabitoScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = MensajesError.de(context, e,
-              generico: _esEdicion ? l.habErrorActualizar : l.habErrorCrear);
+          _error = MensajesError.de(
+            context,
+            e,
+            generico: _esEdicion ? l.habErrorActualizar : l.habErrorCrear,
+          );
         });
       }
     } finally {
       // En el camino bueno ya se ha hecho Navigator.pop: la pantalla puede
       // estar desmontada cuando llega este finally.
-      if (mounted) setState(() { _loading = false; });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
     }
   }
 
@@ -340,8 +419,10 @@ class _HabitoScreenState extends State<HabitoScreen> {
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        shape: formaIdentidad(identidad(context),
-            radio: identidad(context).radioHero),
+        shape: formaIdentidad(
+          identidad(context),
+          radio: identidad(context).radioHero,
+        ),
         title: Text(l.habEliminarTitulo),
         content: Text(l.habEliminarCuerpo),
         actions: [
@@ -351,14 +432,19 @@ class _HabitoScreenState extends State<HabitoScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(l.comunEliminar, style: TextStyle(color: tonoError(context).texto)),
+            child: Text(
+              l.comunEliminar,
+              style: TextStyle(color: tonoError(context).texto),
+            ),
           ),
         ],
       ),
     );
 
     if (confirmar == true) {
-      setState(() { _loading = true; });
+      setState(() {
+        _loading = true;
+      });
       try {
         await ApiServiceHabitos.eliminarHabito(widget.habito!.habitoId);
         if (mounted) Navigator.pop(context, true);
@@ -379,7 +465,9 @@ class _HabitoScreenState extends State<HabitoScreen> {
       initialTime: _recordatorioHora ?? const TimeOfDay(hour: 9, minute: 0),
     );
     if (hora != null && mounted) {
-      setState(() { _recordatorioHora = hora; });
+      setState(() {
+        _recordatorioHora = hora;
+      });
     }
   }
 
@@ -388,8 +476,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l.habDiasSemana,
-            style: Theme.of(context).textTheme.titleMedium),
+        Text(l.habDiasSemana, style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         Row(
           children: List.generate(7, (i) {
@@ -411,9 +498,8 @@ class _HabitoScreenState extends State<HabitoScreen> {
                       alignment: Alignment.center,
                       child: Text(
                         _etiquetasDias[i],
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: activo ? t.tinta : t.textMuted,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(color: activo ? t.tinta : t.textMuted),
                       ),
                     ),
                   ),
@@ -424,10 +510,10 @@ class _HabitoScreenState extends State<HabitoScreen> {
         ),
         const SizedBox(height: 4),
         Text(
-          _diasSeleccionados.isEmpty
-              ? l.habDiasAyudaSin
-              : l.habDiasAyudaCon,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: t.textMuted),
+          _diasSeleccionados.isEmpty ? l.habDiasAyudaSin : l.habDiasAyudaCon,
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: t.textMuted),
         ),
       ],
     );
@@ -448,229 +534,285 @@ class _HabitoScreenState extends State<HabitoScreen> {
       body: SafeArea(
         top: false,
         child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (!_esEdicion && _plantillasDisponibles.isNotEmpty) ...[
-                  Text(l.habRecomendados,
-                      style: Theme.of(context).textTheme.titleMedium),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    // Ancla del recorrido guiado. Sólo se engancha mientras el
-                    // recorrido corre: una GlobalKey no puede estar en dos
-                    // widgets a la vez, y esta pantalla puede abrirse otra vez
-                    // para editar.
-                    key: RecorridoOnboarding.instancia.activo
-                        ? AnclasRecorrido.recomendados
-                        : null,
-                    height: 56,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _plantillasDisponibles.length,
-                      separatorBuilder: (_, _) => const SizedBox(width: 8),
-                      itemBuilder: (context, i) {
-                        final p = _plantillasDisponibles[i];
-                        return ActionChip(
-                          avatar: Text(p['emoji'], style: const TextStyle(fontSize: 16)),
-                          label: Text(_nombrePlantilla(
-                              AppLocalizations.of(context)!, p['id'])),
-                          labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                          onPressed: () => _aplicarPlantilla(p),
-                        );
-                      },
+          padding: const EdgeInsets.all(16),
+          child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (!_esEdicion && _plantillasDisponibles.isNotEmpty) ...[
+                    Text(
+                      l.habRecomendados,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      // Ancla del recorrido guiado. Sólo se engancha mientras el
+                      // recorrido corre: una GlobalKey no puede estar en dos
+                      // widgets a la vez, y esta pantalla puede abrirse otra vez
+                      // para editar.
+                      key: RecorridoOnboarding.instancia.activo
+                          ? AnclasRecorrido.recomendados
+                          : null,
+                      height: 56,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _plantillasDisponibles.length,
+                        separatorBuilder: (_, _) => const SizedBox(width: 8),
+                        itemBuilder: (context, i) {
+                          final p = _plantillasDisponibles[i];
+                          return ActionChip(
+                            avatar: Text(
+                              p['emoji'],
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                            label: Text(
+                              _nombrePlantilla(
+                                AppLocalizations.of(context)!,
+                                p['id'],
+                              ),
+                            ),
+                            labelPadding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                            onPressed: () => _aplicarPlantilla(p),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  TextField(
+                    controller: _nombreController,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: InputDecoration(
+                      labelText: l.habLabelNombre,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                ],
-                TextField(
-                  controller: _nombreController,
-                  textCapitalization: TextCapitalization.sentences,
-                  decoration: InputDecoration(
-                    labelText: l.habLabelNombre,
-                    border: const OutlineInputBorder(),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _descripcionController,
+                    textCapitalization: TextCapitalization.sentences,
+                    // Limitado para que lo que se escribe quepa donde se ve: una
+                    // línea en el listado y sin ocupar media pantalla en el
+                    // detalle. Antes no había tope y cabía un párrafo entero.
+                    maxLength: 120,
+                    maxLines: 2,
+                    decoration: InputDecoration(
+                      labelText: l.habLabelDescripcion,
+                      border: const OutlineInputBorder(),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _descripcionController,
-                  textCapitalization: TextCapitalization.sentences,
-                  // Limitado para que lo que se escribe quepa donde se ve: una
-                  // línea en el listado y sin ocupar media pantalla en el
-                  // detalle. Antes no había tope y cabía un párrafo entero.
-                  maxLength: 120,
-                  maxLines: 2,
-                  decoration: InputDecoration(
-                    labelText: l.habLabelDescripcion,
-                    border: const OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                _categoriasLoading
-                    ? const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8),
-                        child: LinearProgressIndicator(),
-                      )
-                    : _categoriasError
-                        ? _filaErrorCategorias(l)
-                        : DropdownButtonFormField<int?>(
-                        initialValue: _categoriaId,
-                        decoration: InputDecoration(
-                          labelText: l.habLabelCategoria,
-                          border: OutlineInputBorder(),
-                        ),
-                        items: [
-                          DropdownMenuItem<int?>(
-                            value: null,
-                            child: Text(l.habSinCategoria),
+                  const SizedBox(height: 12),
+                  _categoriasLoading
+                      ? const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: LinearProgressIndicator(),
+                        )
+                      : _categoriasError
+                      ? _filaErrorCategorias(l)
+                      : DropdownButtonFormField<int?>(
+                          initialValue: _categoriaId,
+                          decoration: InputDecoration(
+                            labelText: l.habLabelCategoria,
+                            border: OutlineInputBorder(),
                           ),
-                          ..._categorias.map((c) => DropdownMenuItem<int?>(
+                          items: [
+                            DropdownMenuItem<int?>(
+                              value: null,
+                              child: Text(l.habSinCategoria),
+                            ),
+                            ..._categorias.map(
+                              (c) => DropdownMenuItem<int?>(
                                 value: c['categoriaId'],
-                                child: Text('${c['icono'] ?? ''} ${Catalogos.categoria(context, c['codigo'], c['nombre'])}'.trim()),
-                              )),
-                        ],
-                        onChanged: (v) => setState(() { _categoriaId = v; }),
+                                child: Text(
+                                  '${c['icono'] ?? ''} ${Catalogos.categoria(context, c['codigo'], c['nombre'])}'
+                                      .trim(),
+                                ),
+                              ),
+                            ),
+                          ],
+                          onChanged: (v) => setState(() {
+                            _categoriaId = v;
+                          }),
+                        ),
+                  const SizedBox(height: 12),
+                  // El título va fuera del recuadro, como «Días de la semana», y
+                  // la ayuda va pegada a él como un exponente, igual que en «Meta».
+                  Row(
+                    children: [
+                      Text(
+                        l.habLabelFrecuencia,
+                        style: Theme.of(context).textTheme.titleMedium,
                       ),
-                const SizedBox(height: 12),
-                // El título va fuera del recuadro, como «Días de la semana», y
-                // la ayuda va pegada a él como un exponente, igual que en «Meta».
-                Row(
-                  children: [
-                    Text(l.habLabelFrecuencia,
-                        style: Theme.of(context).textTheme.titleMedium),
-                    AyudaCampo(
-                      texto: l.habAyudaFrecuencia,
-                      etiquetaSemantica: l.habAyudaFrecuenciaEtiqueta,
-                      superindice: true,
+                      AyudaCampo(
+                        texto: l.habAyudaFrecuencia,
+                        etiquetaSemantica: l.habAyudaFrecuenciaEtiqueta,
+                        superindice: true,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    initialValue: _frecuencia,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                    ),
+                    items: ['DIARIO', 'SEMANAL']
+                        .map(
+                          (f) => DropdownMenuItem(
+                            value: f,
+                            child: Text(
+                              f == 'DIARIO' ? l.frecDiario : l.frecSemanal,
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (v) => setState(() {
+                      _frecuencia = v!;
+                    }),
+                  ),
+                  if (_frecuencia == 'SEMANAL') ...[
+                    const SizedBox(height: 16),
+                    _selectorDias(t),
+                  ],
+                  const SizedBox(height: 12),
+                  if (_metaDerivada)
+                    Row(
+                      children: [
+                        // `trimRight`: el texto trae un espacio detrás de los
+                        // dos puntos, y el interrogante va pegado a ellos como
+                        // un exponente. El aire hasta lo siguiente ya lo da
+                        // su propia caja.
+                        Text(l.habMeta.trimRight()),
+                        AyudaCampo(
+                          texto: l.habAyudaMetaDias,
+                          etiquetaSemantica: l.habAyudaMetaEtiqueta,
+                          superindice: true,
+                        ),
+                        Text(
+                          l.habDiasSemanaMeta(_diasSeleccionados.length),
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ],
+                    )
+                  else
+                    Row(
+                      children: [
+                        // `trimRight`: ver la fila de los días marcados.
+                        Text(l.habMeta.trimRight()),
+                        AyudaCampo(
+                          // Diario: veces al día. Semanal sin días marcados:
+                          // veces por semana, el día que sea. Con días
+                          // marcados no se llega aquí: es la otra fila.
+                          texto: _frecuencia == 'DIARIO'
+                              ? l.habAyudaMetaDiaria
+                              : l.habAyudaMetaSemanal,
+                          etiquetaSemantica: l.habAyudaMetaEtiqueta,
+                          superindice: true,
+                        ),
+                        IconButton(
+                          icon: const Icon(LucideIcons.minus),
+                          onPressed: () => setState(() {
+                            if (_meta > 1) _meta--;
+                          }),
+                        ),
+                        Text(
+                          '$_meta',
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        IconButton(
+                          icon: const Icon(LucideIcons.plus),
+                          onPressed: () => setState(() {
+                            _meta++;
+                          }),
+                        ),
+                      ],
+                    ),
+                  const SizedBox(height: 12),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(l.habRecordatorio),
+                    subtitle: Text(
+                      _recordatorioActivo
+                          ? (_recordatorioHora != null
+                                ? l.habALas(_recordatorioHora!.format(context))
+                                : l.habEligeHora)
+                          : l.habDesactivado,
+                    ),
+                    value: _recordatorioActivo,
+                    onChanged: (v) => setState(() {
+                      _recordatorioActivo = v;
+                    }),
+                  ),
+                  if (_recordatorioActivo)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: _elegirHoraRecordatorio,
+                        icon: const Icon(LucideIcons.clock),
+                        label: Text(
+                          _recordatorioHora == null
+                              ? l.habElegirHora
+                              : l.habCambiarHora(
+                                  _recordatorioHora!.format(context),
+                                ),
+                        ),
+                      ),
+                    ),
+                  if (_error != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      _error!,
+                      style: TextStyle(color: tonoError(context).texto),
                     ),
                   ],
-                ),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  initialValue: _frecuencia,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                  ),
-                  items: ['DIARIO', 'SEMANAL']
-                      .map((f) => DropdownMenuItem(
-                          value: f,
-                          child: Text(f == 'DIARIO' ? l.frecDiario : l.frecSemanal)))
-                      .toList(),
-                  onChanged: (v) => setState(() { _frecuencia = v!; }),
-                ),
-                if (_frecuencia == 'SEMANAL') ...[
                   const SizedBox(height: 16),
-                  _selectorDias(t),
-                ],
-                const SizedBox(height: 12),
-                if (_metaDerivada)
-                  Row(
-                    children: [
-                      // `trimRight`: el texto trae un espacio detrás de los
-                      // dos puntos, y el interrogante va pegado a ellos como
-                      // un exponente. El aire hasta lo siguiente ya lo da
-                      // su propia caja.
-                      Text(l.habMeta.trimRight()),
-                      AyudaCampo(
-                        texto: l.habAyudaMetaDias,
-                        etiquetaSemantica: l.habAyudaMetaEtiqueta,
-                        superindice: true,
-                      ),
-                      Text(l.habDiasSemanaMeta(_diasSeleccionados.length),
-                          style: Theme.of(context).textTheme.titleLarge),
-                    ],
-                  )
-                else
-                  Row(
-                    children: [
-                      // `trimRight`: ver la fila de los días marcados.
-                      Text(l.habMeta.trimRight()),
-                      AyudaCampo(
-                        // Diario: veces al día. Semanal sin días marcados:
-                        // veces por semana, el día que sea. Con días
-                        // marcados no se llega aquí: es la otra fila.
-                        texto: _frecuencia == 'DIARIO'
-                            ? l.habAyudaMetaDiaria
-                            : l.habAyudaMetaSemanal,
-                        etiquetaSemantica: l.habAyudaMetaEtiqueta,
-                        superindice: true,
-                      ),
-                      IconButton(
-                        icon: const Icon(LucideIcons.minus),
-                        onPressed: () => setState(() { if (_meta > 1) _meta--; }),
-                      ),
-                      Text('$_meta', style: Theme.of(context).textTheme.headlineSmall),
-                      IconButton(
-                        icon: const Icon(LucideIcons.plus),
-                        onPressed: () => setState(() { _meta++; }),
-                      ),
-                    ],
-                  ),
-                const SizedBox(height: 12),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l.habRecordatorio),
-                  subtitle: Text(_recordatorioActivo
-                      ? (_recordatorioHora != null
-                          ? l.habALas(_recordatorioHora!.format(context))
-                          : l.habEligeHora)
-                      : l.habDesactivado),
-                  value: _recordatorioActivo,
-                  onChanged: (v) => setState(() { _recordatorioActivo = v; }),
-                ),
-                if (_recordatorioActivo)
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: TextButton.icon(
-                      onPressed: _elegirHoraRecordatorio,
-                      icon: const Icon(LucideIcons.clock),
-                      label: Text(_recordatorioHora == null
-                          ? l.habElegirHora
-                          : l.habCambiarHora(_recordatorioHora!.format(context))),
-                    ),
-                  ),
-                if (_error != null) ...[
-                  const SizedBox(height: 8),
-                  Text(_error!, style: TextStyle(color: tonoError(context).texto)),
-                ],
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _loading ? null : _guardar,
-                    child: _loading
-                        ? CircularProgressIndicator(color: t.tinta)
-                        : Text(_esEdicion ? l.habBotonActualizar : l.habBotonCrear),
-                  ),
-                ),
-                if (_esEdicion) ...[
-                  const SizedBox(height: 8),
                   SizedBox(
                     width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: _loading ? null : _eliminar,
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: tonoError(context).borde),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: Text(l.habBotonEliminar,
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelLarge
-                              ?.copyWith(color: tonoError(context).texto)),
+                    child: ElevatedButton(
+                      onPressed: _loading ? null : _guardar,
+                      child: _loading
+                          ? CircularProgressIndicator(color: t.tinta)
+                          : Text(
+                              _esEdicion
+                                  ? l.habBotonActualizar
+                                  : l.habBotonCrear,
+                            ),
                     ),
                   ),
+                  if (_esEdicion) ...[
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: _loading ? null : _eliminar,
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: tonoError(context).borde),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: Text(
+                          l.habBotonEliminar,
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(color: tonoError(context).texto),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),
-      ),
       ),
     );
   }

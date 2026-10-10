@@ -176,6 +176,21 @@ resuelto. Antes de probar, comprobar el `resolved-ref` del `pubspec.lock`.
 Para probar una rama del core sin tag, `pubspec_overrides.yaml` con
 `path: ../norday_flutter_core`, que no se commitea.
 
+## Formato del código
+
+Todo el código Dart va formateado con `dart format`. Antes de cada commit que
+toque un `.dart`, desde la raíz: `dart format lib test`.
+
+- Sólo `lib` y `test`. Nunca `dart format .`.
+- **Después de formatear, `flutter analyze`.** El formateador parte en varias
+  líneas un `if` sin llaves que cabía en una, y entonces salta
+  `curly_braces_in_flow_control_structures`. Se arregla poniendo llaves, no
+  deshaciendo el formato.
+- Un cambio que sólo reformatea va en su propio commit, sin mezclar con código.
+- `dart format lib` toca también los `app_localizations*.dart` generados, que
+  no se versionan: no importa, y por eso cuenta más ficheros de los que entran
+  en el commit.
+
 ## Estilo de trabajo con el usuario
 
 - Un paso a la vez, confirmar que compila antes de seguir.

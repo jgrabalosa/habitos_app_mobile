@@ -8,12 +8,15 @@ class Habito {
   final int meta;
   final bool activo;
   final String? categoriaNombre;
+
   /// Código del catálogo; null si la categoría la creó el usuario.
   final String? categoriaCodigo;
   final int? categoriaId;
-  final String? diasSemana; // "2,4,6" = martes, jueves, sábado (1=lunes..7=domingo)
+  final String?
+  diasSemana; // "2,4,6" = martes, jueves, sábado (1=lunes..7=domingo)
   final bool recordatorioActivo;
-  final String? recordatorioHora; // "HH:mm:ss" tal cual llega del backend, o null si no se ha elegido
+  final String?
+  recordatorioHora; // "HH:mm:ss" tal cual llega del backend, o null si no se ha elegido
 
   Habito({
     required this.habitoId,
@@ -63,6 +66,6 @@ class Habito {
   /// DateTime.weekday. Lista vacía = semanal flexible o hábito diario.
   List<int> get diasPlanificados =>
       (diasSemana == null || diasSemana!.trim().isEmpty)
-          ? const []
-          : diasSemana!.split(',').map((d) => int.parse(d.trim())).toList();
+      ? const []
+      : diasSemana!.split(',').map((d) => int.parse(d.trim())).toList();
 }

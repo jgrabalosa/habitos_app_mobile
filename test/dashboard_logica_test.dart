@@ -3,20 +3,20 @@ import 'package:habitos_app_mobile/models/habito.dart';
 import 'package:habitos_app_mobile/screens/dashboard_logica.dart';
 
 Habito habito(String frecuencia, {int meta = 1}) => Habito(
-      habitoId: 1,
-      nombre: 'Leer',
-      frecuencia: frecuencia,
-      meta: meta,
-      activo: true,
-    );
+  habitoId: 1,
+  nombre: 'Leer',
+  frecuencia: frecuencia,
+  meta: meta,
+  activo: true,
+);
 
 Map<String, dynamic> habitoJson(int id) => {
-      'habitoId': id,
-      'nombre': 'Hábito $id',
-      'frecuencia': 'DIARIO',
-      'meta': 1,
-      'activo': true,
-    };
+  'habitoId': id,
+  'nombre': 'Hábito $id',
+  'frecuencia': 'DIARIO',
+  'meta': 1,
+  'activo': true,
+};
 
 const semana = [
   '2026-09-14',
@@ -66,42 +66,51 @@ void main() {
 
     test('un diario por debajo de la meta no está hecho', () {
       expect(
-        estaHecho(habito('DIARIO', meta: 2),
-            {'completadoHoy': true, 'completadosPeriodo': 1, 'meta': 2}),
+        estaHecho(habito('DIARIO', meta: 2), {
+          'completadoHoy': true,
+          'completadosPeriodo': 1,
+          'meta': 2,
+        }),
         isFalse,
       );
     });
 
     test('un diario que llega a la meta está hecho', () {
       expect(
-        estaHecho(habito('DIARIO', meta: 2),
-            {'completadoHoy': true, 'completadosPeriodo': 2, 'meta': 2}),
+        estaHecho(habito('DIARIO', meta: 2), {
+          'completadoHoy': true,
+          'completadosPeriodo': 2,
+          'meta': 2,
+        }),
         isTrue,
       );
     });
 
     test('un semanal completado hoy está hecho aunque no llegue a la meta', () {
       expect(
-        estaHecho(habito('SEMANAL', meta: 3),
-            {'completadoHoy': true, 'completadosPeriodo': 1, 'meta': 3}),
+        estaHecho(habito('SEMANAL', meta: 3), {
+          'completadoHoy': true,
+          'completadosPeriodo': 1,
+          'meta': 3,
+        }),
         isTrue,
       );
     });
 
     test('un semanal no completado hoy y bajo la meta no está hecho', () {
       expect(
-        estaHecho(habito('SEMANAL', meta: 3),
-            {'completadoHoy': false, 'completadosPeriodo': 2, 'meta': 3}),
+        estaHecho(habito('SEMANAL', meta: 3), {
+          'completadoHoy': false,
+          'completadosPeriodo': 2,
+          'meta': 3,
+        }),
         isFalse,
       );
     });
 
     test('sin datos de periodo ni meta, cuenta 0 sobre 1', () {
       expect(estaHecho(habito('DIARIO'), {'completadoHoy': false}), isFalse);
-      expect(
-        estaHecho(habito('DIARIO'), {'completadosPeriodo': 1}),
-        isTrue,
-      );
+      expect(estaHecho(habito('DIARIO'), {'completadosPeriodo': 1}), isTrue);
     });
   });
 
@@ -237,10 +246,10 @@ void main() {
     });
 
     test('sin hoy en la respuesta conserva el anterior', () {
-      final leida = leerSemana(
-        {'dias': [], 'flexibles': []},
-        hoyAnterior: '2026-09-16',
-      );
+      final leida = leerSemana({
+        'dias': [],
+        'flexibles': [],
+      }, hoyAnterior: '2026-09-16');
       expect(leida.hoyIso, '2026-09-16');
     });
   });
