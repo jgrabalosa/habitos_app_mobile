@@ -129,6 +129,8 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   /// Al arrancar, las anclas todavía no están enganchadas —lo estarán en el
   /// repintado que provoca este mismo arranque—, y por eso el controlador
   /// reintenta medirlas unos frames antes de rendirse.
+  // Sin llamadas mientras el recorrido está aparcado (Fase 4).
+  // ignore: unused_element
   void _iniciarRecorrido({required bool completo}) {
     if (!mounted) return;
     final l = AppLocalizations.of(context)!;
@@ -295,16 +297,20 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
 
     if (widget.mostrarOnboarding) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _mostrarOnboarding());
-    } else {
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => _recorridoSiNoSeHaVisto(),
-      );
     }
+    // Recorrido guiado aparcado hasta la Fase 4 (rediseño de rachas, F1).
+    // } else {
+    //   WidgetsBinding.instance.addPostFrameCallback(
+    //     (_) => _recorridoSiNoSeHaVisto(),
+    //   );
+    // }
   }
 
   /// Sin alta nueva no hay bienvenida, pero el recorrido puede no haberse
   /// visto nunca en ESTE móvil: la marca es local, así que una reinstalación
   /// cuenta como primera vez. Es el caso de los testers.
+  // Sin llamadas mientras el recorrido está aparcado (Fase 4).
+  // ignore: unused_element
   Future<void> _recorridoSiNoSeHaVisto() async {
     if (await RecorridoService.yaHecho()) return;
     await _arrancarSegunHabitos();
@@ -337,13 +343,14 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   // ofrecía ya no existe en el overlay: la condición dejó de significar nada.
   void _mostrarOnboarding() {
     if (!mounted) return;
-    // La bienvenida y el recorrido son un solo flujo: en cuanto se cierra el
-    // overlay arranca el recorrido, sin que el usuario tenga que hacer nada
-    // en medio.
-    OnboardingOverlay.mostrar(
-      context,
-      usuarioId: _usuarioId,
-    ).then((_) => _iniciarRecorrido(completo: true));
+    // Recorrido guiado aparcado hasta la Fase 4 (rediseño de rachas, F1).
+    // Antes la bienvenida y el recorrido eran un solo flujo: en cuanto se
+    // cerraba el overlay arrancaba el recorrido.
+    // OnboardingOverlay.mostrar(
+    //   context,
+    //   usuarioId: _usuarioId,
+    // ).then((_) => _iniciarRecorrido(completo: true));
+    OnboardingOverlay.mostrar(context, usuarioId: _usuarioId);
   }
 
   Future<void> _logout() async {

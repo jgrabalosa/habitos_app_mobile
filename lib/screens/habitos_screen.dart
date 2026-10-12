@@ -67,25 +67,26 @@ class _HabitosScreenState extends State<HabitosScreen> {
     }
   }
 
-  Future<void> _activar(int habitoId) async {
-    try {
-      await ApiServiceHabitos.activarHabito(habitoId);
-      _cargarDatos();
-      notificarHabitosCambiados();
-    } catch (e) {
-      _avisarError(e);
-    }
-  }
-
-  Future<void> _desactivar(int habitoId) async {
-    try {
-      await ApiServiceHabitos.desactivarHabito(habitoId);
-      _cargarDatos();
-      notificarHabitosCambiados();
-    } catch (e) {
-      _avisarError(e);
-    }
-  }
+  // Sin interruptor hasta la Fase 4 (rediseño de rachas, F1).
+  //  Future<void> _activar(int habitoId) async {
+  //    try {
+  //      await ApiServiceHabitos.activarHabito(habitoId);
+  //      _cargarDatos();
+  //      notificarHabitosCambiados();
+  //    } catch (e) {
+  //      _avisarError(e);
+  //    }
+  //  }
+  //
+  //  Future<void> _desactivar(int habitoId) async {
+  //    try {
+  //      await ApiServiceHabitos.desactivarHabito(habitoId);
+  //      _cargarDatos();
+  //      notificarHabitosCambiados();
+  //    } catch (e) {
+  //      _avisarError(e);
+  //    }
+  //  }
 
   void _avisarError(Object e) {
     if (!mounted) return;
@@ -378,14 +379,16 @@ class _HabitosScreenState extends State<HabitosScreen> {
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
-              Switch(
-                value: habito.activo,
-                onChanged: (v) => v
-                    ? _activar(habito.habitoId)
-                    : _desactivar(habito.habitoId),
-                activeThumbColor: t.primary,
-              ),
+              // Interruptor fuera hasta la Fase 4, que decide cómo se pausa
+              // un hábito (rediseño de rachas, F1).
+              // const SizedBox(width: 8),
+              // Switch(
+              //   value: habito.activo,
+              //   onChanged: (v) => v
+              //       ? _activar(habito.habitoId)
+              //       : _desactivar(habito.habitoId),
+              //   activeThumbColor: t.primary,
+              // ),
             ],
           ),
         ),

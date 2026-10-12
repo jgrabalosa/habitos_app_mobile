@@ -625,13 +625,16 @@ class _DashboardScreenState extends State<DashboardScreen>
       // Desde aquí el día ya cuenta como cerrado: la ceremonia enciende el
       // realce, y cualquier refresco a media ceremonia lo tiene que respetar.
       _cierrePendiente = false;
-      if (mounted) {
-        final l = AppLocalizations.of(context)!;
-        await mostrarCierreDelDia(
-          titulo: l.dashTodoHecho,
-          despedida: l.dashDisfruta,
-        );
-      }
+      // Ceremonia de fin de día aparcada hasta la Fase 4 (rediseño de
+      // rachas, F1). El realce del día cerrado lo sigue poniendo
+      // _publicarProgreso, justo debajo.
+      // if (mounted) {
+      //   final l = AppLocalizations.of(context)!;
+      //   await mostrarCierreDelDia(
+      //     titulo: l.dashTodoHecho,
+      //     despedida: l.dashDisfruta,
+      //   );
+      // }
     }
     _cierrePendiente = false;
     if (mounted) _publicarProgreso();
