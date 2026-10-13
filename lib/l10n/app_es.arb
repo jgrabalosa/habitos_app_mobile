@@ -413,5 +413,9 @@
         "type": "int"
       }
     }
-  }
+  },
+  "detRitmoTitulo": "RITMO DE ESTE HÁBITO",
+  "ritmoExplicacionHabito": "Sube cada vez que cumples, y si un día no llegas, baja poco a poco.",
+  "detLoQueLlevas": "Lo que llevas",
+  "detAyudaRitmoEtiqueta": "Qué es el ritmo"
 }

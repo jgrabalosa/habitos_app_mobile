@@ -267,5 +267,9 @@
   "a11yRitmoHabito": "Ritmo: {palabra}",
   "ritmoExplicacion": "O teu ritmo junta o de todos os teus hábitos. Sobe sempre que cumpres e, nos dias em que não chegas, desce só um pouco.",
   "ritmoDeDondeSale": "DE ONDE VEM",
-  "a11yRitmoHabitoDetalle": "{nombre}: {palabra}, nível {nivel} de 5. Ver detalhe"
+  "a11yRitmoHabitoDetalle": "{nombre}: {palabra}, nível {nivel} de 5. Ver detalhe",
+  "detRitmoTitulo": "RITMO DESTE HÁBITO",
+  "ritmoExplicacionHabito": "Sobe sempre que cumpres e, nos dias em que não chegas, desce só um pouco.",
+  "detLoQueLlevas": "O que já levas",
+  "detAyudaRitmoEtiqueta": "O que é o ritmo"
 }

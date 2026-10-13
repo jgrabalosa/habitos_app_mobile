@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
+// IndicadorNivel no está en el barrel de la 0.28.0: se importa directo
+// hasta que el core lo exporte.
+import 'package:norday_flutter_core/widgets/indicador_nivel.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_service_habitos.dart';
 import '../services/descubrimiento_detalle.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/habito.dart';
+import '../models/hoy.dart';
+import '../widgets/panel_ritmo.dart';
 import '../widgets/identidad_ui.dart';
 import 'habito_screen.dart';
 
@@ -176,6 +181,7 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                     const SizedBox(height: 12),
                   ],
                   _buildLineaFrecuencia(),
+                  _buildRitmo(),
                   _buildStatCards(),
                   _buildValoracionMedia(),
                   const SizedBox(height: 16),
@@ -231,9 +237,9 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     );
   }
 
-  /// Cuatro cifras que son en realidad dos métricas miradas a dos plazos: la
-  /// racha (ahora / récord) y los completados (siempre / este mes). El color
-  /// dice de qué familia es cada una; el icono y la etiqueta, el plazo.
+  /// Lo que lleva el hábito, en dos plazos: siempre («Lo que llevas», que
+  /// sólo sube) y este mes. Las dos tarjetas de racha (ahora / récord) salen
+  /// con el rediseño de rachas (F4): el ritmo ocupa su sitio, arriba.
   ///
   /// Los iconos son Lucide y ya no emoji, por lo mismo que en la tienda y en
   /// logros: el emoji lo pinta la fuente del sistema y cambia de dibujo, color
@@ -243,29 +249,30 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     final t = tokens(context);
     return Row(
       children: [
-        _statCard(
-          LucideIcons.flame,
-          _detalle!['rachaActual'].toString(),
-          l.detRachaActual,
-          t.streakText,
-          ayuda: AyudaCampo(
-            texto: l.detAyudaRacha,
-            etiquetaSemantica: l.detAyudaRachaEtiqueta,
-            superindice: true,
-          ),
-        ),
-        const SizedBox(width: 8),
-        _statCard(
-          LucideIcons.trophy,
-          _detalle!['rachaMaxima'].toString(),
-          l.detMejorRacha,
-          t.streakText,
-        ),
-        const SizedBox(width: 8),
+        // Las dos tarjetas de racha, fuera con el rediseño de rachas (F4).
+        // _statCard(
+        //   LucideIcons.flame,
+        //   _detalle!['rachaActual'].toString(),
+        //   l.detRachaActual,
+        //   t.streakText,
+        //   ayuda: AyudaCampo(
+        //     texto: l.detAyudaRacha,
+        //     etiquetaSemantica: l.detAyudaRachaEtiqueta,
+        //     superindice: true,
+        //   ),
+        // ),
+        // const SizedBox(width: 8),
+        // _statCard(
+        //   LucideIcons.trophy,
+        //   _detalle!['rachaMaxima'].toString(),
+        //   l.detMejorRacha,
+        //   t.streakText,
+        // ),
+        // const SizedBox(width: 8),
         _statCard(
           LucideIcons.chartColumn,
           _detalle!['totalCompletados'].toString(),
-          l.detTotal,
+          l.detLoQueLlevas,
           t.successText,
         ),
         const SizedBox(width: 8),
@@ -276,6 +283,83 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
           t.successText,
         ),
       ],
+    );
+  }
+
+  /// El ritmo de este hábito: la palabra, el dibujo de la identidad, la
+  /// causa y la frase que lo explica, que también va detrás del «?». No sale
+  /// si el backend no lo manda (un backend anterior al rediseño).
+  Widget _buildRitmo() {
+    final nivel = _detalle!['ritmoNivel'] as int?;
+    if (nivel == null) return const SizedBox.shrink();
+
+    final l = AppLocalizations.of(context)!;
+    final t = tokens(context);
+    final texto = Theme.of(context).textTheme;
+    final palabra = palabraRitmo(l, nivel);
+    final causa = causaRitmo(l, tendenciaDe(_detalle!['ritmoTendencia']));
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: TarjetaIdentidad(
+        margen: EdgeInsets.zero,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    l.detRitmoTitulo,
+                    style: texto.labelSmall?.copyWith(
+                      color: t.textMuted,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  AyudaCampo(
+                    texto: l.ritmoExplicacionHabito,
+                    etiquetaSemantica: l.detAyudaRitmoEtiqueta,
+                    superindice: true,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Semantics(
+                container: true,
+                label: l.a11yRitmoHabito(palabra),
+                child: ExcludeSemantics(
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          palabra,
+                          style: texto.titleLarge?.copyWith(
+                            color: t.points,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      IndicadorNivel(nivel: nivel, tamano: 20),
+                    ],
+                  ),
+                ),
+              ),
+              if (causa != null) ...[
+                const SizedBox(height: 6),
+                Text(causa, style: texto.bodyMedium?.copyWith(color: t.text)),
+              ],
+              const SizedBox(height: 4),
+              Text(
+                l.ritmoExplicacionHabito,
+                style: texto.bodySmall?.copyWith(color: t.textMuted),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -331,6 +415,9 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     String valor,
     String label,
     Color color, {
+    // Sin uso desde que salió la tarjeta de racha (F4); se queda para la
+    // próxima cifra que necesite su «?».
+    // ignore: unused_element_parameter
     Widget? ayuda,
   }) {
     final t = tokens(context);
@@ -386,20 +473,23 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     final t = tokens(context);
     final id = identidad(context);
 
-    // El cuarto escalón —meta superada— se mezcla hacia `t.text`, no hacia
-    // negro ni hacia blanco: en Profundidad y Neotokyo+ el texto es claro
-    // sobre fondo oscuro, así que sale MÁS CLARO que el primario; en Dulce y
-    // Alba es oscuro sobre fondo claro, así que sale MÁS OSCURO. La dirección
-    // se corrige sola y no hace falta un token nuevo. Al 50% la separación
-    // frente al primario va de 1.37 (Profundidad) a 2.07 (Dulce).
-    final superada = Color.lerp(t.primary, t.text, 0.5)!;
+    // El cuarto escalón —meta superada— sale con el rediseño de rachas (F4):
+    // pasarse del objetivo no da nada. Quedan vacío, a medias y completo.
+    // // El cuarto escalón —meta superada— se mezcla hacia `t.text`, no hacia
+    // // negro ni hacia blanco: en Profundidad y Neotokyo+ el texto es claro
+    // // sobre fondo oscuro, así que sale MÁS CLARO que el primario; en Dulce y
+    // // Alba es oscuro sobre fondo claro, así que sale MÁS OSCURO. La dirección
+    // // se corrige sola y no hace falta un token nuevo. Al 50% la separación
+    // // frente al primario va de 1.37 (Profundidad) a 2.07 (Dulce).
+    // final superada = Color.lerp(t.primary, t.text, 0.5)!;
 
     Color colorDia(int veces) {
       if (veces == 0) return t.surface2;
       if (!conNiveles) return t.primary;
       if (veces < meta) return t.primary.withValues(alpha: 0.35);
-      if (veces == meta) return t.primary;
-      return superada;
+      return t.primary;
+      // if (veces == meta) return t.primary;
+      // return superada;
     }
 
     return TarjetaIdentidad(
@@ -508,7 +598,7 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                     t.surface2,
                     if (conNiveles) t.primary.withValues(alpha: 0.35),
                     t.primary,
-                    if (conNiveles) superada,
+                    // if (conNiveles) superada,
                   ].map(
                     (c) => Container(
                       width: 10,
@@ -639,14 +729,20 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                           ],
                         ),
                       ),
-                      Icon(
-                        r['completado']
-                            ? LucideIcons.circleCheck
-                            : LucideIcons.circleX,
-                        // Como icono basta el verde de relleno; el que hace
-                        // falta oscurecer es el que se escribe.
-                        color: r['completado'] ? t.success : t.textMuted,
-                      ),
+                      // Sin aspa (rediseño de rachas, F4): el fallo no se pinta.
+                      // Un registro sin completar deja el hueco del icono.
+                      // Icon(
+                      //   r['completado']
+                      //       ? LucideIcons.circleCheck
+                      //       : LucideIcons.circleX,
+                      //   // Como icono basta el verde de relleno; el que hace
+                      //   // falta oscurecer es el que se escribe.
+                      //   color: r['completado'] ? t.success : t.textMuted,
+                      // ),
+                      if (r['completado'] == true)
+                        Icon(LucideIcons.circleCheck, color: t.success)
+                      else
+                        const SizedBox(width: 24),
                       IconButton(
                         icon: Icon(
                           LucideIcons.pencil,

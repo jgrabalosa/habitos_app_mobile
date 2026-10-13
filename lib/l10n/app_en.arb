@@ -267,5 +267,9 @@
   "a11yRitmoHabito": "Pace: {palabra}",
   "ritmoExplicacion": "Your pace brings all your habits together. It rises each time you follow through, and on days you don't, it only dips a little.",
   "ritmoDeDondeSale": "WHERE IT COMES FROM",
-  "a11yRitmoHabitoDetalle": "{nombre}: {palabra}, level {nivel} of 5. View details"
+  "a11yRitmoHabitoDetalle": "{nombre}: {palabra}, level {nivel} of 5. View details",
+  "detRitmoTitulo": "THIS HABIT'S PACE",
+  "ritmoExplicacionHabito": "It rises each time you follow through, and on days you don't, it only dips a little.",
+  "detLoQueLlevas": "Done so far",
+  "detAyudaRitmoEtiqueta": "What pace means"
 }
