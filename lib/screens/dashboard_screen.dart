@@ -19,6 +19,7 @@ import '../services/anclas_recorrido.dart';
 import '../services/recorrido_onboarding.dart';
 import '../widgets/estados_hoy.dart';
 import '../widgets/identidad_ui.dart';
+import '../widgets/panel_ritmo.dart';
 import '../widgets/tira_semana.dart';
 import '../widgets/transito_fila.dart';
 import '../services/descubrimiento_detalle.dart';
@@ -1072,41 +1073,45 @@ class _DashboardScreenState extends State<DashboardScreen>
         FraseHoy.todo => l.dashFraseTodo,
       };
 
-  /// La palabra del nivel de un ritmo, del 1 al 5.
-  String _palabraRitmo(AppLocalizations l, int nivel) => switch (nivel) {
-    <= 1 => l.ritmoNivel1,
-    2 => l.ritmoNivel2,
-    3 => l.ritmoNivel3,
-    4 => l.ritmoNivel4,
-    _ => l.ritmoNivel5,
-  };
-
-  /// La línea de la causa, según hacia dónde va el ritmo respecto a hace
-  /// siete días. El fallo no se nombra: si baja, se dice el siguiente paso.
-  String? _causaRitmo(AppLocalizations l, TendenciaRitmo? tendencia) =>
-      switch (tendencia) {
-        TendenciaRitmo.sube => l.ritmoSube,
-        TendenciaRitmo.igual => l.ritmoIgual,
-        TendenciaRitmo.baja => l.ritmoBaja,
-        null => null,
-      };
+  /// Abre el panel «Tu ritmo». Si se toca un hábito, se va a su detalle.
+  Future<void> _abrirPanelRitmo() async {
+    final hoy = _hoy;
+    if (hoy == null) return;
+    final habito = await mostrarPanelRitmo(context, hoy);
+    if (habito == null || !mounted) return;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => HabitoDetalleScreen(
+          habitoId: habito.habitoId,
+          usuarioId: _usuarioId,
+          nombre: habito.nombre,
+          descripcion: habito.descripcion,
+        ),
+      ),
+    );
+    _cargarHoy();
+  }
 
   /// La tarjeta «TU RITMO»: el ritmo general, con su palabra, su causa y el
-  /// dibujo de la identidad. Se podrá tocar cuando exista el panel (F3).
+  /// dibujo de la identidad. Al tocarla se abre el panel «Tu ritmo».
   Widget _tarjetaRitmo(
     AppLocalizations l,
     TokensContextuales t,
     int nivel,
     TendenciaRitmo? tendencia,
   ) {
-    final palabra = _palabraRitmo(l, nivel);
-    final causa = _causaRitmo(l, tendencia);
+    final palabra = palabraRitmo(l, nivel);
+    final causa = causaRitmo(l, tendencia);
     final texto = Theme.of(context).textTheme;
     return Semantics(
       container: true,
+      button: true,
       label: l.a11yRitmoGeneral(palabra, nivel),
+      onTap: _abrirPanelRitmo,
       child: ExcludeSemantics(
         child: TarjetaIdentidad(
+          onTap: _abrirPanelRitmo,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
             child: Row(
@@ -1273,7 +1278,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                           nivel: f.ritmoNivel,
                           tamano: 11,
                           etiquetaSemantica: l.a11yRitmoHabito(
-                            _palabraRitmo(l, f.ritmoNivel),
+                            palabraRitmo(l, f.ritmoNivel),
                           ),
                         ),
                       ],

@@ -397,5 +397,21 @@
         "type": "String"
       }
     }
+  },
+  "ritmoExplicacion": "Tu ritmo junta el de todos tus hábitos. Sube cada vez que cumples, y si un día no llegas, baja poco a poco.",
+  "ritmoDeDondeSale": "DE DÓNDE SALE",
+  "a11yRitmoHabitoDetalle": "{nombre}: {palabra}, nivel {nivel} de 5. Ver detalle",
+  "@a11yRitmoHabitoDetalle": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      },
+      "palabra": {
+        "type": "String"
+      },
+      "nivel": {
+        "type": "int"
+      }
+    }
   }
 }

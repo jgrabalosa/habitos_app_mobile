@@ -264,5 +264,8 @@
   "dashFraseQuedaUno": "Falta um.",
   "dashFraseTodo": "Hoje já está. Aproveita o resto do dia.",
   "a11yRitmoGeneral": "O teu ritmo geral: {palabra}, nível {nivel} de 5",
-  "a11yRitmoHabito": "Ritmo: {palabra}"
+  "a11yRitmoHabito": "Ritmo: {palabra}",
+  "ritmoExplicacion": "O teu ritmo junta o de todos os teus hábitos. Sobe sempre que cumpres e, nos dias em que não chegas, desce só um pouco.",
+  "ritmoDeDondeSale": "DE ONDE VEM",
+  "a11yRitmoHabitoDetalle": "{nombre}: {palabra}, nível {nivel} de 5. Ver detalhe"
 }

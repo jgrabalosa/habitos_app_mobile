@@ -264,5 +264,8 @@
   "dashFraseQuedaUno": "Just one to go.",
   "dashFraseTodo": "That's today done. Enjoy the rest of it.",
   "a11yRitmoGeneral": "Your overall pace: {palabra}, level {nivel} of 5",
-  "a11yRitmoHabito": "Pace: {palabra}"
+  "a11yRitmoHabito": "Pace: {palabra}",
+  "ritmoExplicacion": "Your pace brings all your habits together. It rises each time you follow through, and on days you don't, it only dips a little.",
+  "ritmoDeDondeSale": "WHERE IT COMES FROM",
+  "a11yRitmoHabitoDetalle": "{nombre}: {palabra}, level {nivel} of 5. View details"
 }
