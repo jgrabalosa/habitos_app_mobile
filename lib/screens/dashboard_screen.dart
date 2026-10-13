@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
+// IndicadorNivel no está en el barrel de la 0.28.0: se importa directo
+// hasta que el core lo exporte.
+import 'package:norday_flutter_core/widgets/indicador_nivel.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_service_habitos.dart';
 import '../services/analytics_service.dart';
@@ -811,6 +814,10 @@ class _DashboardScreenState extends State<DashboardScreen>
       const SizedBox(height: 13),
       _cabecera(l, t, hoy, filasDia, hechosDia),
       const SizedBox(height: 16),
+      if (hoy.ritmoNivel != null) ...[
+        _tarjetaRitmo(l, t, hoy.ritmoNivel!, hoy.ritmoTendencia),
+        const SizedBox(height: 4),
+      ],
       if (sinNada)
         viendoHoy
             ? const EstadoVacioHoy()
@@ -969,7 +976,12 @@ class _DashboardScreenState extends State<DashboardScreen>
                 // que ya está todo.
                 Center(
                   child: BurbujaContexto(
-                    texto: _fraseProgreso(l, hechosDia, filasDia.length),
+                    texto: _fraseHoy(
+                      l,
+                      hechosDia,
+                      filasDia.length,
+                      avance ?? 0,
+                    ),
                     color: hechosDia == filasDia.length ? t.successText : null,
                   ),
                 ),
@@ -1051,13 +1063,95 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  String _fraseProgreso(AppLocalizations l, int hechos, int total) =>
-      switch (fraseProgreso(hechos, total)) {
-        FraseProgreso.primero => l.dashProgresoPrimero,
-        FraseProgreso.perfecto => l.dashProgresoPerfecto,
-        FraseProgreso.casi => l.dashProgresoCasi,
-        FraseProgreso.buenRitmo => l.dashProgresoBuenRitmo,
+  String _fraseHoy(AppLocalizations l, int hechos, int total, double avance) =>
+      switch (fraseHoy(hechos: hechos, total: total, avance: avance)) {
+        FraseHoy.nada => l.dashFraseNada,
+        FraseHoy.empezado => l.dashFraseEmpezado,
+        FraseHoy.llevas => l.dashFraseLlevas(hechos),
+        FraseHoy.quedaUno => l.dashFraseQuedaUno,
+        FraseHoy.todo => l.dashFraseTodo,
       };
+
+  /// La palabra del nivel de un ritmo, del 1 al 5.
+  String _palabraRitmo(AppLocalizations l, int nivel) => switch (nivel) {
+    <= 1 => l.ritmoNivel1,
+    2 => l.ritmoNivel2,
+    3 => l.ritmoNivel3,
+    4 => l.ritmoNivel4,
+    _ => l.ritmoNivel5,
+  };
+
+  /// La línea de la causa, según hacia dónde va el ritmo respecto a hace
+  /// siete días. El fallo no se nombra: si baja, se dice el siguiente paso.
+  String? _causaRitmo(AppLocalizations l, TendenciaRitmo? tendencia) =>
+      switch (tendencia) {
+        TendenciaRitmo.sube => l.ritmoSube,
+        TendenciaRitmo.igual => l.ritmoIgual,
+        TendenciaRitmo.baja => l.ritmoBaja,
+        null => null,
+      };
+
+  /// La tarjeta «TU RITMO»: el ritmo general, con su palabra, su causa y el
+  /// dibujo de la identidad. Se podrá tocar cuando exista el panel (F3).
+  Widget _tarjetaRitmo(
+    AppLocalizations l,
+    TokensContextuales t,
+    int nivel,
+    TendenciaRitmo? tendencia,
+  ) {
+    final palabra = _palabraRitmo(l, nivel);
+    final causa = _causaRitmo(l, tendencia);
+    final texto = Theme.of(context).textTheme;
+    return Semantics(
+      container: true,
+      label: l.a11yRitmoGeneral(palabra, nivel),
+      child: ExcludeSemantics(
+        child: TarjetaIdentidad(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l.ritmoTitulo,
+                        style: texto.labelSmall?.copyWith(
+                          color: t.textMuted,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      // La palabra en el color de los puntos, el mismo de las
+                      // estrellas llenas: es lo que se ve de lejos.
+                      Text(
+                        palabra,
+                        style: texto.titleLarge?.copyWith(
+                          color: t.points,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      if (causa != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          causa,
+                          style: texto.bodySmall?.copyWith(color: t.textMuted),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                IndicadorNivel(nivel: nivel, tamano: 20),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   /// Una fila de la sección del día: la del hábito en tránsito (ver
   /// `_arrancarTransito`) se pinta dentro de un `RanuraTransito` animado por
@@ -1160,12 +1254,26 @@ class _DashboardScreenState extends State<DashboardScreen>
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    // Como en la maqueta: debajo del nombre, la frecuencia
+                    // con lo que lleva y el dibujo de su ritmo.
+                    Row(
+                      children: [
                         ChipIdentidad(
                           texto: l.dashChipFrecuencia(
                             _frecuenciaLegible(l, h.frecuencia),
                             f.completados,
                             f.meta,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        IndicadorNivel(
+                          nivel: f.ritmoNivel,
+                          tamano: 11,
+                          etiquetaSemantica: l.a11yRitmoHabito(
+                            _palabraRitmo(l, f.ritmoNivel),
                           ),
                         ),
                       ],

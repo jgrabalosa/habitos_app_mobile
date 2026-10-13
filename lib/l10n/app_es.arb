@@ -357,5 +357,45 @@
         "type": "String"
       }
     }
+  },
+  "ritmoTitulo": "TU RITMO",
+  "ritmoNivel1": "Retomando",
+  "ritmoNivel2": "Cogiendo ritmo",
+  "ritmoNivel3": "Buen ritmo",
+  "ritmoNivel4": "Gran ritmo",
+  "ritmoNivel5": "Imparable",
+  "ritmoSube": "Sube respecto a la semana pasada.",
+  "ritmoIgual": "Igual que la semana pasada.",
+  "ritmoBaja": "Un paso hoy y vuelve a subir.",
+  "dashFraseNada": "Cuando quieras, empieza por uno.",
+  "dashFraseEmpezado": "Ya has empezado. Cada paso cuenta.",
+  "dashFraseLlevas": "Ya llevas {n}. Cada paso cuenta.",
+  "@dashFraseLlevas": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "dashFraseQuedaUno": "Te queda uno.",
+  "dashFraseTodo": "Hoy ya está. Disfruta el resto del día.",
+  "a11yRitmoGeneral": "Tu ritmo general: {palabra}, nivel {nivel} de 5",
+  "@a11yRitmoGeneral": {
+    "placeholders": {
+      "palabra": {
+        "type": "String"
+      },
+      "nivel": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yRitmoHabito": "Ritmo: {palabra}",
+  "@a11yRitmoHabito": {
+    "placeholders": {
+      "palabra": {
+        "type": "String"
+      }
+    }
   }
 }
