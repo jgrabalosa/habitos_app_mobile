@@ -62,6 +62,56 @@ class FilaHoy {
   /// Lo que lleva respecto a su meta, de 0 a 1. Las sesiones de más de un
   /// semanal no pasan de 1.
   double get fraccion => meta <= 0 ? 0.0 : (completados / meta).clamp(0.0, 1.0);
+
+  bool get esSemanal => habito.frecuencia == 'SEMANAL';
+
+  /// La fila con [pasos] de más (o de menos, si es negativo) que la pantalla
+  /// ya ha marcado en [fecha] y `/hoy` todavía no ha devuelto. Es una
+  /// aproximación hasta la siguiente carga, para que el contador, el check y
+  /// el mini-mapa cambien al momento; la verdad la trae la recarga.
+  ///
+  /// [delDia] dice en qué sección está: un semanal con día fijo en su día
+  /// cuenta como hecho si se hizo ese día, y fuera de él, al llegar a su
+  /// objetivo de la semana.
+  FilaHoy conPasos(int pasos, {required bool delDia, required String fecha}) {
+    if (pasos == 0) return this;
+    final nuevos = completados + pasos < 0 ? 0 : completados + pasos;
+    // En un diario, `completados` es lo de ese día: si queda algo, sigue
+    // hecho ese día. En un semanal se apunta uno por día como mucho.
+    final enFecha = pasos > 0 || (!esSemanal && nuevos > 0);
+    final cuenta = !esSemanal
+        ? nuevos >= meta
+        : (delDia ? enFecha : nuevos >= meta);
+    final fechas = {...fechasCompletadas};
+    if (enFecha) {
+      fechas.add(fecha);
+    } else {
+      fechas.remove(fecha);
+    }
+    return FilaHoy(
+      habito: habito,
+      completados: nuevos,
+      meta: meta,
+      hecho: cuenta,
+      completadoEnFecha: enFecha,
+      ritmoNivel: ritmoNivel,
+      fechasCompletadas: fechas,
+    );
+  }
+}
+
+/// El avance de la sección del día, de 0 a 1, con la misma regla que el
+/// backend: la media de lo que lleva cada fila, con lo hecho a medias; un
+/// semanal con día fijo, en su día, cuenta todo o nada. Null si no hay
+/// filas. Sirve para que el anillo y el fondo se muevan al marcar, antes de
+/// que llegue la recarga.
+double? avanceDelDia(List<FilaHoy> filas) {
+  if (filas.isEmpty) return null;
+  var suma = 0.0;
+  for (final f in filas) {
+    suma += f.esSemanal ? (f.hecho ? 1.0 : 0.0) : f.fraccion;
+  }
+  return suma / filas.length;
 }
 
 /// Una sección de Hoy: cuántos de sus hábitos cuentan como hechos, y sus

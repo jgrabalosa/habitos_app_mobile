@@ -88,7 +88,7 @@
   "detAyudaSatisfaccionEtiqueta": "Ayuda sobre la satisfacción",
   "detAyudaSatisfaccion": "Media de las estrellas que das al marcar este hábito.",
   "dashAyudaFlexiblesEtiqueta": "Ayuda sobre esta semana",
-  "dashAyudaFlexibles": "Semanales sin días fijos: hazlos cuando quieras hasta cumplir la meta.",
+  "dashAyudaFlexibles": "Los semanales que no tocan hoy: hazlos cuando quieras hasta cumplir el objetivo de la semana.",
   "mascotaAyudaAnimoEtiqueta": "Ayuda sobre el ánimo de Nori",
   "mascotaAyudaAnimo": "Nori está feliz el día que completas todos tus hábitos. Si no, se duerme; tras tres días sin completarlos, se pone triste.",
   "mascotaAyudaXpEtiqueta": "Ayuda sobre la experiencia",
@@ -329,5 +329,33 @@
   "recDeshacerCuerpo": "Vuelve a tocar el círculo y el día se desmarca.",
   "recMenu": "Ver tutorial",
   "recValoracionTitulo": "Cuenta qué tal fue",
-  "recValoracionCuerpo": "Las estrellas construyen tu media, y en la nota puedes dejar escrito cómo ha ido el día."
+  "recValoracionCuerpo": "Las estrellas construyen tu media, y en la nota puedes dejar escrito cómo ha ido el día.",
+  "dashSeccionHoy": "HOY",
+  "dashSeccionContador": "{hechos} de {total}",
+  "@dashSeccionContador": {
+    "placeholders": {
+      "hechos": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yPlegarSeccion": "Plegar la sección {seccion}",
+  "@a11yPlegarSeccion": {
+    "placeholders": {
+      "seccion": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yDesplegarSeccion": "Desplegar la sección {seccion}",
+  "@a11yDesplegarSeccion": {
+    "placeholders": {
+      "seccion": {
+        "type": "String"
+      }
+    }
+  }
 }

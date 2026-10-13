@@ -11,6 +11,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/habito.dart';
+import '../models/hoy.dart';
 import '../services/anclas_recorrido.dart';
 import '../services/recorrido_onboarding.dart';
 import '../widgets/estados_hoy.dart';
@@ -71,6 +72,9 @@ String? isoDeSemanaDesplazada(String? hoyIso, int offsetSemanas) {
   return base.toIso8601String().split('T')[0];
 }
 
+/// `AAAA-MM-DD` de [fecha], sin hora.
+String _iso(DateTime fecha) => fecha.toIso8601String().split('T')[0];
+
 class DashboardScreen extends StatefulWidget {
   /// True cuando Hoy es la pestaña visible. El `PageView` la mantiene viva,
   /// así que su `initState` no se repite al volver: este es el único aviso.
@@ -85,13 +89,29 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen>
     with SingleTickerProviderStateMixin {
-  List<Habito> _habitos = [];
-  final Map<int, Map<String, dynamic>> _progreso =
-      {}; // habitoId -> {completadoHoy, completadosPeriodo, meta}
-  final Map<int, Set<String>> _fechasCompletadas =
-      {}; // habitoId -> fechas ISO (mini-heatmap)
+  /// La pantalla entera, tal como la manda `/hoy` para el día que se mira.
+  /// Null hasta la primera respuesta.
+  HoyLeido? _hoy;
+
+  /// El día que se mira, `AAAA-MM-DD`. Null es "hoy": se deja que el servidor
+  /// decida qué día es hoy en la zona del usuario.
+  String? _fechaMirada;
+
+  /// Pasos marcados (positivos) o deshechos (negativos) en esta pantalla que
+  /// `/hoy` todavía no ha devuelto, por hábito. Se vacía en cada carga: es
+  /// sólo para que el check, el contador y el anillo cambien al momento.
+  final Map<int, int> _pasosPendientes = {};
+
+  /// Cada carga lleva un número. Si el usuario toca dos días seguidos, la
+  /// respuesta del primero no debe pisar la del segundo.
+  int _cargaEnCurso = 0;
+
   bool _loading = true;
   int _usuarioId = 0;
+
+  /// Las dos secciones se pueden plegar. Sólo dura mientras la pantalla vive.
+  bool _hoyPlegada = false;
+  bool _semanaPlegada = false;
 
   /// Días distintos en los que el usuario ha completado algún hábito. No es
   /// el número de checks: varios el mismo día cuentan como uno. Mide que
@@ -105,9 +125,9 @@ class _DashboardScreenState extends State<DashboardScreen>
   /// la tercera no la ha dejado, insistir sólo molesta.
   static const List<int> _hitosResena = [3, 15, 30];
 
-  /// El último día en que salió el cierre del día, en `AAAA-MM-DD`: sale una
-  /// sola vez al día aunque se desmarque y se vuelva a marcar. Va por
-  /// usuario, así que una cuenta nueva en el mismo móvil tiene el suyo.
+  /// El último día en que se cerró el día, en `AAAA-MM-DD`: una sola vez al
+  /// día aunque se desmarque y se vuelva a marcar. Va por usuario, así que
+  /// una cuenta nueva en el mismo móvil tiene el suyo.
   String _ultimaFechaCierre = '';
 
   /// Entre el último check del día y el final de su secuencia. Mientras
@@ -117,28 +137,8 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   String get _claveCierre => 'cierre_dia_fecha_$_usuarioId';
 
-  /// Los 7 días de la semana (lunes→domingo), crudos del backend, para la
-  /// tira de navegación. `_diaSeleccionado` e `_indiceHoy` son índices dentro
-  /// de esta lista, no días de la semana ISO.
-  List<Map<String, dynamic>> _dias = [];
-  List<Map<String, dynamic>> _flexibles = [];
-  int _diaSeleccionado = 0;
-  int _indiceHoy = 0;
-
-  /// Hoy según el servidor, en la zona del usuario. Null hasta la primera
-  /// respuesta de /semana. Es la única fuente de "qué día es hoy" para esta
-  /// pantalla: el reloj del dispositivo puede estar en otra zona.
-  String? _hoyIso;
-
-  /// Qué semana se está mirando: 0 es la de hoy, -1 la anterior, +1 la
-  /// siguiente. Sin límite a propósito: cada semana es una sola llamada, el
-  /// backend acepta cualquier lunes, y una flecha apagada sin motivo visible
-  /// confunde más de lo que protege. El freno es el botón de volver a hoy.
-  int _offsetSemana = 0;
-
-  /// Si la última carga falló. Antes esto sólo era un SnackBar que se iba solo
-  /// y una lista vacía detrás, que se lee igual que "no tienes hábitos": el
-  /// usuario no podía distinguir un fallo de red de una cuenta recién creada.
+  /// Si la última carga falló. Un SnackBar solo se iba y dejaba una lista
+  /// vacía detrás, que se lee igual que "no tienes hábitos".
   bool _errorCarga = false;
 
   /// El tránsito visual de una fila de "pendientes" a "completados" al
@@ -169,20 +169,12 @@ class _DashboardScreenState extends State<DashboardScreen>
     _recargarDesdeApp();
   }
 
-  /// Al volver a la app desde fuera se recarga todo porque puede haber
-  /// pasado la medianoche. La guarda final evita dejar el día seleccionado
-  /// en -1 si la semana no se ha podido cargar, porque el build indexa la
-  /// lista directamente.
+  /// Al volver a la app desde fuera se recarga todo y se vuelve a hoy, porque
+  /// puede haber pasado la medianoche.
   Future<void> _recargarDesdeApp() async {
     if (!mounted) return;
-    setState(() => _offsetSemana = 0);
+    _fechaMirada = null;
     await _cargarDatos();
-    if (!mounted) return;
-    if (_indiceHoy >= 0 &&
-        _indiceHoy < _dias.length &&
-        _diaSeleccionado != _indiceHoy) {
-      setState(() => _diaSeleccionado = _indiceHoy);
-    }
   }
 
   @override
@@ -194,25 +186,12 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   /// Al volver a la pestaña se vuelve siempre al día de hoy. Sin esto, el día
-  /// y la semana que estuvieras mirando sobreviven al cambio de pestaña,
-  /// porque la pantalla no se destruye.
+  /// que estuvieras mirando sobrevive al cambio de pestaña, porque la
+  /// pantalla no se destruye.
   Future<void> _volverAHoy() async {
-    if (!mounted) return;
-    if (_offsetSemana == 0) {
-      // La semana de hoy ya está en pantalla: basta con mover el día. Sin
-      // recarga, que no hace falta y parpadearía.
-      if (_indiceHoy >= 0 && _diaSeleccionado != _indiceHoy) {
-        setState(() => _diaSeleccionado = _indiceHoy);
-      }
-      return;
-    }
-    // Otra semana: hay que traerla. No se toca `_diaSeleccionado` a mano
-    // porque no hace falta: la conservación por fecha de `_cargarSemana`
-    // buscará un día que es de la semana vieja, no lo encontrará, y caerá
-    // sola en `_indiceHoy`. Ponerlo a -1 aquí reventaría el build de en
-    // medio, que indexa `_dias[_diaSeleccionado]` sin guarda.
-    setState(() => _offsetSemana = 0);
-    await _cargarSemana();
+    if (!mounted || _fechaMirada == null) return;
+    _fechaMirada = null;
+    await _cargarHoy();
   }
 
   @override
@@ -223,23 +202,8 @@ class _DashboardScreenState extends State<DashboardScreen>
     super.dispose();
   }
 
-  /// Mientras la carga inicial está en vuelo, `_publicarProgreso` no publica.
-  ///
-  /// `_cargarDatos` lanza tres cargas en paralelo y dos de ellas publican al
-  /// terminar: `_cargarSemana` y `_cargarHabitos`. Es una carrera, y si gana
-  /// la semana el estado que se publica es `_dias` lleno con `_habitos` aún
-  /// vacío, o sea `total: 0`. Con `total` a cero la constelación no dibuja
-  /// nada, las burbujas de Dulce ninguna y la ciudad apaga las ventanas;
-  /// cuando llegan los hábitos se publica otra vez y el fondo entero aparece
-  /// de golpe. Ese es el parpadeo.
-  ///
-  /// No se quitan las llamadas de dentro de cada carga porque `_irASemana` y
-  /// el reintento del panel de error las llaman por su cuenta y sí deben
-  /// publicar.
-  bool _cargaInicialEnVuelo = false;
-
-  /// Los hábitos han cambiado en otra pestaña. Se recarga todo, no sólo la
-  /// lista de hoy: dar de alta un hábito cambia también la tira de la semana.
+  /// Los hábitos han cambiado en otra pestaña: dar de alta uno cambia las
+  /// secciones y la tira.
   void _alCambiarHabitos() {
     if (!mounted) return;
     _cargarDatos();
@@ -251,69 +215,75 @@ class _DashboardScreenState extends State<DashboardScreen>
     setState(() {
       _usuarioId = usuario['usuarioId'] ?? 0;
     });
-    // En paralelo: el estado de reseña no depende de los hábitos, y la
-    // semana es un complemento de navegación, no una dependencia de Hoy.
-    _cargaInicialEnVuelo = true;
-    try {
-      await Future.wait([
-        _cargarHabitos(),
-        _cargarEstadoResena(),
-        _cargarEstadoCierre(),
-        _cargarSemana(),
-      ]);
-    } finally {
-      // En `finally` a propósito: las tres cargas capturan sus propios
-      // errores, pero si alguna dejara escapar uno, el cerrojo no puede
-      // quedarse echado o la pantalla no volvería a publicar nunca.
-      _cargaInicialEnVuelo = false;
-      _publicarProgreso();
-    }
+    // En paralelo: el estado de reseña y el del cierre no dependen de Hoy.
+    await Future.wait([
+      _cargarHoy(),
+      _cargarEstadoResena(),
+      _cargarEstadoCierre(),
+    ]);
   }
 
-  /// La semana completa (lunes→domingo) para la tira de navegación y la fila
-  /// de flexibles. Es un complemento de Hoy, no su fuente: si falla, Hoy
-  /// sigue funcionando igual con los datos de [_cargarHabitos] — sólo no se
-  /// pinta la tira (`_dias` se queda vacía). Por eso no hay SnackBar propio:
-  /// uno ya lo pone [_cargarHabitos] si el fallo es de red en general.
-  Future<void> _cargarSemana() async {
+  /// Trae `/hoy` para el día que se mira. Es la única fuente de la pantalla:
+  /// las dos secciones, la tira, el avance y los niveles de ritmo.
+  Future<void> _cargarHoy() async {
+    final carga = ++_cargaEnCurso;
     try {
-      // La primera carga no manda `desde`: el backend responde con la semana
-      // de hoy en la zona del usuario y de paso declara cuál es ese hoy. A
-      // partir de ahí las semanas se cuentan desde esa fecha.
-      final desde = isoDeSemanaDesplazada(_hoyIso, _offsetSemana);
-      final data = await ApiServiceHabitos.getSemana(_usuarioId, desde: desde);
-
-      // Lectura, hoy y día seleccionado: ver dashboard_logica.dart.
-      final semana = leerSemana(data, hoyAnterior: _hoyIso);
-      final fechasNuevas = semana.fechas;
-      final indiceHoy = indiceDeHoy(fechasNuevas, semana.hoyIso);
-      // Se lee de `_dias`, la lista vieja, antes de sustituirla.
-      final seleccion = diaASeleccionar(
-        fechasAnteriores: _dias.map((d) => d['fecha'] as String).toList(),
-        seleccionAnterior: _diaSeleccionado,
-        fechasNuevas: fechasNuevas,
-        indiceHoy: indiceHoy,
+      final data = await ApiServiceHabitos.getHoy(
+        _usuarioId,
+        fecha: _fechaMirada,
       );
-
-      if (!mounted) return;
+      final hoy = leerHoy(data);
+      if (!mounted || carga != _cargaEnCurso) return;
       setState(() {
-        _dias = semana.dias;
-        _flexibles = semana.flexibles;
-        _hoyIso = semana.hoyIso;
-        _indiceHoy = indiceHoy;
-        _diaSeleccionado = seleccion;
+        _hoy = hoy;
+        _pasosPendientes.clear();
+        _loading = false;
+        _errorCarga = false;
       });
       _publicarProgreso();
-    } catch (_) {
-      // Ver comentario del método: Hoy no depende de esto.
+    } catch (e) {
+      if (!mounted || carga != _cargaEnCurso) return;
+      // El aviso efímero dice QUÉ ha fallado. El panel de error sólo sale si
+      // no hay nada que enseñar: con datos de una carga anterior, mejor los
+      // datos viejos que un panel de error.
+      setState(() {
+        _loading = false;
+        _errorCarga = _hoy == null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            MensajesError.de(
+              context,
+              e,
+              generico: AppLocalizations.of(context)!.dashSinConexion,
+            ),
+          ),
+        ),
+      );
     }
   }
 
-  /// Cambia de semana. Recarga sólo la semana: los hábitos de hoy no dependen
-  /// de qué semana se esté mirando.
-  Future<void> _irASemana(int offset) async {
-    setState(() => _offsetSemana = offset);
-    await _cargarSemana();
+  /// Mira otro día. Hoy se pide sin fecha, para que lo decida el servidor.
+  Future<void> _irADia(String fecha) async {
+    final hoy = _hoy;
+    setState(() {
+      _fechaMirada = (hoy != null && fecha == hoy.hoy) ? null : fecha;
+    });
+    await _cargarHoy();
+  }
+
+  /// El mismo día de la semana, [semanas] semanas antes o después. Sin
+  /// límite a propósito: cada semana es una sola llamada, y una flecha
+  /// apagada sin motivo visible confunde más de lo que protege. El freno es
+  /// el botón de volver a hoy.
+  Future<void> _moverSemanas(int semanas) async {
+    final hoy = _hoy;
+    if (hoy == null) return;
+    final base = DateTime.parse(hoy.fecha);
+    await _irADia(
+      _iso(DateTime(base.year, base.month, base.day + 7 * semanas)),
+    );
   }
 
   Future<void> _cargarEstadoCierre() async {
@@ -321,7 +291,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       final prefs = await SharedPreferences.getInstance();
       _ultimaFechaCierre = prefs.getString(_claveCierre) ?? '';
     } catch (_) {
-      // Si falla, como mucho el cierre saldría otra vez hoy.
+      // Si falla, como mucho el día se cerraría otra vez hoy.
     }
   }
 
@@ -342,57 +312,40 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
-  Future<void> _cargarHabitos() async {
-    try {
-      final dashboard = await ApiServiceHabitos.getDashboard(_usuarioId);
-
-      final habitos = <Habito>[];
-      for (var item in dashboard) {
-        final habito = Habito.fromJson(item['habito']);
-        habitos.add(habito);
-
-        _progreso[habito.habitoId] = {
-          'completadoHoy': item['completadoHoy'],
-          'completadosPeriodo': item['completadosPeriodo'],
-          'meta': habito.meta,
-        };
-
-        final List<dynamic> fechas = item['fechasCompletadas'] ?? [];
-        _fechasCompletadas[habito.habitoId] = fechas.cast<String>().toSet();
-      }
-
-      if (!mounted) return;
-      setState(() {
-        _habitos = habitos;
-        _loading = false;
-        _errorCarga = false;
-      });
-      _publicarProgreso();
-    } catch (e) {
-      if (!mounted) return;
-      // El aviso efímero se queda: dice QUÉ ha fallado. Lo que añade el estado
-      // es que la pantalla siga diciéndolo cuando el SnackBar se haya ido.
-      // Sólo se pinta si no hay nada que enseñar: con datos de una carga
-      // anterior, mejor los datos viejos que un panel de error.
-      setState(() {
-        _loading = false;
-        _errorCarga = _habitos.isEmpty;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            MensajesError.de(
-              context,
-              e,
-              generico: AppLocalizations.of(context)!.dashSinConexion,
-            ),
-          ),
-        ),
-      );
-    }
+  /// La fila tal como se pinta: la de `/hoy` con los pasos que aún no ha
+  /// devuelto la recarga.
+  FilaHoy _vista(FilaHoy f, {required bool delDia}) {
+    final hoy = _hoy;
+    final pasos = _pasosPendientes[f.habito.habitoId] ?? 0;
+    if (hoy == null || pasos == 0) return f;
+    return f.conPasos(pasos, delDia: delDia, fecha: hoy.fecha);
   }
 
-  bool _estaHecho(Habito h) => estaHecho(h, _progreso[h.habitoId]);
+  List<FilaHoy> _filasDelDia() => [
+    for (final f in _hoy?.delDia.habitos ?? const <FilaHoy>[])
+      _vista(f, delDia: true),
+  ];
+
+  List<FilaHoy> _filasDeLaSemana() => [
+    for (final f in _hoy?.deLaSemana.habitos ?? const <FilaHoy>[])
+      _vista(f, delDia: false),
+  ];
+
+  /// La fila de un hábito, venga de la sección que venga.
+  FilaHoy? _filaDe(int habitoId) {
+    for (final f in [..._filasDelDia(), ..._filasDeLaSemana()]) {
+      if (f.habito.habitoId == habitoId) return f;
+    }
+    return null;
+  }
+
+  /// Si se está mirando hoy y todo lo de la sección del día está hecho.
+  bool _diaCompleto() {
+    final hoy = _hoy;
+    if (hoy == null || !hoy.viendoHoy) return false;
+    final filas = _filasDelDia();
+    return filas.isNotEmpty && filas.every((f) => f.hecho);
+  }
 
   /// Arranca el tránsito visual de la fila de `habitoId` de "pendientes" a
   /// "completados". Devuelve la duración real del gesto (para que quien
@@ -409,8 +362,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     _ctrlTransito = null;
     _habitoEnTransito = null;
 
-    // Mismo camino que ya usa este fichero para llegar a la identidad
-    // equipada (ver _miniHeatmap).
     final id = identidad(context);
     // Dos fases —hundimiento y traslado— sobre el mismo controller:
     // RanuraTransito reparte 0.0-0.5 y 0.5-1.0 de su propio progreso.
@@ -430,27 +381,30 @@ class _DashboardScreenState extends State<DashboardScreen>
     return duracion;
   }
 
-  Future<void> _completar(int habitoId, {DateTime? fecha}) async {
+  /// Marca un paso del hábito el día que se mira.
+  Future<void> _completar(int habitoId) async {
+    final hoy = _hoy;
+    final antes = _filaDe(habitoId);
+    if (hoy == null || antes == null) return;
+
+    // Un semanal se apunta una vez por día como mucho.
+    if (antes.esSemanal && antes.completadoEnFecha) return;
+
+    final enDelDia = hoy.delDia.habitos.any(
+      (f) => f.habito.habitoId == habitoId,
+    );
+    final esHoy = hoy.viendoHoy;
+
     List<String> logrosOtorgados;
     int puntosGanados;
     int? registroId;
     bool mostrarValoracion;
-    final habitoActual = _habitos.firstWhere((h) => h.habitoId == habitoId);
-    // Sin fecha explícita se completa "hoy", y quien decide cuál es hoy es
-    // el servidor: se manda `fecha: null` y lo resuelve él en la zona del
-    // usuario. Con fecha explícita se compara contra el hoy declarado.
-    final hoyIso = _hoyIso;
-    final fechaIso = fecha?.toIso8601String().split('T')[0];
-    final esHoy = fechaIso == null || fechaIso == hoyIso;
-    if (esHoy &&
-        habitoActual.frecuencia == 'SEMANAL' &&
-        _progreso[habitoId]?['completadoHoy'] == true) {
-      return; // ya está hecho hoy: no se puede volver a completar
-    }
     try {
+      // Hoy se manda sin fecha y lo resuelve el servidor en la zona del
+      // usuario; otro día, con la suya.
       final resultado = await ApiServiceHabitos.completarHabito(
         habitoId,
-        fecha: esHoy ? null : fechaIso,
+        fecha: esHoy ? null : hoy.fecha,
       );
       logrosOtorgados = resultado['logros'];
       puntosGanados = resultado['puntosGanados'];
@@ -478,68 +432,45 @@ class _DashboardScreenState extends State<DashboardScreen>
     solicitarRefrescoMascota();
 
     // Analytics en segundo plano: no bloquea la celebración
-    AnalyticsHabitos.habitoCompletado(habitoActual.frecuencia);
+    AnalyticsHabitos.habitoCompletado(antes.habito.frecuencia);
 
     // Feedback háptico + sonido
     HapticFeedback.mediumImpact();
     SonidoService.reproducir('completar');
 
-    if (!esHoy) {
-      // El estado local de hoy no representa la fecha retroactiva. Recargamos
-      // la semana para que el check del día objetivo y sus contadores sean los
-      // que manda el servidor.
-      await _cargarSemana();
-    }
+    // El paso cuenta ya en pantalla, sin esperar a la recarga: el cambio
+    // dispara la animación del check.
+    if (!mounted) return;
+    setState(() {
+      _pasosPendientes[habitoId] = (_pasosPendientes[habitoId] ?? 0) + 1;
+    });
+    final despues = _filaDe(habitoId);
 
-    // Actualización local inmediata (sin esperar al servidor), solo para hoy.
-    final p = _progreso[habitoId];
-    if (esHoy && p != null) {
-      p['completadoHoy'] = true;
-      p['completadosPeriodo'] = (p['completadosPeriodo'] ?? 0) + 1;
-    }
-    if (esHoy && hoyIso != null) _fechasCompletadas[habitoId]?.add(hoyIso);
-    setState(() {}); // el cambio de progreso dispara la animación del check
-
-    // El tránsito de la fila a "completados" sólo tiene sentido si se ve hoy
-    // y si queda al menos otra pendiente detrás: si esta era la última, ese
-    // caso lo trata otra tarea y aquí se comporta exactamente como hoy.
-    final quedanPendientes = _habitos.any(
-      (h) => h.habitoId != habitoId && !_estaHecho(h),
+    // El tránsito de la fila a "completados" sólo tiene sentido en la sección
+    // del día de hoy, si con este paso la fila pasa a hecha y queda al menos
+    // otra pendiente detrás.
+    final pasaAHecha = !antes.hecho && (despues?.hecho ?? false);
+    final quedanPendientes = _filasDelDia().any(
+      (f) => f.habito.habitoId != habitoId && !f.hecho,
     );
-    final Duration duracionTransito = esHoy && quedanPendientes
+    final Duration duracionTransito =
+        esHoy && enDelDia && pasaAHecha && quedanPendientes
         ? _arrancarTransito(habitoId)
         : Duration.zero;
 
-    // Si con este check el día queda completo, el cierre espera al final de
+    // Si con este paso el día queda completo, el cierre espera al final de
     // la secuencia (ver `_cierrePendiente`).
-    final diaCompleto =
-        esHoy && _habitos.isNotEmpty && _habitos.every(_estaHecho);
+    final diaCompleto = esHoy && enDelDia && _diaCompleto();
     if (diaCompleto) _cierrePendiente = true;
 
     _publicarProgreso();
 
-    // Sincronización real en segundo plano (por si el conteo local se desviara)
-    ApiServiceHabitos.getProgresoHoy(habitoId)
-        .then((prog) {
-          if (mounted) {
-            setState(() {
-              _progreso[habitoId] = prog;
-            });
-            // El servidor puede corregir el conteo optimista, y si esa corrección
-            // cruza la meta el hábito pasa a contar como hecho. Sin esto la
-            // estrella no se encendería hasta el siguiente refresco.
-            _publicarProgreso();
-          }
-          // Silencio a propósito: el servidor ya aceptó el completado y esto sólo
-          // corrige el conteo optimista. Si falla, se queda el local hasta el
-          // siguiente refresco; avisar de un error aquí confundiría.
-        })
-        .catchError((_) {});
+    // La verdad la trae /hoy: contadores, avance, tira y ritmo. En segundo
+    // plano, sin bloquear la celebración.
+    _cargarHoy();
 
-    // Si arrancó el tránsito de la fila (hundimiento + traslado), la
-    // celebración espera a que termine: con la pausa fija de 400 ms de antes
-    // entraría a mitad del gesto. Sin tránsito (última pendiente, "reducir
-    // movimiento", o un completado que no es de hoy) se conserva esa pausa.
+    // Si arrancó el tránsito de la fila, la celebración espera a que termine.
+    // Sin tránsito se conserva una pausa corta.
     await Future.delayed(
       duracionTransito > Duration.zero
           ? duracionTransito
@@ -550,10 +481,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     if (logrosOtorgados.isNotEmpty) {
       final recorrido = RecorridoOnboarding.instancia;
       if (recorrido.activo) {
-        // Durante el recorrido guiado se guarda y sale al final. El paso del
-        // check deja el hueco abierto, así que se puede completar un hábito
-        // ahí mismo; la celebración es una ruta y quedaría bajo el velo, sin
-        // poder cerrarse.
+        // Durante el recorrido guiado se guarda y sale al final.
         recorrido.aplazarCelebracion(logrosOtorgados);
       } else {
         await CelebracionService.mostrar(logrosOtorgados);
@@ -563,10 +491,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       AnimacionPuntos.mostrar(context, puntosGanados);
     }
 
-    // El recorrido guiado pasa aquí del check a la valoración. Si este
-    // completado no abre la hoja —el backend sólo la pide al llegar a la meta
-    // del día, y siempre en los semanales— se entra y se sale del paso sin
-    // que llegue a verse, porque no habría nada a lo que apuntar.
+    // El recorrido guiado pasa aquí del check a la valoración.
     final recorridoGuiado = RecorridoOnboarding.instancia;
     final enRecorrido = recorridoGuiado.activo;
     if (enRecorrido) recorridoGuiado.avanzar();
@@ -603,15 +528,14 @@ class _DashboardScreenState extends State<DashboardScreen>
     _registrarDiaDeUso();
   }
 
-  /// El cierre del día, al final de toda la secuencia del último check: la
-  /// ceremonia —que sólo existe en Profundidad y la decide el core— y
-  /// después el día queda cerrado. Una vez al día, y nunca en el recorrido
-  /// guiado. Va antes de la reseña de Play para que no se coma el momento.
+  /// El cierre del día, al final de toda la secuencia del último check: el
+  /// día queda cerrado (en Profundidad, la constelación realzada). Una vez al
+  /// día, y nunca en el recorrido guiado. Va antes de la reseña de Play para
+  /// que no se coma el momento.
   Future<void> _cerrarDia({required bool enRecorrido}) async {
     final hoy = _fechaDeHoy();
-    final sigueCompleto = _habitos.isNotEmpty && _habitos.every(_estaHecho);
     if (mounted &&
-        sigueCompleto &&
+        _diaCompleto() &&
         !enRecorrido &&
         !RecorridoOnboarding.instancia.activo &&
         hoy != _ultimaFechaCierre) {
@@ -648,58 +572,44 @@ class _DashboardScreenState extends State<DashboardScreen>
         '${ahora.day.toString().padLeft(2, '0')}';
   }
 
-  /// Deshace el último completado de hoy.
+  /// Deshace el último paso del hábito el día que se mira.
   ///
-  /// El `registroId` no viaja en el dashboard —`DashboardHabitoDTO` no lo
-  /// lleva— así que se pide en el momento. Es una acción rara, y así no hay un
-  /// id guardado que se quede rancio si el hábito se completó desde otro sitio.
+  /// El `registroId` no viaja en `/hoy`, así que se busca en el momento entre
+  /// los registros de ese día. Es una acción rara, y así no hay un id
+  /// guardado que se quede rancio si el hábito se marcó desde otro sitio.
   Future<void> _deshacer(int habitoId) async {
     final l = AppLocalizations.of(context)!;
-    // Hoy lo declara el servidor, no el dispositivo: `_fechasCompletadas`
-    // guarda fechas del servidor, y buscar en ese conjunto con la fecha
-    // local falla sin dar error cuando las zonas no coinciden. Es null sólo
-    // antes de la primera respuesta de /semana; en ese caso no se toca el
-    // conjunto y el resto del método funciona igual.
-    final hoy = _hoyIso;
-
-    // Estado previo, para poder volver si el servidor dice que no.
-    final p = _progreso[habitoId];
-    final int completadosAntes = p?['completadosPeriodo'] ?? 0;
-    final bool completadoHoyAntes = p?['completadoHoy'] == true;
-    final bool teniaFechaHoy =
-        hoy != null && (_fechasCompletadas[habitoId]?.contains(hoy) ?? false);
+    final hoy = _hoy;
+    if (hoy == null) return;
+    final fecha = hoy.fecha;
 
     // Apagado local inmediato: el usuario ha tocado un check marcado y lo que
     // espera es verlo apagarse, no esperar a la red.
-    if (p != null) {
-      p['completadoHoy'] = false;
-      p['completadosPeriodo'] = completadosAntes > 0 ? completadosAntes - 1 : 0;
-    }
-    if (hoy != null) _fechasCompletadas[habitoId]?.remove(hoy);
-    setState(() {});
+    setState(() {
+      _pasosPendientes[habitoId] = (_pasosPendientes[habitoId] ?? 0) - 1;
+    });
     _publicarProgreso();
     HapticFeedback.selectionClick();
 
     try {
       final registros = await ApiServiceHabitos.getRegistrosHabito(habitoId);
-      int? ultimo;
-      for (final r in registros) {
-        final int id = r['registroId'];
-        if (ultimo == null || id > ultimo) ultimo = id;
+      final candidatos = registros
+          .cast<Map<String, dynamic>>()
+          .where((r) => r['fecha'] == fecha)
+          .toList();
+      if (candidatos.isEmpty) {
+        throw Exception('No hay un registro en esa fecha');
       }
-      if (ultimo == null) {
-        throw Exception('El hábito no tiene registros que deshacer');
-      }
-      await ApiServiceHabitos.deshacerRegistro(ultimo);
+      final registro = candidatos.reduce(
+        (a, b) => (a['registroId'] as int) > (b['registroId'] as int) ? a : b,
+      );
+      await ApiServiceHabitos.deshacerRegistro(registro['registroId'] as int);
     } catch (e) {
-      // El completado sigue vivo en el servidor: se restaura lo local.
-      if (p != null) {
-        p['completadoHoy'] = completadoHoyAntes;
-        p['completadosPeriodo'] = completadosAntes;
-      }
-      if (teniaFechaHoy) _fechasCompletadas[habitoId]?.add(hoy);
+      // El paso sigue vivo en el servidor: se devuelve lo local.
       if (!mounted) return;
-      setState(() {});
+      setState(() {
+        _pasosPendientes[habitoId] = (_pasosPendientes[habitoId] ?? 0) + 1;
+      });
       _publicarProgreso();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -711,60 +621,12 @@ class _DashboardScreenState extends State<DashboardScreen>
       return;
     }
 
-    // Deshacer devuelve experiencia a la mascota y rehace la racha: quien la
-    // esté pintando no se entera solo.
+    // Deshacer devuelve experiencia a la mascota: quien la esté pintando no
+    // se entera solo.
     solicitarRefrescoMascota();
 
-    // Y el servidor manda sobre el conteo optimista, igual que al completar.
-    ApiServiceHabitos.getProgresoHoy(habitoId)
-        .then((prog) {
-          if (mounted) {
-            setState(() {
-              _progreso[habitoId] = prog;
-            });
-            _publicarProgreso();
-          }
-          // Mismo silencio que al completar: el deshacer ya está hecho en el
-          // servidor y esto sólo corrige el conteo.
-        })
-        .catchError((_) {});
-  }
-
-  /// Deshace un registro de un día que no es hoy. No hacemos optimismo sobre
-  /// los mapas de hoy: el servidor debe validar que el registro sea el último
-  /// y, tras el rollback, la semana se vuelve a cargar completa.
-  Future<void> _deshacerFecha(int habitoId, DateTime fecha) async {
-    final l = AppLocalizations.of(context)!;
-    final fechaIso = fecha.toIso8601String().split('T')[0];
-    try {
-      final registros = await ApiServiceHabitos.getRegistrosHabito(habitoId);
-      final candidatos = registros
-          .cast<Map<String, dynamic>>()
-          .where((r) => r['fecha'] == fechaIso)
-          .toList();
-      final registro = candidatos.isEmpty
-          ? <String, dynamic>{}
-          : candidatos.reduce(
-              (a, b) =>
-                  (a['registroId'] as int) > (b['registroId'] as int) ? a : b,
-            );
-      final registroId = registro['registroId'];
-      if (registroId is! int) {
-        throw Exception('No hay un registro en esa fecha');
-      }
-      await ApiServiceHabitos.deshacerRegistro(registroId);
-      solicitarRefrescoMascota();
-      await Future.wait([_cargarSemana(), _cargarHabitos()]);
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            MensajesError.de(context, e, generico: l.dashDeshacerError),
-          ),
-        ),
-      );
-    }
+    // Y el servidor manda sobre lo local, igual que al completar.
+    await _cargarHoy();
   }
 
   /// Suma un día de uso si hoy no estaba contado, y pide la reseña si con
@@ -829,128 +691,41 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  /// Publica en el core cuántos hábitos hay y cuántos están hechos en el día
-  /// que la pantalla está mostrando, para que el fondo de la identidad pueda
-  /// dibujar con ello.
+  /// Publica en el core el progreso del día que se mira, para que el fondo de
+  /// la identidad dibuje con él: cuántos hay en la sección del día, cuántos
+  /// están hechos y el avance con lo hecho a medias.
   ///
-  /// Se llama desde los puntos donde el dato cambia de verdad —las cargas, el
-  /// completar y el cambio de día en la tira— y NUNCA desde `build`: notificar
-  /// a un `ValueNotifier` durante un `build` es excepción o frame perdido.
-  ///
-  /// Hay dos caminos a propósito, y no son intercambiables. Para hoy la verdad
-  /// está en `_habitos` + `_estaHecho`, que conoce metas y periodos. Para
-  /// cualquier otro día de la tira la verdad es la clave `'completado'` de
-  /// `_dias`, que viene resuelta del backend: `_progreso` y
-  /// `_fechasCompletadas` son de hoy y no valen para otro día.
+  /// Se llama desde los puntos donde el dato cambia de verdad —las cargas,
+  /// marcar y deshacer— y NUNCA desde `build`: notificar a un
+  /// `ValueNotifier` durante un `build` es excepción o frame perdido.
   void _publicarProgreso() {
-    // Ver `_cargaInicialEnVuelo`: durante la carga inicial se publica una
-    // sola vez, al final, en vez de una por cada carga que acabe.
-    if (_cargaInicialEnVuelo) return;
-
-    // Sin semana cargada la pantalla sólo enseña hoy, y no hay ninguna fecha
-    // de la tira que consultar: la de hoy la pone el reloj.
-    if (_dias.isEmpty) {
-      publicarProgresoDia(
-        hechos: _habitos.where(_estaHecho).length,
-        total: _habitos.length,
-        fecha: DateTime.now(),
-      );
-      _publicarCierre();
-      return;
-    }
-
-    final dia = _dias[_diaSeleccionado];
-    final fecha = DateTime.parse(dia['fecha'] as String);
-
-    if (_diaSeleccionado == _indiceHoy) {
-      publicarProgresoDia(
-        hechos: _habitos.where(_estaHecho).length,
-        total: _habitos.length,
-        fecha: fecha,
-      );
-      _publicarCierre();
-      return;
-    }
-
-    final habitosDia = dia['habitos'] as List<Map<String, dynamic>>;
+    final hoy = _hoy;
+    if (hoy == null) return;
+    final filas = _filasDelDia();
     publicarProgresoDia(
-      hechos: habitosDia.where((h) => h['completado'] == true).length,
-      total: habitosDia.length,
-      fecha: fecha,
+      hechos: filas.where((f) => f.hecho).length,
+      total: filas.length,
+      fecha: DateTime.parse(hoy.fecha),
+      avance: avanceDelDia(filas) ?? 0,
     );
-    // Otro día de la tira, aunque esté completo, se ve normal.
-    marcarDiaCerrado(false);
+    if (hoy.viendoHoy) {
+      _publicarCierre();
+    } else {
+      // Otro día de la tira, aunque esté completo, se ve normal.
+      marcarDiaCerrado(false);
+    }
   }
 
-  /// Hoy, completo y con su secuencia terminada, es un día cerrado. Sólo se
-  /// llama cuando la pantalla muestra hoy.
+  /// Hoy, completo y con su secuencia terminada, es un día cerrado.
   void _publicarCierre() {
-    marcarDiaCerrado(
-      !_cierrePendiente && _habitos.isNotEmpty && _habitos.every(_estaHecho),
-    );
+    marcarDiaCerrado(!_cierrePendiente && _diaCompleto());
   }
 
   @override
   Widget build(BuildContext context) {
     final t = tokens(context);
     final l = AppLocalizations.of(context)!;
-
-    // _habitos ya viene filtrado por el backend (sólo lo que toca hoy), así
-    // que ya no hace falta apartar aquí lo que no toca: todo lo que llega
-    // cuenta para el resumen del día.
-    // El hábito en tránsito (ver _arrancarTransito) se queda en su posición
-    // exacta de "pendientes" aunque _estaHecho ya diga true, y aparece
-    // ADEMÁS al final de "completados": las dos apariciones conviven
-    // mientras dura el gesto, una encogiéndose y otra creciendo. Ninguna de
-    // las dos listas se reordena para conseguirlo.
-    final pendientes = <Habito>[];
-    final completados = <Habito>[];
-    for (final h in _habitos) {
-      if (_estaHecho(h) && h.habitoId != _habitoEnTransito) {
-        completados.add(h);
-      } else {
-        pendientes.add(h);
-      }
-    }
-    if (_habitoEnTransito != null) {
-      final indiceEnTransito = _habitos.indexWhere(
-        (h) => h.habitoId == _habitoEnTransito,
-      );
-      if (indiceEnTransito != -1) completados.add(_habitos[indiceEnTransito]);
-    }
-    final totalHoy = _habitos.length;
-
-    // Mientras la semana no ha cargado (o falló), la pantalla se comporta
-    // exactamente como antes: sólo Hoy, sin tira ni contenido de otro día.
-    final bool semanaLista = _dias.isNotEmpty;
-    final bool viendoHoy = !semanaLista || _diaSeleccionado == _indiceHoy;
-    final List<Map<String, dynamic>> habitosDelDiaSeleccionado = semanaLista
-        ? (_dias[_diaSeleccionado]['habitos'] as List<Map<String, dynamic>>)
-        : const [];
-
-    // Hoy lo declara el servidor. Mientras la semana no ha cargado no se
-    // pinta ni la tira ni ninguna tarjeta de otro día, así que el valor de
-    // respaldo no llega a decidir nada visible.
-    final DateTime hoySinHora = () {
-      final iso = _hoyIso;
-      if (iso != null) return DateTime.parse(iso);
-      final ahora = DateTime.now();
-      return DateTime(ahora.year, ahora.month, ahora.day);
-    }();
-    final DateTime fechaSeleccionadaSinHora = () {
-      final fecha = _fechaSeleccionada();
-      return DateTime(fecha.year, fecha.month, fecha.day);
-    }();
-    // Futuro es estrictamente posterior a hoy: hoy mismo no es futuro. Ambas
-    // fechas normalizadas a medianoche para que la hora del reloj no decida.
-    final bool esFuturo = fechaSeleccionadaSinHora.isAfter(hoySinHora);
-    // No se compara contra `_offsetSemana`: si la app se queda abierta
-    // cruzando la medianoche del domingo, el offset sigue valiendo 0 y ya
-    // apunta a la semana pasada. Se compara contra la fecha real.
-    final bool fueraDeSemana = esAnteriorALaSemanaEnCurso(
-      fechaSeleccionadaSinHora,
-      hoySinHora,
-    );
+    final hoy = _hoy;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -960,7 +735,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             _loading
                 ? const SkeletonHoy()
                 : RefreshIndicator(
-                    onRefresh: _cargarHabitos,
+                    onRefresh: _cargarHoy,
                     child: ListView(
                       padding: EdgeInsets.fromLTRB(
                         16,
@@ -968,233 +743,12 @@ class _DashboardScreenState extends State<DashboardScreen>
                         16,
                         96 + MediaQuery.of(context).padding.bottom,
                       ),
-                      children: [
-                        // La tira va la primera, pegada al borde: es lo que más se
-                        // toca y ahora no hay barra superior que la empuje hacia
-                        // abajo. Debajo queda la franja de contexto —fecha, frase y
-                        // anillo— como una sola banda.
-                        //
-                        // Las flechas siguen en la franja y no en la tira: la tira es
-                        // un Row de siete Expanded sin holgura.
-                        if (semanaLista) ...[
-                          TiraSemana(
-                            dias: _dias,
-                            diaSeleccionado: _diaSeleccionado,
-                            indiceHoy: _indiceHoy,
-                            onSeleccionar: (i) {
-                              setState(() => _diaSeleccionado = i);
-                              // Fuera del setState pero dentro del callback: esto lo
-                              // dispara un gesto del usuario, no un build, así que
-                              // notificar aquí es seguro.
-                              _publicarProgreso();
-                            },
-                          ),
-                          const SizedBox(height: 13),
-                        ],
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // La fila de navegación del día: flechas, fecha, y
-                                  // el botón de volver a esta semana cuando te has
-                                  // ido. Va debajo de la tira, no encima, porque la
-                                  // tira es lo que gobierna.
-                                  Row(
-                                    children: [
-                                      // Las flechas van aquí y no en la tira porque la
-                                      // tira es un Row de siete Expanded sin holgura, y
-                                      // deslizar tampoco vale: el PageView del shell ya
-                                      // se queda el arrastre horizontal para cambiar de
-                                      // pestaña.
-                                      IconButton(
-                                        icon: const Icon(
-                                          LucideIcons.chevronLeft,
-                                        ),
-                                        iconSize: 20,
-                                        visualDensity: VisualDensity.compact,
-                                        color: t.textMuted,
-                                        onPressed: () =>
-                                            _irASemana(_offsetSemana - 1),
-                                      ),
-                                      // Una línea siempre. `headlineMedium` partía
-                                      // «Hoy, 15 de septiembre» en dos y dejaba las
-                                      // flechas descolgadas respecto a la primera
-                                      // mitad. `titleLarge` cabe en español, y el
-                                      // FittedBox cubre lo que no puedo saber desde
-                                      // aquí: los meses largos en pt y en, y el
-                                      // escalado de fuente del sistema. Encoge sólo
-                                      // cuando hace falta; si cabe, no toca nada.
-                                      //
-                                      // No se acorta el formato de la fecha: lo fijan
-                                      // dos tests que comparan cadenas exactas en los
-                                      // tres idiomas, y ese cambio va aparte.
-                                      Flexible(
-                                        child: FittedBox(
-                                          fit: BoxFit.scaleDown,
-                                          alignment: Alignment.centerLeft,
-                                          child: Text(
-                                            _tituloDelDia(
-                                              context,
-                                              l,
-                                              viendoHoy,
-                                            ),
-                                            maxLines: 1,
-                                            softWrap: false,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .titleLarge
-                                                ?.copyWith(color: t.text),
-                                          ),
-                                        ),
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(
-                                          LucideIcons.chevronRight,
-                                        ),
-                                        iconSize: 20,
-                                        visualDensity: VisualDensity.compact,
-                                        color: t.textMuted,
-                                        onPressed: () =>
-                                            _irASemana(_offsetSemana + 1),
-                                      ),
-                                      // Sólo aparece cuando te has ido de esta semana:
-                                      // con dos flechas es fácil perderse tres semanas
-                                      // atrás, y volver no debe costar tres toques.
-                                      if (_offsetSemana != 0)
-                                        FilledButton(
-                                          onPressed: () => _irASemana(0),
-                                          style: FilledButton.styleFrom(
-                                            backgroundColor: t.primary,
-                                            foregroundColor: t.bg,
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 14,
-                                              vertical: 0,
-                                            ),
-                                            minimumSize: const Size(0, 32),
-                                            tapTargetSize: MaterialTapTargetSize
-                                                .shrinkWrap,
-                                            textStyle: const TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                          child: Text(l.navHoy),
-                                        ),
-                                    ],
-                                  ),
-                                  if (viendoHoy && totalHoy > 0) ...[
-                                    const SizedBox(height: 4),
-                                    // La frase va en la superficie de la identidad, no
-                                    // suelta: cristal en Profundidad, panel cortado en
-                                    // Neotokyo+, post-it en Dulce, itálica desnuda en
-                                    // Alba. El color sólo se fuerza al completar el
-                                    // día, que es la única señal cromática de que ya
-                                    // está todo hecho; el resto del tiempo pinta cada
-                                    // forma el suyo.
-                                    Center(
-                                      child: BurbujaContexto(
-                                        texto: _fraseProgreso(
-                                          l,
-                                          completados.length,
-                                          totalHoy,
-                                        ),
-                                        color: completados.length == totalHoy
-                                            ? t.successText
-                                            : null,
-                                      ),
-                                    ),
-                                  ] else if (!viendoHoy &&
-                                      habitosDelDiaSeleccionado.isNotEmpty) ...[
-                                    const SizedBox(height: 4),
-                                    Center(
-                                      child: BurbujaContexto(
-                                        texto: _fraseProgreso(
-                                          l,
-                                          habitosDelDiaSeleccionado
-                                              .where(
-                                                (h) => h['completado'] == true,
-                                              )
-                                              .length,
-                                          habitosDelDiaSeleccionado.length,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                            // 64 en vez del tamaño por defecto: a su tamaño anterior
-                            // competía con la fecha y la empujaba contra el borde.
-                            // Sigue siendo el objeto redondo en un bloque de
-                            // rectángulos, que es lo que hace que se vea.
-                            if (totalHoy > 0)
-                              AnilloProgreso(
-                                actual: completados.length,
-                                total: totalHoy,
-                                tamano: 64,
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        if (semanaLista && _flexibles.isNotEmpty) ...[
-                          _filaFlexibles(l, t),
-                          const SizedBox(height: 16),
-                        ],
-                        if (_errorCarga)
-                          EstadoErrorHoy(onReintentar: _cargarHabitos)
-                        else if (viendoHoy) ...[
-                          if (_habitos.isEmpty)
-                            const EstadoVacioHoy()
-                          else ...[
-                            if (pendientes.isEmpty)
-                              _tarjetaTodoHecho()
-                            else
-                              ...pendientes.asMap().entries.map(
-                                (e) => _filaEnLista(
-                                  l,
-                                  e.value,
-                                  false,
-                                  t,
-                                  primera: e.key == 0,
-                                ),
-                              ),
-                            if (completados.isNotEmpty) ...[
-                              const SizedBox(height: 16),
-                              Text(
-                                l.dashCompletados,
-                                style: Theme.of(context).textTheme.titleSmall
-                                    ?.copyWith(color: t.textMuted),
-                              ),
-                              const SizedBox(height: 8),
-                              ...completados.map(
-                                (h) => _filaEnLista(l, h, true, t),
-                              ),
-                            ],
-                          ],
-                        ] else if (habitosDelDiaSeleccionado.isEmpty)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 24),
-                            child: Text(
-                              l.dashDiaSinHabitos,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: t.textMuted),
-                            ),
-                          )
-                        else
-                          ...habitosDelDiaSeleccionado.map(
-                            (item) => _habitoCardOtroDia(
-                              l,
-                              item['habito'] as Habito,
-                              item['completado'] as bool,
-                              t,
-                              fecha: _fechaSeleccionada(),
-                              esFuturo: esFuturo,
-                              fueraDeSemana: fueraDeSemana,
-                            ),
-                          ),
-                      ],
+                      children: hoy == null
+                          ? [
+                              if (_errorCarga)
+                                EstadoErrorHoy(onReintentar: _cargarHoy),
+                            ]
+                          : _contenido(l, t, hoy),
                     ),
                   ),
             if (!_loading && _usuarioId != 0)
@@ -1205,32 +759,296 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  /// El título de la cabecera: el día que se está mirando, no siempre hoy.
-  ///
-  /// En hoy pone «Hoy, 30 de agosto» y no «Hoy, domingo, 30 de agosto»: en
-  /// español `MMMMEEEEd` ya trae su propia coma y el día de la semana sobra
-  /// cuando decimos «Hoy». En cualquier otro día va el formato largo con la
-  /// inicial en mayúscula, porque `DateFormat` la devuelve en minúscula y
-  /// aquí es un título.
-  String _tituloDelDia(
-    BuildContext context,
+  /// Todo lo que va dentro de la lista, una vez cargado `/hoy`.
+  List<Widget> _contenido(
     AppLocalizations l,
-    bool viendoHoy,
+    TokensContextuales t,
+    HoyLeido hoy,
   ) {
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    return formatearTituloDelDia(
-      fecha: _fechaSeleccionada(),
-      locale: locale,
-      textoHoy: l.navHoy,
-      viendoHoy: viendoHoy,
+    final filasDia = _filasDelDia();
+    final filasSemana = _filasDeLaSemana();
+    final hechosDia = filasDia.where((f) => f.hecho).length;
+    final hechosSemana = filasSemana.where((f) => f.hecho).length;
+    final viendoHoy = hoy.viendoHoy;
+
+    // El check se apaga en un día futuro o de una semana anterior: el
+    // backend no deja marcar ni deshacer ahí.
+    final fechaMirada = DateTime.parse(hoy.fecha);
+    final fechaHoy = DateTime.parse(hoy.hoy);
+    final bool habilitado =
+        !fechaMirada.isAfter(fechaHoy) &&
+        !esAnteriorALaSemanaEnCurso(fechaMirada, fechaHoy);
+
+    // El hábito en tránsito (ver _arrancarTransito) se queda en su posición
+    // de "pendientes" aunque ya cuente como hecho, y aparece ADEMÁS al final
+    // de "completados": las dos apariciones conviven mientras dura el gesto.
+    final pendientes = <FilaHoy>[];
+    final completados = <FilaHoy>[];
+    for (final f in filasDia) {
+      if (f.hecho && f.habito.habitoId != _habitoEnTransito) {
+        completados.add(f);
+      } else {
+        pendientes.add(f);
+      }
+    }
+    if (_habitoEnTransito != null) {
+      final enTransito = filasDia.where(
+        (f) => f.habito.habitoId == _habitoEnTransito,
+      );
+      if (enTransito.isNotEmpty) completados.add(enTransito.first);
+    }
+
+    final sinNada = filasDia.isEmpty && filasSemana.isEmpty;
+
+    return [
+      // La tira va la primera, pegada al borde: es lo que más se toca.
+      TiraSemana(
+        dias: hoy.dias,
+        diaSeleccionado: hoy.indiceFecha,
+        indiceHoy: hoy.indiceHoy,
+        onSeleccionar: (i) => _irADia(hoy.dias[i].fecha),
+      ),
+      const SizedBox(height: 13),
+      _cabecera(l, t, hoy, filasDia, hechosDia),
+      const SizedBox(height: 16),
+      if (sinNada)
+        viendoHoy
+            ? const EstadoVacioHoy()
+            : Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Text(
+                  l.dashDiaSinHabitos,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: t.textMuted),
+                ),
+              ),
+      if (filasDia.isNotEmpty) ...[
+        _tituloSeccion(
+          l,
+          t,
+          titulo: l.dashSeccionHoy,
+          hechos: hechosDia,
+          total: filasDia.length,
+          plegada: _hoyPlegada,
+          alPlegar: () => setState(() => _hoyPlegada = !_hoyPlegada),
+        ),
+        const SizedBox(height: 8),
+        if (!_hoyPlegada) ...[
+          if (pendientes.isEmpty && viendoHoy)
+            _tarjetaTodoHecho()
+          else
+            ...pendientes.asMap().entries.map(
+              (e) => _filaEnLista(
+                l,
+                e.value,
+                false,
+                t,
+                habilitado: habilitado,
+                primera: viendoHoy && e.key == 0,
+              ),
+            ),
+          if (completados.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              l.dashCompletados,
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(color: t.textMuted),
+            ),
+            const SizedBox(height: 8),
+            ...completados.map(
+              (f) => _filaEnLista(l, f, true, t, habilitado: habilitado),
+            ),
+          ],
+        ],
+        const SizedBox(height: 16),
+      ],
+      if (filasSemana.isNotEmpty) ...[
+        _tituloSeccion(
+          l,
+          t,
+          titulo: l.dashFlexiblesTitulo,
+          hechos: hechosSemana,
+          total: filasSemana.length,
+          plegada: _semanaPlegada,
+          alPlegar: () => setState(() => _semanaPlegada = !_semanaPlegada),
+          ayuda: AyudaCampo(
+            texto: l.dashAyudaFlexibles,
+            etiquetaSemantica: l.dashAyudaFlexiblesEtiqueta,
+            superindice: true,
+          ),
+        ),
+        const SizedBox(height: 8),
+        if (!_semanaPlegada)
+          ...filasSemana.map(
+            (f) => _habitoCard(l, f, t, habilitado: habilitado),
+          ),
+      ],
+    ];
+  }
+
+  /// La franja de contexto: flechas y fecha, la frase y el anillo del día.
+  Widget _cabecera(
+    AppLocalizations l,
+    TokensContextuales t,
+    HoyLeido hoy,
+    List<FilaHoy> filasDia,
+    int hechosDia,
+  ) {
+    final avance = avanceDelDia(filasDia);
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  // Las flechas van aquí y no en la tira porque la tira es un
+                  // Row de siete Expanded sin holgura, y deslizar tampoco
+                  // vale: el PageView del shell se queda el arrastre
+                  // horizontal para cambiar de pestaña.
+                  IconButton(
+                    icon: const Icon(LucideIcons.chevronLeft),
+                    iconSize: 20,
+                    visualDensity: VisualDensity.compact,
+                    color: t.textMuted,
+                    onPressed: () => _moverSemanas(-1),
+                  ),
+                  // Una línea siempre: el FittedBox encoge sólo cuando hace
+                  // falta (meses largos en pt y en, escalado del sistema).
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        _tituloDelDia(context, l, hoy),
+                        maxLines: 1,
+                        softWrap: false,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.titleLarge?.copyWith(color: t.text),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(LucideIcons.chevronRight),
+                    iconSize: 20,
+                    visualDensity: VisualDensity.compact,
+                    color: t.textMuted,
+                    onPressed: () => _moverSemanas(1),
+                  ),
+                  // Sólo cuando te has ido de la semana de hoy: con dos
+                  // flechas es fácil perderse, y volver no debe costar tres
+                  // toques.
+                  if (hoy.indiceHoy < 0)
+                    FilledButton(
+                      onPressed: () => _irADia(hoy.hoy),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: t.primary,
+                        foregroundColor: t.bg,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 0,
+                        ),
+                        minimumSize: const Size(0, 32),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        textStyle: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      child: Text(l.navHoy),
+                    ),
+                ],
+              ),
+              if (filasDia.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                // La frase va en la superficie de la identidad. El color sólo
+                // se fuerza con todo hecho, que es la única señal cromática de
+                // que ya está todo.
+                Center(
+                  child: BurbujaContexto(
+                    texto: _fraseProgreso(l, hechosDia, filasDia.length),
+                    color: hechosDia == filasDia.length ? t.successText : null,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        // El arco es el avance del día, con lo hecho a medias; la cifra del
+        // centro, cuántos de la sección del día están hechos.
+        if (filasDia.isNotEmpty)
+          SizedBox(
+            width: 64,
+            height: 64,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                AnilloIdentidad(tamano: 64, pct: avance ?? 0),
+                Text(
+                  '$hechosDia/${filasDia.length}',
+                  style: TextStyle(
+                    fontSize: 64 * 0.24,
+                    fontWeight: FontWeight.w600,
+                    color: t.text,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
     );
   }
 
-  /// La fecha del día seleccionado en la tira. Sin semana cargada, hoy: es
-  /// el mismo criterio que usa `_publicarProgreso`.
-  DateTime _fechaSeleccionada() {
-    if (_dias.isEmpty) return DateTime.now();
-    return DateTime.parse(_dias[_diaSeleccionado]['fecha'] as String);
+  /// El título de una sección: nombre, «1 de 4» y el botón de plegar.
+  Widget _tituloSeccion(
+    AppLocalizations l,
+    TokensContextuales t, {
+    required String titulo,
+    required int hechos,
+    required int total,
+    required bool plegada,
+    required VoidCallback alPlegar,
+    Widget? ayuda,
+  }) {
+    final estilo = Theme.of(
+      context,
+    ).textTheme.titleSmall?.copyWith(color: t.textMuted);
+    return Row(
+      children: [
+        Text(titulo, style: estilo),
+        ?ayuda,
+        const SizedBox(width: 10),
+        Text(
+          l.dashSeccionContador(hechos, total),
+          style: estilo?.copyWith(color: t.text),
+        ),
+        const Spacer(),
+        IconButton(
+          icon: Icon(plegada ? LucideIcons.chevronDown : LucideIcons.chevronUp),
+          iconSize: 20,
+          visualDensity: VisualDensity.compact,
+          color: t.textMuted,
+          tooltip: plegada
+              ? l.a11yDesplegarSeccion(titulo)
+              : l.a11yPlegarSeccion(titulo),
+          onPressed: alPlegar,
+        ),
+      ],
+    );
+  }
+
+  /// El título de la cabecera: el día que se está mirando, no siempre hoy.
+  String _tituloDelDia(BuildContext context, AppLocalizations l, HoyLeido hoy) {
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    return formatearTituloDelDia(
+      fecha: DateTime.parse(hoy.fecha),
+      locale: locale,
+      textoHoy: l.navHoy,
+      viendoHoy: hoy.viendoHoy,
+    );
   }
 
   String _fraseProgreso(AppLocalizations l, int hechos, int total) =>
@@ -1241,65 +1059,60 @@ class _DashboardScreenState extends State<DashboardScreen>
         FraseProgreso.buenRitmo => l.dashProgresoBuenRitmo,
       };
 
-  /// Una fila de la lista de Hoy: la del hábito en tránsito (ver
+  /// Una fila de la sección del día: la del hábito en tránsito (ver
   /// `_arrancarTransito`) se pinta dentro de un `RanuraTransito` animado por
   /// `_ctrlTransito`, una vez como origen (en pendientes) y otra como
-  /// destino (en completados); las demás se pintan tal cual, sin envolver.
+  /// destino (en completados); las demás se pintan tal cual.
   Widget _filaEnLista(
     AppLocalizations l,
-    Habito h,
-    bool hecho,
+    FilaHoy f,
+    bool enCompletados,
     TokensContextuales t, {
+    required bool habilitado,
     bool primera = false,
   }) {
     final ctrl = _ctrlTransito;
-    if (ctrl == null || h.habitoId != _habitoEnTransito) {
-      return _habitoCard(l, h, hecho, t, primera: primera);
+    if (ctrl == null || f.habito.habitoId != _habitoEnTransito) {
+      return _habitoCard(l, f, t, habilitado: habilitado, primera: primera);
     }
 
     final id = identidad(context);
-    // Las dos ranuras pintan la MISMA fila ya completada —una yéndose, otra
-    // llegando—: `hecho` aquí sólo elige el papel (destino/origen), no el
-    // aspecto de la tarjeta, que siempre es el de "hecho".
     return AnimatedBuilder(
       animation: ctrl,
-      child: _habitoCard(l, h, true, t),
+      child: _habitoCard(l, f, t, habilitado: habilitado),
       builder: (context, child) => RanuraTransito(
         progreso: ctrl.value,
-        papel: hecho ? PapelTransito.destino : PapelTransito.origen,
+        papel: enCompletados ? PapelTransito.destino : PapelTransito.origen,
         curva: id.curvaTransicion,
         child: child!,
       ),
     );
   }
 
-  /// `primera` marca la primera tarjeta de pendientes, que es donde el
-  /// recorrido guiado señala el check. Sólo eso: no cambia nada visual.
+  /// Una fila de hábito, de cualquiera de las dos secciones.
+  ///
+  /// `primera` marca la primera pendiente de hoy, que es donde el recorrido
+  /// guiado señala el check y donde se empuja el chevron del detalle.
   Widget _habitoCard(
     AppLocalizations l,
-    Habito h,
-    bool hecho,
+    FilaHoy f,
     TokensContextuales t, {
+    required bool habilitado,
     bool primera = false,
   }) {
-    final p = _progreso[h.habitoId] ?? {'completadosPeriodo': 0, 'meta': 1};
+    final Habito h = f.habito;
+    final bool hecho = f.hecho;
+    // El check se ve marcado si la fila cuenta como hecha o, en un semanal,
+    // si ya se hizo el día que se mira: un semanal se apunta una vez por día.
+    final bool checkMarcado = hecho || (f.esSemanal && f.completadoEnFecha);
 
     return AnimatedOpacity(
       // La fila se apaga al completarse. Con "reducir movimiento" llega al
-      // mismo 0.72, sin recorrido: el estado no cambia, sólo el camino.
+      // mismo valor, sin recorrido.
       duration: (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
           ? Duration.zero
           : const Duration(milliseconds: 400),
-      // 0.80: la fila hecha se apaga sin dejar de leerse. El fondo de
-      // referencia ya no es el relleno de la tarjeta —en Profundidad la fila
-      // va sobre el cielo y SuperficieIdentidad no pinta superficie en las
-      // secundarias de glass— así que las dos opacidades ya no se
-      // multiplican. Sobre `bg` (#070D19), `textMuted` al 0.80 da 8.11 y
-      // `text` 11.10. En las otras tres identidades sigue habiendo tarjeta
-      // opaca, y ahí el 0.80 atenúa la fila entera, tarjeta incluida.
       opacity: hecho ? 0.80 : 1.0,
-      // El radio, el corte y la sombra los pone la identidad equipada; aquí
-      // sólo se dice que esto es una tarjeta de fila.
       child: TarjetaIdentidad(
         onTap: () async {
           await Navigator.push(
@@ -1313,7 +1126,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
             ),
           );
-          _cargarHabitos();
+          _cargarHoy();
         },
         child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
@@ -1333,9 +1146,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                               child: Text(
                                 h.nombre,
                                 // Dos líneas antes de cortar: los nombres
-                                // reales son frases ("Escribir en el
-                                // diario de gratitud"), y en una sola
-                                // línea el chip les comía media frase.
+                                // reales son frases.
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: Theme.of(context).textTheme.titleMedium
@@ -1353,8 +1164,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                         ChipIdentidad(
                           texto: l.dashChipFrecuencia(
                             _frecuenciaLegible(l, h.frecuencia),
-                            p['completadosPeriodo'] ?? 0,
-                            p['meta'] ?? 1,
+                            f.completados,
+                            f.meta,
                           ),
                         ),
                       ],
@@ -1362,16 +1173,10 @@ class _DashboardScreenState extends State<DashboardScreen>
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        _miniHeatmap(h, t),
+                        _miniHeatmap(f, t),
                         const SizedBox(width: 8),
-                        // "Ver detalle" va en todas las filas, pero en voz
-                        // baja: el texto en `textMuted` y sin negrita, y sólo
-                        // el chevron en `primary`, que es lo que se puede
-                        // tocar. Seis etiquetas en color competirían con los
-                        // nombres de los hábitos. Sin `Semantics` propio: el
-                        // toque es de la tarjeta entera y el texto se lee
-                        // como parte de ella. Si no cabe, se corta; no se
-                        // encoge.
+                        // "Ver detalle" en voz baja: el texto en `textMuted`
+                        // y sólo el chevron en `primary`.
                         Expanded(
                           child: Text(
                             l.verDetalle,
@@ -1402,20 +1207,32 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
               ),
               const SizedBox(width: 12),
-              CheckCircular(
-                key: primera && RecorridoOnboarding.instancia.activo
-                    ? AnclasRecorrido.checkHabito
-                    : null,
-                hecho: hecho,
-                onTap: () => _completar(h.habitoId),
-                onDeshacer: () => _deshacer(h.habitoId),
-                // El hábito hecho se pinta con `success`, no con `primary`:
-                // `primary` es lo que se puede tocar y esto es lo que ya
-                // está. En tres identidades son el mismo color y no cambia
-                // nada; en Dulce, `success` es la salvia.
-                color: t.success,
-                etiquetaSemantica: l.a11yCompletarHabito(h.nombre),
-                etiquetaSemanticaDeshacer: l.a11yDeshacerHabito(h.nombre),
+              // En un día que no se puede tocar (futuro o de una semana
+              // anterior) el check va apagado y sin toque.
+              AnimatedOpacity(
+                duration:
+                    (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
+                    ? Duration.zero
+                    : const Duration(milliseconds: 400),
+                opacity: habilitado ? 1.0 : 0.25,
+                child: CheckCircular(
+                  key: primera && RecorridoOnboarding.instancia.activo
+                      ? AnclasRecorrido.checkHabito
+                      : null,
+                  hecho: checkMarcado,
+                  onTap: habilitado && !checkMarcado
+                      ? () => _completar(h.habitoId)
+                      : null,
+                  onDeshacer: habilitado && f.completadoEnFecha
+                      ? () => _deshacer(h.habitoId)
+                      : null,
+                  // El hábito hecho se pinta con `success`, no con
+                  // `primary`: `primary` es lo que se puede tocar y esto es
+                  // lo que ya está.
+                  color: t.success,
+                  etiquetaSemantica: l.a11yCompletarHabito(h.nombre),
+                  etiquetaSemanticaDeshacer: l.a11yDeshacerHabito(h.nombre),
+                ),
               ),
             ],
           ),
@@ -1424,221 +1241,48 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  /// Fila corta con el progreso semanal de cada SEMANAL flexible: no tienen
-  /// un día fijo que los represente en la tira, así que van aparte y
-  /// siempre visibles, sea cual sea el día seleccionado arriba.
-  Widget _filaFlexibles(AppLocalizations l, TokensContextuales t) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              l.dashFlexiblesTitulo,
-              style: Theme.of(
-                context,
-              ).textTheme.titleSmall?.copyWith(color: t.textMuted),
-            ),
-            AyudaCampo(
-              texto: l.dashAyudaFlexibles,
-              etiquetaSemantica: l.dashAyudaFlexiblesEtiqueta,
-              superindice: true,
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        ..._flexibles.map((item) {
-          final habito = item['habito'] as Habito;
-          final completadosSemana = item['completadosSemana'] as int;
-          final meta = item['meta'] as int;
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    habito.nombre,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.titleMedium?.copyWith(color: t.text),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ChipIdentidad(
-                  texto: l.dashFlexibleProgreso(completadosSemana, meta),
-                ),
-              ],
-            ),
-          );
-        }),
-      ],
-    );
-  }
-
-  /// Versión mínima de [_habitoCard] para un día que no es hoy: recibe el
-  /// par (hábito, completado) directamente de `_dias[i]`, en vez de leer de
-  /// `_progreso`/`_fechasCompletadas` — esos mapas son de hoy, no de
-  /// cualquier día. Sin mini-heatmap (es info de racha, no de "qué tocaba
-  /// ese día"). Un día de la semana en curso permite completar y deshacer;
-  /// un día futuro o de una semana anterior, no.
-  Widget _habitoCardOtroDia(
-    AppLocalizations l,
-    Habito h,
-    bool completado,
-    TokensContextuales t, {
-    required DateTime fecha,
-    required bool esFuturo,
-    required bool fueraDeSemana,
-  }) {
-    // La atenuación va SÓLO en el check, no en la tarjeta entera.
-    //
-    // Antes un `AnimatedOpacity` envolvía todo y apagaba también el texto:
-    // el nombre del hábito de un día futuro quedaba a 4.13 de contraste en
-    // Profundidad, 3.99 en Neotokyo+, 2.58 en Alba y 2.54 en Dulce, y su
-    // chip en `textMuted` bajaba a 3.26 / 2.17 / 1.89 / 2.00. Las ocho
-    // cifras fuera de AA, y estas filas SON pulsables —llevan al detalle—,
-    // así que no valía la exención de contenido deshabilitado. Subir el
-    // número tampoco servía: a 0.70 el `textMuted` sigue cayendo en tres de
-    // las cuatro identidades.
-    //
-    // Que un día no sea hoy ya lo dicen el check apagado y sin `onTap`, la
-    // tira de arriba, y —si está completado— la tachadura y el `textMuted`
-    // del propio texto. No hacía falta apagar la información.
-    return TarjetaIdentidad(
-      onTap: () async {
-        await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => HabitoDetalleScreen(
-              habitoId: h.habitoId,
-              usuarioId: _usuarioId,
-              nombre: h.nombre,
-              descripcion: h.descripcion,
-            ),
-          ),
-        );
-        _cargarSemana();
-      },
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-        child: Row(
-          children: [
-            Expanded(
-              child: Row(
-                children: [
-                  Flexible(
-                    child: Text(
-                      h.nombre,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        decoration: completado
-                            ? TextDecoration.lineThrough
-                            : null,
-                        color: completado ? t.textMuted : t.text,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ChipIdentidad(texto: _frecuenciaLegible(l, h.frecuencia)),
-                  // El mismo sitio y color que en la tarjeta de hoy, sin
-                  // empujón: ése es sólo para la primera tarjeta de hoy.
-                  const SizedBox(width: 6),
-                  ChevronDetalle(color: t.primary),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            // Sólo la semana en curso permite completar o deshacer, según
-            // el estado de la fila. Un día futuro o una fecha de una
-            // semana anterior van apagados y sin toque.
-            // El 0.25 reproduce lo que se veía antes, cuando el 0.5 de aquí
-            // se multiplicaba por el 0.45 del envoltorio.
-            AnimatedOpacity(
-              duration: (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
-                  ? Duration.zero
-                  : const Duration(milliseconds: 400),
-              opacity: (esFuturo || fueraDeSemana) ? 0.25 : 0.5,
-              child: CheckCircular(
-                hecho: completado,
-                onTap: (!esFuturo && !fueraDeSemana && !completado)
-                    ? () => _completar(h.habitoId, fecha: fecha)
-                    : null,
-                onDeshacer: (!esFuturo && !fueraDeSemana && completado)
-                    ? () => _deshacerFecha(h.habitoId, fecha)
-                    : null,
-                color: t.success,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _miniHeatmap(Habito h, TokensContextuales t) {
+  /// Los siete días de la semana que se mira, con lo hecho en cada uno.
+  Widget _miniHeatmap(FilaHoy f, TokensContextuales t) {
     final id = identidad(context);
     final l = AppLocalizations.of(context)!;
-    final fechas = _fechasCompletadas[h.habitoId] ?? {};
-    final hoy = DateTime.now();
-    final bool esSemanal = h.frecuencia == 'SEMANAL';
-    final int meta = _progreso[h.habitoId]?['meta'] ?? 1;
-    final List<int> planificados = h.diasPlanificados;
+    final hoyLeido = _hoy!;
+    final fechas = f.fechasCompletadas;
+    final hoy = DateTime.parse(hoyLeido.hoy);
+    final bool esSemanal = f.esSemanal;
+    final int meta = f.meta;
+    final List<int> planificados = f.habito.diasPlanificados;
     final bool conPlan = esSemanal && planificados.isNotEmpty;
 
-    String iso(DateTime d) => d.toIso8601String().split('T')[0];
-
-    // ¿La semana (L-D) a la que pertenece este día alcanzó la meta?
-    bool semanaCumplida(DateTime dia) {
-      final lunes = dia.subtract(Duration(days: dia.weekday - 1));
-      int count = 0;
-      for (int i = 0; i < 7; i++) {
-        if (fechas.contains(iso(lunes.add(Duration(days: i))))) count++;
-      }
-      return count >= meta;
-    }
-
-    // La ventana es la semana natural, la misma que pinta TiraSemana arriba:
-    // así las siete casillas caen bajo los mismos días. Antes eran los diez
-    // últimos, que enseñaban lo que hubo pero no lo que queda.
-    //
-    // `lunesDeLaSemanaDe` y no `subtract(Duration(days:...))`: ver la nota de
-    // esa función sobre los cambios de horario a medianoche.
-    final lunesVentana = lunesDeLaSemanaDe(hoy);
+    // La ventana es la semana que se mira, la misma que pinta la tira de
+    // arriba: así las siete casillas caen bajo los mismos días.
+    final lunesVentana = lunesDeLaSemanaDe(DateTime.parse(hoyLeido.fecha));
     final diasVentana = List.generate(
       7,
-      (i) => lunesVentana.add(Duration(days: i)),
+      (i) =>
+          DateTime(lunesVentana.year, lunesVentana.month, lunesVentana.day + i),
     );
 
-    // Solo los días de la ventana que se pinta: `fechas` tiene todo el
-    // historial del hábito y anunciar su tamaño daría un número imposible.
     final fechasVentana = diasVentana
-        .where((d) => fechas.contains(iso(d)))
+        .where((d) => fechas.contains(_iso(d)))
         .length;
+    // En un semanal, la semana que ya llegó al objetivo pinta sus días
+    // vacíos en verde tenue: "no pasa nada".
+    final bool semanaCumplida = esSemanal && fechasVentana >= meta;
 
     return Semantics(
       label: l.a11yResumenHeatmap(fechasVentana),
       child: ExcludeSemantics(
         child: Padding(
-          // Aire entre la heatmap y el check: la fila no llega al borde
+          // Aire entre el mini-mapa y el check: la fila no llega al borde
           padding: const EdgeInsets.only(right: 24),
           child: Row(
-            // Alineadas a la izquierda y con tamaño fijo, no repartiendo el
-            // ancho: con `Expanded` la altura de la celda la mandaba el ancho
-            // de la pantalla, y con siete celdas en vez de diez la fila habría
-            // CRECIDO un 43%. El bloque ya no llega hasta el check, pero todas
-            // las filas siguen alineadas entre sí porque el tamaño es el mismo.
             mainAxisAlignment: MainAxisAlignment.start,
             children: List.generate(7, (i) {
               final d = diasVentana[i];
-              final bool lleno = fechas.contains(iso(d));
-              final bool esHoy = iso(d) == iso(hoy);
+              final bool lleno = fechas.contains(_iso(d));
+              final bool esHoy = _iso(d) == hoyLeido.hoy;
               // Un día que todavía no ha llegado no puede pintarse como uno
-              // fallado. Se le da el mismo tratamiento que al día de descanso
-              // —punto pequeño, sin relleno—, que ya significa "aquí no se
-              // espera nada de ti".
+              // fallado: lleva el mismo punto que el día de descanso.
               final bool esFuturo = d.isAfter(hoy) && !lleno;
               final bool esDescanso =
                   esFuturo ||
@@ -1646,9 +1290,6 @@ class _DashboardScreenState extends State<DashboardScreen>
 
               final Widget celda;
               if (esDescanso) {
-                // Día de descanso: punto pequeño, visualmente menor. La celda no
-                // se pinta —sólo marca el hoy, si toca— y el punto es el mismo en
-                // las cuatro identidades: un descanso significa lo mismo en todas.
                 celda = Container(
                   decoration: celdaHeatmap(
                     id,
@@ -1674,8 +1315,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 final Color color;
                 if (lleno) {
                   color = t.success;
-                } else if (esSemanal && semanaCumplida(d)) {
-                  // Día vacío de una semana ganada: verde tenue, "no pasa nada"
+                } else if (semanaCumplida) {
                   color = t.success.withValues(alpha: 0.18);
                 } else {
                   color = t.inactivo;
