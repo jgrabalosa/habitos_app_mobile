@@ -33,6 +33,22 @@ android {
         versionName = flutter.versionName
     }
 
+    flavorDimensions += "entorno"
+    productFlavors {
+        // La de Play. Su applicationId no cambia nunca: com.norday.habitos.
+        create("produccion") {
+            dimension = "entorno"
+            manifestPlaceholders["appLabel"] = "Norday Habits"
+        }
+        // La de pruebas contra staging: otro applicationId, para tenerla
+        // instalada a la vez que la de Play sin sustituirla.
+        create("prueba") {
+            dimension = "entorno"
+            applicationIdSuffix = ".prueba"
+            manifestPlaceholders["appLabel"] = "Norday PRUEBA"
+        }
+    }
+
     signingConfigs {
         create("release") {
             keyAlias = keystoreProperties["keyAlias"] as String?
