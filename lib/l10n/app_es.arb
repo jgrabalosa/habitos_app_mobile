@@ -13,26 +13,26 @@
   "catSueno": "Sueño",
   "logroPrimerHabito": "Tu primer hábito propio",
   "logroPrimeraCategoria": "Organizado desde el día 1",
-  "logroRacha3": "En racha",
-  "logroRacha7": "Buen ritmo",
+  "logroRacha3": "A la tercera",
+  "logroRacha7": "Ya van siete",
   "logroRachaRecuperada": "Resiliencia",
   "logroRacha10": "Dos dígitos",
   "logroRacha15": "Quince firmes",
-  "logroRacha20": "Veinte sin fallar",
+  "logroRacha20": "Veinte hechas",
   "logroRacha25": "Cuarto de cien",
-  "logroRacha30": "Imparable",
-  "logroRacha35": "Más allá del mes",
+  "logroRacha30": "Coge forma",
+  "logroRacha35": "Paso a paso",
   "logroRacha40": "Cuarenta",
   "logroRacha45": "Constancia probada",
   "logroRacha50": "Medio centenar",
   "logroRacha55": "Sin mirar atrás",
-  "logroRacha60": "Dos meses",
+  "logroRacha60": "Sesenta",
   "logroRacha65": "Rutina asentada",
-  "logroRacha70": "Diez semanas",
+  "logroRacha70": "Setenta",
   "logroRacha75": "Tres cuartos de cien",
   "logroRacha80": "Ochenta",
   "logroRacha85": "Recta final",
-  "logroRacha90": "Noventa días",
+  "logroRacha90": "Casi cien",
   "logroRacha100": "Maestro de la constancia",
   "logroRacha365": "Leyenda",
   "logroHabitosActivos3": "Coleccionista de hábitos",
@@ -65,7 +65,7 @@
   "habErrorActualizar": "Error al actualizar el hábito",
   "habErrorEliminar": "Error al eliminar el hábito",
   "habEliminarTitulo": "Eliminar hábito",
-  "habEliminarCuerpo": "¿Seguro que quieres eliminar este hábito? Esta acción no se puede deshacer.",
+  "habEliminarCuerpo": "¿Seguro que quieres eliminar este hábito? Se borra con todo lo que llevas, y tu ritmo general se recalculará sin él. Esta acción no se puede deshacer.",
   "habRecomendados": "Hábitos recomendados (opcional)",
   "habLabelNombre": "Nombre del hábito",
   "habLabelDescripcion": "Descripción (opcional)",
@@ -88,7 +88,7 @@
   "detAyudaSatisfaccionEtiqueta": "Ayuda sobre la satisfacción",
   "detAyudaSatisfaccion": "Media de las estrellas que das al marcar este hábito.",
   "dashAyudaFlexiblesEtiqueta": "Ayuda sobre esta semana",
-  "dashAyudaFlexibles": "Semanales sin días fijos: hazlos cuando quieras hasta cumplir la meta.",
+  "dashAyudaFlexibles": "Los semanales que no tocan hoy: hazlos cuando quieras hasta cumplir el objetivo de la semana.",
   "mascotaAyudaAnimoEtiqueta": "Ayuda sobre el ánimo de Nori",
   "mascotaAyudaAnimo": "Nori está feliz el día que completas todos tus hábitos. Si no, se duerme; tras tres días sin completarlos, se pone triste.",
   "mascotaAyudaXpEtiqueta": "Ayuda sobre la experiencia",
@@ -241,28 +241,28 @@
   "logrosTitulo": "Mis logros",
   "logroDescPrimerHabito": "Crea tu primer hábito personalizado",
   "logroDescPrimeraCategoria": "Crea tu primera categoría personalizada",
-  "logroDescRacha3": "Alcanza tu primera racha de 3",
-  "logroDescRacha7": "Alcanza una racha de 7",
-  "logroDescRachaRecuperada": "Recupera un hábito tras romper una racha y vuelve a alcanzar 3",
-  "logroDescRacha10": "Alcanza una racha de 10",
-  "logroDescRacha15": "Alcanza una racha de 15",
-  "logroDescRacha20": "Alcanza una racha de 20",
-  "logroDescRacha25": "Alcanza una racha de 25",
-  "logroDescRacha30": "Alcanza una racha de 30",
-  "logroDescRacha35": "Alcanza una racha de 35",
-  "logroDescRacha40": "Alcanza una racha de 40",
-  "logroDescRacha45": "Alcanza una racha de 45",
-  "logroDescRacha50": "Alcanza una racha de 50",
-  "logroDescRacha55": "Alcanza una racha de 55",
-  "logroDescRacha60": "Alcanza una racha de 60",
-  "logroDescRacha65": "Alcanza una racha de 65",
-  "logroDescRacha70": "Alcanza una racha de 70",
-  "logroDescRacha75": "Alcanza una racha de 75",
-  "logroDescRacha80": "Alcanza una racha de 80",
-  "logroDescRacha85": "Alcanza una racha de 85",
-  "logroDescRacha90": "Alcanza una racha de 90",
-  "logroDescRacha100": "Alcanza una racha de 100",
-  "logroDescRacha365": "Alcanza una racha de 365",
+  "logroDescRacha3": "Completa un mismo hábito 3 veces",
+  "logroDescRacha7": "Completa un mismo hábito 7 veces",
+  "logroDescRachaRecuperada": "Vuelve a un hábito después de unos días sin hacerlo",
+  "logroDescRacha10": "Completa un mismo hábito 10 veces",
+  "logroDescRacha15": "Completa un mismo hábito 15 veces",
+  "logroDescRacha20": "Completa un mismo hábito 20 veces",
+  "logroDescRacha25": "Completa un mismo hábito 25 veces",
+  "logroDescRacha30": "Completa un mismo hábito 30 veces",
+  "logroDescRacha35": "Completa un mismo hábito 35 veces",
+  "logroDescRacha40": "Completa un mismo hábito 40 veces",
+  "logroDescRacha45": "Completa un mismo hábito 45 veces",
+  "logroDescRacha50": "Completa un mismo hábito 50 veces",
+  "logroDescRacha55": "Completa un mismo hábito 55 veces",
+  "logroDescRacha60": "Completa un mismo hábito 60 veces",
+  "logroDescRacha65": "Completa un mismo hábito 65 veces",
+  "logroDescRacha70": "Completa un mismo hábito 70 veces",
+  "logroDescRacha75": "Completa un mismo hábito 75 veces",
+  "logroDescRacha80": "Completa un mismo hábito 80 veces",
+  "logroDescRacha85": "Completa un mismo hábito 85 veces",
+  "logroDescRacha90": "Completa un mismo hábito 90 veces",
+  "logroDescRacha100": "Completa un mismo hábito 100 veces",
+  "logroDescRacha365": "Completa un mismo hábito 365 veces",
   "logroDescHabitosActivos3": "Ten 3 hábitos activos a la vez",
   "logroDescHabitosActivos5": "Ten 5 hábitos activos a la vez",
   "logroDescRegistros100": "Alcanza 100 registros completados en total",
@@ -329,5 +329,114 @@
   "recDeshacerCuerpo": "Vuelve a tocar el círculo y el día se desmarca.",
   "recMenu": "Ver tutorial",
   "recValoracionTitulo": "Cuenta qué tal fue",
-  "recValoracionCuerpo": "Las estrellas construyen tu media, y en la nota puedes dejar escrito cómo ha ido el día."
+  "recValoracionCuerpo": "Las estrellas construyen tu media, y en la nota puedes dejar escrito cómo ha ido el día.",
+  "dashSeccionHoy": "HOY",
+  "dashSeccionContador": "{hechos} de {total}",
+  "@dashSeccionContador": {
+    "placeholders": {
+      "hechos": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yPlegarSeccion": "Plegar la sección {seccion}",
+  "@a11yPlegarSeccion": {
+    "placeholders": {
+      "seccion": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yDesplegarSeccion": "Desplegar la sección {seccion}",
+  "@a11yDesplegarSeccion": {
+    "placeholders": {
+      "seccion": {
+        "type": "String"
+      }
+    }
+  },
+  "ritmoTitulo": "TU RITMO",
+  "ritmoNivel1": "Retomando",
+  "ritmoNivel2": "Cogiendo ritmo",
+  "ritmoNivel3": "Buen ritmo",
+  "ritmoNivel4": "Gran ritmo",
+  "ritmoNivel5": "Imparable",
+  "ritmoSube": "Sube respecto a la semana pasada.",
+  "ritmoIgual": "Igual que la semana pasada.",
+  "ritmoBaja": "Un paso hoy y vuelve a subir.",
+  "dashFraseNada": "Cuando quieras, empieza por uno.",
+  "dashFraseEmpezado": "Ya has empezado. Cada paso cuenta.",
+  "dashFraseLlevas": "Ya llevas {n}. Cada paso cuenta.",
+  "@dashFraseLlevas": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "dashFraseQuedaUno": "Te queda uno.",
+  "dashFraseTodo": "Hoy ya está. Disfruta el resto del día.",
+  "a11yRitmoGeneral": "Tu ritmo general: {palabra}, nivel {nivel} de 5",
+  "@a11yRitmoGeneral": {
+    "placeholders": {
+      "palabra": {
+        "type": "String"
+      },
+      "nivel": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yRitmoHabito": "Ritmo: {palabra}",
+  "@a11yRitmoHabito": {
+    "placeholders": {
+      "palabra": {
+        "type": "String"
+      }
+    }
+  },
+  "ritmoExplicacion": "Tu ritmo junta el de todos tus hábitos. Sube cada vez que cumples, y si un día no llegas, baja poco a poco.",
+  "ritmoDeDondeSale": "DE DÓNDE SALE",
+  "a11yRitmoHabitoDetalle": "{nombre}: {palabra}, nivel {nivel} de 5. Ver detalle",
+  "@a11yRitmoHabitoDetalle": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      },
+      "palabra": {
+        "type": "String"
+      },
+      "nivel": {
+        "type": "int"
+      }
+    }
+  },
+  "detRitmoTitulo": "RITMO DE ESTE HÁBITO",
+  "ritmoExplicacionHabito": "Sube cada vez que cumples, y si un día no llegas, baja poco a poco.",
+  "detLoQueLlevas": "Lo que llevas",
+  "detAyudaRitmoEtiqueta": "Qué es el ritmo",
+  "habExtraSemanal": "Si completas el objetivo de la semana, te llevas un 20 % más de puntos.",
+  "logroRitmoBueno": "Coge el paso",
+  "logroRitmoFuerte": "A buen paso",
+  "logroRitmoImparable": "Paso firme",
+  "logroRitmoGeneralFuerte": "Todo en marcha",
+  "logroRitmoTodos": "Todos a una",
+  "logroRitmoVuelta": "De vuelta",
+  "logroDescRitmoBueno": "Lleva un hábito a «Buen ritmo»",
+  "logroDescRitmoFuerte": "Lleva un hábito a «Gran ritmo»",
+  "logroDescRitmoImparable": "Lleva un hábito a «Imparable»",
+  "logroDescRitmoGeneralFuerte": "Lleva tu ritmo general a «Gran ritmo»",
+  "logroDescRitmoTodos": "Ten tres hábitos o más, todos en «Buen ritmo» o por encima",
+  "logroDescRitmoVuelta": "Sube un hábito de «Retomando» a «Buen ritmo» en una semana",
+  "dashExtraSemana": "+{n} por completar la semana",
+  "@dashExtraSemana": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  }
 }

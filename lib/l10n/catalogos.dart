@@ -7,7 +7,8 @@ import 'app_localizations.dart';
 /// Lo genérico —productos de la tienda, niveles, categorías de logro y los
 /// logros que se ganan sin hacer nada de dominio— lo traduce
 /// [CatalogosCore], dentro del paquete. Aquí quedan las categorías de hábito
-/// y los 32 logros que hablan de rachas, registros y hábitos activos.
+/// y los 38 logros que hablan de constancia, ritmo, registros y hábitos
+/// activos.
 ///
 /// CAÍDA OBLIGATORIA: si el código no está traducido —o viene a null, que es
 /// el caso de las categorías que crea el usuario— se muestra el nombre que
@@ -85,6 +86,12 @@ class Catalogos {
       'CATEGORIAS_3': l.logroCategorias3,
       'CATEGORIAS_5': l.logroCategorias5,
       'PRIMERA_NOTA': l.logroPrimeraNota,
+      'RITMO_BUENO': l.logroRitmoBueno,
+      'RITMO_FUERTE': l.logroRitmoFuerte,
+      'RITMO_IMPARABLE': l.logroRitmoImparable,
+      'RITMO_GENERAL_FUERTE': l.logroRitmoGeneralFuerte,
+      'RITMO_TODOS': l.logroRitmoTodos,
+      'RITMO_VUELTA': l.logroRitmoVuelta,
     };
   }
 
@@ -123,6 +130,12 @@ class Catalogos {
       'CATEGORIAS_3': l.logroDescCategorias3,
       'CATEGORIAS_5': l.logroDescCategorias5,
       'PRIMERA_NOTA': l.logroDescPrimeraNota,
+      'RITMO_BUENO': l.logroDescRitmoBueno,
+      'RITMO_FUERTE': l.logroDescRitmoFuerte,
+      'RITMO_IMPARABLE': l.logroDescRitmoImparable,
+      'RITMO_GENERAL_FUERTE': l.logroDescRitmoGeneralFuerte,
+      'RITMO_TODOS': l.logroDescRitmoTodos,
+      'RITMO_VUELTA': l.logroDescRitmoVuelta,
     };
   }
 }

@@ -3,23 +3,29 @@ import 'package:intl/intl.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 
 import '../l10n/app_localizations.dart';
+import '../models/hoy.dart';
 import 'identidad_ui.dart';
 
-/// La tira de 7 días (lunes a domingo) encima de Hoy, para navegar a otro
-/// día de la semana sin recargar red — los 7 días ya están en memoria.
+/// La tira de 7 días (lunes a domingo) encima de Hoy, para moverse a otro
+/// día de la semana.
 ///
 /// La celda de cada día reutiliza [celdaHeatmap]: es la misma pieza que ya
-/// pinta un día en el mini-heatmap de cada hábito, con el mismo criterio de
-/// selección por identidad (`seleccionada`) y de "hoy" (`esHoy`) que ya
-/// existía ahí — no hace falta inventar un segundo lenguaje visual para lo
-/// mismo, sólo un lugar distinto donde usarlo.
+/// pinta un día en el mini-mapa de cada hábito, con el mismo criterio de
+/// selección por identidad (`seleccionada`) y de "hoy" (`esHoy`).
+///
+/// Debajo de cada día va su avance (`DiaTira.avance`, de 0 a 1) como una
+/// barrita que se llena con lo hecho, también a medias. Un día sin nada que
+/// hacer, o que todavía no ha llegado, lleva un punto: ahí no se espera nada.
+/// Nunca se pinta un fallo.
 class TiraSemana extends StatelessWidget {
-  /// Un elemento por día, en orden lunes→domingo: `{'fecha': 'yyyy-MM-dd',
-  /// 'habitos': [{'habito': Habito, 'completado': bool}, ...]}`.
-  final List<Map<String, dynamic>> dias;
+  /// Los siete días, en orden lunes→domingo.
+  final List<DiaTira> dias;
 
   final int diaSeleccionado;
+
+  /// Posición de hoy en [dias], o -1 si la semana que se mira no es la de hoy.
   final int indiceHoy;
+
   final ValueChanged<int> onSeleccionar;
 
   const TiraSemana({
@@ -29,6 +35,9 @@ class TiraSemana extends StatelessWidget {
     required this.indiceHoy,
     required this.onSeleccionar,
   });
+
+  /// Ancho de la barrita del avance, el de la maqueta.
+  static const double _anchoBarra = 14;
 
   @override
   Widget build(BuildContext context) {
@@ -40,13 +49,8 @@ class TiraSemana extends StatelessWidget {
 
     return Row(
       children: List.generate(dias.length, (i) {
-        final fecha = DateTime.parse(dias[i]['fecha'] as String);
-        final habitosDelDia =
-            (dias[i]['habitos'] as List<Map<String, dynamic>>);
-        // Vacío (nada programado ese día) no es "completado": no hay señal.
-        final bool diaCompleto =
-            habitosDelDia.isNotEmpty &&
-            habitosDelDia.every((h) => h['completado'] == true);
+        final fecha = DateTime.parse(dias[i].fecha);
+        final double? avance = dias[i].avance;
         final bool esHoy = i == indiceHoy;
         final bool seleccionado = i == diaSeleccionado;
         final String nombreDia = DateFormat.E(locale).format(fecha);
@@ -86,7 +90,7 @@ class TiraSemana extends StatelessWidget {
                       id,
                       t,
                       color: colorCelda,
-                      // La misma pieza que marca "hecho" en el heatmap marca
+                      // La misma pieza que marca "hecho" en el mini-mapa marca
                       // aquí "es el día activo": incorpora el glow/relieve de
                       // la identidad al día que se está mirando.
                       llena: seleccionado,
@@ -103,18 +107,26 @@ class TiraSemana extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   SizedBox(
-                    height: 6,
-                    width: 6,
-                    child: diaCompleto
-                        ? DecoratedBox(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: t.success,
+                    height: 4,
+                    width: _anchoBarra,
+                    child: avance == null
+                        ? Center(
+                            child: Container(
+                              width: 4,
+                              height: 4,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: t.inactivo,
+                              ),
                             ),
                           )
-                        : null,
+                        : _BarraAvance(
+                            avance: avance,
+                            pista: t.inactivo,
+                            relleno: t.success,
+                          ),
                   ),
                 ],
               ),
@@ -122,6 +134,39 @@ class TiraSemana extends StatelessWidget {
           ),
         );
       }),
+    );
+  }
+}
+
+/// La barrita del avance de un día: la pista apagada y, encima, lo hecho.
+class _BarraAvance extends StatelessWidget {
+  final double avance;
+  final Color pista;
+  final Color relleno;
+
+  const _BarraAvance({
+    required this.avance,
+    required this.pista,
+    required this.relleno,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final radio = BorderRadius.circular(2);
+    return Align(
+      alignment: Alignment.center,
+      child: Container(
+        height: 3,
+        decoration: BoxDecoration(color: pista, borderRadius: radio),
+        alignment: Alignment.centerLeft,
+        child: FractionallySizedBox(
+          widthFactor: avance.clamp(0.0, 1.0),
+          heightFactor: 1,
+          child: DecoratedBox(
+            decoration: BoxDecoration(color: relleno, borderRadius: radio),
+          ),
+        ),
+      ),
     );
   }
 }
