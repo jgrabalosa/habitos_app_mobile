@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart' show appFlavor, rootBundle;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -8,12 +8,24 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/catalogos.dart';
+import 'entorno.dart';
 import 'services/crashlytics_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/home_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Antes que nada: si el flavor y la URL del backend no van juntos, no se
+  // arranca. Así la app de prueba no escribe en producción ni un AAB de Play
+  // sale apuntando a staging.
+  final motivoEntorno = errorDeEntorno(
+    flavor: appFlavor,
+    url: ApiServiceCore.baseUrl,
+  );
+  if (motivoEntorno != null) {
+    runApp(PantallaEntornoIncorrecto(motivo: motivoEntorno));
+    return;
+  }
   // El core es compartido por varias apps; esta app fija su dominio antes
   // de que cualquier catálogo pueda hacer una petición.
   ApiServiceCore.appId = 'habitos';
