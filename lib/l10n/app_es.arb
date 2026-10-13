@@ -438,5 +438,49 @@
         "type": "int"
       }
     }
-  }
+  },
+  "pausaProducto": "Pausa",
+  "pausaProductoDesc": "Pausa un hábito sin perder su ritmo: no sale en Hoy ni te avisa hasta que lo reanudes.",
+  "pausaProductoUso": "Se usa desde el detalle de un hábito",
+  "pausaTooltip": "Pausar",
+  "pausaTitulo": "Pausar «{nombre}»",
+  "@pausaTitulo": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "pausaCuerpo": "Mientras esté en pausa no saldrá en Hoy ni te avisará, y su ritmo se queda como está. Lo reanudas cuando quieras desde Hábitos, gratis.",
+  "pausaTienes": "{n, plural, =1{Tienes 1 pausa} other{Tienes {n} pausas}}",
+  "@pausaTienes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "pausaSinPausas": "No te quedan pausas. Las encontrarás en la tienda.",
+  "pausaBotonPausar": "Pausar (usa 1)",
+  "pausaBotonTienda": "Ir a la tienda",
+  "pausaHecha": "«{nombre}» está en pausa",
+  "@pausaHecha": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "pausaEnPausa": "En pausa",
+  "pausaReanudar": "Reanudar",
+  "pausaReanudada": "«{nombre}» vuelve a Hoy",
+  "@pausaReanudada": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "pausaError": "No se ha podido pausar el hábito",
+  "pausaErrorReanudar": "No se ha podido reanudar el hábito"
 }

@@ -285,5 +285,21 @@
   "logroDescRitmoGeneralFuerte": "Leva o teu ritmo geral a «Grande ritmo»",
   "logroDescRitmoTodos": "Tem três hábitos ou mais, todos em «Bom ritmo» ou acima",
   "logroDescRitmoVuelta": "Sobe um hábito de «A retomar» a «Bom ritmo» numa semana",
-  "dashExtraSemana": "+{n} por completares a semana"
+  "dashExtraSemana": "+{n} por completares a semana",
+  "pausaProducto": "Pausa",
+  "pausaProductoDesc": "Pausa um hábito sem perder o ritmo: sai de Hoje e não te avisa até o retomares.",
+  "pausaProductoUso": "Usa-se no detalhe de um hábito",
+  "pausaTooltip": "Pausar",
+  "pausaTitulo": "Pausar «{nombre}»",
+  "pausaCuerpo": "Enquanto estiver em pausa não aparece em Hoje nem te avisa, e o ritmo fica como está. Retomas quando quiseres a partir de Hábitos, de graça.",
+  "pausaTienes": "{n, plural, =1{Tens 1 pausa} other{Tens {n} pausas}}",
+  "pausaSinPausas": "Não te restam pausas. Encontras na loja.",
+  "pausaBotonPausar": "Pausar (usa 1)",
+  "pausaBotonTienda": "Ir à loja",
+  "pausaHecha": "«{nombre}» está em pausa",
+  "pausaEnPausa": "Em pausa",
+  "pausaReanudar": "Retomar",
+  "pausaReanudada": "«{nombre}» volta a Hoje",
+  "pausaError": "Não foi possível pausar o hábito",
+  "pausaErrorReanudar": "Não foi possível retomar o hábito"
 }
