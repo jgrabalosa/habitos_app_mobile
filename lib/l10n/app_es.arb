@@ -65,7 +65,7 @@
   "habErrorActualizar": "Error al actualizar el hábito",
   "habErrorEliminar": "Error al eliminar el hábito",
   "habEliminarTitulo": "Eliminar hábito",
-  "habEliminarCuerpo": "¿Seguro que quieres eliminar este hábito? Esta acción no se puede deshacer.",
+  "habEliminarCuerpo": "¿Seguro que quieres eliminar este hábito? Se borra con todo lo que llevas, y tu ritmo general se recalculará sin él. Esta acción no se puede deshacer.",
   "habRecomendados": "Hábitos recomendados (opcional)",
   "habLabelNombre": "Nombre del hábito",
   "habLabelDescripcion": "Descripción (opcional)",
@@ -417,5 +417,6 @@
   "detRitmoTitulo": "RITMO DE ESTE HÁBITO",
   "ritmoExplicacionHabito": "Sube cada vez que cumples, y si un día no llegas, baja poco a poco.",
   "detLoQueLlevas": "Lo que llevas",
-  "detAyudaRitmoEtiqueta": "Qué es el ritmo"
+  "detAyudaRitmoEtiqueta": "Qué es el ritmo",
+  "habExtraSemanal": "Si completas el objetivo de la semana, te llevas un 20 % más de puntos."
 }

@@ -65,7 +65,7 @@
   "habErrorActualizar": "Couldn't update the habit",
   "habErrorEliminar": "Couldn't delete the habit",
   "habEliminarTitulo": "Delete habit",
-  "habEliminarCuerpo": "Delete this habit? This can't be undone.",
+  "habEliminarCuerpo": "Delete this habit? It goes with everything you've done so far, and your overall pace will be recalculated without it. This can't be undone.",
   "habRecomendados": "Suggested habits (optional)",
   "habLabelNombre": "Habit name",
   "habLabelDescripcion": "Description (optional)",
@@ -271,5 +271,6 @@
   "detRitmoTitulo": "THIS HABIT'S PACE",
   "ritmoExplicacionHabito": "It rises each time you follow through, and on days you don't, it only dips a little.",
   "detLoQueLlevas": "Done so far",
-  "detAyudaRitmoEtiqueta": "What pace means"
+  "detAyudaRitmoEtiqueta": "What pace means",
+  "habExtraSemanal": "Reach the week's goal and you get 20% more points."
 }

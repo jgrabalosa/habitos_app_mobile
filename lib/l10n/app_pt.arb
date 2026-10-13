@@ -65,7 +65,7 @@
   "habErrorActualizar": "Não foi possível atualizar o hábito",
   "habErrorEliminar": "Não foi possível eliminar o hábito",
   "habEliminarTitulo": "Eliminar hábito",
-  "habEliminarCuerpo": "Queres mesmo eliminar este hábito? Esta ação não pode ser anulada.",
+  "habEliminarCuerpo": "Queres mesmo eliminar este hábito? Vai com tudo o que já levas, e o teu ritmo geral será recalculado sem ele. Esta ação não pode ser anulada.",
   "habRecomendados": "Hábitos sugeridos (opcional)",
   "habLabelNombre": "Nome do hábito",
   "habLabelDescripcion": "Descrição (opcional)",
@@ -271,5 +271,6 @@
   "detRitmoTitulo": "RITMO DESTE HÁBITO",
   "ritmoExplicacionHabito": "Sobe sempre que cumpres e, nos dias em que não chegas, desce só um pouco.",
   "detLoQueLlevas": "O que já levas",
-  "detAyudaRitmoEtiqueta": "O que é o ritmo"
+  "detAyudaRitmoEtiqueta": "O que é o ritmo",
+  "habExtraSemanal": "Se cumprires o objetivo da semana, ganhas mais 20 % de pontos."
 }
