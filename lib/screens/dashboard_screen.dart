@@ -245,6 +245,16 @@ class _DashboardScreenState extends State<DashboardScreen>
         _errorCarga = false;
       });
       _publicarProgreso();
+      // Los logros de ritmo se ganan al leer Hoy, que es cuando se ve que el
+      // ritmo ha subido: se celebran aquí. Casi siempre no hay ninguno.
+      if (hoy.logrosOtorgados.isNotEmpty) {
+        final recorrido = RecorridoOnboarding.instancia;
+        if (recorrido.activo) {
+          recorrido.aplazarCelebracion(hoy.logrosOtorgados);
+        } else {
+          CelebracionService.mostrar(hoy.logrosOtorgados);
+        }
+      }
     } catch (e) {
       if (!mounted || carga != _cargaEnCurso) return;
       // El aviso efímero dice QUÉ ha fallado. El panel de error sólo sale si
@@ -401,6 +411,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     List<String> logrosOtorgados;
     int puntosGanados;
+    int puntosExtraSemana;
     int? registroId;
     bool mostrarValoracion;
     try {
@@ -412,6 +423,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       );
       logrosOtorgados = resultado['logros'];
       puntosGanados = resultado['puntosGanados'];
+      puntosExtraSemana = resultado['puntosExtraSemana'] ?? 0;
       registroId = resultado['registroId'];
       mostrarValoracion = resultado['mostrarValoracion'] ?? false;
     } catch (e) {
@@ -493,6 +505,17 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
     if (puntosGanados > 0 && mounted) {
       AnimacionPuntos.mostrar(context, puntosGanados);
+    }
+    // Al cobrar el extra de la semana se dice por qué ha llegado (sección 11
+    // del rediseño de rachas).
+    if (puntosExtraSemana > 0 && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.dashExtraSemana(puntosExtraSemana),
+          ),
+        ),
+      );
     }
 
     // El recorrido guiado pasa aquí del check a la valoración.

@@ -228,6 +228,9 @@ class ApiServiceHabitos {
       return {
         'logros': logros.cast<String>(),
         'puntosGanados': data['puntosGanados'] ?? 0,
+        // La parte de esos puntos que es el extra por completar la semana
+        // (rediseño de rachas, B1). Cero si el backend no la manda.
+        'puntosExtraSemana': data['puntosExtraSemana'] ?? 0,
         'registroId': data['registroId'],
         'mostrarValoracion': data['mostrarValoracion'] ?? false,
         'subioNivel': data['subioNivel'] ?? false,
