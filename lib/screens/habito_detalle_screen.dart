@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
-// IndicadorNivel no está en el barrel de la 0.28.0: se importa directo
-// hasta que el core lo exporte.
-import 'package:norday_flutter_core/widgets/indicador_nivel.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_service_habitos.dart';
 import '../services/descubrimiento_detalle.dart';
