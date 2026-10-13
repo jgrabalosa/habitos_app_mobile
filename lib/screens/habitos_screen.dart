@@ -29,12 +29,16 @@ class _HabitosScreenState extends State<HabitosScreen> {
   List<dynamic> _categorias = [];
   int? _filtroCategoriaId; // null = todas
   _Orden _orden = _Orden.recientes;
+  int? _reanudando; // el hábito que se está reanudando, mientras tanto
 
   @override
   void initState() {
     super.initState();
     _cargarDatos();
     appRefreshNotifier.addListener(_alRefrescoApp);
+    // Pausar desde el detalle cambia esta lista: esta pestaña se mantiene viva
+    // y no se entera sola.
+    habitosCambiadosNotifier.addListener(_alRefrescoApp);
   }
 
   void _alRefrescoApp() {
@@ -44,6 +48,7 @@ class _HabitosScreenState extends State<HabitosScreen> {
   @override
   void dispose() {
     appRefreshNotifier.removeListener(_alRefrescoApp);
+    habitosCambiadosNotifier.removeListener(_alRefrescoApp);
     super.dispose();
   }
 
@@ -67,26 +72,33 @@ class _HabitosScreenState extends State<HabitosScreen> {
     }
   }
 
-  // Sin interruptor hasta la Fase 4 (rediseño de rachas, F1).
-  //  Future<void> _activar(int habitoId) async {
-  //    try {
-  //      await ApiServiceHabitos.activarHabito(habitoId);
-  //      _cargarDatos();
-  //      notificarHabitosCambiados();
-  //    } catch (e) {
-  //      _avisarError(e);
-  //    }
-  //  }
-  //
-  //  Future<void> _desactivar(int habitoId) async {
-  //    try {
-  //      await ApiServiceHabitos.desactivarHabito(habitoId);
-  //      _cargarDatos();
-  //      notificarHabitosCambiados();
-  //    } catch (e) {
-  //      _avisarError(e);
-  //    }
-  //  }
+  /// Reanudar es gratis y sin confirmación. La lista y Hoy se recargan por el
+  /// aviso de hábitos cambiados.
+  Future<void> _reanudar(Habito habito) async {
+    final l = AppLocalizations.of(context)!;
+    setState(() => _reanudando = habito.habitoId);
+    try {
+      await ApiServiceHabitos.activarHabito(habito.habitoId);
+      notificarHabitosCambiados();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l.pausaReanudada(habito.nombre))),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              MensajesError.de(context, e, generico: l.pausaErrorReanudar),
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _reanudando = null);
+    }
+  }
 
   void _avisarError(Object e) {
     if (!mounted) return;
@@ -311,30 +323,32 @@ class _HabitosScreenState extends State<HabitosScreen> {
     final habito = r['habito'] as Habito;
     final total = r['totalCompletados'] as int;
 
-    return Opacity(
-      opacity: habito.activo ? 1.0 : 0.5,
-      child: TarjetaIdentidad(
-        onTap: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => HabitoScreen(
-                usuarioId: widget.usuarioId,
-                habito: habito,
-                categoriasIniciales: _categorias,
-              ),
+    return TarjetaIdentidad(
+      onTap: () async {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => HabitoScreen(
+              usuarioId: widget.usuarioId,
+              habito: habito,
+              categoriasIniciales: _categorias,
             ),
-          );
-          if (result == true) {
-            _cargarDatos();
-            notificarHabitosCambiados();
-          }
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              Expanded(
+          ),
+        );
+        if (result == true) {
+          _cargarDatos();
+          notificarHabitosCambiados();
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            Expanded(
+              // Atenuado solo los textos: el botón «Reanudar» tiene que verse
+              // a color, si no parece desactivado.
+              child: Opacity(
+                opacity: habito.activo ? 1.0 : 0.5,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -346,6 +360,15 @@ class _HabitosScreenState extends State<HabitosScreen> {
                         context,
                       ).textTheme.titleMedium?.copyWith(color: t.text),
                     ),
+                    if (!habito.activo) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        l.pausaEnPausa,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.labelMedium?.copyWith(color: t.primary),
+                      ),
+                    ],
                     const SizedBox(height: 4),
                     Text(
                       l.habitosSubtitulo(
@@ -379,18 +402,17 @@ class _HabitosScreenState extends State<HabitosScreen> {
                   ],
                 ),
               ),
-              // Interruptor fuera hasta la Fase 4, que decide cómo se pausa
-              // un hábito (rediseño de rachas, F1).
-              // const SizedBox(width: 8),
-              // Switch(
-              //   value: habito.activo,
-              //   onChanged: (v) => v
-              //       ? _activar(habito.habitoId)
-              //       : _desactivar(habito.habitoId),
-              //   activeThumbColor: t.primary,
-              // ),
+            ),
+            if (!habito.activo) ...[
+              const SizedBox(width: 8),
+              TextButton(
+                onPressed: _reanudando == habito.habitoId
+                    ? null
+                    : () => _reanudar(habito),
+                child: Text(l.pausaReanudar),
+              ),
             ],
-          ),
+          ],
         ),
       ),
     );

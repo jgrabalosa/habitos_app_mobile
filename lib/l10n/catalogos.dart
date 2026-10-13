@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import 'app_localizations.dart';
+import '../services/pausa.dart';
 
 /// Traducción de los catálogos que sí saben de hábitos.
 ///
@@ -26,6 +27,20 @@ class Catalogos {
     CatalogosCore.registrarLogrosDeDominio(
       nombres: _logros,
       descripciones: _logrosDescripcion,
+    );
+    // Los productos propios de hábitos: nombre, descripción y, como la pausa
+    // se gasta desde el detalle de un hábito, cómo se usa (Colección lo
+    // enseña en vez del botón «Usar»).
+    CatalogosCore.registrarProductosDeDominio(
+      nombres: (context) => {
+        codigoPausa: AppLocalizations.of(context)!.pausaProducto,
+      },
+      descripciones: (context) => {
+        codigoPausa: AppLocalizations.of(context)!.pausaProductoDesc,
+      },
+      usos: (context) => {
+        codigoPausa: AppLocalizations.of(context)!.pausaProductoUso,
+      },
     );
   }
 
