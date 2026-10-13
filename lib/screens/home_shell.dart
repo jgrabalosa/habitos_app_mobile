@@ -326,6 +326,8 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   /// Si la llamada falla no se arranca nada. No se puede adivinar qué enseñar,
   /// y como la marca de «hecho» no se pone, el recorrido vuelve a intentarlo
   /// en el siguiente arranque. Es preferible a enseñar un paso que miente.
+  // Sin llamadas mientras el recorrido está aparcado (Fase 4).
+  // ignore: unused_element
   Future<void> _arrancarSegunHabitos() async {
     final List<Map<String, dynamic>> resumen;
     try {
@@ -457,11 +459,13 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
                       _abrirTienda,
                     ),
                     filo,
-                    entrada(
-                      LucideIcons.compass,
-                      l.recMenu,
-                      () => _arrancarSegunHabitos(),
-                    ),
+                    // «Ver tutorial» fuera mientras el recorrido guiado está
+                    // aparcado (Fase 4, rediseño de rachas, F1).
+                    // entrada(
+                    //   LucideIcons.compass,
+                    //   l.recMenu,
+                    //   () => _arrancarSegunHabitos(),
+                    // ),
                     entrada(LucideIcons.userRound, l.perfilTitulo, () {
                       Navigator.push(
                         context,
