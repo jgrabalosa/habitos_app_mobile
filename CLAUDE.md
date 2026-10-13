@@ -176,6 +176,23 @@ resuelto. Antes de probar, comprobar el `resolved-ref` del `pubspec.lock`.
 Para probar una rama del core sin tag, `pubspec_overrides.yaml` con
 `path: ../norday_flutter_core`, que no se commitea.
 
+## Variantes: produccion y prueba
+
+- **`--flavor` siempre.** `produccion` es la de Play (`com.norday.habitos`).
+  `prueba` es `com.norday.habitos.prueba`, se llama «Norday PRUEBA» y va contra
+  staging con `--dart-define=NORDAY_API_URL=https://staging-api.norday.app/api`.
+  Los comandos están en el README.
+- **`lib/entorno.dart` para la app al arrancar** si el flavor y la URL no
+  cuadran: `prueba` contra producción, `produccion` contra otra cosa, o sin
+  flavor. No se quita ni se salta.
+- **El nombre visible sale de `manifestPlaceholders["appLabel"]`** en
+  `android/app/build.gradle.kts`, no del manifest.
+- **`google-services.json` lleva las dos apps.** Google Sign-In de la de prueba
+  tiene sus propios clientes OAuth Android en Google Cloud, con la huella de
+  depuración y la de subida.
+- **Nunca se instala `--flavor produccion` en un móvil con la app de Play**:
+  mismo paquete, otra firma, y la salida sería desinstalar la de Play.
+
 ## Formato del código
 
 Todo el código Dart va formateado con `dart format`. Antes de cada commit que

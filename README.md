@@ -42,13 +42,39 @@ que esta app consume por tag. Aquí sólo vive lo que sabe de hábitos.
 
 Hace falta, fuera de Git:
 
-- `android/app/google-services.json` (Firebase).
+- `android/app/google-services.json` (Firebase), con las dos apps del
+  proyecto `habitos-app-5a054`: `com.norday.habitos` y
+  `com.norday.habitos.prueba`.
 - `android/key.properties` y el keystore, sólo para builds de release.
 
-```bash
+Hay dos variantes (flavors), y **siempre se indica una** con `--flavor`:
+
+| Flavor | Paquete | Nombre | Backend |
+|---|---|---|---|
+| `produccion` | `com.norday.habitos` | Norday Habits | Producción (por defecto) |
+| `prueba` | `com.norday.habitos.prueba` | Norday PRUEBA | Staging, con `--dart-define` |
+
+Al arrancar, la app comprueba que el flavor y la URL del backend van juntos
+(`lib/entorno.dart`). Si no cuadran, se para en «Entorno incorrecto» sin hacer
+ninguna petición.
+
+App de prueba contra staging. Se instala junto a la de Play, sin sustituirla:
+
+```powershell
 flutter pub get
-flutter run
+flutter run --flavor prueba --dart-define=NORDAY_API_URL=https://staging-api.norday.app/api
 ```
+
+Para dejarla instalada y usarla sin cable:
+
+```powershell
+flutter build apk --debug --flavor prueba --dart-define=NORDAY_API_URL=https://staging-api.norday.app/api
+adb install -r build\app\outputs\flutter-apk\app-prueba-debug.apk
+```
+
+**Nunca se instala `--flavor produccion` en un móvil que tenga la app de
+Play.** Es el mismo paquete con otra firma: la instalación falla, y la única
+salida sería desinstalar la de Play.
 
 Los `app_localizations*.dart` se generan al compilar y no se versionan.
 
@@ -63,7 +89,7 @@ git fetch origin
 git log -1 --format="%h %s"             # el mismo commit que origin/main
 Select-String -Path pubspec.yaml -Pattern "^version:","ref: v0"
 Select-String -Path pubspec.lock -Pattern "resolved-ref"
-Select-String -Path android/app/src/main/AndroidManifest.xml -Pattern "android:label"
+Select-String -Path android/app/build.gradle.kts -Pattern "appLabel"
 ```
 
 Antes de seguir, comprobar:
@@ -73,16 +99,16 @@ Antes de seguir, comprobar:
   versión anterior se descartara.
 - **`ref:`** del core apunta a un tag, y `resolved-ref` es el commit de ese
   tag. Se busca sólo el hash, sin prefijo.
-- **`android:label`** es «Norday Habits».
+- **`appLabel`** del flavor `produccion` es «Norday Habits».
 
 Después:
 
 ```powershell
 flutter clean
 flutter pub get
-flutter build appbundle --release
-Get-Item build\app\outputs\bundle\release\app-release.aab | Select-Object Name, Length, LastWriteTime
-keytool -printcert -jarfile build\app\outputs\bundle\release\app-release.aab | Select-String "SHA1"
+flutter build appbundle --release --flavor produccion
+Get-Item build\app\outputs\bundle\produccionRelease\app-produccion-release.aab | Select-Object Name, Length, LastWriteTime
+keytool -printcert -jarfile build\app\outputs\bundle\produccionRelease\app-produccion-release.aab | Select-String "SHA1"
 ```
 
 La huella tiene que ser la de la **clave de subida**, la del keystore que
