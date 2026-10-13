@@ -29,6 +29,10 @@ void main() async {
   // El core es compartido por varias apps; esta app fija su dominio antes
   // de que cualquier catálogo pueda hacer una petición.
   ApiServiceCore.appId = 'habitos';
+  // Cada vez que la app vuelve a primer plano, si está por debajo de la
+  // versión mínima que da el backend, se bloquea hasta actualizar. El
+  // arranque lo comprueba el splash.
+  VersionMinimaService.vigilarAlVolver();
   // Las siete familias van empaquetadas en `google_fonts/`, así que no hay
   // que salir a la red a por ellas. Con esto, un fichero que falte deja de
   // ser un fallo invisible —la fuente del sistema en su lugar— y pasa a
@@ -134,11 +138,15 @@ class _Sesion {
   /// Había sesión, pero el token ya había caducado: se va al login con el
   /// aviso.
   final bool caducada;
+
+  /// La versión instalada está por debajo de la mínima: no se entra.
+  final bool actualizar;
   const _Sesion(
     this.token,
     this.usuarioId,
     this.poseeIdentidad, {
     this.caducada = false,
+    this.actualizar = false,
   });
 }
 
@@ -146,6 +154,11 @@ class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
   Future<_Sesion> _checkSession() async {
+    // Lo primero: una versión por debajo de la mínima no pasa de aquí. Si el
+    // backend no contesta, deja pasar.
+    if (await VersionMinimaService.hayQueActualizar()) {
+      return const _Sesion(null, null, null, actualizar: true);
+    }
     // Antes que nada: con un token caducado, cualquier petición de aquí abajo
     // la rechazaría el backend mientras el splash aún decide a dónde ir.
     if (await ApiServiceCore.descartarSesionCaducada()) {
@@ -176,6 +189,10 @@ class SplashScreen extends StatelessWidget {
       tamanoWordmark: 32,
       tarea: _checkSession,
       onListo: (context, sesion) {
+        if (sesion.actualizar) {
+          VersionMinimaService.bloquear();
+          return;
+        }
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
