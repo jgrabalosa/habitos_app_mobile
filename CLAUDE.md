@@ -112,6 +112,8 @@ puntos:
   `#27C76F` (nunca como texto pequeño sobre fondo claro — usar Verde
   Oscuro `#1EA85B` en ese caso), Gris Muy Claro `#EEF2F6`.
 - **Iconos**: Lucide Icons (Material Icons ya sustituido).
+- **Espaciado**: rejilla de 4 (`AppSpacing` del paquete: 4, 8, 12, 16, 24, 32). Todo lo nuevo sale de ahí; lo existente se pasa cuando se toque.
+- **Escala de letra**: los titulares van en pasos de 4 (16/20/24/28; la cifra, 32), con suelo de 11. Un tamaño nuevo se pide a un rol de la escala (`Theme.of(context).textTheme`), nunca con `fontSize` a mano.
 
 ## Idioma y zona horaria
 
