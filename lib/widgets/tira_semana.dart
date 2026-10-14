@@ -124,7 +124,7 @@ class TiraSemana extends StatelessWidget {
                           )
                         : _BarraAvance(
                             avance: avance,
-                            pista: t.inactivo,
+                            pista: t.aroVacio,
                             relleno: t.success,
                           ),
                   ),
