@@ -187,7 +187,7 @@ class _FilaPanel extends StatelessWidget {
               const SizedBox(width: 12),
               IndicadorNivel(nivel: fila.ritmoNivel, tamano: 11),
               const SizedBox(width: 8),
-              Icon(LucideIcons.chevronRight, size: 18, color: t.primary),
+              Icon(LucideIcons.chevronRight, size: 18, color: t.primaryTrazo),
             ],
           ),
         ),

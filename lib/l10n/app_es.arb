@@ -358,6 +358,8 @@
       }
     }
   },
+  "a11ySemanaAnterior": "Semana anterior",
+  "a11ySemanaSiguiente": "Semana siguiente",
   "ritmoTitulo": "TU RITMO",
   "ritmoNivel1": "Retomando",
   "ritmoNivel2": "Cogiendo ritmo",
