@@ -41,4 +41,19 @@ void main() {
       expect(colorDelTexto(tester), esperado, reason: codigo);
     }
   });
+
+  testWidgets(
+    'el chip de Neotokyo+ usa el espaciado de etiqueta de la identidad',
+    (tester) async {
+      aplicarIdentidadEquipada('TEMA_NEOTOKYO_PLUS');
+      final id = identidadEquipadaNotifier.value;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(body: ChipIdentidad(texto: 'Diario')),
+        ),
+      );
+      final estilo = tester.widget<Text>(find.byType(Text)).style!;
+      expect(estilo.letterSpacing, closeTo(id.espaciadoEtiquetaPara(11), 1e-9));
+    },
+  );
 }

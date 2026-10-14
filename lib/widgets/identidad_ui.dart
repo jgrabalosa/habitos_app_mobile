@@ -88,7 +88,10 @@ class ChipIdentidad extends StatelessWidget {
           color: semanal
               ? t.streakText
               : (id.forma == FormaIdentidad.pill ? t.successText : t.primary),
-          letterSpacing: id.forma == FormaIdentidad.chamfer ? 0.6 : null,
+          // El espaciado de etiqueta de la identidad, a su tamaño (11).
+          letterSpacing: id.forma == FormaIdentidad.chamfer
+              ? id.espaciadoEtiquetaPara(11)
+              : null,
         ),
       ),
     );
