@@ -1455,7 +1455,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 } else if (semanaCumplida) {
                   color = t.success.withValues(alpha: 0.18);
                 } else {
-                  color = t.inactivo;
+                  color = Colors.transparent;
                 }
                 celda = Container(
                   decoration: celdaHeatmap(
@@ -1464,6 +1464,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     color: color,
                     llena: lleno,
                     esHoy: esHoy,
+                    vacia: !lleno && !semanaCumplida,
                   ),
                 );
               }

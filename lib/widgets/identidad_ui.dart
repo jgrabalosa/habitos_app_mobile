@@ -167,6 +167,10 @@ NavigationBarThemeData barraNavegacionIdentidad(
 /// Sólo decora: cuándo una celda está llena, cuándo es descanso, cuándo es hoy
 /// y cuándo está seleccionada lo decide quien la llama, que es el único que
 /// sabe de días planificados y de metas.
+///
+/// Con [vacia], la celda no lleva relleno sino el contorno de `aroVacio`:
+/// es un día que se puede leer como «no hecho», y un relleno apagado se
+/// quedaba por debajo de 3:1. La selección y el hoy mandan sobre esto.
 BoxDecoration celdaHeatmap(
   IdentidadPaleta id,
   TokensContextuales t, {
@@ -174,6 +178,7 @@ BoxDecoration celdaHeatmap(
   required bool llena,
   required bool esHoy,
   bool seleccionada = false,
+  bool vacia = false,
 }) {
   // La selección manda sobre el hoy: si el usuario ha tocado justo el día de
   // hoy, lo que tiene que verse es que lo ha tocado. Va en el color de texto
@@ -182,12 +187,15 @@ BoxDecoration celdaHeatmap(
       ? Border.all(color: t.text, width: 2)
       : esHoy
       ? Border.all(color: t.primaryTrazo, width: 1.5)
+      : vacia
+      ? Border.all(color: t.aroVacio, width: 1.2)
       : null;
+  final relleno = vacia ? Colors.transparent : color;
 
   return switch (id.forma) {
     // Profundidad — celda redondeada con brillo verde cuando está hecha.
     FormaIdentidad.glass => BoxDecoration(
-      color: color,
+      color: relleno,
       borderRadius: BorderRadius.circular(5),
       border: borde,
       boxShadow: llena
@@ -197,7 +205,7 @@ BoxDecoration celdaHeatmap(
 
     // Neotokyo+ — LED: esquina viva y halo cuando enciende.
     FormaIdentidad.chamfer => BoxDecoration(
-      color: color,
+      color: relleno,
       borderRadius: BorderRadius.circular(1),
       border: borde,
       boxShadow: llena
@@ -211,7 +219,7 @@ BoxDecoration celdaHeatmap(
     // Dulce — circulitos pastel, sin filo.
     FormaIdentidad.pill => BoxDecoration(
       shape: BoxShape.circle,
-      color: color,
+      color: relleno,
       border: borde,
       boxShadow: llena
           ? [BoxShadow(color: color.withValues(alpha: 0.45), blurRadius: 7)]

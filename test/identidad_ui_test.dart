@@ -39,4 +39,37 @@ void main() {
       expect(icono!.color, t.primaryTrazo, reason: codigo);
     }
   });
+
+  test('una celda vacía es contorno de aroVacio, sin relleno', () {
+    for (final codigo in catalogoIdentidades.keys) {
+      aplicarIdentidadEquipada(codigo);
+      final id = identidadEquipadaNotifier.value;
+      final t = id.tokens;
+      final vacia = celdaHeatmap(
+        id,
+        t,
+        color: t.inactivo,
+        llena: false,
+        esHoy: false,
+        vacia: true,
+      );
+      expect(vacia.color, Colors.transparent, reason: codigo);
+      expect((vacia.border! as Border).top.color, t.aroVacio, reason: codigo);
+
+      // Hoy manda sobre vacía: su borde sigue siendo el de hoy.
+      final hoyVacia = celdaHeatmap(
+        id,
+        t,
+        color: t.inactivo,
+        llena: false,
+        esHoy: true,
+        vacia: true,
+      );
+      expect(
+        (hoyVacia.border! as Border).top.color,
+        t.primaryTrazo,
+        reason: codigo,
+      );
+    }
+  });
 }

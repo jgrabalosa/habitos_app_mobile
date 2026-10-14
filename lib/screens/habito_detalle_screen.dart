@@ -581,11 +581,11 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     // final superada = Color.lerp(t.primary, t.text, 0.5)!;
 
     Color colorDia(int veces) {
-      if (veces == 0) return t.surface2;
-      if (!conNiveles) return t.primary;
-      if (veces < meta) return t.primary.withValues(alpha: 0.35);
-      return t.primary;
-      // if (veces == meta) return t.primary;
+      if (veces == 0) return Colors.transparent;
+      if (!conNiveles) return t.success;
+      if (veces < meta) return t.success.withValues(alpha: 0.35);
+      return t.success;
+      // if (veces == meta) return t.success;
       // return superada;
     }
 
@@ -667,6 +667,7 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                       llena: veces > 0,
                       esHoy: esHoy,
                       seleccionada: seleccionado,
+                      vacia: veces == 0,
                     ),
                   ),
                 );
@@ -692,9 +693,9 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                     ).textTheme.labelSmall?.copyWith(color: t.textMuted),
                   ),
                   ...[
-                    t.surface2,
-                    if (conNiveles) t.primary.withValues(alpha: 0.35),
-                    t.primary,
+                    Colors.transparent,
+                    if (conNiveles) t.success.withValues(alpha: 0.35),
+                    t.success,
                     // if (conNiveles) superada,
                   ].map(
                     (c) => Container(
@@ -708,8 +709,9 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                         id,
                         t,
                         color: c,
-                        llena: c != t.surface2,
+                        llena: c != Colors.transparent,
                         esHoy: false,
+                        vacia: c == Colors.transparent,
                       ),
                     ),
                   ),
