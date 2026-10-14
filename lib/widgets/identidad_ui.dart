@@ -49,14 +49,20 @@ class TarjetaIdentidad extends StatelessWidget {
 class ChipIdentidad extends StatelessWidget {
   final String texto;
 
-  const ChipIdentidad({super.key, required this.texto});
+  /// Si el hábito es semanal. Lo semanal se marca con el tercer color de la
+  /// identidad (`streak`; como texto, `streakText`); lo diario, con el acento
+  /// principal.
+  final bool semanal;
+
+  const ChipIdentidad({super.key, required this.texto, this.semanal = false});
 
   @override
   Widget build(BuildContext context) {
     final id = identidad(context);
     final t = tokens(context);
 
-    final relleno = t.primary.withValues(alpha: 0.12);
+    final acento = semanal ? t.streak : t.primary;
+    final relleno = acento.withValues(alpha: 0.12);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
@@ -67,7 +73,7 @@ class ChipIdentidad extends StatelessWidget {
           // Píldora completa salvo en Neotokyo+, que corta.
           radio: 999,
           lado: switch (id.forma) {
-            FormaIdentidad.chamfer => BorderSide(color: t.primary, width: 1),
+            FormaIdentidad.chamfer => BorderSide(color: acento, width: 1),
             _ => BorderSide.none,
           },
         ),
@@ -79,7 +85,9 @@ class ChipIdentidad extends StatelessWidget {
           fontWeight: FontWeight.w700,
           // Aquí el primario va como TEXTO, así que en las identidades claras
           // manda la variante que contrasta.
-          color: id.forma == FormaIdentidad.pill ? t.successText : t.primary,
+          color: semanal
+              ? t.streakText
+              : (id.forma == FormaIdentidad.pill ? t.successText : t.primary),
           letterSpacing: id.forma == FormaIdentidad.chamfer ? 0.6 : null,
         ),
       ),

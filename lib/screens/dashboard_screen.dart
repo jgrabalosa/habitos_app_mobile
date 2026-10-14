@@ -905,6 +905,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             etiquetaSemantica: l.dashAyudaFlexiblesEtiqueta,
             superindice: true,
           ),
+          acento: t.streakText,
         ),
         const SizedBox(height: 8),
         if (!_semanaPlegada)
@@ -1046,10 +1047,11 @@ class _DashboardScreenState extends State<DashboardScreen>
     required bool plegada,
     required VoidCallback alPlegar,
     Widget? ayuda,
+    Color? acento,
   }) {
     final estilo = Theme.of(
       context,
-    ).textTheme.titleSmall?.copyWith(color: t.textMuted);
+    ).textTheme.titleSmall?.copyWith(color: acento ?? t.textMuted);
     return Row(
       children: [
         Text(titulo, style: estilo),
@@ -1293,6 +1295,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                             f.completados,
                             f.meta,
                           ),
+                          semanal: f.esSemanal,
                         ),
                         const SizedBox(width: 8),
                         IndicadorNivel(
