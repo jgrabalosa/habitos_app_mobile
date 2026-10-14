@@ -944,20 +944,17 @@ class _DashboardScreenState extends State<DashboardScreen>
                     tooltip: l.a11ySemanaAnterior,
                     onPressed: () => _moverSemanas(-1),
                   ),
-                  // Una línea siempre: el FittedBox encoge sólo cuando hace
-                  // falta (meses largos en pt y en, escalado del sistema).
+                  // Sin encoger la letra: si el usuario la agranda en el
+                  // sistema, se respeta. Si no cabe en una línea (meses largos
+                  // en pt y en, letra grande), baja a una segunda.
                   Flexible(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        _tituloDelDia(context, l, hoy),
-                        maxLines: 1,
-                        softWrap: false,
-                        style: Theme.of(
-                          context,
-                        ).textTheme.titleLarge?.copyWith(color: t.text),
-                      ),
+                    child: Text(
+                      _tituloDelDia(context, l, hoy),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.titleLarge?.copyWith(color: t.text),
                     ),
                   ),
                   IconButton(
@@ -983,10 +980,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                         ),
                         minimumSize: const Size(0, 32),
                         tapTargetSize: MaterialTapTargetSize.padded,
-                        textStyle: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        textStyle: Theme.of(context).textTheme.labelLarge,
                       ),
                       child: Text(l.navHoy),
                     ),
@@ -1024,11 +1018,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                 AnilloIdentidad(tamano: 64, pct: avance ?? 0),
                 Text(
                   '$hechosDia/${filasDia.length}',
-                  style: TextStyle(
-                    fontSize: 64 * 0.24,
-                    fontWeight: FontWeight.w600,
-                    color: t.text,
-                  ),
+                  // Una cifra: rol de nombre/cifra corta, en la letra de
+                  // titulares. 16 cabe holgado en el aro de 64.
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(color: t.text),
                 ),
               ],
             ),
