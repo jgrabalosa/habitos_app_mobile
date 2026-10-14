@@ -249,6 +249,8 @@
   "dashSeccionContador": "{hechos} of {total}",
   "a11yPlegarSeccion": "Collapse the {seccion} section",
   "a11yDesplegarSeccion": "Expand the {seccion} section",
+  "a11ySemanaAnterior": "Previous week",
+  "a11ySemanaSiguiente": "Next week",
   "ritmoTitulo": "YOUR PACE",
   "ritmoNivel1": "Getting back",
   "ritmoNivel2": "Finding your pace",

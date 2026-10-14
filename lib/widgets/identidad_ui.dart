@@ -130,7 +130,9 @@ NavigationBarThemeData barraNavegacionIdentidad(
     iconTheme: WidgetStateProperty.resolveWith(
       (estados) => IconThemeData(
         size: 24,
-        color: estados.contains(WidgetState.selected) ? t.primary : t.textMuted,
+        color: estados.contains(WidgetState.selected)
+            ? t.primaryTrazo
+            : t.textMuted,
       ),
     ),
     labelTextStyle: WidgetStateProperty.resolveWith(
@@ -171,7 +173,7 @@ BoxDecoration celdaHeatmap(
   final borde = seleccionada
       ? Border.all(color: t.text, width: 2)
       : esHoy
-      ? Border.all(color: t.primary, width: 1.5)
+      ? Border.all(color: t.primaryTrazo, width: 1.5)
       : null;
 
   return switch (id.forma) {

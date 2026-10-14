@@ -249,6 +249,8 @@
   "dashSeccionContador": "{hechos} de {total}",
   "a11yPlegarSeccion": "Recolher a secção {seccion}",
   "a11yDesplegarSeccion": "Expandir a secção {seccion}",
+  "a11ySemanaAnterior": "Semana anterior",
+  "a11ySemanaSiguiente": "Semana seguinte",
   "ritmoTitulo": "O TEU RITMO",
   "ritmoNivel1": "A retomar",
   "ritmoNivel2": "A ganhar ritmo",

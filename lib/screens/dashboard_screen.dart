@@ -939,8 +939,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                   IconButton(
                     icon: const Icon(LucideIcons.chevronLeft),
                     iconSize: 20,
-                    visualDensity: VisualDensity.compact,
                     color: t.textMuted,
+                    tooltip: l.a11ySemanaAnterior,
                     onPressed: () => _moverSemanas(-1),
                   ),
                   // Una línea siempre: el FittedBox encoge sólo cuando hace
@@ -962,25 +962,26 @@ class _DashboardScreenState extends State<DashboardScreen>
                   IconButton(
                     icon: const Icon(LucideIcons.chevronRight),
                     iconSize: 20,
-                    visualDensity: VisualDensity.compact,
                     color: t.textMuted,
+                    tooltip: l.a11ySemanaSiguiente,
                     onPressed: () => _moverSemanas(1),
                   ),
                   // Sólo cuando te has ido de la semana de hoy: con dos
                   // flechas es fácil perderse, y volver no debe costar tres
                   // toques.
                   if (hoy.indiceHoy < 0)
+                    // 48 de zona táctil (Android) sin cambiar el dibujo; el texto en tinta: 4.61 sobre el rosa en Dulce.
                     FilledButton(
                       onPressed: () => _irADia(hoy.hoy),
                       style: FilledButton.styleFrom(
                         backgroundColor: t.primary,
-                        foregroundColor: t.bg,
+                        foregroundColor: t.tinta,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 14,
                           vertical: 0,
                         ),
                         minimumSize: const Size(0, 32),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        tapTargetSize: MaterialTapTargetSize.padded,
                         textStyle: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -1330,7 +1331,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                           valueListenable: detalleDescubiertoNotifier,
                           builder: (context, descubierto, child) =>
                               ChevronDetalle(
-                                color: t.primary,
+                                color: t.primaryTrazo,
                                 empujar: primera && !descubierto,
                               ),
                         ),
