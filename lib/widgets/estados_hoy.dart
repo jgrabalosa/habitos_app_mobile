@@ -73,7 +73,7 @@ class _FilaSkeleton extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: ShapeDecoration(
         // Aunque no haya nada dentro, la silueta ya tiene la forma de la
         // identidad: el salto entre carga y contenido es sólo de contenido.

@@ -1245,7 +1245,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           _cargarHoy();
         },
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
           child: Row(
             children: [
               Expanded(
