@@ -5,7 +5,6 @@ import '../services/api_service_habitos.dart';
 import '../services/analytics_service.dart';
 import '../services/habitos_refresh.dart';
 import '../services/app_refresh.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:in_app_review/in_app_review.dart';
@@ -17,26 +16,12 @@ import '../services/recorrido_onboarding.dart';
 import '../widgets/estados_hoy.dart';
 import '../widgets/identidad_ui.dart';
 import '../widgets/panel_ritmo.dart';
+import '../widgets/cabecera_otro_dia.dart';
 import '../widgets/tira_semana.dart';
 import '../widgets/transito_fila.dart';
 import '../services/descubrimiento_detalle.dart';
 import '../widgets/chevron_detalle.dart';
 import 'habito_detalle_screen.dart';
-import 'dashboard_logica.dart';
-
-String formatearTituloDelDia({
-  required DateTime fecha,
-  required String locale,
-  required String textoHoy,
-  required bool viendoHoy,
-}) {
-  if (viendoHoy) {
-    return '$textoHoy, ${DateFormat.MMMMd(locale).format(fecha)}';
-  }
-
-  final largo = DateFormat.MMMMEEEEd(locale).format(fecha);
-  return largo.isEmpty ? largo : largo[0].toUpperCase() + largo.substring(1);
-}
 
 /// Lunes de la semana ISO a la que pertenece [dia], a medianoche.
 ///
@@ -825,18 +810,24 @@ class _DashboardScreenState extends State<DashboardScreen>
     final sinNada = filasDia.isEmpty && filasSemana.isEmpty;
 
     return [
-      // La tira va la primera, pegada al borde: es lo que más se toca.
+      // La línea del día que se mira, solo si no es hoy; luego la tira, pegada
+      // al borde, que es lo que más se toca.
+      CabeceraOtroDia(
+        fecha: DateTime.parse(hoy.fecha),
+        viendoHoy: viendoHoy,
+        onHoy: () => _irADia(hoy.hoy),
+      ),
       TiraSemana(
         dias: hoy.dias,
         diaSeleccionado: hoy.indiceFecha,
         indiceHoy: hoy.indiceHoy,
         onSeleccionar: (i) => _irADia(hoy.dias[i].fecha),
+        onSemanaAnterior: () => _moverSemanas(-1),
+        onSemanaSiguiente: () => _moverSemanas(1),
       ),
-      const SizedBox(height: 13),
-      _cabecera(l, t, hoy, filasDia, hechosDia),
-      const SizedBox(height: 16),
+      const SizedBox(height: 12),
       if (hoy.ritmoNivel != null) ...[
-        _tarjetaRitmo(l, t, hoy.ritmoNivel!, hoy.ritmoTendencia),
+        _tarjetaRitmo(l, t, hoy.ritmoNivel!),
         const SizedBox(height: 4),
       ],
       if (sinNada)
@@ -916,121 +907,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     ];
   }
 
-  /// La franja de contexto: flechas y fecha, la frase y el anillo del día.
-  Widget _cabecera(
-    AppLocalizations l,
-    TokensContextuales t,
-    HoyLeido hoy,
-    List<FilaHoy> filasDia,
-    int hechosDia,
-  ) {
-    final avance = avanceDelDia(filasDia);
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  // Las flechas van aquí y no en la tira porque la tira es un
-                  // Row de siete Expanded sin holgura, y deslizar tampoco
-                  // vale: el PageView del shell se queda el arrastre
-                  // horizontal para cambiar de pestaña.
-                  IconButton(
-                    icon: const Icon(LucideIcons.chevronLeft),
-                    iconSize: 20,
-                    color: t.textMuted,
-                    tooltip: l.a11ySemanaAnterior,
-                    onPressed: () => _moverSemanas(-1),
-                  ),
-                  // Sin encoger la letra: si el usuario la agranda en el
-                  // sistema, se respeta. Si no cabe en una línea (meses largos
-                  // en pt y en, letra grande), baja a una segunda.
-                  Flexible(
-                    child: Text(
-                      _tituloDelDia(context, l, hoy),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.titleLarge?.copyWith(color: t.text),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(LucideIcons.chevronRight),
-                    iconSize: 20,
-                    color: t.textMuted,
-                    tooltip: l.a11ySemanaSiguiente,
-                    onPressed: () => _moverSemanas(1),
-                  ),
-                  // Sólo cuando te has ido de la semana de hoy: con dos
-                  // flechas es fácil perderse, y volver no debe costar tres
-                  // toques.
-                  if (hoy.indiceHoy < 0)
-                    // 48 de zona táctil (Android) sin cambiar el dibujo; el texto en tinta: 4.61 sobre el rosa en Dulce.
-                    FilledButton(
-                      onPressed: () => _irADia(hoy.hoy),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: t.primary,
-                        foregroundColor: t.tinta,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 0,
-                        ),
-                        minimumSize: const Size(0, 32),
-                        tapTargetSize: MaterialTapTargetSize.padded,
-                        textStyle: Theme.of(context).textTheme.labelLarge,
-                      ),
-                      child: Text(l.navHoy),
-                    ),
-                ],
-              ),
-              if (filasDia.isNotEmpty) ...[
-                const SizedBox(height: 4),
-                // La frase va en la superficie de la identidad. El color sólo
-                // se fuerza con todo hecho, que es la única señal cromática de
-                // que ya está todo.
-                Center(
-                  child: BurbujaContexto(
-                    texto: _fraseHoy(
-                      l,
-                      hechosDia,
-                      filasDia.length,
-                      avance ?? 0,
-                    ),
-                    color: hechosDia == filasDia.length ? t.successText : null,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-        // El arco es el avance del día, con lo hecho a medias; la cifra del
-        // centro, cuántos de la sección del día están hechos.
-        if (filasDia.isNotEmpty)
-          SizedBox(
-            width: 64,
-            height: 64,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                AnilloIdentidad(tamano: 64, pct: avance ?? 0),
-                Text(
-                  '$hechosDia/${filasDia.length}',
-                  // Una cifra: rol de nombre/cifra corta, en la letra de
-                  // titulares. 16 cabe holgado en el aro de 64.
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleMedium?.copyWith(color: t.text),
-                ),
-              ],
-            ),
-          ),
-      ],
-    );
-  }
-
   /// El título de una sección: nombre, «1 de 4» y el botón de plegar.
   Widget _tituloSeccion(
     AppLocalizations l,
@@ -1070,26 +946,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  /// El título de la cabecera: el día que se está mirando, no siempre hoy.
-  String _tituloDelDia(BuildContext context, AppLocalizations l, HoyLeido hoy) {
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    return formatearTituloDelDia(
-      fecha: DateTime.parse(hoy.fecha),
-      locale: locale,
-      textoHoy: l.navHoy,
-      viendoHoy: hoy.viendoHoy,
-    );
-  }
-
-  String _fraseHoy(AppLocalizations l, int hechos, int total, double avance) =>
-      switch (fraseHoy(hechos: hechos, total: total, avance: avance)) {
-        FraseHoy.nada => l.dashFraseNada,
-        FraseHoy.empezado => l.dashFraseEmpezado,
-        FraseHoy.llevas => l.dashFraseLlevas(hechos),
-        FraseHoy.quedaUno => l.dashFraseQuedaUno,
-        FraseHoy.todo => l.dashFraseTodo,
-      };
-
   /// Abre el panel «Tu ritmo». Si se toca un hábito, se va a su detalle.
   Future<void> _abrirPanelRitmo() async {
     final hoy = _hoy;
@@ -1110,16 +966,10 @@ class _DashboardScreenState extends State<DashboardScreen>
     _cargarHoy();
   }
 
-  /// La tarjeta «TU RITMO»: el ritmo general, con su palabra, su causa y el
+  /// La tarjeta «TU RITMO»: el ritmo general, en una línea, con su palabra y el
   /// dibujo de la identidad. Al tocarla se abre el panel «Tu ritmo».
-  Widget _tarjetaRitmo(
-    AppLocalizations l,
-    TokensContextuales t,
-    int nivel,
-    TendenciaRitmo? tendencia,
-  ) {
+  Widget _tarjetaRitmo(AppLocalizations l, TokensContextuales t, int nivel) {
     final palabra = palabraRitmo(l, nivel);
-    final causa = causaRitmo(l, tendencia);
     final texto = Theme.of(context).textTheme;
     return Semantics(
       container: true,
@@ -1134,8 +984,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             child: Row(
               children: [
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
                       Text(
                         l.ritmoTitulo,
@@ -1145,23 +994,21 @@ class _DashboardScreenState extends State<DashboardScreen>
                           letterSpacing: 0.8,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(width: 12),
                       // La palabra en el color de los puntos, el mismo de las
-                      // estrellas llenas: es lo que se ve de lejos.
-                      Text(
-                        palabra,
-                        style: texto.titleLarge?.copyWith(
-                          color: t.points,
-                          fontWeight: FontWeight.w700,
+                      // estrellas llenas: es lo que se ve de lejos. Una línea:
+                      // la causa ya se ve en el panel «Tu ritmo».
+                      Flexible(
+                        child: Text(
+                          palabra,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: texto.titleLarge?.copyWith(
+                            color: t.points,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
-                      if (causa != null) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          causa,
-                          style: texto.bodySmall?.copyWith(color: t.textMuted),
-                        ),
-                      ],
                     ],
                   ),
                 ),
