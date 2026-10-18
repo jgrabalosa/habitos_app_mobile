@@ -59,7 +59,9 @@ en lo que dicen, así que se quedan aquí. Despachan por `FormaIdentidad` con un
 `switch` exhaustivo y sacan los radios de `IdentidadPaleta` — el mismo patrón
 que el paquete usa en el halo, el terrario, el aro y el check. En Neotokyo+
 las tarjetas de Hoy usan `FiloNeon` (core v0.40.0): latiendo si el hábito está
-pendiente, encendido si está hecho y fijo si el día no se puede marcar. Al
+pendiente, encendido si está hecho y fijo si el día no se puede marcar. En
+Dulce (core v0.43.0) el chip, las celdas, la barra de avance y la pestaña de la
+barra van a lápiz de color: borde con `BordeLapiz` y lo hecho a rayas. Al
 añadir una pieza nueva a Hoy, seguirlo en vez de escribir números sueltos.
 
 ### Lo que esta app le enchufa al paquete

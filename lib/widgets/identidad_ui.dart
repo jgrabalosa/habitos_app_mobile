@@ -73,13 +73,18 @@ class ChipIdentidad extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       decoration: ShapeDecoration(
-        color: relleno,
+        // En Dulce el chip va a lápiz y sin relleno: el filo lleva el color.
+        color: id.forma == FormaIdentidad.pill ? null : relleno,
         shape: formaIdentidad(
           id,
           // Píldora completa salvo en Neotokyo+, que corta.
           radio: 999,
           lado: switch (id.forma) {
             FormaIdentidad.chamfer => BorderSide(color: acento, width: 1),
+            FormaIdentidad.pill => BorderSide(
+              color: t.primaryTrazo,
+              width: 1.1,
+            ),
             _ => BorderSide.none,
           },
         ),
@@ -133,10 +138,15 @@ NavigationBarThemeData barraNavegacionIdentidad(
       ),
       color: t.primary.withValues(alpha: 0.20),
     ),
-    // Dulce — píldora completa y de color, que es su forma en todo.
+    // Dulce — la pestaña elegida va a lápiz, con el sombreado a rayas dentro:
+    // sin relleno liso, como en la maqueta.
     FormaIdentidad.pill => (
-      forma: const StadiumBorder(),
-      color: t.primary.withValues(alpha: 0.22),
+      forma: BordeLapiz(
+        radio: 999,
+        side: BorderSide(color: t.primaryTrazo, width: 1.3),
+        rayas: t.primary,
+      ),
+      color: Colors.transparent,
     ),
   };
 
@@ -180,7 +190,7 @@ NavigationBarThemeData barraNavegacionIdentidad(
 /// Con [vacia], la celda no lleva relleno sino el contorno de `aroVacio`:
 /// es un día que se puede leer como «no hecho», y un relleno apagado se
 /// quedaba por debajo de 3:1. La selección y el hoy mandan sobre esto.
-BoxDecoration celdaHeatmap(
+Decoration celdaHeatmap(
   IdentidadPaleta id,
   TokensContextuales t, {
   required Color color,
@@ -192,13 +202,16 @@ BoxDecoration celdaHeatmap(
   // La selección manda sobre el hoy: si el usuario ha tocado justo el día de
   // hoy, lo que tiene que verse es que lo ha tocado. Va en el color de texto
   // porque el primario ya está diciendo otra cosa a su lado.
-  final borde = seleccionada
-      ? Border.all(color: t.text, width: 2)
+  final lado = seleccionada
+      ? BorderSide(color: t.text, width: 2)
       : esHoy
-      ? Border.all(color: t.primaryTrazo, width: 1.5)
+      ? BorderSide(color: t.primaryTrazo, width: 1.5)
       : vacia
-      ? Border.all(color: t.aroVacio, width: 1.2)
-      : null;
+      ? BorderSide(color: t.aroVacio, width: 1.2)
+      : BorderSide.none;
+  final borde = lado.style == BorderStyle.none
+      ? null
+      : Border.all(color: lado.color, width: lado.width);
   final relleno = vacia ? Colors.transparent : color;
 
   return switch (id.forma) {
@@ -225,14 +238,15 @@ BoxDecoration celdaHeatmap(
           : null,
     ),
 
-    // Dulce — circulitos pastel, sin filo.
-    FormaIdentidad.pill => BoxDecoration(
-      shape: BoxShape.circle,
-      color: relleno,
-      border: borde,
-      boxShadow: llena
-          ? [BoxShadow(color: color.withValues(alpha: 0.45), blurRadius: 7)]
-          : null,
+    // Dulce — círculos a lápiz. Lo hecho y lo seleccionado van a rayas del
+    // color; los bordes, a lápiz. Lo vacío no lleva relleno.
+    FormaIdentidad.pill => ShapeDecoration(
+      color: (llena || vacia) ? null : color,
+      shape: BordeLapiz(
+        radio: 999,
+        side: lado,
+        rayas: llena ? color.withValues(alpha: 1) : null,
+      ),
     ),
   };
 }
