@@ -120,6 +120,7 @@ class HabitosApp extends StatelessWidget {
                 GlobalWidgetsLocalizations.delegate,
                 GlobalCupertinoLocalizations.delegate,
               ],
+              builder: envolverConGrano,
               home: const SplashScreen(),
             );
           },
@@ -128,6 +129,24 @@ class HabitosApp extends StatelessWidget {
     );
   }
 }
+
+/// El `builder` del MaterialApp: pone el grano de papel de Dulce encima de todo
+/// lo que se pinte, pantallas, diálogos y hojas. No recibe toques ni se oye; en
+/// las demás identidades no pinta nada. RepaintBoundary: son miles de motas y no
+/// deben repintarse con cada animación de debajo. Sin const: tiene que
+/// reconstruirse al cambiar de identidad (la clave cambia con ella).
+Widget envolverConGrano(BuildContext context, Widget? child) => Stack(
+  children: [
+    child ?? const SizedBox.shrink(),
+    Positioned.fill(
+      child: RepaintBoundary(
+        child: GranoPapel(
+          key: ValueKey(identidadEquipadaNotifier.value.codigo),
+        ),
+      ),
+    ),
+  ],
+);
 
 /// Lo que el splash averigua antes de decidir a dónde ir.
 class _Sesion {
