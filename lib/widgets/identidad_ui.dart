@@ -250,3 +250,11 @@ Decoration celdaHeatmap(
     ),
   };
 }
+
+/// Cuánto hay que mover a la izquierda una cifra centrada para que se vea
+/// centrada. Solo Caveat lo necesita: su tinta queda ~0,12 em a la derecha del
+/// avance. Medido con Caveat-Bold a 20 px: «1» +2,6 px, «8» +2,1, «13» +2,5,
+/// «18» +2,7, «28» +2,2. En Nunito el desvío es de 0 a 0,5 px. En las demás
+/// letras, 0.
+double desvioCifra(IdentidadPaleta id, double tamano) =>
+    id.fontBody == 'Caveat' ? -0.12 * tamano : 0;
