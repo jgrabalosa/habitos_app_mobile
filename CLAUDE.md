@@ -100,6 +100,9 @@ puntos:
    durante la ceremonia.
 8. **`SplashGenerico.rutaImagen`** — el símbolo de la brújula,
    `assets/branding/simbolo_negativo.png`.
+9. **El grano de papel** — el `builder` del `MaterialApp` (en `main.dart`,
+   `envolverConGrano`) pone `GranoPapel` (core v0.45.0) encima de todo;
+   solo pinta en Dulce.
 
 ## Identidad de marca (aplicar siempre en UI nueva)
 
