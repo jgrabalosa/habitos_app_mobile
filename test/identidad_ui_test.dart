@@ -5,6 +5,16 @@ import 'package:habitos_app_mobile/widgets/identidad_ui.dart';
 
 /// En Dulce el rosa de relleno no llega a 3:1 como trazo: el borde de «hoy»
 /// y el icono de la pestaña activa tienen que ir en `primaryTrazo`.
+///
+/// La celda de Dulce es un `ShapeDecoration` con un `BordeLapiz`; las demás,
+/// un `BoxDecoration` con `Border`. Estas dos ayudas leen las dos formas.
+Color? rellenoDe(Decoration d) =>
+    d is ShapeDecoration ? d.color : (d as BoxDecoration).color;
+
+BorderSide ladoDe(Decoration d) => d is ShapeDecoration
+    ? (d.shape as OutlinedBorder).side
+    : (d as BoxDecoration).border!.top;
+
 void main() {
   final identidadInicial = identidadEquipadaNotifier.value;
   tearDown(() => aplicarIdentidadEquipada(identidadInicial.codigo));
@@ -21,11 +31,7 @@ void main() {
         llena: false,
         esHoy: true,
       );
-      expect(
-        (celda.border! as Border).top.color,
-        t.primaryTrazo,
-        reason: codigo,
-      );
+      expect(ladoDe(celda).color, t.primaryTrazo, reason: codigo);
     }
   });
 
@@ -53,8 +59,14 @@ void main() {
         esHoy: false,
         vacia: true,
       );
-      expect(vacia.color, Colors.transparent, reason: codigo);
-      expect((vacia.border! as Border).top.color, t.aroVacio, reason: codigo);
+      // Sin relleno: transparente en Profundidad y Neotokyo+, y null en Dulce,
+      // donde el relleno ni se pinta.
+      expect(
+        rellenoDe(vacia) ?? Colors.transparent,
+        Colors.transparent,
+        reason: codigo,
+      );
+      expect(ladoDe(vacia).color, t.aroVacio, reason: codigo);
 
       // Hoy manda sobre vacía: su borde sigue siendo el de hoy.
       final hoyVacia = celdaHeatmap(
@@ -65,11 +77,7 @@ void main() {
         esHoy: true,
         vacia: true,
       );
-      expect(
-        (hoyVacia.border! as Border).top.color,
-        t.primaryTrazo,
-        reason: codigo,
-      );
+      expect(ladoDe(hoyVacia).color, t.primaryTrazo, reason: codigo);
     }
   });
 }

@@ -126,6 +126,7 @@ class TiraSemana extends StatelessWidget {
                             avance: avance,
                             pista: t.aroVacio,
                             relleno: t.success,
+                            forma: id.forma,
                           ),
                   ),
                 ],
@@ -138,20 +139,29 @@ class TiraSemana extends StatelessWidget {
   }
 }
 
-/// La barrita del avance de un día: la pista apagada y, encima, lo hecho.
+/// La barrita del avance de un día: la pista apagada y, encima, lo hecho. En
+/// Dulce, las dos a lápiz; en las demás, barras redondeadas.
 class _BarraAvance extends StatelessWidget {
   final double avance;
   final Color pista;
   final Color relleno;
+  final FormaIdentidad forma;
 
   const _BarraAvance({
     required this.avance,
     required this.pista,
     required this.relleno,
+    required this.forma,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (forma == FormaIdentidad.pill) {
+      return CustomPaint(
+        size: Size.infinite,
+        painter: _BarraLapiz(avance: avance, pista: pista, relleno: relleno),
+      );
+    }
     final radio = BorderRadius.circular(2);
     return Align(
       alignment: Alignment.center,
@@ -169,4 +179,48 @@ class _BarraAvance extends StatelessWidget {
       ),
     );
   }
+}
+
+/// La barrita del avance en Dulce: la pista entera y, encima, lo hecho, los dos
+/// trazos a lápiz sobre la misma línea, con la misma mano.
+class _BarraLapiz extends CustomPainter {
+  _BarraLapiz({
+    required this.avance,
+    required this.pista,
+    required this.relleno,
+  });
+
+  final double avance;
+  final Color pista;
+  final Color relleno;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final y = size.height / 2;
+    final semilla = semillaDe(size);
+    pintarTrazoLapiz(
+      canvas,
+      Path()
+        ..moveTo(0, y)
+        ..lineTo(size.width, y),
+      color: pista,
+      grosor: 1.6,
+      semilla: semilla,
+    );
+    pintarTrazoLapiz(
+      canvas,
+      Path()
+        ..moveTo(0, y)
+        ..lineTo(size.width * avance.clamp(0.0, 1.0), y),
+      color: relleno,
+      grosor: 2.4,
+      semilla: semilla,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_BarraLapiz viejo) =>
+      viejo.avance != avance ||
+      viejo.pista != pista ||
+      viejo.relleno != relleno;
 }
