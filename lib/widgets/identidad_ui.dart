@@ -87,7 +87,7 @@ class ChipIdentidad extends StatelessWidget {
       child: Text(
         texto,
         style: TextStyle(
-          fontSize: 11,
+          fontSize: tamanoLectura(id, 11),
           fontWeight: FontWeight.w700,
           // Aquí el primario va como TEXTO, así que en las identidades claras
           // manda la variante que contrasta.
