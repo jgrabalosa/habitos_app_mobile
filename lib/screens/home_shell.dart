@@ -565,19 +565,22 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
             // arriba, así que no se puede quitar.
             SafeArea(
               key: const ValueKey('paginas'),
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: (i) {
-                  setState(() => _tabIndex = i);
-                  // Paso de acción: llegar a Hábitos ES la acción.
-                  if (_recorrido.pasoActual == _pasoPestanaHabitos && i == 2) {
-                    _recorrido.avanzar();
-                  }
-                },
-                // Cada pestaña se mantiene viva al salir de pantalla, como
-                // hacía el IndexedStack: deslizar no debe recargar lo que
-                // ya estaba cargado.
-                children: [for (final tab in tabs) _MantenerVivo(child: tab)],
+              child: OcultoAlLectorDuranteCierre(
+                child: PageView(
+                  controller: _pageController,
+                  onPageChanged: (i) {
+                    setState(() => _tabIndex = i);
+                    // Paso de acción: llegar a Hábitos ES la acción.
+                    if (_recorrido.pasoActual == _pasoPestanaHabitos &&
+                        i == 2) {
+                      _recorrido.avanzar();
+                    }
+                  },
+                  // Cada pestaña se mantiene viva al salir de pantalla, como
+                  // hacía el IndexedStack: deslizar no debe recargar lo que
+                  // ya estaba cargado.
+                  children: [for (final tab in tabs) _MantenerVivo(child: tab)],
+                ),
               ),
             ),
             // El cierre del día va ENTRE las páginas y la constelación: su
@@ -598,50 +601,53 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
         // y el color de lo activo salen de la identidad equipada.
         // La barra va fuera del Stack: el velo del cierre del día la cubre
         // con su propia pieza, que además impide cambiar de pestaña a media
-        // ceremonia.
+        // ceremonia. Y OcultoAlLectorDuranteCierre la esconde al lector de
+        // pantalla mientras tanto, como a las páginas.
         bottomNavigationBar: Stack(
           children: [
-            NavigationBarTheme(
-              data: barraNavegacionIdentidad(
-                identidad(context),
-                t,
-                Theme.of(context).textTheme.labelMedium,
-              ),
-              child: NavigationBar(
-                // `selectedIndex` sigue valiendo 0, 1 o 2: el menú es el cuarto
-                // destino pero nunca queda seleccionado, porque no es una página.
-                // Al volver de la hoja, la pestaña marcada es la que ya estaba.
-                selectedIndex: _tabIndex,
-                onDestinationSelected: (i) {
-                  if (i == indiceMenu) {
-                    _abrirMenu();
-                    return;
-                  }
-                  _irAPestana(i);
-                },
-                destinations: [
-                  NavigationDestination(
-                    icon: const Icon(LucideIcons.house),
-                    label: etiquetas[0],
-                  ),
-                  NavigationDestination(
-                    icon: const Icon(LucideIcons.pawPrint),
-                    label: etiquetas[1],
-                  ),
-                  NavigationDestination(
-                    icon: Icon(
-                      LucideIcons.listChecks,
-                      key: _recorrido.activo
-                          ? AnclasRecorrido.pestanaHabitos
-                          : null,
+            OcultoAlLectorDuranteCierre(
+              child: NavigationBarTheme(
+                data: barraNavegacionIdentidad(
+                  identidad(context),
+                  t,
+                  Theme.of(context).textTheme.labelMedium,
+                ),
+                child: NavigationBar(
+                  // `selectedIndex` sigue valiendo 0, 1 o 2: el menú es el cuarto
+                  // destino pero nunca queda seleccionado, porque no es una página.
+                  // Al volver de la hoja, la pestaña marcada es la que ya estaba.
+                  selectedIndex: _tabIndex,
+                  onDestinationSelected: (i) {
+                    if (i == indiceMenu) {
+                      _abrirMenu();
+                      return;
+                    }
+                    _irAPestana(i);
+                  },
+                  destinations: [
+                    NavigationDestination(
+                      icon: const Icon(LucideIcons.house),
+                      label: etiquetas[0],
                     ),
-                    label: etiquetas[2],
-                  ),
-                  NavigationDestination(
-                    icon: const Icon(LucideIcons.menu),
-                    label: etiquetas[3],
-                  ),
-                ],
+                    NavigationDestination(
+                      icon: const Icon(LucideIcons.pawPrint),
+                      label: etiquetas[1],
+                    ),
+                    NavigationDestination(
+                      icon: Icon(
+                        LucideIcons.listChecks,
+                        key: _recorrido.activo
+                            ? AnclasRecorrido.pestanaHabitos
+                            : null,
+                      ),
+                      label: etiquetas[2],
+                    ),
+                    NavigationDestination(
+                      icon: const Icon(LucideIcons.menu),
+                      label: etiquetas[3],
+                    ),
+                  ],
+                ),
               ),
             ),
             const Positioned.fill(child: VeloBarraCierreDelDia()),
