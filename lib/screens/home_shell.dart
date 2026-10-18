@@ -397,7 +397,13 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
                 children: [
                   Icon(icono, size: 18, color: t.points),
                   const SizedBox(width: 12),
-                  Text(texto, style: TextStyle(color: t.text, fontSize: 14)),
+                  Text(
+                    texto,
+                    style: TextStyle(
+                      color: t.text,
+                      fontSize: tamanoLectura(id, 14),
+                    ),
+                  ),
                 ],
               ),
             ),
