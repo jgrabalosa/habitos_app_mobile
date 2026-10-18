@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import 'package:habitos_app_mobile/l10n/app_localizations.dart';
 import 'package:habitos_app_mobile/models/hoy.dart';
+import 'package:habitos_app_mobile/widgets/identidad_ui.dart';
 import 'package:habitos_app_mobile/widgets/tira_semana.dart';
 
 /// La tira de siete días, con sus flechas de semana en los extremos. A 360 de
@@ -92,5 +93,60 @@ void main() {
         );
       }
     }
+  });
+
+  group('cifra del día centrada', () {
+    /// Lo que la cifra «12» se corre en x, según el Transform que la envuelve.
+    /// Sin Transform, 0.
+    double desplazamientoDe(WidgetTester tester, String cifra) {
+      final transforms = find.ancestor(
+        of: find.text(cifra),
+        matching: find.byType(Transform),
+      );
+      if (transforms.evaluate().isEmpty) return 0;
+      return tester
+          .widget<Transform>(transforms.first)
+          .transform
+          .getTranslation()
+          .x;
+    }
+
+    testWidgets('en Dulce, el número se corre 0,12 em a la izquierda', (
+      tester,
+    ) async {
+      aplicarIdentidadEquipada('TEMA_DULCE');
+      final tamano = AppTheme.deTema(
+        temaEquipadoNotifier.value,
+      ).textTheme.titleMedium!.fontSize!;
+
+      await tester.pumpWidget(montar(tira()));
+      await tester.pumpAndSettle();
+
+      expect(desplazamientoDe(tester, '12'), closeTo(-0.12 * tamano, 0.01));
+    });
+
+    testWidgets('en Profundidad y Neotokyo+, el número no se mueve', (
+      tester,
+    ) async {
+      for (final codigo in ['TEMA_PROFUNDIDAD', 'TEMA_NEOTOKYO_PLUS']) {
+        aplicarIdentidadEquipada(codigo);
+        await tester.pumpWidget(montar(tira()));
+        await tester.pumpAndSettle();
+
+        expect(desplazamientoDe(tester, '12'), 0, reason: codigo);
+      }
+    });
+
+    test(
+      'desvioCifra: Caveat corre 0,12 em a la izquierda; las demás, nada',
+      () {
+        final dulce = catalogoIdentidades['TEMA_DULCE']!;
+        expect(desvioCifra(dulce, 20), closeTo(-2.4, 1e-9));
+
+        for (final codigo in ['TEMA_PROFUNDIDAD', 'TEMA_NEOTOKYO_PLUS']) {
+          expect(desvioCifra(catalogoIdentidades[codigo]!, 20), 0);
+        }
+      },
+    );
   });
 }

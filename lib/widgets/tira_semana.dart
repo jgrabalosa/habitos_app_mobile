@@ -79,6 +79,16 @@ class TiraSemana extends StatelessWidget {
               ? t.primary.withValues(alpha: 0.18)
               : t.inactivo;
 
+          final TextStyle? estiloNumero = Theme.of(context)
+              .textTheme
+              .titleMedium
+              ?.copyWith(
+                fontWeight: (seleccionado || esHoy)
+                    ? FontWeight.w800
+                    : FontWeight.w600,
+                color: t.text,
+              );
+
           return Expanded(
             child: Semantics(
               button: true,
@@ -117,15 +127,14 @@ class TiraSemana extends StatelessWidget {
                         esHoy: esHoy,
                         seleccionada: seleccionado,
                       ),
-                      child: Text(
-                        '${fecha.day}',
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              fontWeight: (seleccionado || esHoy)
-                                  ? FontWeight.w800
-                                  : FontWeight.w600,
-                              color: t.text,
-                            ),
+                      // La cifra, centrada a ojo: en Caveat, la tinta cae a la
+                      // derecha del avance y se devuelve con `desvioCifra`.
+                      child: Transform.translate(
+                        offset: Offset(
+                          desvioCifra(id, estiloNumero?.fontSize ?? 0),
+                          0,
+                        ),
+                        child: Text('${fecha.day}', style: estiloNumero),
                       ),
                     ),
                     const SizedBox(height: 6),
