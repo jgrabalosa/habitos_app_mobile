@@ -6,9 +6,8 @@ import '../models/habito.dart';
 
 /// Qué frase de progreso toca. La pantalla la traduce.
 ///
-/// Sin uso desde el F2c del rediseño de rachas, que la sustituye por
-/// [fraseHoy]: «Buen ritmo» y «¡Día perfecto!» salen de la app. Se retira con
-/// sus tests en el bloque G.
+/// Sin uso desde el F2c del rediseño de rachas: «Buen ritmo» y «¡Día perfecto!»
+/// salen de la app. Se retira con sus tests en el bloque G.
 enum FraseProgreso { primero, perfecto, casi, buenRitmo }
 
 FraseProgreso fraseProgreso(int hechos, int total) {
@@ -16,23 +15,6 @@ FraseProgreso fraseProgreso(int hechos, int total) {
   if (hechos == total) return FraseProgreso.perfecto;
   if (hechos / total >= 0.5) return FraseProgreso.casi;
   return FraseProgreso.buenRitmo;
-}
-
-/// La frase de la cabecera de Hoy: lo hecho primero, lo que falta sólo
-/// cuando es poco, y sin «ritmo» ni «perfecto».
-enum FraseHoy { nada, empezado, llevas, quedaUno, todo }
-
-/// Qué frase toca con [hechos] de [total] hábitos de la sección del día y su
-/// [avance] con lo hecho a medias. La pantalla la traduce.
-FraseHoy fraseHoy({
-  required int hechos,
-  required int total,
-  required double avance,
-}) {
-  if (total > 0 && hechos >= total) return FraseHoy.todo;
-  if (hechos == 0) return avance > 0 ? FraseHoy.empezado : FraseHoy.nada;
-  if (total - hechos == 1) return FraseHoy.quedaUno;
-  return FraseHoy.llevas;
 }
 
 /// Si [habito] cuenta como hecho hoy, según su [progreso] del dashboard

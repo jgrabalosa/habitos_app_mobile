@@ -51,7 +51,9 @@ completa, en el `CLAUDE.md` del paquete.
 También `lib/widgets/identidad_ui.dart` (tarjeta de hábito, chip de frecuencia,
 celda del heatmap y tema de la barra inferior) y `lib/widgets/estados_hoy.dart`
 (los cuatro estados de Hoy: carga, vacío, error y todo hecho), junto con
-`tira_semana.dart` (los siete días encima de Hoy, sin recargar red),
+`tira_semana.dart` (los siete días de Hoy, con sus flechas de semana a los
+extremos, sin recargar red) y `cabecera_otro_dia.dart` (el mes y el botón
+«Hoy», encima de la tira, solo cuando el día que se mira no es hoy),
 `chevron_detalle.dart` (el que anuncia que una tarjeta abre su detalle) y
 `transito_fila.dart` (el paso de una fila de pendiente a hecha sin que la
 lista dé tirones). Son UI genérica de aspecto pero de dominio

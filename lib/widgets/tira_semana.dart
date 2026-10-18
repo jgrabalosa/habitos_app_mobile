@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 
 import '../l10n/app_localizations.dart';
@@ -28,16 +29,27 @@ class TiraSemana extends StatelessWidget {
 
   final ValueChanged<int> onSeleccionar;
 
+  /// Las flechas de los extremos: cambian de semana, no de día.
+  final VoidCallback onSemanaAnterior;
+  final VoidCallback onSemanaSiguiente;
+
   const TiraSemana({
     super.key,
     required this.dias,
     required this.diaSeleccionado,
     required this.indiceHoy,
     required this.onSeleccionar,
+    required this.onSemanaAnterior,
+    required this.onSemanaSiguiente,
   });
 
   /// Ancho de la barrita del avance, el de la maqueta.
   static const double _anchoBarra = 14;
+
+  /// Lado del cuadro de cada día. Con las dos flechas (48 cada una) y el
+  /// relleno lateral de Hoy, a 360 de ancho cada columna mide unos 33: 32 cabe
+  /// con holgura en las tres identidades.
+  static const double _ladoCelda = 32;
 
   @override
   Widget build(BuildContext context) {
@@ -48,93 +60,110 @@ class TiraSemana extends StatelessWidget {
     final sinAnimacion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
 
     return Row(
-      children: List.generate(dias.length, (i) {
-        final fecha = DateTime.parse(dias[i].fecha);
-        final double? avance = dias[i].avance;
-        final bool esHoy = i == indiceHoy;
-        final bool seleccionado = i == diaSeleccionado;
-        final String nombreDia = DateFormat.E(locale).format(fecha);
+      children: [
+        IconButton(
+          icon: const Icon(LucideIcons.chevronLeft),
+          iconSize: 20,
+          color: t.textMuted,
+          tooltip: l.a11ySemanaAnterior,
+          onPressed: onSemanaAnterior,
+        ),
+        ...List.generate(dias.length, (i) {
+          final fecha = DateTime.parse(dias[i].fecha);
+          final double? avance = dias[i].avance;
+          final bool esHoy = i == indiceHoy;
+          final bool seleccionado = i == diaSeleccionado;
+          final String nombreDia = DateFormat.E(locale).format(fecha);
 
-        final Color colorCelda = seleccionado
-            ? t.primary.withValues(alpha: 0.18)
-            : t.inactivo;
+          final Color colorCelda = seleccionado
+              ? t.primary.withValues(alpha: 0.18)
+              : t.inactivo;
 
-        return Expanded(
-          child: Semantics(
-            button: true,
-            selected: seleccionado,
-            label: l.a11yDiaSemana(
-              nombreDia,
-              seleccionado ? l.a11yDiaSeleccionado : l.a11yDiaNoSeleccionado,
-            ),
-            child: GestureDetector(
-              onTap: () => onSeleccionar(i),
-              behavior: HitTestBehavior.opaque,
-              child: Column(
-                children: [
-                  Text(
-                    nombreDia.toUpperCase(),
-                    style: Theme.of(
-                      context,
-                    ).textTheme.titleSmall?.copyWith(color: t.textMuted),
-                  ),
-                  const SizedBox(height: 6),
-                  AnimatedContainer(
-                    duration: sinAnimacion
-                        ? Duration.zero
-                        : const Duration(milliseconds: 200),
-                    width: 36,
-                    height: 36,
-                    alignment: Alignment.center,
-                    decoration: celdaHeatmap(
-                      id,
-                      t,
-                      color: colorCelda,
-                      // La misma pieza que marca "hecho" en el mini-mapa marca
-                      // aquí "es el día activo": incorpora el glow/relieve de
-                      // la identidad al día que se está mirando.
-                      llena: seleccionado,
-                      esHoy: esHoy,
-                      seleccionada: seleccionado,
+          return Expanded(
+            child: Semantics(
+              button: true,
+              selected: seleccionado,
+              label: l.a11yDiaSemana(
+                nombreDia,
+                seleccionado ? l.a11yDiaSeleccionado : l.a11yDiaNoSeleccionado,
+              ),
+              child: GestureDetector(
+                onTap: () => onSeleccionar(i),
+                behavior: HitTestBehavior.opaque,
+                child: Column(
+                  children: [
+                    Text(
+                      nombreDia.toUpperCase(),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.titleSmall?.copyWith(color: t.textMuted),
                     ),
-                    child: Text(
-                      '${fecha.day}',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: (seleccionado || esHoy)
-                            ? FontWeight.w800
-                            : FontWeight.w600,
-                        color: t.text,
+                    const SizedBox(height: 6),
+                    AnimatedContainer(
+                      duration: sinAnimacion
+                          ? Duration.zero
+                          : const Duration(milliseconds: 200),
+                      width: _ladoCelda,
+                      height: _ladoCelda,
+                      alignment: Alignment.center,
+                      decoration: celdaHeatmap(
+                        id,
+                        t,
+                        color: colorCelda,
+                        // La misma pieza que marca "hecho" en el mini-mapa marca
+                        // aquí "es el día activo": incorpora el glow/relieve de
+                        // la identidad al día que se está mirando.
+                        llena: seleccionado,
+                        esHoy: esHoy,
+                        seleccionada: seleccionado,
+                      ),
+                      child: Text(
+                        '${fecha.day}',
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              fontWeight: (seleccionado || esHoy)
+                                  ? FontWeight.w800
+                                  : FontWeight.w600,
+                              color: t.text,
+                            ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  SizedBox(
-                    height: 4,
-                    width: _anchoBarra,
-                    child: avance == null
-                        ? Center(
-                            child: Container(
-                              width: 4,
-                              height: 4,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: t.inactivo,
+                    const SizedBox(height: 6),
+                    SizedBox(
+                      height: 4,
+                      width: _anchoBarra,
+                      child: avance == null
+                          ? Center(
+                              child: Container(
+                                width: 4,
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: t.inactivo,
+                                ),
                               ),
+                            )
+                          : _BarraAvance(
+                              avance: avance,
+                              pista: t.aroVacio,
+                              relleno: t.success,
+                              forma: id.forma,
                             ),
-                          )
-                        : _BarraAvance(
-                            avance: avance,
-                            pista: t.aroVacio,
-                            relleno: t.success,
-                            forma: id.forma,
-                          ),
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        );
-      }),
+          );
+        }),
+        IconButton(
+          icon: const Icon(LucideIcons.chevronRight),
+          iconSize: 20,
+          color: t.textMuted,
+          tooltip: l.a11ySemanaSiguiente,
+          onPressed: onSemanaSiguiente,
+        ),
+      ],
     );
   }
 }
