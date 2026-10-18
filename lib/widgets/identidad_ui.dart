@@ -25,11 +25,16 @@ class TarjetaIdentidad extends StatelessWidget {
   final VoidCallback? onTap;
   final EdgeInsets margen;
 
+  /// Cómo luce el filo de Neotokyo+ (ver `FiloNeon` en el core). Hoy lo usa
+  /// para decir el estado de cada hábito; el resto de pantallas, fijo.
+  final FiloNeon filoNeon;
+
   const TarjetaIdentidad({
     super.key,
     required this.child,
     this.onTap,
     this.margen = const EdgeInsets.only(bottom: 12),
+    this.filoNeon = FiloNeon.fijo,
   });
 
   @override
@@ -40,6 +45,7 @@ class TarjetaIdentidad extends StatelessWidget {
     // anularlo explícitamente o se desmaquetan las nueve tarjetas.
     relleno: EdgeInsets.zero,
     protagonista: false,
+    filoNeon: filoNeon,
     onTap: onTap,
     child: child,
   );

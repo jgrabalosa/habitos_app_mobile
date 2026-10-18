@@ -1230,6 +1230,13 @@ class _DashboardScreenState extends State<DashboardScreen>
           : const Duration(milliseconds: 400),
       opacity: hecho ? 0.80 : 1.0,
       child: TarjetaIdentidad(
+        // En Neotokyo+ el filo dice el estado: late mientras está pendiente,
+        // se queda encendido al hacerlo. En un día que no se puede marcar
+        // (futuro o de una semana anterior), fijo: no late lo que no se
+        // puede hacer.
+        filoNeon: !habilitado
+            ? FiloNeon.fijo
+            : (checkMarcado ? FiloNeon.encendido : FiloNeon.latiendo),
         onTap: () async {
           await Navigator.push(
             context,
