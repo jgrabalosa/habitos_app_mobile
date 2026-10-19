@@ -312,24 +312,7 @@
     }
   },
   "dashDeshacerError": "No se ha podido deshacer este completado.",
-  "recSaltar": "Saltar",
-  "recSiguiente": "Siguiente",
   "recFin": "Entendido",
-  "recPaso1Titulo": "Tus hábitos",
-  "recPaso1Cuerpo": "Aquí vive todo lo que quieres repetir. Toca para entrar.",
-  "recPaso2Titulo": "Crea el primero",
-  "recPaso2Cuerpo": "Toca el botón para añadir un hábito.",
-  "recPaso3Titulo": "Elige uno o escribe el tuyo",
-  "recPaso3Cuerpo": "Estos vienen listos. Ajusta lo que quieras y guarda.",
-  "recPaso4Titulo": "Marca lo que cumplas",
-  "recPaso4Cuerpo": "Cada día, toca el círculo del hábito.",
-  "recPaso5Titulo": "Nori crece contigo",
-  "recPaso5Cuerpo": "Cumplir hábitos da puntos, y con los puntos se compra comida en la tienda.",
-  "recDeshacerTitulo": "¿Te has equivocado?",
-  "recDeshacerCuerpo": "Vuelve a tocar el círculo y el día se desmarca.",
-  "recMenu": "Ver tutorial",
-  "recValoracionTitulo": "Cuenta qué tal fue",
-  "recValoracionCuerpo": "Las estrellas construyen tu media, y en la nota puedes dejar escrito cómo ha ido el día.",
   "dashSeccionHoy": "HOY",
   "dashSeccionContador": "{hechos} de {total}",
   "@dashSeccionContador": {
@@ -472,5 +455,17 @@
     }
   },
   "pausaError": "No se ha podido pausar el hábito",
-  "pausaErrorReanudar": "No se ha podido reanudar el hábito"
+  "pausaErrorReanudar": "No se ha podido reanudar el hábito",
+  "bienvenidaTitulo": "Te presento a Nori",
+  "bienvenidaCuerpo": "Crece con cada hábito que cumples. Aquí cuenta la constancia, no la perfección: un mal día no borra lo que llevas.",
+  "bienvenidaSonido": "Música y efectos. Puedes cambiarlo en Mi cuenta.",
+  "bienvenidaCrear": "Crear mi primer hábito",
+  "pistaCheckTitulo": "Márcalo cuando lo hagas",
+  "pistaCheckCuerpo": "Cada vez que lo cumplas, toca el círculo. Con cada uno crece Nori.",
+  "permisoTitulo": "¿Te aviso a tu hora?",
+  "permisoCuerpo": "Para recordártelo a la hora que elijas, Norday necesita permiso para enviarte notificaciones.",
+  "permisoPermitir": "Permitir",
+  "permisoAhoraNo": "Ahora no",
+  "permisoBloqueado": "Las notificaciones están desactivadas. Actívalas en los ajustes del móvil para recibir el recordatorio.",
+  "permisoAjustes": "Ajustes"
 }

@@ -230,12 +230,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       // Los logros de ritmo se ganan al leer Hoy, que es cuando se ve que el
       // ritmo ha subido: se celebran aquí. Casi siempre no hay ninguno.
       if (hoy.logrosOtorgados.isNotEmpty) {
-        final recorrido = RecorridoOnboarding.instancia;
-        if (recorrido.activo) {
-          recorrido.aplazarCelebracion(hoy.logrosOtorgados);
-        } else {
-          CelebracionService.mostrar(hoy.logrosOtorgados);
-        }
+        CelebracionService.mostrar(hoy.logrosOtorgados);
       }
     } catch (e) {
       if (!mounted || carga != _cargaEnCurso) return;
@@ -461,6 +456,11 @@ class _DashboardScreenState extends State<DashboardScreen>
     final diaCompleto = esHoy && enDelDia && _diaCompleto();
     if (diaCompleto) _cierrePendiente = true;
 
+    // Con la pista de Hoy abierta, marcar el hábito la cierra.
+    if (RecorridoOnboarding.instancia.activo) {
+      RecorridoOnboarding.instancia.terminar();
+    }
+
     _publicarProgreso();
 
     // La verdad la trae /hoy: contadores, avance, tira y ritmo. En segundo
@@ -477,13 +477,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     // Secuencia: logro (si hay) → puntos → valoración (si toca)
     if (logrosOtorgados.isNotEmpty) {
-      final recorrido = RecorridoOnboarding.instancia;
-      if (recorrido.activo) {
-        // Durante el recorrido guiado se guarda y sale al final.
-        recorrido.aplazarCelebracion(logrosOtorgados);
-      } else {
-        await CelebracionService.mostrar(logrosOtorgados);
-      }
+      await CelebracionService.mostrar(logrosOtorgados);
     }
     if (puntosGanados > 0 && mounted) {
       AnimacionPuntos.mostrar(context, puntosGanados);
@@ -500,19 +494,11 @@ class _DashboardScreenState extends State<DashboardScreen>
       );
     }
 
-    // El recorrido guiado pasa aquí del check a la valoración.
-    final recorridoGuiado = RecorridoOnboarding.instancia;
-    final enRecorrido = recorridoGuiado.activo;
-    if (enRecorrido) recorridoGuiado.avanzar();
-
     if (mostrarValoracion && registroId != null && mounted) {
       // Pequeña pausa para no pisar la animación de puntos
       await Future.delayed(const Duration(milliseconds: 250));
       if (!mounted) return;
-      final respuesta = await ValoracionSheet.mostrar(
-        context,
-        ancla: enRecorrido ? AnclasRecorrido.valoracion : null,
-      );
+      final respuesta = await ValoracionSheet.mostrar(context);
       if (respuesta != null) {
         try {
           final int? valoracion = respuesta['valoracion'];
@@ -529,23 +515,19 @@ class _DashboardScreenState extends State<DashboardScreen>
       }
     }
 
-    // Cerrada la hoja —o no abierta— el recorrido sigue hacia la mascota.
-    if (enRecorrido && recorridoGuiado.activo) recorridoGuiado.avanzar();
-
-    if (diaCompleto) await _cerrarDia(enRecorrido: enRecorrido);
+    if (diaCompleto) await _cerrarDia();
 
     _registrarDiaDeUso();
   }
 
   /// El cierre del día, al final de toda la secuencia del último check: el
   /// día queda cerrado (en Profundidad, la constelación realzada; en Dulce, el
-  /// ramo). Una vez al día, y nunca en el recorrido guiado. Va antes de la
+  /// ramo). Una vez al día, y nunca mientras la pista de Hoy está abierta. Va antes de la
   /// reseña de Play para que no se coma el momento.
-  Future<void> _cerrarDia({required bool enRecorrido}) async {
+  Future<void> _cerrarDia() async {
     final hoy = _fechaDeHoy();
     if (mounted &&
         _diaCompleto() &&
-        !enRecorrido &&
         !RecorridoOnboarding.instancia.activo &&
         hoy != _ultimaFechaCierre) {
       _ultimaFechaCierre = hoy;
@@ -792,6 +774,9 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
 
     final sinNada = filasDia.isEmpty && filasSemana.isEmpty;
+    // Sin nada que hacer hoy, la pista de Hoy señala el check de la primera
+    // fila de Esta semana (un primer hábito semanal que hoy no toca).
+    final anclaEnSemana = viendoHoy && filasDia.isEmpty;
 
     return [
       // La línea del día que se mira, solo si no es hoy; luego la tira, pegada
@@ -884,8 +869,14 @@ class _DashboardScreenState extends State<DashboardScreen>
         ),
         const SizedBox(height: 8),
         if (!_semanaPlegada)
-          ...filasSemana.map(
-            (f) => _habitoCard(l, f, t, habilitado: habilitado),
+          ...filasSemana.asMap().entries.map(
+            (e) => _habitoCard(
+              l,
+              e.value,
+              t,
+              habilitado: habilitado,
+              anclaPista: anclaEnSemana && e.key == 0,
+            ),
           ),
       ],
     ];
@@ -1038,14 +1029,19 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   /// Una fila de hábito, de cualquiera de las dos secciones.
   ///
-  /// `primera` marca la primera pendiente de hoy, que es donde el recorrido
-  /// guiado señala el check y donde se empuja el chevron del detalle.
+  /// `primera` marca la primera pendiente de hoy, donde se empuja el chevron
+  /// del detalle.
+  ///
+  /// `anclaPista` engancha el ancla de la pista de Hoy en el check de esta
+  /// fila: se usa en la primera fila de Esta semana cuando la sección Hoy está
+  /// vacía (un primer hábito semanal que hoy no toca). No empuja el chevron.
   Widget _habitoCard(
     AppLocalizations l,
     FilaHoy f,
     TokensContextuales t, {
     required bool habilitado,
     bool primera = false,
+    bool anclaPista = false,
   }) {
     final Habito h = f.habito;
     final bool hecho = f.hecho;
@@ -1185,7 +1181,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                     : const Duration(milliseconds: 400),
                 opacity: habilitado ? 1.0 : 0.25,
                 child: CheckCircular(
-                  key: primera && RecorridoOnboarding.instancia.activo
+                  key:
+                      (primera || anclaPista) &&
+                          RecorridoOnboarding.instancia.activo
                       ? AnclasRecorrido.checkHabito
                       : null,
                   hecho: checkMarcado,

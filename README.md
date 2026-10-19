@@ -21,12 +21,13 @@ En septiembre de 2026 está en prueba cerrada en Google Play
   elige gratis al empezar; las demás, en la tienda.
 - **Cierre del día** en Profundidad: al completar lo último del día, la
   constelación del día se ilumina.
-- **Recorrido guiado** la primera vez, repetible desde el menú.
+- **Primer hábito** guiado: una bienvenida lleva al formulario real, y al
+  guardarlo, Hoy señala su círculo una vez.
 - En **español, inglés y portugués**, con zona horaria propia.
 - Registro con email o con Google.
 
-Pestañas: Hoy, Mascota y Hábitos, más un menú con Colección, Logros, Tienda,
-el recorrido y Perfil.
+Pestañas: Hoy, Mascota y Hábitos, más un menú con Colección, Logros, Tienda
+y Perfil.
 
 ## Stack
 

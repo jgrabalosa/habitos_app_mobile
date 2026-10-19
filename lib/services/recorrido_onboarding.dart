@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 
-/// Un paso del recorrido guiado.
+/// Un paso del recorrido: hoy, la pista de Hoy tras el primer hábito.
 class PasoRecorrido {
   /// Qué se señala. Null vela la pantalla entera, sin hueco.
   final GlobalKey? ancla;
@@ -27,11 +27,9 @@ class PasoRecorrido {
 /// NO sabe qué recorrido hay: recibe los pasos ya construidos. Así los textos
 /// no son una dependencia suya y puede existir antes que ellos.
 ///
-/// Se pinta como entrada del Overlay RAÍZ, no dentro de una pantalla. Dos de
-/// los pasos ocurren en rutas empujadas (el botón de nuevo hábito y la
-/// pantalla de creación) y una marca pintada dentro del shell quedaría
-/// debajo de ellas. El Overlay raíz flota sobre todas las rutas, y el hueco
-/// del CoachMark sigue dejando pasar los toques al elemento real.
+/// Se pinta como entrada del Overlay RAÍZ, no dentro de una pantalla, para
+/// que flote sobre cualquier ruta empujada. El hueco del CoachMark sigue
+/// dejando pasar los toques al elemento real.
 class RecorridoOnboarding extends ChangeNotifier {
   RecorridoOnboarding._();
 
@@ -44,10 +42,6 @@ class RecorridoOnboarding extends ChangeNotifier {
   String? _textoContinuar;
   int _reintentos = 0;
   bool _buscando = false;
-  bool _pausado = false;
-
-  /// Logros ganados durante el recorrido, a la espera de que acabe.
-  final List<String> _celebracionesAplazadas = [];
 
   /// True cuando se ha agotado el margen sin encontrar el ancla del paso. El
   /// paso saca entonces un botón para seguir, también si es de acción.
@@ -98,52 +92,9 @@ class RecorridoOnboarding extends ChangeNotifier {
     _buscarAncla();
   }
 
-  /// Un paso atrás. Existe para deshacer un avance que se dio por supuesto y
-  /// no llegó a ocurrir: se abre la pantalla de creación, se avanza a su
-  /// marca, y el usuario se vuelve con el botón de atrás sin guardar. Sin
-  /// esto, la marca se quedaría velando una pantalla que ya no está.
-  ///
-  /// No baja del primer paso.
-  void retroceder() {
-    if (!activo || _indice == 0) return;
-    _indice--;
-    notifyListeners();
-    _buscarAncla();
-  }
-
-  /// Retiene los logros ganados durante el recorrido para que no se celebren.
-  ///
-  /// Una celebración es una ruta, y el recorrido se pinta por encima de todas
-  /// ellas: saldría tapada, y encima se comería la atención en mitad de una
-  /// explicación. Tampoco se sueltan al terminar: en el recorrido caen tres o
-  /// cuatro de golpe y era demasiado. Los logros ya están concedidos en el
-  /// backend, así que siguen en la pantalla de logros y sus puntos llegan igual.
-  void aplazarCelebracion(List<String> codigos) {
-    _celebracionesAplazadas.addAll(codigos);
-  }
-
-  /// Deja de pintar sin perder el sitio. Para cuando el usuario tiene que
-  /// poder usar una pantalla entera —rellenar un formulario y guardarlo—: el
-  /// velo se lleva por delante todo lo que no sea el hueco, y ahí eso estorba
-  /// más de lo que ayuda.
-  ///
-  /// No cambia [activo]: el recorrido sigue en marcha y las anclas siguen
-  /// enganchadas.
-  void pausar() {
-    if (!activo || _pausado) return;
-    _pausado = true;
-    _entrada!.markNeedsBuild();
-  }
-
-  void reanudar() {
-    if (!activo || !_pausado) return;
-    _pausado = false;
-    _buscarAncla();
-  }
-
   /// Termina el recorrido, se haya completado o abandonado. En los dos casos
   /// se marca como hecho: quien lo salta no quiere que le vuelva a saltar
-  /// solo en el siguiente arranque. Para volver a verlo está el menú.
+  /// solo en el siguiente arranque. No vuelve a salir.
   void terminar() {
     if (!activo) return;
     _entrada!.remove();
@@ -154,12 +105,8 @@ class RecorridoOnboarding extends ChangeNotifier {
     _textoContinuar = null;
     _foco = null;
     _anclaPerdida = false;
-    _pausado = false;
     RecorridoService.marcarHecho();
     notifyListeners();
-
-    // Se descartan sin celebrar: ver aplazarCelebracion.
-    _celebracionesAplazadas.clear();
   }
 
   /// Empieza a buscar el ancla del paso actual. Sólo puede haber una búsqueda
@@ -180,7 +127,7 @@ class RecorridoOnboarding extends ChangeNotifier {
   /// al principio acaba cortando el elemento por la mitad.
   ///
   /// Puede tardar en aparecer: se acaba de cambiar de pestaña, la ruta aún se
-  /// está abriendo, o la bienvenida está terminando su animación. Pasado
+  /// está abriendo, o la lista de Hoy todavía está cargando. Pasado
   /// [_margenSalida] sin encontrarla, el paso saca un botón para seguir,
   /// porque un paso de acción sin hueco no tiene nada que tocar: las barreras
   /// del velo cubren toda la pantalla y el usuario queda encerrado.
@@ -222,17 +169,13 @@ class RecorridoOnboarding extends ChangeNotifier {
 
   Widget _construir(BuildContext context) {
     final paso = pasoActual;
-    if (paso == null || _pausado) return const SizedBox.shrink();
+    if (paso == null) return const SizedBox.shrink();
     // Un paso de acción no lleva botón, pero si su ancla no aparece hay que
     // darle uno: sin hueco no hay nada que tocar.
     final textoBoton =
         paso.textoBoton ?? (_anclaPerdida ? _textoContinuar : null);
     return CoachMark(
       foco: _foco,
-      // Los puntitos de progreso, los mismos que en la bienvenida. El
-      // recorrido no siempre tiene la misma longitud —el tramo de creación se
-      // salta si el usuario ya tiene hábitos—, así que el total sale de la
-      // lista real, no de una constante.
       paso: _indice,
       total: _pasos.length,
       titulo: paso.titulo,
