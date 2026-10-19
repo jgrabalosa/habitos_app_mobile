@@ -774,6 +774,9 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
 
     final sinNada = filasDia.isEmpty && filasSemana.isEmpty;
+    // Sin nada que hacer hoy, la pista de Hoy señala el check de la primera
+    // fila de Esta semana (un primer hábito semanal que hoy no toca).
+    final anclaEnSemana = viendoHoy && filasDia.isEmpty;
 
     return [
       // La línea del día que se mira, solo si no es hoy; luego la tira, pegada
@@ -866,8 +869,14 @@ class _DashboardScreenState extends State<DashboardScreen>
         ),
         const SizedBox(height: 8),
         if (!_semanaPlegada)
-          ...filasSemana.map(
-            (f) => _habitoCard(l, f, t, habilitado: habilitado),
+          ...filasSemana.asMap().entries.map(
+            (e) => _habitoCard(
+              l,
+              e.value,
+              t,
+              habilitado: habilitado,
+              anclaPista: anclaEnSemana && e.key == 0,
+            ),
           ),
       ],
     ];
@@ -1020,14 +1029,19 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   /// Una fila de hábito, de cualquiera de las dos secciones.
   ///
-  /// `primera` marca la primera pendiente de hoy, que es donde la pista de Hoy
-  /// señala el check y donde se empuja el chevron del detalle.
+  /// `primera` marca la primera pendiente de hoy, donde se empuja el chevron
+  /// del detalle.
+  ///
+  /// `anclaPista` engancha el ancla de la pista de Hoy en el check de esta
+  /// fila: se usa en la primera fila de Esta semana cuando la sección Hoy está
+  /// vacía (un primer hábito semanal que hoy no toca). No empuja el chevron.
   Widget _habitoCard(
     AppLocalizations l,
     FilaHoy f,
     TokensContextuales t, {
     required bool habilitado,
     bool primera = false,
+    bool anclaPista = false,
   }) {
     final Habito h = f.habito;
     final bool hecho = f.hecho;
@@ -1167,7 +1181,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                     : const Duration(milliseconds: 400),
                 opacity: habilitado ? 1.0 : 0.25,
                 child: CheckCircular(
-                  key: primera && RecorridoOnboarding.instancia.activo
+                  key:
+                      (primera || anclaPista) &&
+                          RecorridoOnboarding.instancia.activo
                       ? AnclasRecorrido.checkHabito
                       : null,
                   hecho: checkMarcado,
