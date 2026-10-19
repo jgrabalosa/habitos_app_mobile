@@ -272,3 +272,31 @@ class TarjetaTodoHecho extends StatelessWidget {
     );
   }
 }
+
+/// En Dulce, con el día cerrado, el ramo del día ocupa el sitio de la tarjeta
+/// «¡Todo hecho!»: un ramo a lápiz, una flor por hábito, el mismo que se ha
+/// dibujado en la ceremonia. Va en la lista, así que nunca queda lápiz encima
+/// del texto de los hábitos. El lector de pantalla oye lo mismo que en la
+/// tarjeta, con el nombre del ramo en medio.
+class RamoTodoHecho extends StatelessWidget {
+  /// Cuántos hábitos tiene hoy la sección del día.
+  final int total;
+
+  const RamoTodoHecho({super.key, required this.total});
+
+  /// Alto del ramo en la lista.
+  static const double alto = 220;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final lc = NordayCoreLocalizations.of(context)!;
+    return Semantics(
+      container: true,
+      label: '${l.dashTodoHecho}\n${nombreRamo(lc, total)}\n${l.dashDisfruta}',
+      child: Center(
+        child: RamoDulce(total: total, alto: alto),
+      ),
+    );
+  }
+}
