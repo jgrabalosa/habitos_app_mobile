@@ -684,28 +684,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
-  /// Con el día cerrado, la tarjeta cambia según la identidad. En Dulce, el
-  /// ramo del día ocupa su sitio. En Profundidad, la tarjeta se vuelve
-  /// invisible pero conserva su hueco: ese hueco es el sitio de la
-  /// constelación. Un lector de pantalla la sigue leyendo.
-  Widget _tarjetaTodoHecho(int total) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: diaCerradoNotifier,
-      builder: (context, cerrado, child) {
-        final fondo = identidad(context).fondo;
-        if (cerrado && fondo == FondoIdentidadTipo.acumulacion) {
-          return RamoTodoHecho(total: total);
-        }
-        return Opacity(
-          opacity: cerrado && fondo == FondoIdentidadTipo.cielo ? 0 : 1,
-          alwaysIncludeSemantics: true,
-          child: child,
-        );
-      },
-      child: const TarjetaTodoHecho(),
-    );
-  }
-
   /// Publica en el core el progreso del día que se mira, para que el fondo de
   /// la identidad dibuje con él: cuántos hay en la sección del día, cuántos
   /// están hechos y el avance con lo hecho a medias.
@@ -860,7 +838,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         const SizedBox(height: 8),
         if (!_hoyPlegada) ...[
           if (pendientes.isEmpty && viendoHoy)
-            _tarjetaTodoHecho(filasDia.length)
+            FinalDelDiaHoy(total: filasDia.length)
           else
             ...pendientes.asMap().entries.map(
               (e) => _filaEnLista(
