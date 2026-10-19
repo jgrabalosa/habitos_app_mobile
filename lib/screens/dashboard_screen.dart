@@ -538,9 +538,9 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   /// El cierre del día, al final de toda la secuencia del último check: el
-  /// día queda cerrado (en Profundidad, la constelación realzada). Una vez al
-  /// día, y nunca en el recorrido guiado. Va antes de la reseña de Play para
-  /// que no se coma el momento.
+  /// día queda cerrado (en Profundidad, la constelación realzada; en Dulce, el
+  /// ramo). Una vez al día, y nunca en el recorrido guiado. Va antes de la
+  /// reseña de Play para que no se coma el momento.
   Future<void> _cerrarDia({required bool enRecorrido}) async {
     final hoy = _fechaDeHoy();
     if (mounted &&
@@ -558,9 +558,10 @@ class _DashboardScreenState extends State<DashboardScreen>
       // Desde aquí el día ya cuenta como cerrado: la ceremonia enciende el
       // realce, y cualquier refresco a media ceremonia lo tiene que respetar.
       _cierrePendiente = false;
-      // La ceremonia de fin de día. Sólo hace algo en Profundidad; en las
-      // demás identidades termina en el acto. Al irse el velo queda el
-      // realce del día cerrado, que pone _publicarProgreso, justo debajo.
+      // La ceremonia de fin de día. Hace algo en Profundidad (la constelación)
+      // y en Dulce (el ramo); en Neotokyo+ termina en el acto. Al irse el velo
+      // queda el realce del día cerrado, que pone _publicarProgreso, justo
+      // debajo.
       if (mounted) {
         final l = AppLocalizations.of(context)!;
         await mostrarCierreDelDia(
@@ -683,19 +684,24 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
-  /// En Profundidad, con el día cerrado, la tarjeta se vuelve invisible pero
-  /// conserva su hueco: ese hueco es el sitio de la constelación. Un lector
-  /// de pantalla la sigue leyendo.
-  Widget _tarjetaTodoHecho() {
+  /// Con el día cerrado, la tarjeta cambia según la identidad. En Dulce, el
+  /// ramo del día ocupa su sitio. En Profundidad, la tarjeta se vuelve
+  /// invisible pero conserva su hueco: ese hueco es el sitio de la
+  /// constelación. Un lector de pantalla la sigue leyendo.
+  Widget _tarjetaTodoHecho(int total) {
     return ValueListenableBuilder<bool>(
       valueListenable: diaCerradoNotifier,
-      builder: (context, cerrado, child) => Opacity(
-        opacity: cerrado && identidad(context).fondo == FondoIdentidadTipo.cielo
-            ? 0
-            : 1,
-        alwaysIncludeSemantics: true,
-        child: child,
-      ),
+      builder: (context, cerrado, child) {
+        final fondo = identidad(context).fondo;
+        if (cerrado && fondo == FondoIdentidadTipo.acumulacion) {
+          return RamoTodoHecho(total: total);
+        }
+        return Opacity(
+          opacity: cerrado && fondo == FondoIdentidadTipo.cielo ? 0 : 1,
+          alwaysIncludeSemantics: true,
+          child: child,
+        );
+      },
       child: const TarjetaTodoHecho(),
     );
   }
@@ -854,7 +860,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         const SizedBox(height: 8),
         if (!_hoyPlegada) ...[
           if (pendientes.isEmpty && viendoHoy)
-            _tarjetaTodoHecho()
+            _tarjetaTodoHecho(filasDia.length)
           else
             ...pendientes.asMap().entries.map(
               (e) => _filaEnLista(
