@@ -300,3 +300,40 @@ class RamoTodoHecho extends StatelessWidget {
     );
   }
 }
+
+/// El final del día en la lista de Hoy: lo que ocupa el sitio de «¡Todo
+/// hecho!». No se ve la tarjeta del corazón antes de la ceremonia: el final
+/// del día es el ramo (Dulce) o la constelación (Profundidad).
+///
+/// - Dulce: antes de cerrar, un hueco de [RamoTodoHecho.alto] para que la
+///   lista no salte; con el día cerrado, el ramo.
+/// - Profundidad: la tarjeta siempre invisible, con su hueco. Así el sitio
+///   de la constelación no se mueve.
+/// - Neotokyo+: la tarjeta de siempre.
+class FinalDelDiaHoy extends StatelessWidget {
+  /// Cuántos hábitos tiene hoy la sección del día.
+  final int total;
+
+  const FinalDelDiaHoy({super.key, required this.total});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: diaCerradoNotifier,
+      builder: (context, cerrado, child) {
+        final fondo = identidad(context).fondo;
+        if (fondo == FondoIdentidadTipo.acumulacion) {
+          return cerrado
+              ? RamoTodoHecho(total: total)
+              : const SizedBox(height: RamoTodoHecho.alto);
+        }
+        return Opacity(
+          opacity: fondo == FondoIdentidadTipo.cielo ? 0 : 1,
+          alwaysIncludeSemantics: true,
+          child: child,
+        );
+      },
+      child: const TarjetaTodoHecho(),
+    );
+  }
+}
