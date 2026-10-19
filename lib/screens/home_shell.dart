@@ -6,7 +6,9 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../widgets/identidad_ui.dart';
 import '../services/anclas_recorrido.dart';
 import '../services/recorrido_onboarding.dart';
-import '../services/api_service_habitos.dart';
+import '../widgets/bienvenida.dart';
+import 'habito_screen.dart';
+import '../services/habitos_refresh.dart';
 import '../services/app_refresh.dart';
 import 'dashboard_screen.dart';
 import 'habitos_screen.dart';
@@ -81,122 +83,29 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
 
   final _recorrido = RecorridoOnboarding.instancia;
 
-  /// Referencias a los dos pasos que viven en una pestaña concreta. Se guardan
-  /// para reconocerlos por identidad al cambiar de paso: el controlador no
-  /// numera los pasos a propósito, porque la lista no siempre es la misma.
-  PasoRecorrido? _pasoPestanaHabitos;
-  PasoRecorrido? _pasoCheck;
-  PasoRecorrido? _pasoValoracion;
-  PasoRecorrido? _pasoDeshacer;
-  PasoRecorrido? _pasoAlimentar;
-
-  /// En qué pestaña se puede ver la marca de este paso, o null si da igual.
-  int? _pestanaDe(PasoRecorrido paso) {
-    if (paso == _pasoCheck ||
-        paso == _pasoValoracion ||
-        paso == _pasoDeshacer) {
-      return 0;
-    }
-    if (paso == _pasoAlimentar) return 1;
-    return null;
-  }
-
-  /// El controlador ha cambiado de paso (o ha arrancado, o ha terminado).
-  ///
-  /// El shell hace dos cosas aquí y sólo él puede hacerlas: llevar al usuario
-  /// a la pestaña donde vive la marca siguiente —tras guardar el hábito se
-  /// sigue en Hábitos y la marca del check está en Hoy—, y repintarse, porque
-  /// las anclas sólo se enganchan mientras el recorrido está activo.
+  /// El controlador ha cambiado de paso (o ha arrancado, o ha terminado). Sólo
+  /// hace falta repintar: las anclas se enganchan mientras el recorrido está
+  /// activo, y la pista de Hoy tiene que aparecer en cuanto empieza.
   void _alCambiarPaso() {
-    if (!mounted) return;
-    final paso = _recorrido.pasoActual;
-    if (paso != null) {
-      final destino = _pestanaDe(paso);
-      if (destino != null && destino != _tabIndex) _irAPestana(destino);
-    }
-    setState(() {});
+    if (mounted) setState(() {});
   }
 
-  /// Monta los pasos y arranca.
-  ///
-  /// `completo` distingue al usuario recién creado, que no tiene nada y pasa
-  /// por el recorrido entero, del que reinstala con una cuenta que ya existe
-  /// y por tanto ya tiene hábitos: a ése se le enseña sólo el tramo de
-  /// explicación, porque empujarle a crear un segundo hábito no tendría
-  /// sentido. Es una aproximación deliberada: se deduce de `mostrarOnboarding`
-  /// en vez de preguntarle al backend cuántos hábitos hay.
-  ///
-  /// Al arrancar, las anclas todavía no están enganchadas —lo estarán en el
-  /// repintado que provoca este mismo arranque—, y por eso el controlador
-  /// reintenta medirlas unos frames antes de rendirse.
-  // Sin llamadas mientras el recorrido está aparcado (Fase 4).
-  // ignore: unused_element
-  void _iniciarRecorrido({required bool completo}) {
+  /// La pista de Hoy tras guardar el primer hábito: una sola, sobre el círculo
+  /// del hábito. Sin «Saltar»: se cierra con «Entendido» o marcando el hábito.
+  void _iniciarPista() {
     if (!mounted) return;
     final l = AppLocalizations.of(context)!;
-
-    _pasoPestanaHabitos = PasoRecorrido(
-      ancla: AnclasRecorrido.pestanaHabitos,
-      titulo: l.recPaso1Titulo,
-      cuerpo: l.recPaso1Cuerpo,
-    );
-    final pasoNuevo = PasoRecorrido(
-      ancla: AnclasRecorrido.botonNuevoHabito,
-      titulo: l.recPaso2Titulo,
-      cuerpo: l.recPaso2Cuerpo,
-    );
-    final pasoRecomendados = PasoRecorrido(
-      ancla: AnclasRecorrido.recomendados,
-      titulo: l.recPaso3Titulo,
-      cuerpo: l.recPaso3Cuerpo,
-    );
-    // De acción: se avanza marcando el hábito. Lo dispara dashboard_screen al
-    // completarlo.
-    _pasoCheck = PasoRecorrido(
-      ancla: AnclasRecorrido.checkHabito,
-      titulo: l.recPaso4Titulo,
-      cuerpo: l.recPaso4Cuerpo,
-    );
-    // Señala la hoja de valoración, que se abre sola al marcar el hábito. El
-    // core no conoce el recorrido, así que el ancla entra por parámetro desde
-    // dashboard_screen. También de acción: se avanza al cerrar la hoja.
-    _pasoValoracion = PasoRecorrido(
-      ancla: AnclasRecorrido.valoracion,
-      titulo: l.recValoracionTitulo,
-      cuerpo: l.recValoracionCuerpo,
-    );
-    // Señala otra vez el círculo del hábito, ya marcado. Va aquí y no en el
-    // paso del check porque aquél es de acción: avanza en cuanto se toca el
-    // círculo, así que allí no habría manera de probar lo que se explica.
-    _pasoDeshacer = PasoRecorrido(
-      ancla: AnclasRecorrido.checkHabito,
-      titulo: l.recDeshacerTitulo,
-      cuerpo: l.recDeshacerCuerpo,
-      textoBoton: l.recSiguiente,
-    );
-
-    _pasoAlimentar = PasoRecorrido(
-      ancla: AnclasRecorrido.alimentar,
-      titulo: l.recPaso5Titulo,
-      cuerpo: l.recPaso5Cuerpo,
-      textoBoton: l.recFin,
-    );
-
     _recorrido.iniciar(
       context,
-      pasos: completo
-          ? [
-              _pasoPestanaHabitos!,
-              pasoNuevo,
-              pasoRecomendados,
-              _pasoCheck!,
-              _pasoValoracion!,
-              _pasoDeshacer!,
-              _pasoAlimentar!,
-            ]
-          : [_pasoCheck!, _pasoValoracion!, _pasoDeshacer!, _pasoAlimentar!],
-      textoSaltar: l.recSaltar,
-      textoContinuar: l.recSiguiente,
+      pasos: [
+        PasoRecorrido(
+          ancla: AnclasRecorrido.checkHabito,
+          titulo: l.pistaCheckTitulo,
+          cuerpo: l.pistaCheckCuerpo,
+          textoBoton: l.recFin,
+        ),
+      ],
+      textoContinuar: l.recFin,
     );
   }
 
@@ -296,63 +205,30 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     });
 
     if (widget.mostrarOnboarding) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _mostrarOnboarding());
+      WidgetsBinding.instance.addPostFrameCallback((_) => _empezarAltaNueva());
     }
-    // Recorrido guiado aparcado hasta la Fase 4 (rediseño de rachas, F1).
-    // } else {
-    //   WidgetsBinding.instance.addPostFrameCallback(
-    //     (_) => _recorridoSiNoSeHaVisto(),
-    //   );
-    // }
   }
 
-  /// Sin alta nueva no hay bienvenida, pero el recorrido puede no haberse
-  /// visto nunca en ESTE móvil: la marca es local, así que una reinstalación
-  /// cuenta como primera vez. Es el caso de los testers.
-  // Sin llamadas mientras el recorrido está aparcado (Fase 4).
-  // ignore: unused_element
-  Future<void> _recorridoSiNoSeHaVisto() async {
-    if (await RecorridoService.yaHecho()) return;
-    await _arrancarSegunHabitos();
-  }
-
-  /// Arranca el recorrido eligiendo su longitud por lo que el usuario tiene,
-  /// no por si acaba de registrarse.
-  ///
-  /// Sin hábitos hay que enseñarle a crear uno, y además la marca del check no
-  /// tendría a qué apuntar. Con hábitos, empujarle a crear otro no tiene
-  /// sentido y basta el tramo de explicación.
-  ///
-  /// Si la llamada falla no se arranca nada. No se puede adivinar qué enseñar,
-  /// y como la marca de «hecho» no se pone, el recorrido vuelve a intentarlo
-  /// en el siguiente arranque. Es preferible a enseñar un paso que miente.
-  // Sin llamadas mientras el recorrido está aparcado (Fase 4).
-  // ignore: unused_element
-  Future<void> _arrancarSegunHabitos() async {
-    final List<Map<String, dynamic>> resumen;
-    try {
-      resumen = await ApiServiceHabitos.getResumenHabitos(_usuarioId);
-    } catch (_) {
-      return;
-    }
+  /// El alta nueva: la bienvenida, el formulario real del primer hábito y,
+  /// si se guarda, una pista sobre su círculo en Hoy. Si se vuelve sin
+  /// guardar, Hoy queda vacío y sin pista.
+  Future<void> _empezarAltaNueva() async {
     if (!mounted) return;
-    _iniciarRecorrido(completo: resumen.isEmpty);
-  }
-
-  // Antes esto preguntaba al backend si el usuario ya tenía algún avatar, para
-  // no enseñar el selector dos veces. Con los avatares retirados del catálogo
-  // esa pregunta devuelve siempre que no tiene ninguno, y el paso que los
-  // ofrecía ya no existe en el overlay: la condición dejó de significar nada.
-  void _mostrarOnboarding() {
+    await Bienvenida.mostrar(context);
     if (!mounted) return;
-    // Recorrido guiado aparcado hasta la Fase 4 (rediseño de rachas, F1).
-    // Antes la bienvenida y el recorrido eran un solo flujo: en cuanto se
-    // cerraba el overlay arrancaba el recorrido.
-    // OnboardingOverlay.mostrar(
-    //   context,
-    //   usuarioId: _usuarioId,
-    // ).then((_) => _iniciarRecorrido(completo: true));
-    OnboardingOverlay.mostrar(context, usuarioId: _usuarioId);
+    final guardado = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => HabitoScreen(
+          usuarioId: _usuarioId,
+          nombresHabitosExistentes: const [],
+        ),
+      ),
+    );
+    if (guardado != true || !mounted) return;
+    notificarHabitosCambiados();
+    _irAPestana(0);
+    _iniciarPista();
   }
 
   Future<void> _logout() async {
@@ -465,13 +341,6 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
                       _abrirTienda,
                     ),
                     filo,
-                    // «Ver tutorial» fuera mientras el recorrido guiado está
-                    // aparcado (Fase 4, rediseño de rachas, F1).
-                    // entrada(
-                    //   LucideIcons.compass,
-                    //   l.recMenu,
-                    //   () => _arrancarSegunHabitos(),
-                    // ),
                     entrada(LucideIcons.userRound, l.perfilTitulo, () {
                       Navigator.push(
                         context,
@@ -515,9 +384,6 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
         usuarioId: _usuarioId,
         embebida: true,
         activa: _tabIndex == 1,
-        // El core no puede conocer AnclasRecorrido, así que la key entra por
-        // parámetro. Sólo mientras el recorrido corre.
-        anclaAlimentar: _recorrido.activo ? AnclasRecorrido.alimentar : null,
         // Los textos los pone la app: el core no puede nombrar hábitos.
         ayudaAnimo: AyudaCampo(
           texto: l.mascotaAyudaAnimo,
@@ -576,11 +442,6 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
                   controller: _pageController,
                   onPageChanged: (i) {
                     setState(() => _tabIndex = i);
-                    // Paso de acción: llegar a Hábitos ES la acción.
-                    if (_recorrido.pasoActual == _pasoPestanaHabitos &&
-                        i == 2) {
-                      _recorrido.avanzar();
-                    }
                   },
                   // Cada pestaña se mantiene viva al salir de pantalla, como
                   // hacía el IndexedStack: deslizar no debe recargar lo que
@@ -640,12 +501,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
                       label: etiquetas[1],
                     ),
                     NavigationDestination(
-                      icon: Icon(
-                        LucideIcons.listChecks,
-                        key: _recorrido.activo
-                            ? AnclasRecorrido.pestanaHabitos
-                            : null,
-                      ),
+                      icon: const Icon(LucideIcons.listChecks),
                       label: etiquetas[2],
                     ),
                     NavigationDestination(

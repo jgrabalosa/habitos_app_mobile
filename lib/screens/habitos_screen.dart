@@ -7,8 +7,6 @@ import '../services/app_refresh.dart';
 import '../l10n/catalogos.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/habito.dart';
-import '../services/anclas_recorrido.dart';
-import '../services/recorrido_onboarding.dart';
 import '../widgets/identidad_ui.dart';
 import 'habito_screen.dart';
 
@@ -159,23 +157,7 @@ class _HabitosScreenState extends State<HabitosScreen> {
       // cielo. Es la misma razón por la que dashboard_screen no lleva Scaffold.
       backgroundColor: Colors.transparent,
       floatingActionButton: FloatingActionButton(
-        key: RecorridoOnboarding.instancia.activo
-            ? AnclasRecorrido.botonNuevoHabito
-            : null,
         onPressed: () async {
-          // Esta pantalla lleva dos pasos del recorrido guiado porque es la
-          // única que sabe las dos cosas: cuándo se abre la creación y cuándo
-          // ha terminado con un hábito guardado.
-          //
-          // No hace falta comprobar por qué paso va: mientras el recorrido
-          // corre, el velo sólo deja tocar lo que está señalado, así que si
-          // este botón se ha podido pulsar es porque era su turno.
-          final recorrido = RecorridoOnboarding.instancia;
-          if (recorrido.activo) recorrido.avanzar();
-          // Y se apaga mientras la creación está abierta: esa pantalla se usa
-          // entera, así que no puede haber un velo tapándole el guardar.
-          recorrido.pausar();
-
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
@@ -191,16 +173,7 @@ class _HabitosScreenState extends State<HabitosScreen> {
           if (result == true) {
             _cargarDatos();
             notificarHabitosCambiados();
-            // Guardado: el recorrido pasa a la marca del check, que vive en
-            // Hoy. Devolver al usuario a esa pestaña es cosa del shell.
-            if (recorrido.activo) recorrido.avanzar();
-          } else if (recorrido.activo) {
-            // Se volvió sin guardar: se deshace el avance de arriba y la
-            // marca vuelve a este botón.
-            recorrido.retroceder();
           }
-          // Se reanuda al final, cuando el paso ya es el que toca.
-          recorrido.reanudar();
         },
         child: const Icon(LucideIcons.plus),
       ),

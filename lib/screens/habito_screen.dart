@@ -6,8 +6,6 @@ import '../services/analytics_service.dart';
 import '../l10n/catalogos.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/habito.dart';
-import '../services/anclas_recorrido.dart';
-import '../services/recorrido_onboarding.dart';
 
 class HabitoScreen extends StatefulWidget {
   final int usuarioId;
@@ -263,16 +261,8 @@ class _HabitoScreenState extends State<HabitoScreen> {
     });
   }
 
-  List<Map<String, dynamic>> get _plantillasDisponibles => _plantillas
-      .where((p) => !_yaExiste(p['id']))
-      // Durante el recorrido guiado se esconde la plantilla semanal con días
-      // fijos: un hábito así sólo sale en Hoy los días que toca, y el paso
-      // siguiente señala su check en la lista de hoy. Creado un lunes, no
-      // habría nada que señalar. Fuera del recorrido se sigue ofreciendo.
-      .where(
-        (p) => !RecorridoOnboarding.instancia.activo || p['id'] != 'ejercicio',
-      )
-      .toList();
+  List<Map<String, dynamic>> get _plantillasDisponibles =>
+      _plantillas.where((p) => !_yaExiste(p['id'])).toList();
 
   void _alternarDia(int dia) {
     setState(() {
@@ -381,18 +371,8 @@ class _HabitoScreenState extends State<HabitoScreen> {
         );
         await AnalyticsHabitos.habitoCreado(_frecuencia);
         if (logrosOtorgados.isNotEmpty) {
-          final recorrido = RecorridoOnboarding.instancia;
-          if (recorrido.activo) {
-            // Durante el recorrido la celebración se guarda y sale al final:
-            // es una ruta, el recorrido se pinta por encima de todas, y aun
-            // pudiéndose ver se comería la atención en mitad de una
-            // explicación.
-            recorrido.aplazarCelebracion(logrosOtorgados);
-          } else {
-            // Fuera del recorrido sale aquí, antes de cerrar: es donde se
-            // acaba de ganar.
-            await CelebracionService.mostrar(logrosOtorgados);
-          }
+          // Sale aquí, antes de cerrar: es donde se acaba de ganar.
+          await CelebracionService.mostrar(logrosOtorgados);
         }
         if (mounted) Navigator.pop(context, true);
       }
@@ -471,7 +451,60 @@ class _HabitoScreenState extends State<HabitoScreen> {
       setState(() {
         _recordatorioHora = hora;
       });
+      await _asegurarPermisoNotificaciones();
     }
+  }
+
+  /// El permiso se pide aquí, en contexto: el usuario acaba de decir a qué
+  /// hora quiere el recordatorio. Si ya está dado, no se pregunta nada.
+  Future<void> _asegurarPermisoNotificaciones() async {
+    if (await NotificacionesService.concedido()) return;
+    if (!mounted) return;
+    final l = AppLocalizations.of(context)!;
+    if (await NotificacionesService.bloqueadoEnAjustes()) {
+      _avisoAjustes(l);
+      return;
+    }
+    if (!mounted) return;
+    final permitir = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.permisoTitulo),
+        content: Text(l.permisoCuerpo),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l.permisoAhoraNo),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l.permisoPermitir),
+          ),
+        ],
+      ),
+    );
+    if (permitir != true) return;
+    final concedido = await NotificacionesService.pedirYRegistrar(
+      widget.usuarioId,
+    );
+    if (!concedido &&
+        mounted &&
+        await NotificacionesService.bloqueadoEnAjustes()) {
+      _avisoAjustes(l);
+    }
+  }
+
+  void _avisoAjustes(AppLocalizations l) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l.permisoBloqueado),
+        action: SnackBarAction(
+          label: l.permisoAjustes,
+          onPressed: NotificacionesService.abrirAjustes,
+        ),
+      ),
+    );
   }
 
   Widget _selectorDias(TokensContextuales t) {
@@ -554,13 +587,6 @@ class _HabitoScreenState extends State<HabitoScreen> {
                     ),
                     const SizedBox(height: 8),
                     SizedBox(
-                      // Ancla del recorrido guiado. Sólo se engancha mientras el
-                      // recorrido corre: una GlobalKey no puede estar en dos
-                      // widgets a la vez, y esta pantalla puede abrirse otra vez
-                      // para editar.
-                      key: RecorridoOnboarding.instancia.activo
-                          ? AnclasRecorrido.recomendados
-                          : null,
                       height: 56,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,

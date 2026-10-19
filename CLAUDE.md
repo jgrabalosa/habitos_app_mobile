@@ -21,7 +21,7 @@ Antes de escribir algo genérico aquí, para: probablemente va en el paquete.
 
 Sesión, usuario, preferencias, gamificación, tienda, mascota y
 notificaciones (`ApiServiceCore`), los servicios genéricos (celebración,
-sonido, idioma, zona, recorrido guiado), el tema y las identidades, los
+sonido, idioma, zona), el tema y las identidades, los
 widgets genéricos, los fondos de cada identidad, el cierre del día, las 8
 pantallas genéricas (login, recuperación, elección de identidad, tienda,
 mascota, logros, colección, perfil), `NordayCoreLocalizations`,
@@ -33,10 +33,16 @@ completa, en el `CLAUDE.md` del paquete.
 - `screens/` — `HomeShell` (las pestañas Hoy, Mascota y Hábitos, y el menú),
   `DashboardScreen` (Hoy) y `dashboard_logica.dart` (sus decisiones sin
   widgets ni red, para poder probarlas), la lista de hábitos, el detalle y el
-  alta/edición.
+  alta/edición. El alta nueva arranca en `HomeShell`: la bienvenida de una
+  tarjeta (`widgets/bienvenida.dart`), el formulario real del primer hábito y,
+  si se guarda, una pista sobre su círculo en Hoy. Nada de esto sale a quien
+  no es alta nueva.
+- El permiso de notificaciones se pide al elegir la hora del recordatorio, en
+  `habito_screen.dart`, con `NotificacionesService` del core: nunca al entrar.
 - `services/` — `ApiServiceHabitos`, `AnalyticsHabitos`,
-  `CrashlyticsService`, el recorrido guiado (`recorrido_onboarding.dart`,
-  con sus pasos, y `anclas_recorrido.dart`, las anclas en un solo sitio),
+  `CrashlyticsService`, la pista de Hoy tras el primer hábito
+  (`recorrido_onboarding.dart`, y `anclas_recorrido.dart`, que hoy tiene una
+  sola ancla: el check del hábito),
   `descubrimiento_detalle.dart` (si el usuario ya entró alguna vez en un
   detalle) y `habitos_refresh.dart` (aviso de que la lista ha cambiado).
 - `models/habito.dart`.
@@ -94,7 +100,8 @@ puntos:
 7. **El cierre del día** — `HomeShell` monta `CapaCierreDelDia` y
    `DashboardScreen` llama a `mostrarCierreDelDia` al completar lo último del
    día. Sale una vez al día por usuario (fecha guardada en el dispositivo,
-   `cierre_dia_fecha_<usuarioId>`) y nunca durante el recorrido guiado.
+   `cierre_dia_fecha_<usuarioId>`) y nunca mientras la pista de Hoy está
+   abierta.
    Las páginas y la barra van envueltas en `OcultoAlLectorDuranteCierre`
    (core v0.39.0) para que el lector de pantalla no llegue a lo de debajo
    durante la ceremonia.
