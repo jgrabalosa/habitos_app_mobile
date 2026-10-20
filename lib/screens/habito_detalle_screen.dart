@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/habito.dart';
 import '../models/hoy.dart';
+import '../widgets/estrellas_registro.dart';
 import '../widgets/panel_ritmo.dart';
 import '../widgets/identidad_ui.dart';
 import 'habito_screen.dart';
@@ -476,9 +477,9 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // La estrella va en el color de puntos de la identidad, no en el
-              // ámbar de Material: es la misma familia que el resto de premios.
-              Icon(LucideIcons.star, color: t.points, size: 20),
+              // Es la misma estrella de la valoración: a lápiz en Dulce y con el
+              // icono de siempre en las otras dos identidades.
+              const EstrellaValoracion(marcada: true, tamano: 20),
               const SizedBox(width: 6),
               Text(
                 valor.toStringAsFixed(1).replaceAll('.', ','),
@@ -806,17 +807,8 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                               ).textTheme.titleMedium?.copyWith(color: t.text),
                             ),
                             if (r['valoracion'] != null)
-                              Row(
-                                children: List.generate(
-                                  5,
-                                  (i) => Icon(
-                                    LucideIcons.star,
-                                    size: 14,
-                                    color: i < (r['valoracion'] as int)
-                                        ? t.points
-                                        : t.textMuted.withValues(alpha: 0.3),
-                                  ),
-                                ),
+                              EstrellasRegistro(
+                                valoracion: r['valoracion'] as int,
                               ),
                             if (r['nota'] != null &&
                                 r['nota'].toString().isNotEmpty)
