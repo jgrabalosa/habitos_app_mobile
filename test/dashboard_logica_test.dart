@@ -253,4 +253,41 @@ void main() {
       expect(leida.hoyIso, '2026-09-16');
     });
   });
+
+  group('checkTocable', () {
+    test('habilitado, sin marcar y sin pista: responde', () {
+      expect(
+        checkTocable(habilitado: true, checkMarcado: false, pistaActiva: false),
+        isTrue,
+      );
+    });
+
+    test('con la pista de Hoy abierta no responde', () {
+      expect(
+        checkTocable(habilitado: true, checkMarcado: false, pistaActiva: true),
+        isFalse,
+      );
+    });
+
+    test('un check ya marcado no responde: el deshacer es otro camino', () {
+      expect(
+        checkTocable(habilitado: true, checkMarcado: true, pistaActiva: false),
+        isFalse,
+      );
+    });
+
+    test('un día que no se puede tocar no responde, con pista o sin ella', () {
+      for (final pista in [true, false]) {
+        expect(
+          checkTocable(
+            habilitado: false,
+            checkMarcado: false,
+            pistaActiva: pista,
+          ),
+          isFalse,
+          reason: 'pista=$pista',
+        );
+      }
+    });
+  });
 }

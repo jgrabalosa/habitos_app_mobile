@@ -92,7 +92,8 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   }
 
   /// La pista de Hoy tras guardar el primer hábito: una sola, sobre el círculo
-  /// del hábito. Sin «Saltar»: se cierra con «Entendido» o marcando el hábito.
+  /// del hábito. Sin «Saltar»: mientras está abierta el círculo no responde, y
+  /// se cierra solo con «Entendido».
   void _iniciarPista() {
     if (!mounted) return;
     final l = AppLocalizations.of(context)!;

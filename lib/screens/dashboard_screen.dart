@@ -21,6 +21,7 @@ import '../widgets/tira_semana.dart';
 import '../widgets/transito_fila.dart';
 import '../services/descubrimiento_detalle.dart';
 import '../widgets/chevron_detalle.dart';
+import 'dashboard_logica.dart';
 import 'habito_detalle_screen.dart';
 
 /// Lunes de la semana ISO a la que pertenece [dia], a medianoche.
@@ -374,6 +375,9 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   /// Marca un paso del hábito el día que se mira.
   Future<void> _completar(int habitoId) async {
+    // Red de seguridad: con la pista abierta el check no responde (ver
+    // `checkTocable`), así que aquí no debería llegar.
+    if (RecorridoOnboarding.instancia.activo) return;
     final hoy = _hoy;
     final antes = _filaDe(habitoId);
     if (hoy == null || antes == null) return;
@@ -455,11 +459,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     // la secuencia (ver `_cierrePendiente`).
     final diaCompleto = esHoy && enDelDia && _diaCompleto();
     if (diaCompleto) _cierrePendiente = true;
-
-    // Con la pista de Hoy abierta, marcar el hábito la cierra.
-    if (RecorridoOnboarding.instancia.activo) {
-      RecorridoOnboarding.instancia.terminar();
-    }
 
     _publicarProgreso();
 
@@ -1172,7 +1171,12 @@ class _DashboardScreenState extends State<DashboardScreen>
                       ? AnclasRecorrido.checkHabito
                       : null,
                   hecho: checkMarcado,
-                  onTap: habilitado && !checkMarcado
+                  onTap:
+                      checkTocable(
+                        habilitado: habilitado,
+                        checkMarcado: checkMarcado,
+                        pistaActiva: RecorridoOnboarding.instancia.activo,
+                      )
                       ? () => _completar(h.habitoId)
                       : null,
                   onDeshacer: habilitado && f.completadoEnFecha

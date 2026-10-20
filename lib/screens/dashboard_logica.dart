@@ -110,3 +110,14 @@ SemanaLeida leerSemana(Map<String, dynamic> data, {String? hoyAnterior}) {
     hoyIso: (data['hoy'] as String?) ?? hoyAnterior,
   );
 }
+
+/// Si el check de un hábito responde al toque. Con la pista de Hoy abierta NO
+/// responde, en ninguno de los checks: la pista se cierra solo con «Entendido»
+/// y así la ceremonia del día, cuando llegue, sale normal. Un check ya marcado
+/// no responde (el deshacer es otro camino), y un día que no se puede tocar
+/// tampoco.
+bool checkTocable({
+  required bool habilitado,
+  required bool checkMarcado,
+  required bool pistaActiva,
+}) => habilitado && !checkMarcado && !pistaActiva;
