@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show appFlavor, rootBundle;
 import 'package:flutter/foundation.dart';
@@ -193,6 +195,9 @@ class SplashScreen extends StatelessWidget {
     bool? posee;
     if (usuarioId != null) {
       posee = await Equipamiento.cargarDeUsuarioSiSePuede(usuarioId);
+      // El login ya registra el aviso; esto cubre al que abre la app con la
+      // sesión guardada.
+      unawaited(NotificacionesService.registrarSiHayPermiso(usuarioId));
     }
     return _Sesion(token, usuarioId, posee);
   }

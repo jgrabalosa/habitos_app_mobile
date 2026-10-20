@@ -40,4 +40,53 @@ void main() {
     expect(appRefreshNotifier.value - app, 2);
     expect(refrescoMascotaNotifier.value - mascota, 2);
   });
+
+  test('registra el aviso una vez, con el usuario real', () async {
+    final pedidos = <int>[];
+    alVolverAPrimerPlano(
+      7,
+      recargarIdentidad: (_) async => null,
+      registrarAviso: (id) async {
+        pedidos.add(id);
+      },
+    );
+    await Future<void>.delayed(Duration.zero);
+    expect(pedidos, [7]);
+  });
+
+  test('con usuario 0 no registra el aviso', () async {
+    final pedidos = <int>[];
+    alVolverAPrimerPlano(
+      0,
+      recargarIdentidad: (_) async => null,
+      registrarAviso: (id) async {
+        pedidos.add(id);
+      },
+    );
+    await Future<void>.delayed(Duration.zero);
+    expect(pedidos, isEmpty);
+  });
+
+  test('si registrar el aviso lanza, no propaga y las señales suben', () async {
+    final app = appRefreshNotifier.value;
+    final mascota = refrescoMascotaNotifier.value;
+    expect(
+      () => alVolverAPrimerPlano(
+        7,
+        recargarIdentidad: (_) async => null,
+        registrarAviso: (_) async => throw Exception('sin red'),
+      ),
+      returnsNormally,
+    );
+    await Future<void>.delayed(Duration.zero);
+    expect(appRefreshNotifier.value - app, 1);
+    expect(refrescoMascotaNotifier.value - mascota, 1);
+  });
+
+  test('sin registrarAviso y con usuario 0 no revienta', () {
+    expect(
+      () => alVolverAPrimerPlano(0, recargarIdentidad: (_) async => null),
+      returnsNormally,
+    );
+  });
 }
