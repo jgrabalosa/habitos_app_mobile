@@ -157,6 +157,8 @@ class _HabitosScreenState extends State<HabitosScreen> {
       // cielo. Es la misma razón por la que dashboard_screen no lleva Scaffold.
       backgroundColor: Colors.transparent,
       floatingActionButton: FloatingActionButton(
+        shape: formaBotonFlotante(identidad(context), t),
+        elevation: elevacionBotonFlotante(identidad(context)),
         onPressed: () async {
           final result = await Navigator.push(
             context,
