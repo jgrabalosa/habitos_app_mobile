@@ -445,9 +445,10 @@
     }
   },
   "pausaProducto": "Pausa",
-  "pausaProductoDesc": "Pausa un hábito sin perder su ritmo: no sale en Hoy ni te avisa hasta que lo reanudes.",
-  "pausaProductoUso": "Se usa desde el detalle de un hábito",
+  "pausaProductoDesc": "Pausa un hábito sin perder su ritmo: no sale en Hoy ni te avisa hasta que lo reanudes. Se usa con «Pausar», en Hábitos o en el detalle de un hábito.",
+  "pausaProductoUso": "Se usa con «Pausar», en Hábitos o en el detalle de un hábito.",
   "pausaTooltip": "Pausar",
+  "pausaAccion": "Pausar",
   "pausaTitulo": "Pausar «{nombre}»",
   "@pausaTitulo": {
     "placeholders": {

@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_service_habitos.dart';
-import '../services/habitos_refresh.dart';
-import '../services/pausa.dart';
+import '../widgets/pausa_habito.dart';
 import '../services/descubrimiento_detalle.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -127,93 +126,22 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     }
   }
 
-  /// Pausar gasta una «Pausa». La ventana enseña cuántas quedan; sin
-  /// ninguna, lleva a la tienda. Al pausar se vuelve a Hoy, donde el hábito
-  /// ya no sale.
+  /// Pausar desde el icono de la barra: la misma ventana que en la lista de
+  /// Hábitos. Si el hábito queda en pausa, se vuelve a Hoy, donde ya no sale.
   Future<void> _abrirPausa() async {
-    final l = AppLocalizations.of(context)!;
     final nombre = (_detalle?['nombre'] as String?) ?? widget.nombre ?? '';
-
-    final int pausas;
-    try {
-      pausas = pausasEn(
-        await ApiServiceCore.getInventarioProductos(widget.usuarioId),
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(MensajesError.de(context, e, generico: l.pausaError)),
-          ),
-        );
-      }
-      return;
-    }
-    if (!mounted) return;
-
-    final accion = await showDialog<_AccionPausa>(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: formaIdentidad(
-          identidad(context),
-          radio: identidad(context).radioHero,
-        ),
-        title: Text(l.pausaTitulo(nombre)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l.pausaCuerpo),
-            const SizedBox(height: 12),
-            Text(
-              pausas > 0 ? l.pausaTienes(pausas) : l.pausaSinPausas,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l.cancelar),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(
-              context,
-              pausas > 0 ? _AccionPausa.pausar : _AccionPausa.tienda,
-            ),
-            child: Text(pausas > 0 ? l.pausaBotonPausar : l.pausaBotonTienda),
-          ),
-        ],
-      ),
-    );
-    if (!mounted || accion == null) return;
-
-    if (accion == _AccionPausa.tienda) {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => TiendaScreen(usuarioId: widget.usuarioId),
-        ),
-      );
-      return;
-    }
-
     setState(() => _pausando = true);
-    try {
-      await ApiServiceHabitos.desactivarHabito(widget.habitoId);
-      notificarHabitosCambiados();
-      if (!mounted) return;
-      final mensajero = ScaffoldMessenger.of(context);
+    final pausado = await pausarHabito(
+      context,
+      usuarioId: widget.usuarioId,
+      habitoId: widget.habitoId,
+      nombre: nombre,
+    );
+    if (!mounted) return;
+    if (pausado) {
       Navigator.pop(context);
-      mensajero.showSnackBar(SnackBar(content: Text(l.pausaHecha(nombre))));
-    } catch (e) {
-      if (!mounted) return;
+    } else {
       setState(() => _pausando = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(MensajesError.de(context, e, generico: l.pausaError)),
-        ),
-      );
     }
   }
 
@@ -829,5 +757,3 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     }
   }
 }
-
-enum _AccionPausa { pausar, tienda }
