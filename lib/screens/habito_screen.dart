@@ -30,6 +30,21 @@ class HabitoScreen extends StatefulWidget {
   static Future<List<dynamic>> Function(int usuarioId) cargarCategorias =
       ApiServiceHabitos.getCategoriasUsuario;
 
+  /// Seam de test: la llamada que crea el hábito. En producción, la red.
+  @visibleForTesting
+  static Future<List<String>> Function(
+    String nombre,
+    String descripcion,
+    String frecuencia,
+    int meta,
+    int usuarioId,
+    int? categoriaId, {
+    String? diasSemana,
+    bool recordatorioActivo,
+    String? recordatorioHora,
+  })
+  crearHabito = ApiServiceHabitos.crearHabito;
+
   @override
   State<HabitoScreen> createState() => _HabitoScreenState();
 }
@@ -256,7 +271,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
         );
         if (mounted) Navigator.pop(context, true);
       } else {
-        final logrosOtorgados = await ApiServiceHabitos.crearHabito(
+        final logrosOtorgados = await HabitoScreen.crearHabito(
           _nombreController.text,
           _descripcionController.text,
           _frecuencia,
