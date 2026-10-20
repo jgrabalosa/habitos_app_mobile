@@ -9,8 +9,7 @@ import '../services/recorrido_onboarding.dart';
 import '../widgets/bienvenida.dart';
 import 'habito_screen.dart';
 import '../services/habitos_refresh.dart';
-import '../services/app_refresh.dart';
-import '../services/identidad_al_volver.dart';
+import '../services/al_volver.dart';
 import 'dashboard_screen.dart';
 import 'habitos_screen.dart';
 
@@ -186,8 +185,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      solicitarRefrescoApp();
-      recargarIdentidadAlVolver(_usuarioId);
+      alVolverAPrimerPlano(_usuarioId);
     }
   }
 
