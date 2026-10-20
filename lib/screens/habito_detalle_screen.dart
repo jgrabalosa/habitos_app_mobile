@@ -345,7 +345,7 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
   /// y peso entre plataformas, así que no se alinea con la identidad equipada.
   Widget _buildStatCards() {
     return ResumenDetalle(
-      totalCompletados: (_detalle!['totalCompletados'] as num).toInt(),
+      totalCompletados: ((_detalle!['totalCompletados'] ?? 0) as num).toInt(),
       diasMes: ((_detalle!['completadosMesActual'] ?? 0) as num).toInt(),
       mesActual: _esMesActual,
     );

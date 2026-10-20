@@ -31,6 +31,11 @@ class ResumenDetalle extends StatelessWidget {
           totalCompletados.toString(),
           l.detLoQueLlevas,
           t.successText,
+          ayuda: AyudaCampo(
+            texto: l.detAyudaLoQueLlevas,
+            etiquetaSemantica: l.detAyudaLoQueLlevasEtiqueta,
+            superindice: true,
+          ),
         ),
         const SizedBox(width: 8),
         _statCard(
@@ -39,6 +44,11 @@ class ResumenDetalle extends StatelessWidget {
           diasMes.toString(),
           mesActual ? l.detDiasEsteMes : l.detDiasDelMes,
           t.successText,
+          ayuda: AyudaCampo(
+            texto: l.detAyudaDiasMes,
+            etiquetaSemantica: l.detAyudaDiasMesEtiqueta,
+            superindice: true,
+          ),
         ),
       ],
     );
@@ -52,9 +62,6 @@ class ResumenDetalle extends StatelessWidget {
     String valor,
     String label,
     Color color, {
-    // Sin uso desde que salió la tarjeta de racha (F4); se queda para la
-    // próxima cifra que necesite su «?».
-    // ignore: unused_element_parameter
     Widget? ayuda,
   }) {
     final t = tokens(context);
