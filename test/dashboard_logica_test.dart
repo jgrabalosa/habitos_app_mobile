@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habitos_app_mobile/models/habito.dart';
+import 'package:norday_flutter_core/norday_flutter_core.dart';
 import 'package:habitos_app_mobile/screens/dashboard_logica.dart';
 
 Habito habito(String frecuencia, {int meta = 1}) => Habito(
@@ -288,6 +289,49 @@ void main() {
           reason: 'pista=$pista',
         );
       }
+    });
+  });
+
+  group('esSoloDeshacerElUltimo', () {
+    test('un 409 es el aviso de que solo se deshace el último', () {
+      expect(
+        esSoloDeshacerElUltimo(
+          const ApiException(TipoErrorApi.peticionInvalida, codigoEstado: 409),
+        ),
+        isTrue,
+      );
+    });
+
+    test('otros 4xx no lo son', () {
+      for (final codigo in [404, 400]) {
+        expect(
+          esSoloDeshacerElUltimo(
+            ApiException(TipoErrorApi.peticionInvalida, codigoEstado: codigo),
+          ),
+          isFalse,
+          reason: 'HTTP $codigo',
+        );
+      }
+    });
+
+    test('un 500 no lo es', () {
+      expect(
+        esSoloDeshacerElUltimo(
+          const ApiException(TipoErrorApi.servidor, codigoEstado: 500),
+        ),
+        isFalse,
+      );
+    });
+
+    test('un fallo sin conexión, sin código, no lo es', () {
+      expect(
+        esSoloDeshacerElUltimo(const ApiException(TipoErrorApi.sinConexion)),
+        isFalse,
+      );
+    });
+
+    test('una excepción cualquiera no lo es', () {
+      expect(esSoloDeshacerElUltimo(Exception('x')), isFalse);
     });
   });
 }

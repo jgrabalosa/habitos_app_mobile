@@ -231,6 +231,7 @@
     }
   },
   "dashDeshacerError": "Não foi possível desfazer esta conclusão.",
+  "dashDeshacerSoloUltimo": "Só podes desfazer a última vez que marcaste este hábito.",
   "recFin": "Entendido",
   "dashSeccionHoy": "HOJE",
   "dashSeccionContador": "{hechos} de {total}",

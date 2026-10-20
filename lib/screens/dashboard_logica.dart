@@ -1,3 +1,5 @@
+import 'package:norday_flutter_core/norday_flutter_core.dart';
+
 import '../models/habito.dart';
 
 /// Decisiones de la pantalla de Hoy que no dependen de widgets ni de red,
@@ -121,3 +123,11 @@ bool checkTocable({
   required bool checkMarcado,
   required bool pistaActiva,
 }) => habilitado && !checkMarcado && !pistaActiva;
+
+/// Si el fallo de deshacer es el 409 del servidor: solo se puede deshacer el
+/// último registro del hábito. Se reconoce por el código y nunca por el texto
+/// del cuerpo, que el backend manda en un solo idioma.
+bool esSoloDeshacerElUltimo(Object error) =>
+    error is ApiException &&
+    error.tipo == TipoErrorApi.peticionInvalida &&
+    error.codigoEstado == 409;

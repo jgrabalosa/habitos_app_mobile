@@ -316,6 +316,7 @@
     }
   },
   "dashDeshacerError": "No se ha podido deshacer este completado.",
+  "dashDeshacerSoloUltimo": "Solo puedes deshacer lo último que marcaste de este hábito.",
   "recFin": "Entendido",
   "dashSeccionHoy": "HOY",
   "dashSeccionContador": "{hechos} de {total}",

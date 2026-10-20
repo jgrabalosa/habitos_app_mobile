@@ -605,7 +605,9 @@ class _DashboardScreenState extends State<DashboardScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            MensajesError.de(context, e, generico: l.dashDeshacerError),
+            esSoloDeshacerElUltimo(e)
+                ? l.dashDeshacerSoloUltimo
+                : MensajesError.de(context, e, generico: l.dashDeshacerError),
           ),
         ),
       );

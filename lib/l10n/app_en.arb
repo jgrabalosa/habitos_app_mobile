@@ -231,6 +231,7 @@
     }
   },
   "dashDeshacerError": "This entry could not be undone.",
+  "dashDeshacerSoloUltimo": "You can only undo the last time you checked this habit.",
   "recFin": "Got it",
   "dashSeccionHoy": "TODAY",
   "dashSeccionContador": "{hechos} of {total}",
