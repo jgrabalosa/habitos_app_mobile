@@ -12,6 +12,7 @@ import '../models/hoy.dart';
 import '../widgets/estrellas_registro.dart';
 import '../widgets/panel_ritmo.dart';
 import '../widgets/identidad_ui.dart';
+import '../widgets/resumen_detalle.dart';
 import 'habito_screen.dart';
 
 class HabitoDetalleScreen extends StatefulWidget {
@@ -343,44 +344,10 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
   /// logros: el emoji lo pinta la fuente del sistema y cambia de dibujo, color
   /// y peso entre plataformas, así que no se alinea con la identidad equipada.
   Widget _buildStatCards() {
-    final l = AppLocalizations.of(context)!;
-    final t = tokens(context);
-    return Row(
-      children: [
-        // Las dos tarjetas de racha, fuera con el rediseño de rachas (F4).
-        // _statCard(
-        //   LucideIcons.flame,
-        //   _detalle!['rachaActual'].toString(),
-        //   l.detRachaActual,
-        //   t.streakText,
-        //   ayuda: AyudaCampo(
-        //     texto: l.detAyudaRacha,
-        //     etiquetaSemantica: l.detAyudaRachaEtiqueta,
-        //     superindice: true,
-        //   ),
-        // ),
-        // const SizedBox(width: 8),
-        // _statCard(
-        //   LucideIcons.trophy,
-        //   _detalle!['rachaMaxima'].toString(),
-        //   l.detMejorRacha,
-        //   t.streakText,
-        // ),
-        // const SizedBox(width: 8),
-        _statCard(
-          LucideIcons.chartColumn,
-          _detalle!['totalCompletados'].toString(),
-          l.detLoQueLlevas,
-          t.successText,
-        ),
-        const SizedBox(width: 8),
-        _statCard(
-          LucideIcons.calendarDays,
-          (_detalle!['completadosMesActual'] ?? 0).toString(),
-          _esMesActual ? l.detDiasEsteMes : l.detDiasDelMes,
-          t.successText,
-        ),
-      ],
+    return ResumenDetalle(
+      totalCompletados: (_detalle!['totalCompletados'] as num).toInt(),
+      diasMes: ((_detalle!['completadosMesActual'] ?? 0) as num).toInt(),
+      mesActual: _esMesActual,
     );
   }
 
@@ -498,59 +465,6 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                 texto: l.detAyudaSatisfaccion,
                 etiquetaSemantica: l.detAyudaSatisfaccionEtiqueta,
                 superindice: true,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// El `color` es el de la cifra, y llega ya resuelto para texto: quien
-  /// llama pasa `successText`, no `success`.
-  Widget _statCard(
-    IconData icono,
-    String valor,
-    String label,
-    Color color, {
-    // Sin uso desde que salió la tarjeta de racha (F4); se queda para la
-    // próxima cifra que necesite su «?».
-    // ignore: unused_element_parameter
-    Widget? ayuda,
-  }) {
-    final t = tokens(context);
-    return Expanded(
-      child: TarjetaIdentidad(
-        margen: EdgeInsets.zero,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-          child: Column(
-            children: [
-              Icon(icono, size: 18, color: color),
-              const SizedBox(height: 4),
-              Text(
-                valor,
-                style: Theme.of(
-                  context,
-                ).textTheme.headlineSmall?.copyWith(color: color),
-              ),
-              // La etiqueta puede partirse en dos líneas: la tarjeta es un
-              // cuarto de pantalla y, con ayuda, comparte fila con el
-              // interrogante.
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Flexible(
-                    child: Text(
-                      label,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.labelSmall?.copyWith(color: t.textMuted),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  ?ayuda,
-                ],
               ),
             ],
           ),
