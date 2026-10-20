@@ -12,7 +12,6 @@ class HabitoScreen extends StatefulWidget {
   final int usuarioId;
   final Habito? habito;
   final List<dynamic>? categoriasIniciales;
-  final List<String>? nombresHabitosExistentes;
 
   /// La idea de la que sale el hábito nuevo: se rellena el formulario con ella.
   final PlantillaHabito? plantilla;
@@ -21,7 +20,6 @@ class HabitoScreen extends StatefulWidget {
     required this.usuarioId,
     this.habito,
     this.categoriasIniciales,
-    this.nombresHabitosExistentes,
     this.plantilla,
   });
 
