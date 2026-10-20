@@ -45,3 +45,37 @@ Estado: en preparación.
 - Las sesiones caducadas llevan al usuario al login con un aviso.
 
 Para anunciar: el control de sonido.
+
+## 1.1.0 (5) — 2026-10-20
+
+Estado: en preparación.
+
+### Novedades
+
+- Hoy rediseñado: dos secciones con contador, tira semanal con flechas y un anillo de avance del día.
+- Ritmo: sustituye a la racha. Tarjeta «Tu ritmo» en Hoy, panel propio y el ritmo de cada hábito en su fila y en su detalle.
+- Pausar y reanudar hábitos.
+- Logros por días hechos y logros de ritmo.
+- Cierre del día: la constelación en Profundidad y el ramo en Dulce.
+- Dulce a lápiz: chips, calendario, barra, pestañas, estrellas, botón «+» y ramo.
+- Neotokyo+: el filo de cada hábito muestra su estado.
+- Bienvenida nueva de una tarjeta, con el permiso de notificaciones pedido en contexto y una pista en Hoy hacia «Esta semana».
+- «Empieza con una idea» en vez de las etiquetas, con siete plantillas.
+- Actualización obligatoria: la app avisa cuando hay una versión mínima nueva.
+
+### Mejoras
+
+- Las identidades adaptan el tema a su brillo, con un tercer color en Neotokyo+ y Dulce, un gesto al marcar y grano de papel.
+- Calendario: días vacíos en contorno y lo hecho en verde.
+- «Acabas de empezar» mientras el ritmo tiene menos de 7 días.
+- Explicación de «Lo que llevas» y «Días de este mes» en el detalle.
+- Al volver a la app se refresca la mini Nori y se recarga la identidad.
+- «Meta» pasa a «objetivo» en español y portugués.
+- Los avisos del móvil se registran al arrancar y al volver a la app.
+
+### Arreglos
+
+- Si un registro no se puede deshacer, la app lo explica con un aviso claro.
+- El panel «Tu ritmo» respeta la barra inferior del sistema.
+
+Para anunciar: el ritmo, el nuevo aspecto de Dulce y el rediseño de la app.

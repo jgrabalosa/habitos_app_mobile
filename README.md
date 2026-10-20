@@ -1,28 +1,32 @@
 # habitos_app_mobile — Norday Habits
 
 App Android de **Norday Habits**, la app de hábitos del ecosistema **Norday**.
-En septiembre de 2026 está en prueba cerrada en Google Play
-(`com.norday.habitos`).
+Versión en desarrollo: 1.1.0 (5). La publicada hasta ahora es la 1.0.0 (3),
+en prueba cerrada en Google Play (`com.norday.habitos`).
 
 ## Qué hace
 
 - **Hoy**: los hábitos del día, con un toque para completarlos, la semana en
   una tira y el progreso del día dibujado en el fondo de la identidad.
 - **Hábitos** diarios o semanales, con meta de veces, días concretos,
-  categoría, descripción y recordatorio a una hora. Cinco plantillas para
-  empezar (beber agua, ejercicio, meditar, caminar, escribir diario).
-- **Detalle** de cada hábito con su historial, racha y notas.
-- **Rachas, puntos y logros**: alcanzar la meta de un hábito suma puntos, y los
-  puntos se gastan en la tienda.
+  categoría, descripción y recordatorio a una hora. Siete plantillas para
+  empezar (beber agua, leer 20 minutos, ejercicio, meditar, dormir 8 horas,
+  caminar, escribir diario).
+- **Detalle** de cada hábito con su historial, ritmo y notas.
+- **Ritmo, puntos y logros**: cada hábito tiene un ritmo que sube al cumplirlo
+  y baja despacio al fallar, y los hábitos se pueden pausar. Alcanzar la meta
+  de un hábito suma puntos, y los puntos se gastan en la tienda.
 - **Nori**, una mascota que se alimenta gastando puntos, crece con la
   constancia y evoluciona de huevo a cría y a adulto.
 - **Tres identidades visuales** — Profundidad, Neotokyo+ y Dulce — que
   cambian colores, tipografía, formas y fondo de toda la app. La primera se
   elige gratis al empezar; las demás, en la tienda.
-- **Cierre del día** en Profundidad: al completar lo último del día, la
-  constelación del día se ilumina.
-- **Primer hábito** guiado: una bienvenida lleva al formulario real, y al
-  guardarlo, Hoy señala su círculo una vez.
+- **Cierre del día**: al completar lo último del día, en Profundidad se
+  ilumina la constelación y en Dulce se completa el ramo; en Neotokyo+ termina
+  en el acto.
+- **Primer hábito** guiado: una bienvenida de una tarjeta lleva al formulario
+  real, pide el permiso de notificaciones al elegir la hora de un recordatorio
+  y, al guardarlo, Hoy señala su círculo una vez.
 - En **español, inglés y portugués**, con zona horaria propia.
 - Registro con email o con Google.
 
