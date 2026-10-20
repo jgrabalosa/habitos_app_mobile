@@ -5,6 +5,8 @@ import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
 import '../models/habito.dart';
 import '../models/hoy.dart';
+import '../models/ritmo_reciente.dart';
+import 'identidad_ui.dart';
 
 /// La palabra del nivel de un ritmo, del 1 al 5.
 String palabraRitmo(AppLocalizations l, int nivel) => switch (nivel) {
@@ -17,13 +19,22 @@ String palabraRitmo(AppLocalizations l, int nivel) => switch (nivel) {
 
 /// La línea de la causa, según hacia dónde va el ritmo respecto a hace siete
 /// días. El fallo no se nombra: si baja, se dice el siguiente paso.
-String? causaRitmo(AppLocalizations l, TendenciaRitmo? tendencia) =>
-    switch (tendencia) {
-      TendenciaRitmo.sube => l.ritmoSube,
-      TendenciaRitmo.igual => l.ritmoIgual,
-      TendenciaRitmo.baja => l.ritmoBaja,
-      null => null,
-    };
+///
+/// Si [recienEmpezado], no hay semana anterior con la que comparar: dice que
+/// acaba de empezar, sea cual sea la tendencia.
+String? causaRitmo(
+  AppLocalizations l,
+  TendenciaRitmo? tendencia, {
+  bool recienEmpezado = false,
+}) {
+  if (recienEmpezado) return l.ritmoRecienEmpezado;
+  return switch (tendencia) {
+    TendenciaRitmo.sube => l.ritmoSube,
+    TendenciaRitmo.igual => l.ritmoIgual,
+    TendenciaRitmo.baja => l.ritmoBaja,
+    null => null,
+  };
+}
 
 /// El panel «Tu ritmo», que sube desde abajo sin salir de Hoy: la palabra, el
 /// dibujo, la causa, qué es el ritmo y de dónde sale, hábito por hábito.
@@ -59,8 +70,13 @@ class _PanelRitmo extends StatelessWidget {
     final texto = Theme.of(context).textTheme;
     final nivel = hoy.ritmoNivel ?? 1;
     final palabra = palabraRitmo(l, nivel);
-    final causa = causaRitmo(l, hoy.ritmoTendencia);
     final filas = [...hoy.delDia.habitos, ...hoy.deLaSemana.habitos];
+    // El «hoy» es el de la zona del usuario, según el servidor.
+    final diaHoy = DateTime.tryParse(hoy.hoy);
+    final recien =
+        diaHoy != null &&
+        recienEmpezadoEnLista(filas.map((f) => f.habito).toList(), diaHoy);
+    final causa = causaRitmo(l, hoy.ritmoTendencia, recienEmpezado: recien);
     final estiloEtiqueta = texto.labelSmall?.copyWith(
       color: t.textMuted,
       fontWeight: FontWeight.w700,
@@ -72,7 +88,14 @@ class _PanelRitmo extends StatelessWidget {
         maxHeight: MediaQuery.sizeOf(context).height * 0.85,
       ),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+        // `useSafeArea` no aparta de abajo: por eso se suma aquí la barra del
+        // sistema, para que el último hábito no quede bajo ella.
+        padding: EdgeInsets.fromLTRB(
+          20,
+          12,
+          20,
+          24 + MediaQuery.viewPaddingOf(context).bottom,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,19 +119,12 @@ class _PanelRitmo extends StatelessWidget {
                 child: Row(
                   children: [
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(l.ritmoTitulo, style: estiloEtiqueta),
-                          const SizedBox(height: 2),
-                          Text(
-                            palabra,
-                            style: texto.headlineSmall?.copyWith(
-                              color: t.points,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        palabra,
+                        style: texto.headlineSmall?.copyWith(
+                          color: t.points,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -185,7 +201,10 @@ class _FilaPanel extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              IndicadorNivel(nivel: fila.ritmoNivel, tamano: 11),
+              IndicadorNivel(
+                nivel: fila.ritmoNivel,
+                tamano: tamanoRitmoFila(identidad(context)),
+              ),
               const SizedBox(width: 8),
               Icon(LucideIcons.chevronRight, size: 18, color: t.primaryTrazo),
             ],

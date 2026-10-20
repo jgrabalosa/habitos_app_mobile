@@ -57,8 +57,6 @@
   "frecSemanal": "Weekly",
   "habTituloNuevo": "New habit",
   "habTituloEditar": "Edit habit",
-  "habCambiarFrecTitulo": "Change the frequency?",
-  "habCambiarFrecCuerpo": "Changing the frequency will reset your current streak to 0.\nYour best streak is kept.",
   "habNombreObligatorio": "Name is required",
   "habHoraObligatoria": "Pick a time for the reminder, or turn it off",
   "habErrorCrear": "Couldn't create the habit",
@@ -66,7 +64,36 @@
   "habErrorEliminar": "Couldn't delete the habit",
   "habEliminarTitulo": "Delete habit",
   "habEliminarCuerpo": "Delete this habit? It goes with everything you've done so far, and your overall pace will be recalculated without it. This can't be undone.",
-  "habRecomendados": "Suggested habits (optional)",
+  "ideasTitulo": "Start with an idea",
+  "ideasDesdeCero": "Create your own",
+  "ideasSugerencia": "It's just a suggestion — you can change anything.",
+  "ideasFrecDiario": "Every day",
+  "ideasFrecDiarioN": "{n, plural, =1{Every day · 1 time} other{Every day · {n} times}}",
+  "@ideasFrecDiarioN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "ideasFrecSemanal": "{n, plural, =1{1 time a week · {dias}} other{{n} times a week · {dias}}}",
+  "@ideasFrecSemanal": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "dias": {
+        "type": "String"
+      }
+    }
+  },
+  "ideasDia1": "Mon",
+  "ideasDia2": "Tue",
+  "ideasDia3": "Wed",
+  "ideasDia4": "Thu",
+  "ideasDia5": "Fri",
+  "ideasDia6": "Sat",
+  "ideasDia7": "Sun",
   "habLabelNombre": "Habit name",
   "habLabelDescripcion": "Description (optional)",
   "habLabelCategoria": "Category (optional)",
@@ -87,6 +114,10 @@
   "detAyudaRacha": "Days in a row meeting the goal; weeks, if it's weekly. Miss one and it goes back to zero.",
   "detAyudaSatisfaccionEtiqueta": "Help about the rating",
   "detAyudaSatisfaccion": "Average of the stars you give when you check this habit.",
+  "detAyudaLoQueLlevasEtiqueta": "Help about what you've done so far",
+  "detAyudaLoQueLlevas": "The number of times you've checked this habit since you created it. A day without doing it doesn't lower it.",
+  "detAyudaDiasMesEtiqueta": "Help about the days of the month",
+  "detAyudaDiasMes": "The days of the month you've checked it at least once.",
   "dashAyudaFlexiblesEtiqueta": "Help about this week",
   "dashAyudaFlexibles": "Weekly habits that aren't due today: do them whenever you like until you reach the week's goal.",
   "mascotaAyudaAnimoEtiqueta": "Help about Nori's mood",
@@ -227,6 +258,7 @@
     }
   },
   "dashDeshacerError": "This entry could not be undone.",
+  "dashDeshacerSoloUltimo": "You can only undo the last time you checked this habit.",
   "recFin": "Got it",
   "dashSeccionHoy": "TODAY",
   "dashSeccionContador": "{hechos} of {total}",
@@ -234,7 +266,6 @@
   "a11yDesplegarSeccion": "Expand the {seccion} section",
   "a11ySemanaAnterior": "Previous week",
   "a11ySemanaSiguiente": "Next week",
-  "ritmoTitulo": "YOUR PACE",
   "ritmoNivel1": "Getting back",
   "ritmoNivel2": "Finding your pace",
   "ritmoNivel3": "Good pace",
@@ -243,6 +274,7 @@
   "ritmoSube": "Up on last week.",
   "ritmoIgual": "Same as last week.",
   "ritmoBaja": "One step today and it climbs again.",
+  "ritmoRecienEmpezado": "You've just started. In a week you'll see how it's going.",
   "a11yRitmoGeneral": "Your overall pace: {palabra}, level {nivel} of 5",
   "a11yRitmoHabito": "Pace: {palabra}",
   "ritmoExplicacion": "Your pace brings all your habits together. It rises each time you follow through, and on days you don't, it only dips a little.",
@@ -267,9 +299,10 @@
   "logroDescRitmoVuelta": "Lift a habit from “Getting back” to “Good pace” in a week",
   "dashExtraSemana": "+{n} for completing the week",
   "pausaProducto": "Pause",
-  "pausaProductoDesc": "Pause a habit without losing its rhythm: it leaves Today and stays quiet until you resume it.",
-  "pausaProductoUso": "Use it from a habit's details",
+  "pausaProductoDesc": "Pause a habit without losing its rhythm: it leaves Today and stays quiet until you resume it. Use it with “Pause”, in Habits or from a habit's details.",
+  "pausaProductoUso": "Use it with “Pause”, in Habits or from a habit's details.",
   "pausaTooltip": "Pause",
+  "pausaAccion": "Pause",
   "pausaTitulo": "Pause “{nombre}”",
   "pausaCuerpo": "While it's paused it won't appear in Today or remind you, and its rhythm stays as it is. Resume it whenever you like from Habits, for free.",
   "pausaTienes": "{n, plural, =1{You have 1 pause} other{You have {n} pauses}}",
@@ -286,8 +319,8 @@
   "bienvenidaCuerpo": "Nori grows with every habit you complete. What counts here is consistency, not perfection: one bad day doesn't erase your progress.",
   "bienvenidaSonido": "Music and effects. You can change it in My account.",
   "bienvenidaCrear": "Create my first habit",
-  "pistaCheckTitulo": "Tick it off when you do it",
-  "pistaCheckCuerpo": "Each time you do it, tap the circle. Nori grows with every one.",
+  "pistaCheckTitulo": "You'll tick it off here",
+  "pistaCheckCuerpo": "Each day you do it, you'll tap this circle. Nori grows with every one.",
   "permisoTitulo": "Shall I remind you?",
   "permisoCuerpo": "To remind you at the time you choose, Norday needs permission to send you notifications.",
   "permisoPermitir": "Allow",

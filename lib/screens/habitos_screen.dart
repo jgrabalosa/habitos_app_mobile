@@ -8,7 +8,9 @@ import '../l10n/catalogos.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/habito.dart';
 import '../widgets/identidad_ui.dart';
+import '../widgets/pausa_habito.dart';
 import 'habito_screen.dart';
+import 'ideas_habito_screen.dart';
 
 enum _Orden { recientes, masCumplidos }
 
@@ -28,6 +30,7 @@ class _HabitosScreenState extends State<HabitosScreen> {
   int? _filtroCategoriaId; // null = todas
   _Orden _orden = _Orden.recientes;
   int? _reanudando; // el hábito que se está reanudando, mientras tanto
+  int? _pausando; // el hábito que se está pausando, mientras tanto
 
   @override
   void initState() {
@@ -67,6 +70,22 @@ class _HabitosScreenState extends State<HabitosScreen> {
       if (!mounted) return;
       setState(() => _loading = false);
       _avisarError(e);
+    }
+  }
+
+  /// Pausa desde la lista, con la misma ventana que el detalle. La lista se
+  /// recarga sola por el aviso de hábitos cambiados.
+  Future<void> _pausar(Habito habito) async {
+    setState(() => _pausando = habito.habitoId);
+    try {
+      await pausarHabito(
+        context,
+        usuarioId: widget.usuarioId,
+        habitoId: habito.habitoId,
+        nombre: habito.nombre,
+      );
+    } finally {
+      if (mounted) setState(() => _pausando = null);
     }
   }
 
@@ -157,18 +176,16 @@ class _HabitosScreenState extends State<HabitosScreen> {
       // cielo. Es la misma razón por la que dashboard_screen no lleva Scaffold.
       backgroundColor: Colors.transparent,
       floatingActionButton: FloatingActionButton(
+        shape: formaBotonFlotante(identidad(context), t),
+        elevation: elevacionBotonFlotante(identidad(context)),
         onPressed: () async {
-          final result = await Navigator.push(
+          final result = await abrirAltaHabito(
             context,
-            MaterialPageRoute(
-              builder: (_) => HabitoScreen(
-                usuarioId: widget.usuarioId,
-                categoriasIniciales: _categorias,
-                nombresHabitosExistentes: _resumen
-                    .map((r) => (r['habito'] as Habito).nombre)
-                    .toList(),
-              ),
-            ),
+            usuarioId: widget.usuarioId,
+            categoriasIniciales: _categorias,
+            nombresHabitosExistentes: _resumen
+                .map((r) => (r['habito'] as Habito).nombre)
+                .toList(),
           );
           if (result == true) {
             _cargarDatos();
@@ -376,15 +393,27 @@ class _HabitosScreenState extends State<HabitosScreen> {
                 ),
               ),
             ),
-            if (!habito.activo) ...[
-              const SizedBox(width: 8),
+            const SizedBox(width: 8),
+            // Con el nombre en la etiqueta: hay varios «Pausar» en la pantalla.
+            if (habito.activo)
+              Semantics(
+                button: true,
+                label: l.pausaTitulo(habito.nombre),
+                excludeSemantics: true,
+                child: TextButton(
+                  onPressed: _pausando == habito.habitoId
+                      ? null
+                      : () => _pausar(habito),
+                  child: Text(l.pausaAccion),
+                ),
+              )
+            else
               TextButton(
                 onPressed: _reanudando == habito.habitoId
                     ? null
                     : () => _reanudar(habito),
                 child: Text(l.pausaReanudar),
               ),
-            ],
           ],
         ),
       ),

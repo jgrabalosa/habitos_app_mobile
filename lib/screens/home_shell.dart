@@ -7,9 +7,9 @@ import '../widgets/identidad_ui.dart';
 import '../services/anclas_recorrido.dart';
 import '../services/recorrido_onboarding.dart';
 import '../widgets/bienvenida.dart';
-import 'habito_screen.dart';
+import 'ideas_habito_screen.dart';
 import '../services/habitos_refresh.dart';
-import '../services/app_refresh.dart';
+import '../services/al_volver.dart';
 import 'dashboard_screen.dart';
 import 'habitos_screen.dart';
 
@@ -91,7 +91,8 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   }
 
   /// La pista de Hoy tras guardar el primer hábito: una sola, sobre el círculo
-  /// del hábito. Sin «Saltar»: se cierra con «Entendido» o marcando el hábito.
+  /// del hábito. Sin «Saltar»: mientras está abierta el círculo no responde, y
+  /// se cierra solo con «Entendido».
   void _iniciarPista() {
     if (!mounted) return;
     final l = AppLocalizations.of(context)!;
@@ -184,7 +185,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      solicitarRefrescoApp();
+      alVolverAPrimerPlano(_usuarioId);
     }
   }
 
@@ -216,14 +217,10 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     if (!mounted) return;
     await Bienvenida.mostrar(context);
     if (!mounted) return;
-    final guardado = await Navigator.push<bool>(
+    final guardado = await abrirAltaHabito(
       context,
-      MaterialPageRoute(
-        builder: (_) => HabitoScreen(
-          usuarioId: _usuarioId,
-          nombresHabitosExistentes: const [],
-        ),
-      ),
+      usuarioId: _usuarioId,
+      esPrimerHabito: true,
     );
     if (guardado != true || !mounted) return;
     notificarHabitosCambiados();

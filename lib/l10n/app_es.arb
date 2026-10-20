@@ -57,8 +57,6 @@
   "frecSemanal": "Semanal",
   "habTituloNuevo": "Nuevo hábito",
   "habTituloEditar": "Editar hábito",
-  "habCambiarFrecTitulo": "¿Cambiar la frecuencia?",
-  "habCambiarFrecCuerpo": "Cambiar la frecuencia reiniciará tu racha actual a 0.\nTu mejor racha se conserva.",
   "habNombreObligatorio": "El nombre es obligatorio",
   "habHoraObligatoria": "Elige una hora para el recordatorio o desactívalo",
   "habErrorCrear": "Error al crear el hábito",
@@ -66,7 +64,36 @@
   "habErrorEliminar": "Error al eliminar el hábito",
   "habEliminarTitulo": "Eliminar hábito",
   "habEliminarCuerpo": "¿Seguro que quieres eliminar este hábito? Se borra con todo lo que llevas, y tu ritmo general se recalculará sin él. Esta acción no se puede deshacer.",
-  "habRecomendados": "Hábitos recomendados (opcional)",
+  "ideasTitulo": "Empieza con una idea",
+  "ideasDesdeCero": "Crear uno desde cero",
+  "ideasSugerencia": "Es solo una sugerencia: podrás cambiarlo todo.",
+  "ideasFrecDiario": "Cada día",
+  "ideasFrecDiarioN": "{n, plural, =1{Cada día · 1 vez} other{Cada día · {n} veces}}",
+  "@ideasFrecDiarioN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "ideasFrecSemanal": "{n, plural, =1{1 vez por semana · {dias}} other{{n} veces por semana · {dias}}}",
+  "@ideasFrecSemanal": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "dias": {
+        "type": "String"
+      }
+    }
+  },
+  "ideasDia1": "lun",
+  "ideasDia2": "mar",
+  "ideasDia3": "mié",
+  "ideasDia4": "jue",
+  "ideasDia5": "vie",
+  "ideasDia6": "sáb",
+  "ideasDia7": "dom",
   "habLabelNombre": "Nombre del hábito",
   "habLabelDescripcion": "Descripción (opcional)",
   "habLabelCategoria": "Categoría (opcional)",
@@ -74,25 +101,29 @@
   "habErrorCategorias": "No se pudieron cargar las categorías.",
   "habLabelFrecuencia": "Frecuencia",
   "habDiasSemana": "Días de la semana (opcional)",
-  "habDiasAyudaSin": "Sin días concretos: tú eliges cuándo, la meta marca cuántos.",
+  "habDiasAyudaSin": "Sin días concretos: tú eliges cuándo, el objetivo marca cuántos.",
   "habDiasAyudaCon": "Son tu guía: si un día no puedes, vale cualquier otro de la semana.",
-  "habMeta": "Meta: ",
-  "habAyudaMetaEtiqueta": "Ayuda sobre la meta",
+  "habMeta": "Objetivo: ",
+  "habAyudaMetaEtiqueta": "Ayuda sobre el objetivo",
   "habAyudaMetaDiaria": "Cuántas veces al día quieres hacerlo. Beber agua puede ser 4; meditar, 1.",
-  "habAyudaMetaSemanal": "Cuántas veces por semana, el día que te venga bien. Si marcas días concretos, la meta sale de ellos.",
-  "habAyudaMetaDias": "Con días concretos, la meta son esos días: uno por cada día marcado.",
+  "habAyudaMetaSemanal": "Cuántas veces por semana, el día que te venga bien. Si marcas días concretos, el objetivo sale de ellos.",
+  "habAyudaMetaDias": "Con días concretos, el objetivo son esos días: uno por cada día marcado.",
   "habAyudaFrecuenciaEtiqueta": "Ayuda sobre la frecuencia",
   "habAyudaFrecuencia": "Diario: cada día. Semanal: unas veces por semana, los días que mejor te vengan.",
   "detAyudaRachaEtiqueta": "Ayuda sobre la racha",
-  "detAyudaRacha": "Días seguidos cumpliendo la meta; semanas, si es semanal. Si fallas uno, vuelve a cero.",
+  "detAyudaRacha": "Días seguidos cumpliendo el objetivo; semanas, si es semanal. Si fallas uno, vuelve a cero.",
   "detAyudaSatisfaccionEtiqueta": "Ayuda sobre la satisfacción",
   "detAyudaSatisfaccion": "Media de las estrellas que das al marcar este hábito.",
+  "detAyudaLoQueLlevasEtiqueta": "Ayuda sobre lo que llevas",
+  "detAyudaLoQueLlevas": "Las veces que has marcado este hábito desde que lo creaste. Un día sin hacerlo no lo baja.",
+  "detAyudaDiasMesEtiqueta": "Ayuda sobre los días del mes",
+  "detAyudaDiasMes": "Los días del mes en que lo has marcado al menos una vez.",
   "dashAyudaFlexiblesEtiqueta": "Ayuda sobre esta semana",
   "dashAyudaFlexibles": "Los semanales que no tocan hoy: hazlos cuando quieras hasta cumplir el objetivo de la semana.",
   "mascotaAyudaAnimoEtiqueta": "Ayuda sobre el ánimo de Nori",
   "mascotaAyudaAnimo": "Nori está feliz el día que completas todos tus hábitos. Si no, se duerme; tras tres días sin completarlos, se pone triste.",
   "mascotaAyudaXpEtiqueta": "Ayuda sobre la experiencia",
-  "mascotaAyudaXp": "La experiencia de Nori. Sube cada vez que cumples la meta de un hábito y cuando le das de comer.",
+  "mascotaAyudaXp": "La experiencia de Nori. Sube cada vez que cumples el objetivo de un hábito y cuando le das de comer.",
   "habRecordatorio": "Recordatorio",
   "habEligeHora": "Elige una hora",
   "habDesactivado": "Desactivado",
@@ -139,7 +170,7 @@
   "detUltimosRegistros": "Últimos registros",
   "detVacioTitulo": "Tu historia empieza hoy",
   "detSemanalUnDia": "1 día/semana",
-  "detDiarioMeta": "Diario · meta {n}/día",
+  "detDiarioMeta": "Diario · objetivo {n}/día",
   "@detDiarioMeta": {
     "placeholders": {
       "n": {
@@ -147,7 +178,7 @@
       }
     }
   },
-  "detSemanalMeta": "Semanal · meta {n}/semana",
+  "detSemanalMeta": "Semanal · objetivo {n}/semana",
   "@detSemanalMeta": {
     "placeholders": {
       "n": {
@@ -312,6 +343,7 @@
     }
   },
   "dashDeshacerError": "No se ha podido deshacer este completado.",
+  "dashDeshacerSoloUltimo": "Solo puedes deshacer lo último que marcaste de este hábito.",
   "recFin": "Entendido",
   "dashSeccionHoy": "HOY",
   "dashSeccionContador": "{hechos} de {total}",
@@ -343,7 +375,6 @@
   },
   "a11ySemanaAnterior": "Semana anterior",
   "a11ySemanaSiguiente": "Semana siguiente",
-  "ritmoTitulo": "TU RITMO",
   "ritmoNivel1": "Retomando",
   "ritmoNivel2": "Cogiendo ritmo",
   "ritmoNivel3": "Buen ritmo",
@@ -352,6 +383,7 @@
   "ritmoSube": "Sube respecto a la semana pasada.",
   "ritmoIgual": "Igual que la semana pasada.",
   "ritmoBaja": "Un paso hoy y vuelve a subir.",
+  "ritmoRecienEmpezado": "Acabas de empezar. Dentro de una semana verás cómo evoluciona.",
   "a11yRitmoGeneral": "Tu ritmo general: {palabra}, nivel {nivel} de 5",
   "@a11yRitmoGeneral": {
     "placeholders": {
@@ -413,9 +445,10 @@
     }
   },
   "pausaProducto": "Pausa",
-  "pausaProductoDesc": "Pausa un hábito sin perder su ritmo: no sale en Hoy ni te avisa hasta que lo reanudes.",
-  "pausaProductoUso": "Se usa desde el detalle de un hábito",
+  "pausaProductoDesc": "Pausa un hábito sin perder su ritmo: no sale en Hoy ni te avisa hasta que lo reanudes. Se usa con «Pausar», en Hábitos o en el detalle de un hábito.",
+  "pausaProductoUso": "Se usa con «Pausar», en Hábitos o en el detalle de un hábito.",
   "pausaTooltip": "Pausar",
+  "pausaAccion": "Pausar",
   "pausaTitulo": "Pausar «{nombre}»",
   "@pausaTitulo": {
     "placeholders": {
@@ -460,8 +493,8 @@
   "bienvenidaCuerpo": "Crece con cada hábito que cumples. Aquí cuenta la constancia, no la perfección: un mal día no borra lo que llevas.",
   "bienvenidaSonido": "Música y efectos. Puedes cambiarlo en Mi cuenta.",
   "bienvenidaCrear": "Crear mi primer hábito",
-  "pistaCheckTitulo": "Márcalo cuando lo hagas",
-  "pistaCheckCuerpo": "Cada vez que lo cumplas, toca el círculo. Con cada uno crece Nori.",
+  "pistaCheckTitulo": "Aquí lo marcarás",
+  "pistaCheckCuerpo": "Cada día que lo cumplas, tocarás este círculo. Con cada uno crece Nori.",
   "permisoTitulo": "¿Te aviso a tu hora?",
   "permisoCuerpo": "Para recordártelo a la hora que elijas, Norday necesita permiso para enviarte notificaciones.",
   "permisoPermitir": "Permitir",

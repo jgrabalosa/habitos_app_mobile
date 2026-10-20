@@ -1,3 +1,5 @@
+import 'package:norday_flutter_core/norday_flutter_core.dart';
+
 import '../models/habito.dart';
 
 /// Decisiones de la pantalla de Hoy que no dependen de widgets ni de red,
@@ -110,3 +112,22 @@ SemanaLeida leerSemana(Map<String, dynamic> data, {String? hoyAnterior}) {
     hoyIso: (data['hoy'] as String?) ?? hoyAnterior,
   );
 }
+
+/// Si el check de un hábito responde al toque. Con la pista de Hoy abierta NO
+/// responde, en ninguno de los checks: la pista se cierra solo con «Entendido»
+/// y así la ceremonia del día, cuando llegue, sale normal. Un check ya marcado
+/// no responde (el deshacer es otro camino), y un día que no se puede tocar
+/// tampoco.
+bool checkTocable({
+  required bool habilitado,
+  required bool checkMarcado,
+  required bool pistaActiva,
+}) => habilitado && !checkMarcado && !pistaActiva;
+
+/// Si el fallo de deshacer es el 409 del servidor: solo se puede deshacer el
+/// último registro del hábito. Se reconoce por el código y nunca por el texto
+/// del cuerpo, que el backend manda en un solo idioma.
+bool esSoloDeshacerElUltimo(Object error) =>
+    error is ApiException &&
+    error.tipo == TipoErrorApi.peticionInvalida &&
+    error.codigoEstado == 409;

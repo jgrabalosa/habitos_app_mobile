@@ -21,6 +21,7 @@ import '../widgets/tira_semana.dart';
 import '../widgets/transito_fila.dart';
 import '../services/descubrimiento_detalle.dart';
 import '../widgets/chevron_detalle.dart';
+import 'dashboard_logica.dart';
 import 'habito_detalle_screen.dart';
 
 /// Lunes de la semana ISO a la que pertenece [dia], a medianoche.
@@ -374,6 +375,9 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   /// Marca un paso del hábito el día que se mira.
   Future<void> _completar(int habitoId) async {
+    // Red de seguridad: con la pista abierta el check no responde (ver
+    // `checkTocable`), así que aquí no debería llegar.
+    if (RecorridoOnboarding.instancia.activo) return;
     final hoy = _hoy;
     final antes = _filaDe(habitoId);
     if (hoy == null || antes == null) return;
@@ -455,11 +459,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     // la secuencia (ver `_cierrePendiente`).
     final diaCompleto = esHoy && enDelDia && _diaCompleto();
     if (diaCompleto) _cierrePendiente = true;
-
-    // Con la pista de Hoy abierta, marcar el hábito la cierra.
-    if (RecorridoOnboarding.instancia.activo) {
-      RecorridoOnboarding.instancia.terminar();
-    }
 
     _publicarProgreso();
 
@@ -606,7 +605,9 @@ class _DashboardScreenState extends State<DashboardScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            MensajesError.de(context, e, generico: l.dashDeshacerError),
+            esSoloDeshacerElUltimo(e)
+                ? l.dashDeshacerSoloUltimo
+                : MensajesError.de(context, e, generico: l.dashDeshacerError),
           ),
         ),
       );
@@ -935,14 +936,15 @@ class _DashboardScreenState extends State<DashboardScreen>
           usuarioId: _usuarioId,
           nombre: habito.nombre,
           descripcion: habito.descripcion,
+          fechaInicio: habito.fechaInicio,
         ),
       ),
     );
     _cargarHoy();
   }
 
-  /// La tarjeta «TU RITMO»: el ritmo general, en una línea, con su palabra y el
-  /// dibujo de la identidad. Al tocarla se abre el panel «Tu ritmo».
+  /// La tarjeta del ritmo general: su palabra en una línea y el dibujo de la
+  /// identidad. Al tocarla se abre el panel «Tu ritmo».
   Widget _tarjetaRitmo(AppLocalizations l, TokensContextuales t, int nivel) {
     final palabra = palabraRitmo(l, nivel);
     final texto = Theme.of(context).textTheme;
@@ -958,33 +960,18 @@ class _DashboardScreenState extends State<DashboardScreen>
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
             child: Row(
               children: [
+                // La palabra en el color de los puntos, el mismo de las
+                // estrellas llenas: es lo que se ve de lejos. Una línea: la
+                // causa ya se ve en el panel «Tu ritmo».
                 Expanded(
-                  child: Row(
-                    children: [
-                      Text(
-                        l.ritmoTitulo,
-                        style: texto.labelSmall?.copyWith(
-                          color: t.textMuted,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      // La palabra en el color de los puntos, el mismo de las
-                      // estrellas llenas: es lo que se ve de lejos. Una línea:
-                      // la causa ya se ve en el panel «Tu ritmo».
-                      Flexible(
-                        child: Text(
-                          palabra,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: texto.titleLarge?.copyWith(
-                            color: t.points,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    palabra,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: texto.titleLarge?.copyWith(
+                      color: t.points,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -1073,6 +1060,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 usuarioId: _usuarioId,
                 nombre: h.nombre,
                 descripcion: h.descripcion,
+                fechaInicio: h.fechaInicio,
               ),
             ),
           );
@@ -1128,7 +1116,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                         const SizedBox(width: 8),
                         IndicadorNivel(
                           nivel: f.ritmoNivel,
-                          tamano: 11,
+                          tamano: tamanoRitmoFila(identidad(context)),
                           etiquetaSemantica: l.a11yRitmoHabito(
                             palabraRitmo(l, f.ritmoNivel),
                           ),
@@ -1187,7 +1175,12 @@ class _DashboardScreenState extends State<DashboardScreen>
                       ? AnclasRecorrido.checkHabito
                       : null,
                   hecho: checkMarcado,
-                  onTap: habilitado && !checkMarcado
+                  onTap:
+                      checkTocable(
+                        habilitado: habilitado,
+                        checkMarcado: checkMarcado,
+                        pistaActiva: RecorridoOnboarding.instancia.activo,
+                      )
                       ? () => _completar(h.habitoId)
                       : null,
                   onDeshacer: habilitado && f.completadoEnFecha

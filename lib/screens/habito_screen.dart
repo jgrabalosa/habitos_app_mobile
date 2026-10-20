@@ -6,93 +6,35 @@ import '../services/analytics_service.dart';
 import '../l10n/catalogos.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/habito.dart';
+import '../models/plantilla_habito.dart';
 
 class HabitoScreen extends StatefulWidget {
   final int usuarioId;
   final Habito? habito;
   final List<dynamic>? categoriasIniciales;
   final List<String>? nombresHabitosExistentes;
+
+  /// La idea de la que sale el hábito nuevo: se rellena el formulario con ella.
+  final PlantillaHabito? plantilla;
   const HabitoScreen({
     super.key,
     required this.usuarioId,
     this.habito,
     this.categoriasIniciales,
     this.nombresHabitosExistentes,
+    this.plantilla,
   });
+
+  /// Seam de test: de dónde salen las categorías. En producción, la red.
+  @visibleForTesting
+  static Future<List<dynamic>> Function(int usuarioId) cargarCategorias =
+      ApiServiceHabitos.getCategoriasUsuario;
 
   @override
   State<HabitoScreen> createState() => _HabitoScreenState();
 }
 
 class _HabitoScreenState extends State<HabitoScreen> {
-  /// Plantillas: 'id' identifica la clave de traducción, y la categoría se
-  /// casa por CÓDIGO, no por nombre — el nombre que manda el backend puede
-  /// venir traducido o cambiar, el código no.
-  static const List<Map<String, dynamic>> _plantillas = [
-    {
-      'emoji': '💧',
-      'id': 'beberAgua',
-      'frecuencia': 'DIARIO',
-      'meta': 4,
-      'categoriaCodigo': 'CAT_SALUD',
-    },
-    {
-      'emoji': '📖',
-      'id': 'leer20Min',
-      'frecuencia': 'DIARIO',
-      'meta': 1,
-      'categoriaCodigo': 'CAT_ESTUDIO',
-    },
-    {
-      'emoji': '🏃',
-      'id': 'ejercicio',
-      'frecuencia': 'SEMANAL',
-      'meta': 3,
-      'dias': '2,4,6',
-      'categoriaCodigo': 'CAT_DEPORTE',
-    },
-    {
-      'emoji': '🧘',
-      'id': 'meditar',
-      'frecuencia': 'DIARIO',
-      'meta': 1,
-      'categoriaCodigo': 'CAT_MENTE',
-    },
-    {
-      'emoji': '😴',
-      'id': 'dormir8h',
-      'frecuencia': 'DIARIO',
-      'meta': 1,
-      'categoriaCodigo': 'CAT_SUENO',
-    },
-    {
-      'emoji': '🚶',
-      'id': 'caminar',
-      'frecuencia': 'DIARIO',
-      'meta': 1,
-      'categoriaCodigo': 'CAT_SALUD',
-    },
-    {
-      'emoji': '📓',
-      'id': 'escribirDiario',
-      'frecuencia': 'DIARIO',
-      'meta': 1,
-      'categoriaCodigo': 'CAT_MENTE',
-    },
-  ];
-
-  /// Nombre de una plantilla en un idioma concreto.
-  static String _nombrePlantilla(AppLocalizations l, String id) => switch (id) {
-    'beberAgua' => l.plantillaBeberAgua,
-    'leer20Min' => l.plantillaLeer20Min,
-    'ejercicio' => l.plantillaEjercicio,
-    'meditar' => l.plantillaMeditar,
-    'dormir8h' => l.plantillaDormir8h,
-    'caminar' => l.plantillaCaminar,
-    'escribirDiario' => l.plantillaEscribirDiario,
-    _ => id,
-  };
-
   // Etiquetas L-D en orden ISO (1=lunes .. 7=domingo)
   static const List<String> _etiquetasDias = [
     'L',
@@ -116,6 +58,12 @@ class _HabitoScreenState extends State<HabitoScreen> {
 
   List<dynamic> _categorias = [];
   int? _categoriaId;
+  // Una idea trae su categoría por código; si aún no ha llegado, queda aquí.
+  String? _codigoCategoriaPendiente;
+  // Si el usuario tocó el desplegable, la categoría ya no se cambia sola.
+  bool _categoriaElegidaPorUsuario = false;
+  // El nombre de una idea se pone al traducirlo, en didChangeDependencies.
+  bool _nombrePendiente = false;
   bool _categoriasLoading = true;
   // Sólo es true si la carga falló y no hay categorías de antes que enseñar.
   bool _categoriasError = false;
@@ -139,11 +87,47 @@ class _HabitoScreenState extends State<HabitoScreen> {
       _recordatorioActivo = widget.habito!.recordatorioActivo;
       _recordatorioHora = widget.habito!.recordatorioHoraTimeOfDay;
     }
+    final plantilla = widget.plantilla;
+    if (!_esEdicion && plantilla != null) {
+      // El nombre va en didChangeDependencies: se traduce con el idioma activo.
+      _nombrePendiente = true;
+      _frecuencia = plantilla.frecuencia;
+      _meta = plantilla.meta;
+      _diasSeleccionados = plantilla.dias != null
+          ? plantilla.dias!.split(',').map(int.parse).toSet()
+          : {};
+      _codigoCategoriaPendiente = plantilla.categoriaCodigo;
+    }
     if (widget.categoriasIniciales != null) {
       _categorias = widget.categoriasIniciales!;
       _categoriasLoading = false;
     }
     _cargarCategorias();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_nombrePendiente) {
+      _nombrePendiente = false;
+      _nombreController.text = nombrePlantilla(
+        AppLocalizations.of(context)!,
+        widget.plantilla!.id,
+      );
+    }
+    _resolverCategoriaPendiente();
+  }
+
+  /// La plantilla trae una categoría por código, y las categorías pueden llegar
+  /// después de abrir el formulario. Se aplica cuando aparece, solo si el
+  /// usuario no ha elegido otra antes.
+  void _resolverCategoriaPendiente() {
+    final codigo = _codigoCategoriaPendiente;
+    if (codigo == null || _categoriaElegidaPorUsuario) return;
+    final match = _categorias.where((c) => c['codigo'] == codigo);
+    if (match.isEmpty) return;
+    _categoriaId = match.first['categoriaId'];
+    _codigoCategoriaPendiente = null;
   }
 
   @override
@@ -155,14 +139,13 @@ class _HabitoScreenState extends State<HabitoScreen> {
 
   Future<void> _cargarCategorias() async {
     try {
-      final categorias = await ApiServiceHabitos.getCategoriasUsuario(
-        widget.usuarioId,
-      );
+      final categorias = await HabitoScreen.cargarCategorias(widget.usuarioId);
       if (!mounted) return;
       setState(() {
         _categorias = categorias;
         _categoriasLoading = false;
         _categoriasError = false;
+        _resolverCategoriaPendiente();
       });
     } catch (e) {
       // Con categorías de antes (las de `categoriasIniciales`) se quedan ésas:
@@ -209,61 +192,6 @@ class _HabitoScreenState extends State<HabitoScreen> {
     );
   }
 
-  void _aplicarPlantilla(Map<String, dynamic> plantilla) {
-    final l = AppLocalizations.of(context)!;
-    setState(() {
-      // El hábito es dato del usuario: se guarda en el idioma en el que lo creó
-      _nombreController.text = _nombrePlantilla(l, plantilla['id']);
-      _frecuencia = plantilla['frecuencia'];
-      _meta = plantilla['meta'];
-      _diasSeleccionados = plantilla['dias'] != null
-          ? (plantilla['dias'] as String).split(',').map(int.parse).toSet()
-          : {};
-
-      final codigoCategoria = plantilla['categoriaCodigo'] as String?;
-      if (codigoCategoria != null) {
-        final match = _categorias.firstWhere(
-          (c) => c['codigo'] == codigoCategoria,
-          orElse: () => null,
-        );
-        if (match != null) {
-          _categoriaId = match['categoriaId'];
-        }
-      }
-    });
-  }
-
-  String _normalizar(String s) => s
-      .toLowerCase()
-      .trim()
-      .replaceAll(RegExp(r'[áàä]'), 'a')
-      .replaceAll(RegExp(r'[éèë]'), 'e')
-      .replaceAll(RegExp(r'[íìï]'), 'i')
-      .replaceAll(RegExp(r'[óòö]'), 'o')
-      .replaceAll(RegExp(r'[úùü]'), 'u');
-
-  /// Se compara contra las TRES traducciones, no solo la activa: un hábito
-  /// creado en español debe seguir ocultando su plantilla si el usuario se
-  /// pasa a inglés.
-  static final List<AppLocalizations> _todosLosIdiomas = [
-    lookupAppLocalizations(const Locale('es')),
-    lookupAppLocalizations(const Locale('en')),
-    lookupAppLocalizations(const Locale('pt')),
-  ];
-
-  bool _yaExiste(String idPlantilla) {
-    final variantes = _todosLosIdiomas
-        .map((l) => _normalizar(_nombrePlantilla(l, idPlantilla)))
-        .toSet();
-    return (widget.nombresHabitosExistentes ?? []).any((nombre) {
-      final n = _normalizar(nombre);
-      return variantes.any((v) => n == v || n.contains(v) || v.contains(n));
-    });
-  }
-
-  List<Map<String, dynamic>> get _plantillasDisponibles =>
-      _plantillas.where((p) => !_yaExiste(p['id'])).toList();
-
   void _alternarDia(int dia) {
     setState(() {
       if (_diasSeleccionados.contains(dia)) {
@@ -280,36 +208,6 @@ class _HabitoScreenState extends State<HabitoScreen> {
 
   Future<void> _guardar() async {
     final l = AppLocalizations.of(context)!;
-    // El aviso de «reiniciará tu racha» sale con el rediseño de rachas (F5):
-    // al cambiar la frecuencia el ritmo se conserva, y la app ya no enseña la
-    // racha.
-    // if (widget.habito != null && _frecuencia != widget.habito!.frecuencia) {
-    //   final confirmar = await showDialog<bool>(
-    //     context: context,
-    //     builder: (context) => AlertDialog(
-    //       // La forma de la identidad, igual que los tres diálogos del core.
-    //       // Sin esto sale con las esquinas de Material y es la única
-    //       // superficie de la app que no habla el idioma de la identidad.
-    //       shape: formaIdentidad(
-    //         identidad(context),
-    //         radio: identidad(context).radioHero,
-    //       ),
-    //       title: Text(l.habCambiarFrecTitulo),
-    //       content: Text(l.habCambiarFrecCuerpo),
-    //       actions: [
-    //         TextButton(
-    //           onPressed: () => Navigator.pop(context, false),
-    //           child: Text(l.cancelar),
-    //         ),
-    //         ElevatedButton(
-    //           onPressed: () => Navigator.pop(context, true),
-    //           child: Text(l.comunContinuar),
-    //         ),
-    //       ],
-    //     ),
-    //   );
-    //   if (confirmar != true) return;
-    // }
 
     if (_nombreController.text.isEmpty) {
       setState(() {
@@ -580,45 +478,6 @@ class _HabitoScreenState extends State<HabitoScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (!_esEdicion && _plantillasDisponibles.isNotEmpty) ...[
-                    Text(
-                      l.habRecomendados,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      height: 56,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _plantillasDisponibles.length,
-                        separatorBuilder: (_, _) => const SizedBox(width: 8),
-                        itemBuilder: (context, i) {
-                          final p = _plantillasDisponibles[i];
-                          return ActionChip(
-                            avatar: Text(
-                              p['emoji'],
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                            label: Text(
-                              _nombrePlantilla(
-                                AppLocalizations.of(context)!,
-                                p['id'],
-                              ),
-                            ),
-                            labelPadding: const EdgeInsets.symmetric(
-                              horizontal: 4,
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 12,
-                            ),
-                            onPressed: () => _aplicarPlantilla(p),
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
                   TextField(
                     controller: _nombreController,
                     textCapitalization: TextCapitalization.sentences,
@@ -671,6 +530,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                             ),
                           ],
                           onChanged: (v) => setState(() {
+                            _categoriaElegidaPorUsuario = true;
                             _categoriaId = v;
                           }),
                         ),

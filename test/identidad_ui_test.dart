@@ -80,4 +80,32 @@ void main() {
       expect(ladoDe(hoyVacia).color, t.primaryTrazo, reason: codigo);
     }
   });
+
+  test('el botón + va a lápiz en Dulce, con el borde del botón del tema', () {
+    final id = catalogoIdentidades['TEMA_DULCE']!;
+    final forma = formaBotonFlotante(id, id.tokens);
+    expect(forma, isA<BordeLapiz>());
+    final lapiz = forma as BordeLapiz;
+    expect(lapiz.radio, 999);
+    expect(lapiz.side.color, id.tokens.primaryTrazo);
+    expect(lapiz.side.width, 1.4);
+    expect(elevacionBotonFlotante(id), 0);
+  });
+
+  test('el botón + se queda como Material en Profundidad y Neotokyo+', () {
+    for (final codigo in ['TEMA_PROFUNDIDAD', 'TEMA_NEOTOKYO_PLUS']) {
+      final id = catalogoIdentidades[codigo]!;
+      expect(formaBotonFlotante(id, id.tokens), isNull, reason: codigo);
+      expect(elevacionBotonFlotante(id), isNull, reason: codigo);
+    }
+  });
+
+  test(
+    'las burbujas del ritmo en las filas: 14 en Dulce y 11 en las otras',
+    () {
+      expect(tamanoRitmoFila(catalogoIdentidades['TEMA_DULCE']!), 14);
+      expect(tamanoRitmoFila(catalogoIdentidades['TEMA_PROFUNDIDAD']!), 11);
+      expect(tamanoRitmoFila(catalogoIdentidades['TEMA_NEOTOKYO_PLUS']!), 11);
+    },
+  );
 }

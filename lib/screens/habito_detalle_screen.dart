@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_service_habitos.dart';
-import '../services/habitos_refresh.dart';
-import '../services/pausa.dart';
+import '../widgets/pausa_habito.dart';
 import '../services/descubrimiento_detalle.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/habito.dart';
 import '../models/hoy.dart';
+import '../models/ritmo_reciente.dart';
+import '../widgets/estrellas_registro.dart';
 import '../widgets/panel_ritmo.dart';
 import '../widgets/identidad_ui.dart';
+import '../widgets/resumen_detalle.dart';
 import 'habito_screen.dart';
 
 class HabitoDetalleScreen extends StatefulWidget {
@@ -21,12 +23,16 @@ class HabitoDetalleScreen extends StatefulWidget {
   /// Llega por parámetro porque `HabitoDetalleDTO` no la trae: quien abre
   /// esta pantalla ya tiene el hábito entero en la mano.
   final String? descripcion;
+
+  /// Día del alta. Igual que `descripcion`: no la trae el DTO del detalle.
+  final DateTime? fechaInicio;
   const HabitoDetalleScreen({
     super.key,
     required this.habitoId,
     required this.usuarioId,
     this.nombre,
     this.descripcion,
+    this.fechaInicio,
   });
 
   @override
@@ -120,93 +126,22 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     }
   }
 
-  /// Pausar gasta una «Pausa». La ventana enseña cuántas quedan; sin
-  /// ninguna, lleva a la tienda. Al pausar se vuelve a Hoy, donde el hábito
-  /// ya no sale.
+  /// Pausar desde el icono de la barra: la misma ventana que en la lista de
+  /// Hábitos. Si el hábito queda en pausa, se vuelve a Hoy, donde ya no sale.
   Future<void> _abrirPausa() async {
-    final l = AppLocalizations.of(context)!;
     final nombre = (_detalle?['nombre'] as String?) ?? widget.nombre ?? '';
-
-    final int pausas;
-    try {
-      pausas = pausasEn(
-        await ApiServiceCore.getInventarioProductos(widget.usuarioId),
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(MensajesError.de(context, e, generico: l.pausaError)),
-          ),
-        );
-      }
-      return;
-    }
-    if (!mounted) return;
-
-    final accion = await showDialog<_AccionPausa>(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: formaIdentidad(
-          identidad(context),
-          radio: identidad(context).radioHero,
-        ),
-        title: Text(l.pausaTitulo(nombre)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l.pausaCuerpo),
-            const SizedBox(height: 12),
-            Text(
-              pausas > 0 ? l.pausaTienes(pausas) : l.pausaSinPausas,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l.cancelar),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(
-              context,
-              pausas > 0 ? _AccionPausa.pausar : _AccionPausa.tienda,
-            ),
-            child: Text(pausas > 0 ? l.pausaBotonPausar : l.pausaBotonTienda),
-          ),
-        ],
-      ),
-    );
-    if (!mounted || accion == null) return;
-
-    if (accion == _AccionPausa.tienda) {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => TiendaScreen(usuarioId: widget.usuarioId),
-        ),
-      );
-      return;
-    }
-
     setState(() => _pausando = true);
-    try {
-      await ApiServiceHabitos.desactivarHabito(widget.habitoId);
-      notificarHabitosCambiados();
-      if (!mounted) return;
-      final mensajero = ScaffoldMessenger.of(context);
+    final pausado = await pausarHabito(
+      context,
+      usuarioId: widget.usuarioId,
+      habitoId: widget.habitoId,
+      nombre: nombre,
+    );
+    if (!mounted) return;
+    if (pausado) {
       Navigator.pop(context);
-      mensajero.showSnackBar(SnackBar(content: Text(l.pausaHecha(nombre))));
-    } catch (e) {
-      if (!mounted) return;
+    } else {
       setState(() => _pausando = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(MensajesError.de(context, e, generico: l.pausaError)),
-        ),
-      );
     }
   }
 
@@ -342,44 +277,10 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
   /// logros: el emoji lo pinta la fuente del sistema y cambia de dibujo, color
   /// y peso entre plataformas, así que no se alinea con la identidad equipada.
   Widget _buildStatCards() {
-    final l = AppLocalizations.of(context)!;
-    final t = tokens(context);
-    return Row(
-      children: [
-        // Las dos tarjetas de racha, fuera con el rediseño de rachas (F4).
-        // _statCard(
-        //   LucideIcons.flame,
-        //   _detalle!['rachaActual'].toString(),
-        //   l.detRachaActual,
-        //   t.streakText,
-        //   ayuda: AyudaCampo(
-        //     texto: l.detAyudaRacha,
-        //     etiquetaSemantica: l.detAyudaRachaEtiqueta,
-        //     superindice: true,
-        //   ),
-        // ),
-        // const SizedBox(width: 8),
-        // _statCard(
-        //   LucideIcons.trophy,
-        //   _detalle!['rachaMaxima'].toString(),
-        //   l.detMejorRacha,
-        //   t.streakText,
-        // ),
-        // const SizedBox(width: 8),
-        _statCard(
-          LucideIcons.chartColumn,
-          _detalle!['totalCompletados'].toString(),
-          l.detLoQueLlevas,
-          t.successText,
-        ),
-        const SizedBox(width: 8),
-        _statCard(
-          LucideIcons.calendarDays,
-          (_detalle!['completadosMesActual'] ?? 0).toString(),
-          _esMesActual ? l.detDiasEsteMes : l.detDiasDelMes,
-          t.successText,
-        ),
-      ],
+    return ResumenDetalle(
+      totalCompletados: ((_detalle!['totalCompletados'] ?? 0) as num).toInt(),
+      diasMes: ((_detalle!['completadosMesActual'] ?? 0) as num).toInt(),
+      mesActual: _esMesActual,
     );
   }
 
@@ -394,7 +295,11 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     final t = tokens(context);
     final texto = Theme.of(context).textTheme;
     final palabra = palabraRitmo(l, nivel);
-    final causa = causaRitmo(l, tendenciaDe(_detalle!['ritmoTendencia']));
+    final causa = causaRitmo(
+      l,
+      tendenciaDe(_detalle!['ritmoTendencia']),
+      recienEmpezado: esRecienEmpezado(widget.fechaInicio, DateTime.now()),
+    );
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -476,9 +381,9 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // La estrella va en el color de puntos de la identidad, no en el
-              // ámbar de Material: es la misma familia que el resto de premios.
-              Icon(LucideIcons.star, color: t.points, size: 20),
+              // Es la misma estrella de la valoración: a lápiz en Dulce y con el
+              // icono de siempre en las otras dos identidades.
+              const EstrellaValoracion(marcada: true, tamano: 20),
               const SizedBox(width: 6),
               Text(
                 valor.toStringAsFixed(1).replaceAll('.', ','),
@@ -497,59 +402,6 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                 texto: l.detAyudaSatisfaccion,
                 etiquetaSemantica: l.detAyudaSatisfaccionEtiqueta,
                 superindice: true,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// El `color` es el de la cifra, y llega ya resuelto para texto: quien
-  /// llama pasa `successText`, no `success`.
-  Widget _statCard(
-    IconData icono,
-    String valor,
-    String label,
-    Color color, {
-    // Sin uso desde que salió la tarjeta de racha (F4); se queda para la
-    // próxima cifra que necesite su «?».
-    // ignore: unused_element_parameter
-    Widget? ayuda,
-  }) {
-    final t = tokens(context);
-    return Expanded(
-      child: TarjetaIdentidad(
-        margen: EdgeInsets.zero,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-          child: Column(
-            children: [
-              Icon(icono, size: 18, color: color),
-              const SizedBox(height: 4),
-              Text(
-                valor,
-                style: Theme.of(
-                  context,
-                ).textTheme.headlineSmall?.copyWith(color: color),
-              ),
-              // La etiqueta puede partirse en dos líneas: la tarjeta es un
-              // cuarto de pantalla y, con ayuda, comparte fila con el
-              // interrogante.
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Flexible(
-                    child: Text(
-                      label,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.labelSmall?.copyWith(color: t.textMuted),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  ?ayuda,
-                ],
               ),
             ],
           ),
@@ -806,17 +658,8 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                               ).textTheme.titleMedium?.copyWith(color: t.text),
                             ),
                             if (r['valoracion'] != null)
-                              Row(
-                                children: List.generate(
-                                  5,
-                                  (i) => Icon(
-                                    LucideIcons.star,
-                                    size: 14,
-                                    color: i < (r['valoracion'] as int)
-                                        ? t.points
-                                        : t.textMuted.withValues(alpha: 0.3),
-                                  ),
-                                ),
+                              EstrellasRegistro(
+                                valoracion: r['valoracion'] as int,
                               ),
                             if (r['nota'] != null &&
                                 r['nota'].toString().isNotEmpty)
@@ -914,5 +757,3 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     }
   }
 }
-
-enum _AccionPausa { pausar, tienda }

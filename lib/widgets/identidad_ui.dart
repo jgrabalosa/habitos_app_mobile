@@ -258,3 +258,31 @@ Decoration celdaHeatmap(
 /// letras, 0.
 double desvioCifra(IdentidadPaleta id, double tamano) =>
     id.fontBody == 'Caveat' ? -0.12 * tamano : 0;
+
+/// La forma del botón flotante «+». En Dulce va a lápiz, con el mismo radio y
+/// grosor que el botón elevado del tema. En las otras dos identidades, null:
+/// se queda la forma de Material.
+ShapeBorder? formaBotonFlotante(IdentidadPaleta id, TokensContextuales t) =>
+    switch (id.forma) {
+      FormaIdentidad.pill => BordeLapiz(
+        radio: 999,
+        side: BorderSide(color: t.primaryTrazo, width: 1.4),
+      ),
+      FormaIdentidad.glass || FormaIdentidad.chamfer => null,
+    };
+
+/// La elevación del botón flotante. En Dulce, 0: sin la sombra de Material,
+/// igual que las tarjetas de esa identidad. En las otras dos, null: la de
+/// Material.
+double? elevacionBotonFlotante(IdentidadPaleta id) => switch (id.forma) {
+  FormaIdentidad.pill => 0,
+  FormaIdentidad.glass || FormaIdentidad.chamfer => null,
+};
+
+/// El tamaño de las burbujas del ritmo en las filas. En Dulce, 14: a 11 la
+/// primera burbuja queda en unos 4 px, y la letra manuscrita pesa más. Las
+/// otras dos identidades se quedan en 11. Sin números sueltos en las filas.
+double tamanoRitmoFila(IdentidadPaleta id) => switch (id.forma) {
+  FormaIdentidad.pill => 14,
+  FormaIdentidad.glass || FormaIdentidad.chamfer => 11,
+};
