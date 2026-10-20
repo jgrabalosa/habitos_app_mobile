@@ -72,7 +72,14 @@ class _PanelRitmo extends StatelessWidget {
         maxHeight: MediaQuery.sizeOf(context).height * 0.85,
       ),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+        // `useSafeArea` no aparta de abajo: por eso se suma aquí la barra del
+        // sistema, para que el último hábito no quede bajo ella.
+        padding: EdgeInsets.fromLTRB(
+          20,
+          12,
+          20,
+          24 + MediaQuery.viewPaddingOf(context).bottom,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

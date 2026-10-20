@@ -58,4 +58,73 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('el último hábito queda por encima de la barra del sistema', (
+    tester,
+  ) async {
+    const barra = 48.0;
+    final conHabito = leerHoy({
+      'fecha': '2026-10-10',
+      'hoy': '2026-10-10',
+      'avance': 0.4,
+      'ritmoNivel': 3,
+      'ritmoTendencia': 'SUBE',
+      'dias': [],
+      'delDia': {
+        'hechos': 0,
+        'total': 1,
+        'habitos': [
+          {
+            'habito': {
+              'habitoId': 1,
+              'nombre': 'Meditar',
+              'frecuencia': 'DIARIO',
+              'meta': 1,
+              'activo': true,
+            },
+            'completados': 0,
+            'meta': 1,
+            'hecho': false,
+            'completadoEnFecha': false,
+            'ritmoNivel': 3,
+            'fechasCompletadas': [],
+          },
+        ],
+      },
+      'deLaSemana': {'habitos': []},
+    });
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('es'),
+        localizationsDelegates: [
+          ...AppLocalizations.localizationsDelegates,
+          ...NordayCoreLocalizations.localizationsDelegates,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            viewPadding: const EdgeInsets.only(bottom: barra),
+            padding: const EdgeInsets.only(bottom: barra),
+          ),
+          child: child!,
+        ),
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () => mostrarPanelRitmo(context, conHabito),
+              child: const Text('abrir'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('abrir'));
+    await tester.pumpAndSettle();
+
+    final pantalla =
+        tester.view.physicalSize.height / tester.view.devicePixelRatio;
+    final hastaAbajo = pantalla - tester.getBottomLeft(find.text('Meditar')).dy;
+    expect(hastaAbajo, greaterThanOrEqualTo(24 + barra));
+  });
 }
