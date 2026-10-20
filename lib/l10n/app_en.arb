@@ -57,8 +57,6 @@
   "frecSemanal": "Weekly",
   "habTituloNuevo": "New habit",
   "habTituloEditar": "Edit habit",
-  "habCambiarFrecTitulo": "Change the frequency?",
-  "habCambiarFrecCuerpo": "Changing the frequency will reset your current streak to 0.\nYour best streak is kept.",
   "habNombreObligatorio": "Name is required",
   "habHoraObligatoria": "Pick a time for the reminder, or turn it off",
   "habErrorCrear": "Couldn't create the habit",

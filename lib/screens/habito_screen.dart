@@ -208,36 +208,6 @@ class _HabitoScreenState extends State<HabitoScreen> {
 
   Future<void> _guardar() async {
     final l = AppLocalizations.of(context)!;
-    // El aviso de «reiniciará tu racha» sale con el rediseño de rachas (F5):
-    // al cambiar la frecuencia el ritmo se conserva, y la app ya no enseña la
-    // racha.
-    // if (widget.habito != null && _frecuencia != widget.habito!.frecuencia) {
-    //   final confirmar = await showDialog<bool>(
-    //     context: context,
-    //     builder: (context) => AlertDialog(
-    //       // La forma de la identidad, igual que los tres diálogos del core.
-    //       // Sin esto sale con las esquinas de Material y es la única
-    //       // superficie de la app que no habla el idioma de la identidad.
-    //       shape: formaIdentidad(
-    //         identidad(context),
-    //         radio: identidad(context).radioHero,
-    //       ),
-    //       title: Text(l.habCambiarFrecTitulo),
-    //       content: Text(l.habCambiarFrecCuerpo),
-    //       actions: [
-    //         TextButton(
-    //           onPressed: () => Navigator.pop(context, false),
-    //           child: Text(l.cancelar),
-    //         ),
-    //         ElevatedButton(
-    //           onPressed: () => Navigator.pop(context, true),
-    //           child: Text(l.comunContinuar),
-    //         ),
-    //       ],
-    //     ),
-    //   );
-    //   if (confirmar != true) return;
-    // }
 
     if (_nombreController.text.isEmpty) {
       setState(() {
