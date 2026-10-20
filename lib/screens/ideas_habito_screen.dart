@@ -31,7 +31,6 @@ Future<bool?> abrirAltaHabito(
       : HabitoScreen(
           usuarioId: usuarioId,
           categoriasIniciales: categoriasIniciales,
-          nombresHabitosExistentes: nombresHabitosExistentes,
         );
   return Navigator.push<bool>(
     context,
@@ -68,7 +67,6 @@ class IdeasHabitoScreen extends StatelessWidget {
         builder: (_) => HabitoScreen(
           usuarioId: usuarioId,
           categoriasIniciales: categoriasIniciales,
-          nombresHabitosExistentes: nombresHabitosExistentes,
           plantilla: p,
         ),
       ),
