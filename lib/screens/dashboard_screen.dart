@@ -936,6 +936,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           usuarioId: _usuarioId,
           nombre: habito.nombre,
           descripcion: habito.descripcion,
+          fechaInicio: habito.fechaInicio,
         ),
       ),
     );
@@ -1059,6 +1060,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 usuarioId: _usuarioId,
                 nombre: h.nombre,
                 descripcion: h.descripcion,
+                fechaInicio: h.fechaInicio,
               ),
             ),
           );

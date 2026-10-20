@@ -5,6 +5,7 @@ import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
 import '../models/habito.dart';
 import '../models/hoy.dart';
+import '../models/ritmo_reciente.dart';
 
 /// La palabra del nivel de un ritmo, del 1 al 5.
 String palabraRitmo(AppLocalizations l, int nivel) => switch (nivel) {
@@ -17,13 +18,22 @@ String palabraRitmo(AppLocalizations l, int nivel) => switch (nivel) {
 
 /// La línea de la causa, según hacia dónde va el ritmo respecto a hace siete
 /// días. El fallo no se nombra: si baja, se dice el siguiente paso.
-String? causaRitmo(AppLocalizations l, TendenciaRitmo? tendencia) =>
-    switch (tendencia) {
-      TendenciaRitmo.sube => l.ritmoSube,
-      TendenciaRitmo.igual => l.ritmoIgual,
-      TendenciaRitmo.baja => l.ritmoBaja,
-      null => null,
-    };
+///
+/// Si [recienEmpezado], no hay semana anterior con la que comparar: dice que
+/// acaba de empezar, sea cual sea la tendencia.
+String? causaRitmo(
+  AppLocalizations l,
+  TendenciaRitmo? tendencia, {
+  bool recienEmpezado = false,
+}) {
+  if (recienEmpezado) return l.ritmoRecienEmpezado;
+  return switch (tendencia) {
+    TendenciaRitmo.sube => l.ritmoSube,
+    TendenciaRitmo.igual => l.ritmoIgual,
+    TendenciaRitmo.baja => l.ritmoBaja,
+    null => null,
+  };
+}
 
 /// El panel «Tu ritmo», que sube desde abajo sin salir de Hoy: la palabra, el
 /// dibujo, la causa, qué es el ritmo y de dónde sale, hábito por hábito.
@@ -59,8 +69,13 @@ class _PanelRitmo extends StatelessWidget {
     final texto = Theme.of(context).textTheme;
     final nivel = hoy.ritmoNivel ?? 1;
     final palabra = palabraRitmo(l, nivel);
-    final causa = causaRitmo(l, hoy.ritmoTendencia);
     final filas = [...hoy.delDia.habitos, ...hoy.deLaSemana.habitos];
+    // El «hoy» es el de la zona del usuario, según el servidor.
+    final diaHoy = DateTime.tryParse(hoy.hoy);
+    final recien =
+        diaHoy != null &&
+        recienEmpezadoEnLista(filas.map((f) => f.habito).toList(), diaHoy);
+    final causa = causaRitmo(l, hoy.ritmoTendencia, recienEmpezado: recien);
     final estiloEtiqueta = texto.labelSmall?.copyWith(
       color: t.textMuted,
       fontWeight: FontWeight.w700,

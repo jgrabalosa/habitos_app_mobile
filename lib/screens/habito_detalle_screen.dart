@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/habito.dart';
 import '../models/hoy.dart';
+import '../models/ritmo_reciente.dart';
 import '../widgets/estrellas_registro.dart';
 import '../widgets/panel_ritmo.dart';
 import '../widgets/identidad_ui.dart';
@@ -23,12 +24,16 @@ class HabitoDetalleScreen extends StatefulWidget {
   /// Llega por parámetro porque `HabitoDetalleDTO` no la trae: quien abre
   /// esta pantalla ya tiene el hábito entero en la mano.
   final String? descripcion;
+
+  /// Día del alta. Igual que `descripcion`: no la trae el DTO del detalle.
+  final DateTime? fechaInicio;
   const HabitoDetalleScreen({
     super.key,
     required this.habitoId,
     required this.usuarioId,
     this.nombre,
     this.descripcion,
+    this.fechaInicio,
   });
 
   @override
@@ -362,7 +367,11 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     final t = tokens(context);
     final texto = Theme.of(context).textTheme;
     final palabra = palabraRitmo(l, nivel);
-    final causa = causaRitmo(l, tendenciaDe(_detalle!['ritmoTendencia']));
+    final causa = causaRitmo(
+      l,
+      tendenciaDe(_detalle!['ritmoTendencia']),
+      recienEmpezado: esRecienEmpezado(widget.fechaInicio, DateTime.now()),
+    );
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),

@@ -247,6 +247,7 @@
   "ritmoSube": "Up on last week.",
   "ritmoIgual": "Same as last week.",
   "ritmoBaja": "One step today and it climbs again.",
+  "ritmoRecienEmpezado": "You've just started. In a week you'll see how it's going.",
   "a11yRitmoGeneral": "Your overall pace: {palabra}, level {nivel} of 5",
   "a11yRitmoHabito": "Pace: {palabra}",
   "ritmoExplicacion": "Your pace brings all your habits together. It rises each time you follow through, and on days you don't, it only dips a little.",

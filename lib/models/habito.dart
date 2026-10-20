@@ -18,6 +18,9 @@ class Habito {
   final String?
   recordatorioHora; // "HH:mm:ss" tal cual llega del backend, o null si no se ha elegido
 
+  /// Día del alta, solo fecha. Null si el backend no la manda.
+  final DateTime? fechaInicio;
+
   Habito({
     required this.habitoId,
     required this.nombre,
@@ -31,7 +34,15 @@ class Habito {
     this.diasSemana,
     this.recordatorioActivo = true,
     this.recordatorioHora,
+    this.fechaInicio,
   });
+
+  /// «AAAA-MM-DD» a fecha sin hora. Cualquier otra cosa es null.
+  static DateTime? _fechaSinHora(Object? valor) {
+    if (valor is! String) return null;
+    final fecha = DateTime.tryParse(valor);
+    return fecha == null ? null : DateTime(fecha.year, fecha.month, fecha.day);
+  }
 
   factory Habito.fromJson(Map<String, dynamic> json) {
     return Habito(
@@ -47,6 +58,7 @@ class Habito {
       diasSemana: json['diasSemana'],
       recordatorioActivo: json['recordatorioActivo'] ?? true,
       recordatorioHora: json['recordatorioHora'],
+      fechaInicio: _fechaSinHora(json['fechaInicio']),
     );
   }
 

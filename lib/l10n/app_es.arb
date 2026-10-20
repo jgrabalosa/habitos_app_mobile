@@ -356,6 +356,7 @@
   "ritmoSube": "Sube respecto a la semana pasada.",
   "ritmoIgual": "Igual que la semana pasada.",
   "ritmoBaja": "Un paso hoy y vuelve a subir.",
+  "ritmoRecienEmpezado": "Acabas de empezar. Dentro de una semana verás cómo evoluciona.",
   "a11yRitmoGeneral": "Tu ritmo general: {palabra}, nivel {nivel} de 5",
   "@a11yRitmoGeneral": {
     "placeholders": {

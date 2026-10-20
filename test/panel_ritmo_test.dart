@@ -127,4 +127,97 @@ void main() {
     final hastaAbajo = pantalla - tester.getBottomLeft(find.text('Meditar')).dy;
     expect(hastaAbajo, greaterThanOrEqualTo(24 + barra));
   });
+
+  group('causa con hábitos recién empezados', () {
+    Map<String, dynamic> filaJson(int id, String nombre, String? alta) => {
+      'habito': {
+        'habitoId': id,
+        'nombre': nombre,
+        'frecuencia': 'DIARIO',
+        'meta': 1,
+        'activo': true,
+        'fechaInicio': ?alta,
+      },
+      'completados': 0,
+      'meta': 1,
+      'hecho': false,
+      'completadoEnFecha': false,
+      'ritmoNivel': 3,
+      'fechasCompletadas': [],
+    };
+
+    Future<void> abrirCon(
+      WidgetTester tester,
+      List<Map<String, dynamic>> filas,
+    ) async {
+      final conFilas = leerHoy({
+        'fecha': '2026-10-10',
+        'hoy': '2026-10-10',
+        'avance': 0.4,
+        'ritmoNivel': 3,
+        'ritmoTendencia': 'IGUAL',
+        'dias': [],
+        'delDia': {'hechos': 0, 'total': filas.length, 'habitos': filas},
+        'deLaSemana': {'habitos': []},
+      });
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('es'),
+          localizationsDelegates: [
+            ...AppLocalizations.localizationsDelegates,
+            ...NordayCoreLocalizations.localizationsDelegates,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => TextButton(
+                onPressed: () => mostrarPanelRitmo(context, conFilas),
+                child: const Text('abrir'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('abrir'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('un hábito de hace 2 días dice que acaba de empezar', (
+      tester,
+    ) async {
+      final l = await AppLocalizations.delegate.load(const Locale('es'));
+      await abrirCon(tester, [filaJson(1, 'Leer', '2026-10-08')]);
+      expect(find.text(l.ritmoRecienEmpezado), findsOneWidget);
+      expect(find.text(l.ritmoIgual), findsNothing);
+    });
+
+    testWidgets('un hábito de hace 30 días con tendencia igual dice Igual', (
+      tester,
+    ) async {
+      final l = await AppLocalizations.delegate.load(const Locale('es'));
+      await abrirCon(tester, [filaJson(1, 'Leer', '2026-09-10')]);
+      expect(find.text(l.ritmoIgual), findsOneWidget);
+      expect(find.text(l.ritmoRecienEmpezado), findsNothing);
+    });
+
+    testWidgets('con uno nuevo y uno viejo decide el más antiguo', (
+      tester,
+    ) async {
+      final l = await AppLocalizations.delegate.load(const Locale('es'));
+      await abrirCon(tester, [
+        filaJson(1, 'Leer', '2026-10-08'),
+        filaJson(2, 'Meditar', '2026-09-10'),
+      ]);
+      expect(find.text(l.ritmoIgual), findsOneWidget);
+      expect(find.text(l.ritmoRecienEmpezado), findsNothing);
+    });
+
+    testWidgets('una fila sin fecha de alta deja la causa de siempre', (
+      tester,
+    ) async {
+      final l = await AppLocalizations.delegate.load(const Locale('es'));
+      await abrirCon(tester, [filaJson(1, 'Leer', null)]);
+      expect(find.text(l.ritmoIgual), findsOneWidget);
+    });
+  });
 }
