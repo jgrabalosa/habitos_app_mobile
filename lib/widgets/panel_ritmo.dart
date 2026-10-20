@@ -6,6 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../models/habito.dart';
 import '../models/hoy.dart';
 import '../models/ritmo_reciente.dart';
+import 'identidad_ui.dart';
 
 /// La palabra del nivel de un ritmo, del 1 al 5.
 String palabraRitmo(AppLocalizations l, int nivel) => switch (nivel) {
@@ -200,7 +201,10 @@ class _FilaPanel extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              IndicadorNivel(nivel: fila.ritmoNivel, tamano: 11),
+              IndicadorNivel(
+                nivel: fila.ritmoNivel,
+                tamano: tamanoRitmoFila(identidad(context)),
+              ),
               const SizedBox(width: 8),
               Icon(LucideIcons.chevronRight, size: 18, color: t.primaryTrazo),
             ],

@@ -99,4 +99,13 @@ void main() {
       expect(elevacionBotonFlotante(id), isNull, reason: codigo);
     }
   });
+
+  test(
+    'las burbujas del ritmo en las filas: 14 en Dulce y 11 en las otras',
+    () {
+      expect(tamanoRitmoFila(catalogoIdentidades['TEMA_DULCE']!), 14);
+      expect(tamanoRitmoFila(catalogoIdentidades['TEMA_PROFUNDIDAD']!), 11);
+      expect(tamanoRitmoFila(catalogoIdentidades['TEMA_NEOTOKYO_PLUS']!), 11);
+    },
+  );
 }

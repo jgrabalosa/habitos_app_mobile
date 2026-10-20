@@ -278,3 +278,11 @@ double? elevacionBotonFlotante(IdentidadPaleta id) => switch (id.forma) {
   FormaIdentidad.pill => 0,
   FormaIdentidad.glass || FormaIdentidad.chamfer => null,
 };
+
+/// El tamaño de las burbujas del ritmo en las filas. En Dulce, 14: a 11 la
+/// primera burbuja queda en unos 4 px, y la letra manuscrita pesa más. Las
+/// otras dos identidades se quedan en 11. Sin números sueltos en las filas.
+double tamanoRitmoFila(IdentidadPaleta id) => switch (id.forma) {
+  FormaIdentidad.pill => 14,
+  FormaIdentidad.glass || FormaIdentidad.chamfer => 11,
+};

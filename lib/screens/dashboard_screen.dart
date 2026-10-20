@@ -1116,7 +1116,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                         const SizedBox(width: 8),
                         IndicadorNivel(
                           nivel: f.ritmoNivel,
-                          tamano: 11,
+                          tamano: tamanoRitmoFila(identidad(context)),
                           etiquetaSemantica: l.a11yRitmoHabito(
                             palabraRitmo(l, f.ritmoNivel),
                           ),
