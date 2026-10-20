@@ -66,7 +66,6 @@
   "habErrorEliminar": "Couldn't delete the habit",
   "habEliminarTitulo": "Delete habit",
   "habEliminarCuerpo": "Delete this habit? It goes with everything you've done so far, and your overall pace will be recalculated without it. This can't be undone.",
-  "habRecomendados": "Suggested habits (optional)",
   "ideasTitulo": "Start with an idea",
   "ideasDesdeCero": "Create your own",
   "ideasSugerencia": "It's just a suggestion — you can change anything.",

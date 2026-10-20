@@ -66,7 +66,6 @@
   "habErrorEliminar": "Error al eliminar el hábito",
   "habEliminarTitulo": "Eliminar hábito",
   "habEliminarCuerpo": "¿Seguro que quieres eliminar este hábito? Se borra con todo lo que llevas, y tu ritmo general se recalculará sin él. Esta acción no se puede deshacer.",
-  "habRecomendados": "Hábitos recomendados (opcional)",
   "ideasTitulo": "Empieza con una idea",
   "ideasDesdeCero": "Crear uno desde cero",
   "ideasSugerencia": "Es solo una sugerencia: podrás cambiarlo todo.",

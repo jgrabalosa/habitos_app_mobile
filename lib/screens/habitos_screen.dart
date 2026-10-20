@@ -9,6 +9,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/habito.dart';
 import '../widgets/identidad_ui.dart';
 import 'habito_screen.dart';
+import 'ideas_habito_screen.dart';
 
 enum _Orden { recientes, masCumplidos }
 
@@ -160,17 +161,13 @@ class _HabitosScreenState extends State<HabitosScreen> {
         shape: formaBotonFlotante(identidad(context), t),
         elevation: elevacionBotonFlotante(identidad(context)),
         onPressed: () async {
-          final result = await Navigator.push(
+          final result = await abrirAltaHabito(
             context,
-            MaterialPageRoute(
-              builder: (_) => HabitoScreen(
-                usuarioId: widget.usuarioId,
-                categoriasIniciales: _categorias,
-                nombresHabitosExistentes: _resumen
-                    .map((r) => (r['habito'] as Habito).nombre)
-                    .toList(),
-              ),
-            ),
+            usuarioId: widget.usuarioId,
+            categoriasIniciales: _categorias,
+            nombresHabitosExistentes: _resumen
+                .map((r) => (r['habito'] as Habito).nombre)
+                .toList(),
           );
           if (result == true) {
             _cargarDatos();
