@@ -67,6 +67,36 @@
   "habEliminarTitulo": "Eliminar hábito",
   "habEliminarCuerpo": "¿Seguro que quieres eliminar este hábito? Se borra con todo lo que llevas, y tu ritmo general se recalculará sin él. Esta acción no se puede deshacer.",
   "habRecomendados": "Hábitos recomendados (opcional)",
+  "ideasTitulo": "Empieza con una idea",
+  "ideasDesdeCero": "Crear uno desde cero",
+  "ideasSugerencia": "Es solo una sugerencia: podrás cambiarlo todo.",
+  "ideasFrecDiario": "Cada día",
+  "ideasFrecDiarioN": "{n, plural, =1{Cada día · 1 vez} other{Cada día · {n} veces}}",
+  "@ideasFrecDiarioN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "ideasFrecSemanal": "{n, plural, =1{1 vez por semana · {dias}} other{{n} veces por semana · {dias}}}",
+  "@ideasFrecSemanal": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "dias": {
+        "type": "String"
+      }
+    }
+  },
+  "ideasDia1": "lun",
+  "ideasDia2": "mar",
+  "ideasDia3": "mié",
+  "ideasDia4": "jue",
+  "ideasDia5": "vie",
+  "ideasDia6": "sáb",
+  "ideasDia7": "dom",
   "habLabelNombre": "Nombre del hábito",
   "habLabelDescripcion": "Descripción (opcional)",
   "habLabelCategoria": "Categoría (opcional)",

@@ -67,6 +67,36 @@
   "habEliminarTitulo": "Delete habit",
   "habEliminarCuerpo": "Delete this habit? It goes with everything you've done so far, and your overall pace will be recalculated without it. This can't be undone.",
   "habRecomendados": "Suggested habits (optional)",
+  "ideasTitulo": "Start with an idea",
+  "ideasDesdeCero": "Create your own",
+  "ideasSugerencia": "It's just a suggestion — you can change anything.",
+  "ideasFrecDiario": "Every day",
+  "ideasFrecDiarioN": "{n, plural, =1{Every day · 1 time} other{Every day · {n} times}}",
+  "@ideasFrecDiarioN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "ideasFrecSemanal": "{n, plural, =1{1 time a week · {dias}} other{{n} times a week · {dias}}}",
+  "@ideasFrecSemanal": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "dias": {
+        "type": "String"
+      }
+    }
+  },
+  "ideasDia1": "Mon",
+  "ideasDia2": "Tue",
+  "ideasDia3": "Wed",
+  "ideasDia4": "Thu",
+  "ideasDia5": "Fri",
+  "ideasDia6": "Sat",
+  "ideasDia7": "Sun",
   "habLabelNombre": "Habit name",
   "habLabelDescripcion": "Description (optional)",
   "habLabelCategoria": "Category (optional)",
