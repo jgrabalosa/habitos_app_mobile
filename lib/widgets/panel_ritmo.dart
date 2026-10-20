@@ -96,19 +96,12 @@ class _PanelRitmo extends StatelessWidget {
                 child: Row(
                   children: [
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(l.ritmoTitulo, style: estiloEtiqueta),
-                          const SizedBox(height: 2),
-                          Text(
-                            palabra,
-                            style: texto.headlineSmall?.copyWith(
-                              color: t.points,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        palabra,
+                        style: texto.headlineSmall?.copyWith(
+                          color: t.points,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),

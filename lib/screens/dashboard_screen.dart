@@ -941,8 +941,8 @@ class _DashboardScreenState extends State<DashboardScreen>
     _cargarHoy();
   }
 
-  /// La tarjeta «TU RITMO»: el ritmo general, en una línea, con su palabra y el
-  /// dibujo de la identidad. Al tocarla se abre el panel «Tu ritmo».
+  /// La tarjeta del ritmo general: su palabra en una línea y el dibujo de la
+  /// identidad. Al tocarla se abre el panel «Tu ritmo».
   Widget _tarjetaRitmo(AppLocalizations l, TokensContextuales t, int nivel) {
     final palabra = palabraRitmo(l, nivel);
     final texto = Theme.of(context).textTheme;
@@ -958,33 +958,18 @@ class _DashboardScreenState extends State<DashboardScreen>
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
             child: Row(
               children: [
+                // La palabra en el color de los puntos, el mismo de las
+                // estrellas llenas: es lo que se ve de lejos. Una línea: la
+                // causa ya se ve en el panel «Tu ritmo».
                 Expanded(
-                  child: Row(
-                    children: [
-                      Text(
-                        l.ritmoTitulo,
-                        style: texto.labelSmall?.copyWith(
-                          color: t.textMuted,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      // La palabra en el color de los puntos, el mismo de las
-                      // estrellas llenas: es lo que se ve de lejos. Una línea:
-                      // la causa ya se ve en el panel «Tu ritmo».
-                      Flexible(
-                        child: Text(
-                          palabra,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: texto.titleLarge?.copyWith(
-                            color: t.points,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    palabra,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: texto.titleLarge?.copyWith(
+                      color: t.points,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
