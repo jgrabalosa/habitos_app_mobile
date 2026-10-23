@@ -48,7 +48,7 @@ Para anunciar: el control de sonido.
 
 ## 1.1.0 (5) — 2026-10-20
 
-Estado: en preparación.
+Estado: publicada en Producción el 2026-10-22.
 
 ### Novedades
 
