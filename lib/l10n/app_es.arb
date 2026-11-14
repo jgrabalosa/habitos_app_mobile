@@ -500,5 +500,272 @@
   "permisoPermitir": "Permitir",
   "permisoAhoraNo": "Ahora no",
   "permisoBloqueado": "Las notificaciones están desactivadas. Actívalas en los ajustes del móvil para recibir el recordatorio.",
-  "permisoAjustes": "Ajustes"
+  "permisoAjustes": "Ajustes",
+  "durMinutos": "{m} min",
+  "@durMinutos": {
+    "placeholders": {
+      "m": {
+        "type": "int"
+      }
+    }
+  },
+  "durHoras": "{h} h",
+  "@durHoras": {
+    "placeholders": {
+      "h": {
+        "type": "int"
+      }
+    }
+  },
+  "durHorasMinutos": "{h} h {m} min",
+  "@durHorasMinutos": {
+    "placeholders": {
+      "h": {
+        "type": "int"
+      },
+      "m": {
+        "type": "int"
+      }
+    }
+  },
+  "minCifra": "{n} min",
+  "@minCifra": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "minDeObjetivo": "{hechos} / {objetivo} min",
+  "@minDeObjetivo": {
+    "placeholders": {
+      "hechos": {
+        "type": "int"
+      },
+      "objetivo": {
+        "type": "int"
+      }
+    }
+  },
+  "dashChipMinutos": "{frecuencia} · {hechos} / {objetivo} min",
+  "@dashChipMinutos": {
+    "placeholders": {
+      "frecuencia": {
+        "type": "String"
+      },
+      "hechos": {
+        "type": "int"
+      },
+      "objetivo": {
+        "type": "int"
+      }
+    }
+  },
+  "dashChipMinutosSemanal": "{frecuencia} · {dias}/{meta} días · {hechos} / {objetivo} min",
+  "@dashChipMinutosSemanal": {
+    "placeholders": {
+      "frecuencia": {
+        "type": "String"
+      },
+      "dias": {
+        "type": "int"
+      },
+      "meta": {
+        "type": "int"
+      },
+      "hechos": {
+        "type": "int"
+      },
+      "objetivo": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yMinutosHabito": "Sumar minutos a {nombre}. Llevas {hechos} de {objetivo} min",
+  "@a11yMinutosHabito": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      },
+      "hechos": {
+        "type": "int"
+      },
+      "objetivo": {
+        "type": "int"
+      }
+    }
+  },
+  "minPanelFaltan": "{n, plural, =1{Te falta 1 min} other{Te faltan {n} min}}",
+  "@minPanelFaltan": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "minPanelHecho": "Objetivo cumplido. Puedes seguir sumando.",
+  "minPanelOtroDia": "Para el {fecha}",
+  "@minPanelOtroDia": {
+    "placeholders": {
+      "fecha": {
+        "type": "String"
+      }
+    }
+  },
+  "minSumaRapida": "+{n} min",
+  "@minSumaRapida": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "minModoSumar": "Sumar",
+  "minModoEstablecer": "Establecer",
+  "minCampoSumar": "Minutos que sumar",
+  "minCampoEstablecer": "Total del día, en minutos",
+  "minBotonSumar": "Sumar",
+  "minBotonEstablecer": "Guardar total",
+  "minErrorVacio": "Escribe cuántos minutos.",
+  "minErrorRango": "Entre 1 y 600 minutos cada vez.",
+  "minErrorNoSube": "El total solo puede subir: ahora llevas {n} min. Para quitar, deshaz la última entrada.",
+  "@minErrorNoSube": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "minDeshacerUltima": "Deshacer la última entrada",
+  "minDeshacerUltimaN": "Deshacer la última entrada ({n} min)",
+  "@minDeshacerUltimaN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "minErrorEnviar": "No se han podido guardar los minutos.",
+  "habLabelUnidad": "Se mide en",
+  "habUnidadVeces": "Veces",
+  "habUnidadMinutos": "Minutos",
+  "habAyudaUnidadEtiqueta": "Ayuda sobre cómo se mide",
+  "habAyudaUnidad": "Veces: lo marcas al hacerlo. Minutos: sumas el tiempo que le dedicas, y el día cuenta al llegar a tu objetivo.",
+  "habUnidadSinVuelta": "Un hábito de minutos no puede volver a contarse en veces.",
+  "habMinutosPorDia": "Minutos por día",
+  "habMinutosOtra": "Otra cifra (1-600)",
+  "habMinutosEtiquetaDiario": "{n} min cada día",
+  "@habMinutosEtiquetaDiario": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "habMinutosEtiquetaSemanal": "{n} min cada día que lo hagas",
+  "@habMinutosEtiquetaSemanal": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "habMinutosRango": "Elige entre 1 y 600 minutos por día.",
+  "habAyudaMetaSemanalMinutos": "Cuántos días por semana quieres llegar a tus minutos, el día que te venga bien. Si marcas días concretos, el objetivo sale de ellos.",
+  "habAplicaMinutosManana": "Los {n} min se aplican desde mañana. Hoy ya tienes registros con la meta anterior.",
+  "@habAplicaMinutosManana": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "habAplicaManana": "El cambio se aplica desde mañana. Hoy ya tienes registros con la meta anterior.",
+  "habAplicaLunes": "El cambio se aplica desde el lunes. Esta semana ya tienes registros con la meta anterior.",
+  "habAplicaFecha": "El cambio se aplica desde el {fecha}.",
+  "@habAplicaFecha": {
+    "placeholders": {
+      "fecha": {
+        "type": "String"
+      }
+    }
+  },
+  "habProgramadoTitulo": "Cambio programado",
+  "habProgramadoAnular": "Anular el cambio",
+  "habProgramadoAnulado": "Cambio anulado: sigue el objetivo de hoy.",
+  "habProgramadoError": "No se ha podido anular el cambio.",
+  "progDesdeManana": "Desde mañana: {objetivo}",
+  "@progDesdeManana": {
+    "placeholders": {
+      "objetivo": {
+        "type": "String"
+      }
+    }
+  },
+  "progDesdeLunes": "Desde el lunes: {objetivo}",
+  "@progDesdeLunes": {
+    "placeholders": {
+      "objetivo": {
+        "type": "String"
+      }
+    }
+  },
+  "progDesdeFecha": "Desde el {fecha}: {objetivo}",
+  "@progDesdeFecha": {
+    "placeholders": {
+      "fecha": {
+        "type": "String"
+      },
+      "objetivo": {
+        "type": "String"
+      }
+    }
+  },
+  "objDiasSemana": "{n, plural, =1{1 día por semana} other{{n} días por semana}}",
+  "@objDiasSemana": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "objVecesDia": "{n, plural, =1{1 vez al día} other{{n} veces al día}}",
+  "@objVecesDia": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "objEnVeces": "en veces",
+  "detMinutosDiario": "Diario · {n} min cada día",
+  "@detMinutosDiario": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "detMinutosSemanal": "Semanal · {dias} · {n} min cada día que lo hagas",
+  "@detMinutosSemanal": {
+    "placeholders": {
+      "dias": {
+        "type": "String"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "detTiempoTotal": "Tiempo total",
+  "detAyudaTiempoTotalEtiqueta": "Ayuda sobre el tiempo total",
+  "detAyudaTiempoTotal": "Todos los minutos que le has dedicado desde que lo creaste, también los que pasan de tu objetivo.",
+  "detRegistroMinutos": "+{n} min",
+  "@detRegistroMinutos": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  }
 }
