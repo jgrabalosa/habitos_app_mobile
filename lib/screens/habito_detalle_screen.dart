@@ -6,8 +6,12 @@ import '../widgets/pausa_habito.dart';
 import '../services/descubrimiento_detalle.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import '../l10n/textos_minutos.dart';
 import '../models/habito.dart';
 import '../models/hoy.dart';
+import '../models/minutos.dart';
+import '../models/objetivo_programado.dart';
+import '../models/registro.dart';
 import '../models/ritmo_reciente.dart';
 import '../widgets/estrellas_registro.dart';
 import '../widgets/panel_ritmo.dart';
@@ -46,6 +50,11 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
   Map<String, dynamic>? _diaSeleccionado; // día tocado en el heatmap (tooltip)
   bool _pausando = false;
 
+  /// En un hábito de minutos, los minutos de cada día sacados de sus
+  /// registros, para pintar los días a medias. Null si no es de minutos, si
+  /// aún no han llegado o si fallaron.
+  Map<String, int>? _minutosPorDia;
+
   @override
   void initState() {
     super.initState();
@@ -78,6 +87,9 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
         _detalle = detalle;
         _loading = false;
       });
+      if (unidadDe(detalle['unidad']) == UnidadHabito.minutos) {
+        _cargarMinutosPorDia();
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -97,6 +109,35 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     }
   }
 
+  /// Los minutos de cada día salen de los registros (`cantidad`), que el
+  /// contrato ya trae. Si el calendario del detalle llega con `minutos` en
+  /// cada día, manda ése. Si fallan, el calendario pinta como antes.
+  Future<void> _cargarMinutosPorDia() async {
+    try {
+      final registros = await ApiServiceHabitos.getRegistros(widget.habitoId);
+      if (!mounted) return;
+      setState(() => _minutosPorDia = minutosPorDia(registros));
+    } catch (_) {}
+  }
+
+  bool get _esMinutos =>
+      _detalle != null && unidadDe(_detalle!['unidad']) == UnidadHabito.minutos;
+
+  int? get _minutosObjetivo => (_detalle?['minutosObjetivo'] as num?)?.toInt();
+
+  /// El hábito tal como está hoy, con lo que trae el detalle: es contra lo
+  /// que se compara el cambio programado para decir solo lo que cambia.
+  Habito _habitoDelDetalle() => Habito(
+    habitoId: widget.habitoId,
+    nombre: (_detalle!['nombre'] as String?) ?? widget.nombre ?? '',
+    frecuencia: (_detalle!['frecuencia'] as String?) ?? 'DIARIO',
+    meta: (_detalle!['meta'] as num?)?.toInt() ?? 1,
+    activo: true,
+    diasSemana: _detalle!['diasSemana'] as String?,
+    unidad: unidadDe(_detalle!['unidad']),
+    minutosObjetivo: _minutosObjetivo,
+  );
+
   Future<void> _abrirEdicion() async {
     try {
       final Habito habito = await ApiServiceHabitos.getHabito(widget.habitoId);
@@ -104,8 +145,13 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
       final result = await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) =>
-              HabitoScreen(usuarioId: widget.usuarioId, habito: habito),
+          builder: (_) => HabitoScreen(
+            usuarioId: widget.usuarioId,
+            habito: habito,
+            objetivoProgramado: ObjetivoProgramado.deJson(
+              _detalle?['objetivoProgramado'],
+            ),
+          ),
         ),
       );
       if (result == true) _cargarDetalle();
@@ -213,6 +259,7 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                     const SizedBox(height: 12),
                   ],
                   _buildLineaFrecuencia(),
+                  _buildObjetivoProgramado(),
                   _buildRitmo(),
                   _buildStatCards(),
                   _buildValoracionMedia(),
@@ -237,7 +284,21 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     const etiquetas = ['L', 'M', 'X', 'J', 'V', 'S', 'D']; // 1=lunes..7=domingo
 
     final String texto;
-    if (esDiario) {
+    final minutos = _minutosObjetivo;
+    if (_esMinutos && minutos != null) {
+      // «Diario · 30 min cada día» o «Semanal · 3 días por semana · 60 min
+      // cada día que lo hagas»: nunca «N×X a la semana».
+      final locale = Localizations.localeOf(context).toLanguageTag();
+      final dias = _habitoDelDetalle().diasPlanificados;
+      texto = esDiario
+          ? l.detMinutosDiario(minutos)
+          : l.detMinutosSemanal(
+              dias.isNotEmpty
+                  ? diasFijosLegibles(dias, locale)
+                  : l.objDiasSemana(meta),
+              minutos,
+            );
+    } else if (esDiario) {
       texto = meta > 1 ? l.detDiarioMeta(meta) : l.frecDiario;
     } else if (diasSemana != null && diasSemana.trim().isNotEmpty) {
       // Semanal con días planificados: "Semanal · M · J · S"
@@ -258,16 +319,69 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
         children: [
           Icon(LucideIcons.repeat, size: 14, color: t.textMuted),
           const SizedBox(width: 6),
-          Text(
-            texto,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: t.textMuted),
+          Flexible(
+            child: Text(
+              texto,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: t.textMuted),
+            ),
           ),
         ],
       ),
     );
   }
+
+  /// El cambio de objetivo que aún no vale: «Desde el lunes: 4 días por
+  /// semana». No sale si no hay ninguno o si el backend no lo manda.
+  Widget _buildObjetivoProgramado() {
+    final programado = ObjetivoProgramado.deJson(
+      _detalle!['objetivoProgramado'],
+    );
+    if (programado == null) return const SizedBox.shrink();
+    final l = AppLocalizations.of(context)!;
+    final t = tokens(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.ms),
+      child: Row(
+        children: [
+          Icon(LucideIcons.calendarClock, size: 14, color: t.streakText),
+          const SizedBox(width: AppSpacing.sm),
+          Flexible(
+            child: Text(
+              textoObjetivoProgramado(
+                l,
+                programado,
+                actual: _habitoDelDetalle(),
+                hoy: DateTime.now(),
+                locale: Localizations.localeOf(context).toLanguageTag(),
+              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: t.streakText),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Los minutos de [dia] del calendario: los que traiga el propio día si el
+  /// backend los manda, o la suma de sus registros. Sin ninguna de las dos
+  /// cosas, un día marcado cuenta como hecho, que es como pintaba antes.
+  int _minutosDe(Map<String, dynamic> dia) {
+    final propios = (dia['minutos'] as num?)?.toInt();
+    if (propios != null) return propios;
+    final deRegistros = _minutosPorDia?[dia['fecha']];
+    if (deRegistros != null) return deRegistros;
+    if (_minutosPorDia != null) return 0;
+    return dia['completado'] == true ? (_minutosObjetivo ?? 1) : 0;
+  }
+
+  /// El objetivo de [dia]: el suyo si el backend lo manda (cada día se juzga
+  /// con su objetivo vigente), o el de hoy.
+  int? _objetivoDe(Map<String, dynamic> dia) =>
+      (dia['minutosObjetivo'] as num?)?.toInt() ?? _minutosObjetivo;
 
   /// Lo que lleva el hábito, en dos plazos: siempre («Lo que llevas», que
   /// sólo sube) y este mes. Las dos tarjetas de racha (ahora / récord) salen
@@ -277,10 +391,17 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
   /// logros: el emoji lo pinta la fuente del sistema y cambia de dibujo, color
   /// y peso entre plataformas, así que no se alinea con la identidad equipada.
   Widget _buildStatCards() {
+    // En minutos, el tiempo total: el del backend o, si es anterior y no lo
+    // manda, la suma de los registros si ya han llegado.
+    final int? totalMinutos = !_esMinutos
+        ? null
+        : (_detalle!['totalMinutos'] as num?)?.toInt() ??
+              _minutosPorDia?.values.fold<int>(0, (a, b) => a + b);
     return ResumenDetalle(
       totalCompletados: ((_detalle!['totalCompletados'] ?? 0) as num).toInt(),
       diasMes: ((_detalle!['completadosMesActual'] ?? 0) as num).toInt(),
       mesActual: _esMesActual,
+      totalMinutos: totalMinutos,
     );
   }
 
@@ -415,7 +536,9 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     final List<dynamic> heatmap = _detalle!['heatmap'];
     final int meta = _detalle!['meta'] ?? 1;
     final bool esDiario = _detalle!['frecuencia'] == 'DIARIO';
-    final bool conNiveles = esDiario && meta > 1;
+    // En minutos siempre hay días a medias: los que no llegan a su objetivo.
+    final bool esMinutos = _esMinutos;
+    final bool conNiveles = esMinutos || (esDiario && meta > 1);
 
     final primerDia = DateTime.parse(heatmap[0]['fecha']);
     final diaSemana = (primerDia.weekday - 1); // Lunes = 0
@@ -431,6 +554,15 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     // // se corrige sola y no hace falta un token nuevo. Al 50% la separación
     // // frente al primario va de 1.37 (Profundidad) a 2.07 (Dulce).
     // final superada = Color.lerp(t.primary, t.text, 0.5)!;
+
+    // Un día de minutos, con el mismo escalón «a medias» que un diario de
+    // varias veces.
+    Color colorDiaMinutos(Map<String, dynamic> dia) =>
+        switch (nivelDiaMinutos(_minutosDe(dia), _objetivoDe(dia))) {
+          NivelDiaMinutos.vacio => Colors.transparent,
+          NivelDiaMinutos.parcial => t.success.withValues(alpha: 0.35),
+          NivelDiaMinutos.hecho => t.success,
+        };
 
     Color colorDia(int veces) {
       if (veces == 0) return Colors.transparent;
@@ -496,8 +628,9 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
               itemBuilder: (context, index) {
                 if (index < diaSemana) return const SizedBox();
                 final dia = heatmap[index - diaSemana];
-                final int veces =
-                    dia['veces'] ?? (dia['completado'] == true ? 1 : 0);
+                final int veces = esMinutos
+                    ? _minutosDe(dia)
+                    : dia['veces'] ?? (dia['completado'] == true ? 1 : 0);
                 final esHoy =
                     dia['fecha'] ==
                     DateTime.now().toIso8601String().split('T')[0];
@@ -515,7 +648,7 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                     decoration: celdaHeatmap(
                       id,
                       t,
-                      color: colorDia(veces),
+                      color: esMinutos ? colorDiaMinutos(dia) : colorDia(veces),
                       llena: veces > 0,
                       esHoy: esHoy,
                       seleccionada: seleccionado,
@@ -583,11 +716,16 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
 
   String _infoDia(Map<String, dynamic> dia, int meta, bool conNiveles) {
     final fecha = DateTime.parse(dia['fecha']);
-    final int veces = dia['veces'] ?? (dia['completado'] == true ? 1 : 0);
     final base = DateFormat.MMMMd(
       Localizations.localeOf(context).toLanguageTag(),
     ).format(fecha);
     final l = AppLocalizations.of(context)!;
+    if (_esMinutos) {
+      final minutos = _minutosDe(dia);
+      if (minutos == 0) return '$base · ${l.detSinCompletar}';
+      return '$base · ${l.minDeObjetivo(minutos, _objetivoDe(dia) ?? 0)}';
+    }
+    final int veces = dia['veces'] ?? (dia['completado'] == true ? 1 : 0);
     if (veces == 0) return '$base · ${l.detSinCompletar}';
     if (conNiveles) return '$base · ${l.detProgresoDia(veces, meta)}';
     return '$base · ${l.detCompletado}';
@@ -657,6 +795,16 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                                 context,
                               ).textTheme.titleMedium?.copyWith(color: t.text),
                             ),
+                            // En minutos, lo que sumó ese registro, si el
+                            // backend lo manda.
+                            if (_esMinutos && r['cantidad'] is num)
+                              Text(
+                                l.detRegistroMinutos(
+                                  (r['cantidad'] as num).toInt(),
+                                ),
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(color: t.successText),
+                              ),
                             if (r['valoracion'] != null)
                               EstrellasRegistro(
                                 valoracion: r['valoracion'] as int,
