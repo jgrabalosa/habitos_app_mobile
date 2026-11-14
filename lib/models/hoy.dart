@@ -1,4 +1,5 @@
 import 'habito.dart';
+import 'minutos.dart';
 
 /// Hacia dónde va un ritmo respecto a hace siete días. Lo manda el backend
 /// (`SUBE`, `BAJA`, `IGUAL`); la frase la pone la app.
@@ -36,6 +37,17 @@ class FilaHoy {
   /// Las fechas ISO de la semana en que se hizo.
   final Set<String> fechasCompletadas;
 
+  /// En qué se mide. En un hábito de minutos, [completados] y [meta] cuentan
+  /// días (en un diario, 0 o 1) y [hecho] es que el día llegó a su objetivo.
+  final UnidadHabito unidad;
+
+  /// La suma de los minutos registrados el día que se mira. Cero en los de
+  /// veces y si el backend no lo manda.
+  final int minutosHechos;
+
+  /// Los minutos que pide el día que se mira. Null en los de veces.
+  final int? minutosObjetivo;
+
   const FilaHoy({
     required this.habito,
     required this.completados,
@@ -44,26 +56,54 @@ class FilaHoy {
     required this.completadoEnFecha,
     required this.ritmoNivel,
     required this.fechasCompletadas,
+    this.unidad = UnidadHabito.veces,
+    this.minutosHechos = 0,
+    this.minutosObjetivo,
   });
 
-  factory FilaHoy.fromJson(Map<String, dynamic> json) => FilaHoy(
-    habito: Habito.fromJson(json['habito'] as Map<String, dynamic>),
-    completados: json['completados'] as int? ?? 0,
-    meta: json['meta'] as int? ?? 1,
-    hecho: json['hecho'] == true,
-    completadoEnFecha: json['completadoEnFecha'] == true,
-    ritmoNivel: json['ritmoNivel'] as int? ?? 1,
-    fechasCompletadas:
-        ((json['fechasCompletadas'] as List<dynamic>?) ?? const [])
-            .cast<String>()
-            .toSet(),
-  );
+  /// Los campos de minutos pueden faltar (backend anterior): sin `unidad` se
+  /// usa la del hábito, que a su vez es `veces` si tampoco viene; sin
+  /// `minutosObjetivo`, el del hábito.
+  factory FilaHoy.fromJson(Map<String, dynamic> json) {
+    final habito = Habito.fromJson(json['habito'] as Map<String, dynamic>);
+    return FilaHoy(
+      habito: habito,
+      completados: json['completados'] as int? ?? 0,
+      meta: json['meta'] as int? ?? 1,
+      hecho: json['hecho'] == true,
+      completadoEnFecha: json['completadoEnFecha'] == true,
+      ritmoNivel: json['ritmoNivel'] as int? ?? 1,
+      fechasCompletadas:
+          ((json['fechasCompletadas'] as List<dynamic>?) ?? const [])
+              .cast<String>()
+              .toSet(),
+      unidad: json.containsKey('unidad')
+          ? unidadDe(json['unidad'])
+          : habito.unidad,
+      minutosHechos: (json['minutosHechos'] as num?)?.toInt() ?? 0,
+      minutosObjetivo:
+          (json['minutosObjetivo'] as num?)?.toInt() ?? habito.minutosObjetivo,
+    );
+  }
 
   /// Lo que lleva respecto a su meta, de 0 a 1. Las sesiones de más de un
-  /// semanal no pasan de 1.
-  double get fraccion => meta <= 0 ? 0.0 : (completados / meta).clamp(0.0, 1.0);
+  /// semanal no pasan de 1. En un diario de minutos, los minutos del día
+  /// respecto a su objetivo.
+  double get fraccion {
+    if (esMinutos && !esSemanal) return fraccionDia;
+    return meta <= 0 ? 0.0 : (completados / meta).clamp(0.0, 1.0);
+  }
 
   bool get esSemanal => habito.frecuencia == 'SEMANAL';
+
+  bool get esMinutos => unidad == UnidadHabito.minutos;
+
+  /// En un hábito de minutos, lo que lleva el día que se mira respecto a su
+  /// objetivo, de 0 a 1. Es lo que dibuja el anillo de la fila.
+  double get fraccionDia => fraccionMinutos(minutosHechos, minutosObjetivo);
+
+  /// En un hábito de minutos, si el día que se mira llegó a su objetivo.
+  bool get diaHechoMinutos => diaHechoEnMinutos(minutosHechos, minutosObjetivo);
 
   /// La fila con [pasos] de más (o de menos, si es negativo) que la pantalla
   /// ya ha marcado en [fecha] y `/hoy` todavía no ha devuelto. Es una
@@ -96,6 +136,46 @@ class FilaHoy {
       completadoEnFecha: enFecha,
       ritmoNivel: ritmoNivel,
       fechasCompletadas: fechas,
+      unidad: unidad,
+      minutosHechos: minutosHechos,
+      minutosObjetivo: minutosObjetivo,
+    );
+  }
+
+  /// Como [conPasos], para un hábito de minutos: la fila con [minutos] de más
+  /// (o de menos, al deshacer) registrados en [fecha] que `/hoy` todavía no ha
+  /// devuelto. El día pasa a hecho al llegar a su objetivo, y entonces cuenta
+  /// un día más en [completados]; deshacer por debajo del objetivo lo quita.
+  FilaHoy conMinutos(
+    int minutos, {
+    required bool delDia,
+    required String fecha,
+  }) {
+    if (minutos == 0) return this;
+    final nuevos = minutosHechos + minutos < 0 ? 0 : minutosHechos + minutos;
+    final antes = diaHechoMinutos;
+    final despues = diaHechoEnMinutos(nuevos, minutosObjetivo);
+    var dias = completados;
+    if (!antes && despues) dias++;
+    if (antes && !despues && dias > 0) dias--;
+    final cuenta = !esSemanal ? despues : (delDia ? despues : dias >= meta);
+    final fechas = {...fechasCompletadas};
+    if (despues) {
+      fechas.add(fecha);
+    } else {
+      fechas.remove(fecha);
+    }
+    return FilaHoy(
+      habito: habito,
+      completados: dias,
+      meta: meta,
+      hecho: cuenta,
+      completadoEnFecha: nuevos > 0,
+      ritmoNivel: ritmoNivel,
+      fechasCompletadas: fechas,
+      unidad: unidad,
+      minutosHechos: nuevos,
+      minutosObjetivo: minutosObjetivo,
     );
   }
 }
@@ -105,11 +185,17 @@ class FilaHoy {
 /// semanal con día fijo, en su día, cuenta todo o nada. Null si no hay
 /// filas. Sirve para que el anillo y el fondo se muevan al marcar, antes de
 /// que llegue la recarga.
+///
+/// Un hábito de minutos cuenta los minutos del día respecto a su objetivo,
+/// también el semanal en su día: es el crédito parcial del diseño (sección
+/// 3). Es una aproximación hasta la recarga, como todo aquí.
 double? avanceDelDia(List<FilaHoy> filas) {
   if (filas.isEmpty) return null;
   var suma = 0.0;
   for (final f in filas) {
-    suma += f.esSemanal ? (f.hecho ? 1.0 : 0.0) : f.fraccion;
+    suma += f.esMinutos
+        ? f.fraccionDia
+        : (f.esSemanal ? (f.hecho ? 1.0 : 0.0) : f.fraccion);
   }
   return suma / filas.length;
 }

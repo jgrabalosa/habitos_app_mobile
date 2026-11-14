@@ -131,3 +131,10 @@ bool esSoloDeshacerElUltimo(Object error) =>
     error is ApiException &&
     error.tipo == TipoErrorApi.peticionInvalida &&
     error.codigoEstado == 409;
+
+/// Si el anillo de un hábito de minutos responde al toque y abre su panel. Como
+/// el check, no responde en un día que no se puede tocar ni con la pista de
+/// Hoy abierta. A diferencia del check, sí responde con el día ya hecho: los
+/// minutos de más se pueden seguir sumando.
+bool minutosTocables({required bool habilitado, required bool pistaActiva}) =>
+    habilitado && !pistaActiva;
