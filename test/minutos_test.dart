@@ -386,6 +386,37 @@ void main() {
       expect(r.origen, 'ENFOQUE');
     });
 
+    test('creadoEn llega en UTC sin zona y se lee como UTC', () {
+      final r = Registro.fromJson({
+        'registroId': 4,
+        'fecha': '2026-11-15',
+        'creadoEn': '2026-11-15T13:05:07.123456',
+      });
+      expect(r.creadoEn, DateTime.utc(2026, 11, 15, 13, 5, 7, 123, 456));
+      expect(r.creadoEn!.isUtc, isTrue);
+    });
+
+    test('creadoEn con zona se respeta, y sin él o ilegible es null', () {
+      final conZona = Registro.fromJson({
+        'registroId': 4,
+        'fecha': '2026-11-15',
+        'creadoEn': '2026-11-15T14:05:00+01:00',
+      });
+      expect(conZona.creadoEn, DateTime.utc(2026, 11, 15, 13, 5));
+      expect(
+        Registro.fromJson({'registroId': 4, 'fecha': '2026-11-15'}).creadoEn,
+        isNull,
+      );
+      expect(
+        Registro.fromJson({
+          'registroId': 4,
+          'fecha': '2026-11-15',
+          'creadoEn': 'ayer',
+        }).creadoEn,
+        isNull,
+      );
+    });
+
     test('el último registro de un día es el de id más alto de ese día', () {
       final registros = [
         const Registro(registroId: 3, fecha: '2026-11-15', cantidad: 10),

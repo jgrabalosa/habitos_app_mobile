@@ -15,11 +15,16 @@ class Registro {
   /// De dónde salió: `MANUAL` o `ENFOQUE`. `MANUAL` si no viene.
   final String origen;
 
+  /// Cuándo se marcó, en UTC. No es [fecha]: un día pasado de la semana se
+  /// puede marcar hoy. Null si el backend no lo manda o no se entiende.
+  final DateTime? creadoEn;
+
   const Registro({
     required this.registroId,
     required this.fecha,
     this.cantidad = 1,
     this.origen = origenManual,
+    this.creadoEn,
   });
 
   factory Registro.fromJson(Map<String, dynamic> json) => Registro(
@@ -27,11 +32,23 @@ class Registro {
     fecha: json['fecha'] as String,
     cantidad: (json['cantidad'] as num?)?.toInt() ?? 1,
     origen: (json['origen'] as String?) ?? origenManual,
+    creadoEn: instanteUtcDe(json['creadoEn']),
   );
 
   /// Lee una lista cruda del backend.
   static List<Registro> deLista(List<dynamic> lista) =>
       lista.map((r) => Registro.fromJson(r as Map<String, dynamic>)).toList();
+}
+
+/// Un instante del backend, en UTC. El backend guarda `creadoEn` en UTC y lo
+/// manda sin zona («2026-11-15T13:05:07.123456»): sin zona se lee como UTC, no
+/// como hora local. Con zona, se respeta. Cualquier otra cosa es null.
+DateTime? instanteUtcDe(Object? valor) {
+  if (valor is! String) return null;
+  final conZona = RegExp(r'(Z|[+-]\d{2}:?\d{2})$').hasMatch(valor)
+      ? valor
+      : '${valor}Z';
+  return DateTime.tryParse(conZona)?.toUtc();
 }
 
 /// El último registro de [fecha], el de id más alto, o null si ese día no
