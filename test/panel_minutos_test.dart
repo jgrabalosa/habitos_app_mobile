@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -262,7 +264,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(deshechos, [12]);
     expect(resultado.single!.minutos, -15);
-    expect(resultado.single!.esDeshacer, isTrue);
+    expect(resultado.single!.tipo, TipoResultadoMinutos.deshecho);
   });
 
   testWidgets('Deshacer con 409 avisa de que solo se deshace lo último', (
@@ -299,5 +301,187 @@ void main() {
 
   testWidgets('el hueco de Enfoque sigue apagado', (tester) async {
     expect(PanelMinutos.enfoqueDisponible, isFalse);
+  });
+
+  group('cierre y claves con envíos sin respuesta clara', () {
+    /// Un falso de completar que falla con [errores] en orden y después va
+    /// bien.
+    void completarQueFalla(List<Object> errores) {
+      var i = 0;
+      PanelMinutos.completar =
+          (
+            int habitoId, {
+            String? fecha,
+            int? minutos,
+            String? clave,
+            String? origen,
+          }) async {
+            envios.add(Envio(habitoId, fecha, minutos, clave, origen));
+            if (i < errores.length) throw errores[i++];
+            return {'logros': <String>[], 'puntosGanados': 0};
+          };
+    }
+
+    Future<void> atras(WidgetTester tester) async {
+      final NavigatorState nav = tester.state(find.byType(Navigator));
+      await nav.maybePop();
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('la hoja no se arrastra para cerrar', (tester) async {
+      await abrir(tester, []);
+      final hoja = tester.widget<BottomSheet>(find.byType(BottomSheet));
+      expect(hoja.enableDrag, isFalse);
+    });
+
+    testWidgets('mientras envía, atrás no cierra el panel', (tester) async {
+      final respuesta = Completer<Map<String, dynamic>>();
+      PanelMinutos.completar =
+          (
+            int habitoId, {
+            String? fecha,
+            int? minutos,
+            String? clave,
+            String? origen,
+          }) {
+            envios.add(Envio(habitoId, fecha, minutos, clave, origen));
+            return respuesta.future;
+          };
+      final resultado = <ResultadoMinutos?>[];
+      await abrir(tester, resultado);
+      await tester.tap(find.text(l.minSumaRapida(5)));
+      await tester.pump();
+
+      final NavigatorState nav = tester.state(find.byType(Navigator));
+      await nav.maybePop();
+      await tester.pump();
+      expect(resultado, isEmpty);
+      expect(find.text('20 / 30 min'), findsOneWidget);
+
+      respuesta.complete({'logros': <String>[], 'puntosGanados': 5});
+      await tester.pumpAndSettle();
+      expect(resultado.single!.tipo, TipoResultadoMinutos.sumado);
+      expect(resultado.single!.minutos, 5);
+    });
+
+    testWidgets('cerrar tras un timeout devuelve «desconocido»', (
+      tester,
+    ) async {
+      completarQueFalla([const ApiException(TipoErrorApi.timeout)]);
+      final resultado = <ResultadoMinutos?>[];
+      await abrir(tester, resultado);
+      await tester.tap(find.text(l.minSumaRapida(5)));
+      await tester.pumpAndSettle();
+      expect(resultado, isEmpty);
+
+      await atras(tester);
+      expect(resultado.single!.tipo, TipoResultadoMinutos.desconocido);
+    });
+
+    testWidgets('cerrar tras un 4xx devuelve null: no se registró nada', (
+      tester,
+    ) async {
+      completarQueFalla([
+        const ApiException(TipoErrorApi.peticionInvalida, codigoEstado: 409),
+      ]);
+      final resultado = <ResultadoMinutos?>[];
+      await abrir(tester, resultado);
+      await tester.tap(find.text(l.minSumaRapida(5)));
+      await tester.pumpAndSettle();
+      await atras(tester);
+      expect(resultado, [null]);
+    });
+
+    testWidgets(
+      'cerrar tras un deshacer sin respuesta devuelve «desconocido»',
+      (tester) async {
+        PanelMinutos.deshacer = (_) async =>
+            throw const ApiException(TipoErrorApi.sinConexion);
+        final resultado = <ResultadoMinutos?>[];
+        await abrir(tester, resultado);
+        await tester.tap(find.text(l.minDeshacerUltimaN(15)));
+        await tester.pumpAndSettle();
+        await atras(tester);
+        expect(resultado.single!.tipo, TipoResultadoMinutos.desconocido);
+      },
+    );
+
+    testWidgets('repetir el mismo envío tras un timeout reutiliza la clave', (
+      tester,
+    ) async {
+      completarQueFalla([const ApiException(TipoErrorApi.timeout)]);
+      final resultado = <ResultadoMinutos?>[];
+      await abrir(tester, resultado);
+      await tester.tap(find.text(l.minSumaRapida(15)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l.minSumaRapida(15)));
+      await tester.pumpAndSettle();
+
+      expect(envios, hasLength(2));
+      expect(envios[1].clave, envios[0].clave);
+      expect(resultado.single!.tipo, TipoResultadoMinutos.sumado);
+    });
+
+    testWidgets('tras un 5xx, otros minutos llevan clave nueva', (
+      tester,
+    ) async {
+      completarQueFalla([const ApiException(TipoErrorApi.servidor)]);
+      await abrir(tester, []);
+      await tester.tap(find.text(l.minSumaRapida(15)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l.minSumaRapida(30)));
+      await tester.pumpAndSettle();
+
+      expect(envios.map((e) => e.minutos), [15, 30]);
+      expect(envios[1].clave, isNot(envios[0].clave));
+    });
+
+    testWidgets('tras un 4xx, el mismo envío lleva clave nueva', (
+      tester,
+    ) async {
+      completarQueFalla([
+        const ApiException(TipoErrorApi.peticionInvalida, codigoEstado: 409),
+      ]);
+      await abrir(tester, []);
+      await tester.tap(find.text(l.minSumaRapida(15)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l.minSumaRapida(15)));
+      await tester.pumpAndSettle();
+
+      expect(envios, hasLength(2));
+      expect(envios[1].clave, isNot(envios[0].clave));
+    });
+  });
+
+  group('claveParaEnvio', () {
+    var n = 0;
+    String nueva() => 'nueva-${n++}';
+
+    test('sin pendiente, nueva', () {
+      expect(
+        claveParaEnvio(null, minutos: 5, fecha: null, nueva: nueva),
+        startsWith('nueva-'),
+      );
+    });
+
+    test('mismos minutos y fecha, la pendiente', () {
+      const p = (clave: 'k', minutos: 5, fecha: '2026-11-12');
+      expect(
+        claveParaEnvio(p, minutos: 5, fecha: '2026-11-12', nueva: nueva),
+        'k',
+      );
+    });
+
+    test('otros minutos u otra fecha, nueva', () {
+      const p = (clave: 'k', minutos: 5, fecha: null);
+      expect(
+        claveParaEnvio(p, minutos: 15, fecha: null, nueva: nueva),
+        isNot('k'),
+      );
+      expect(
+        claveParaEnvio(p, minutos: 5, fecha: '2026-11-12', nueva: nueva),
+        isNot('k'),
+      );
+    });
   });
 }

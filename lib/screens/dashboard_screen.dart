@@ -71,6 +71,16 @@ class DashboardScreen extends StatefulWidget {
 
   const DashboardScreen({super.key, this.activa = true});
 
+  /// Seam de test: el usuario de la sesión. En producción, el guardado.
+  @visibleForTesting
+  static Future<Map<String, dynamic>?> Function() cargarUsuario =
+      ApiServiceCore.getUsuarioLocal;
+
+  /// Seam de test: de dónde sale `/hoy`. En producción, la red.
+  @visibleForTesting
+  static Future<Map<String, dynamic>> Function(int usuarioId, {String? fecha})
+  cargarHoy = ApiServiceHabitos.getHoy;
+
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
@@ -202,7 +212,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Future<void> _cargarDatos() async {
-    final usuario = await ApiServiceCore.getUsuarioLocal();
+    final usuario = await DashboardScreen.cargarUsuario();
     if (usuario == null || !mounted) return;
     setState(() {
       _usuarioId = usuario['usuarioId'] ?? 0;
@@ -220,7 +230,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   Future<void> _cargarHoy() async {
     final carga = ++_cargaEnCurso;
     try {
-      final data = await ApiServiceHabitos.getHoy(
+      final data = await DashboardScreen.cargarHoy(
         _usuarioId,
         fecha: _fechaMirada,
       );
@@ -464,8 +474,16 @@ class _DashboardScreenState extends State<DashboardScreen>
     final antes = _filaDe(habitoId) ?? fila;
     final ahora = _hoy ?? hoy;
 
+    if (resultado.tipo == TipoResultadoMinutos.desconocido) {
+      // Se cerró tras un envío sin respuesta clara: puede que se registrara.
+      // Manda el servidor.
+      solicitarRefrescoMascota();
+      await _cargarHoy();
+      return;
+    }
+
     final completado = resultado.completado;
-    if (completado == null) {
+    if (resultado.tipo == TipoResultadoMinutos.deshecho || completado == null) {
       // Deshecho: se quita en pantalla al momento y manda la recarga, igual
       // que al deshacer un check.
       setState(() {
@@ -485,6 +503,9 @@ class _DashboardScreenState extends State<DashboardScreen>
       enDelDia: ahora.delDia.habitos.any((f) => f.habito.habitoId == habitoId),
       esHoy: ahora.viendoHoy,
       resultado: completado,
+      // En minutos, «hábito completado» es la entrada que deja el día hecho;
+      // no cada entrada ni las de por encima de la meta.
+      contarEnAnalytics: entradaDejaDiaHecho(antes, resultado.minutos),
       aplicarEnPantalla: () {
         _minutosPendientes[habitoId] =
             (_minutosPendientes[habitoId] ?? 0) + resultado.minutos;
@@ -504,6 +525,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     required bool esHoy,
     required Map<String, dynamic> resultado,
     required VoidCallback aplicarEnPantalla,
+    bool contarEnAnalytics = true,
   }) async {
     final List<String> logrosOtorgados = resultado['logros'];
     final int puntosGanados = resultado['puntosGanados'];
@@ -516,7 +538,9 @@ class _DashboardScreenState extends State<DashboardScreen>
     solicitarRefrescoMascota();
 
     // Analytics en segundo plano: no bloquea la celebración
-    AnalyticsHabitos.habitoCompletado(antes.habito.frecuencia);
+    if (contarEnAnalytics) {
+      AnalyticsHabitos.habitoCompletado(antes.habito.frecuencia);
+    }
 
     // Feedback háptico + sonido
     HapticFeedback.mediumImpact();

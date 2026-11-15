@@ -44,48 +44,107 @@ class PanelMinutos {
   static String Function() nuevaClaveEnvio = nuevaClave;
 }
 
+/// Qué ha pasado en el panel.
+enum TipoResultadoMinutos {
+  /// Se sumaron minutos y el servidor lo confirmó.
+  sumado,
+
+  /// Se deshizo la última entrada y el servidor lo confirmó.
+  deshecho,
+
+  /// El panel se cerró después de un envío sin respuesta clara (timeout, sin
+  /// conexión, 5xx): puede que se registrara. Hoy recarga para saberlo.
+  desconocido,
+}
+
 /// Lo que ha pasado en el panel, para que Hoy lo pinte y lo celebre.
 class ResultadoMinutos {
+  final TipoResultadoMinutos tipo;
+
   /// Los minutos que han cambiado el día: positivos al sumar, negativos al
-  /// deshacer.
+  /// deshacer, cero si no se sabe.
   final int minutos;
 
-  /// La respuesta de completar, tal como la lee `ApiServiceHabitos`. Null al
-  /// deshacer.
+  /// La respuesta de completar, tal como la lee `ApiServiceHabitos`. Solo al
+  /// sumar.
   final Map<String, dynamic>? completado;
 
-  const ResultadoMinutos({required this.minutos, this.completado});
+  const ResultadoMinutos.sumado(this.minutos, Map<String, dynamic> respuesta)
+    : tipo = TipoResultadoMinutos.sumado,
+      completado = respuesta;
 
-  bool get esDeshacer => completado == null;
+  const ResultadoMinutos.deshecho(this.minutos)
+    : tipo = TipoResultadoMinutos.deshecho,
+      completado = null;
+
+  const ResultadoMinutos.desconocido()
+    : tipo = TipoResultadoMinutos.desconocido,
+      minutos = 0,
+      completado = null;
 }
+
+/// La clave del último envío que no tuvo respuesta clara, con lo que llevaba.
+/// Si se repite el mismo envío (mismos minutos, mismo día), va con la misma
+/// clave: si el primero sí llegó, el backend lo reconoce y no registra otro.
+typedef EnvioPendiente = ({String clave, int minutos, String? fecha});
+
+/// La clave para enviar [minutos] en [fecha]: la de [pendiente] si es el mismo
+/// envío repetido, o una nueva.
+String claveParaEnvio(
+  EnvioPendiente? pendiente, {
+  required int minutos,
+  required String? fecha,
+  required String Function() nueva,
+}) =>
+    (pendiente != null &&
+        pendiente.minutos == minutos &&
+        pendiente.fecha == fecha)
+    ? pendiente.clave
+    : nueva();
 
 /// Abre el panel de minutos de [fila] para el día [fechaDia] (`AAAA-MM-DD`),
 /// que es el que se mira en Hoy. Con [esHoy], el completado se manda sin
 /// fecha y la decide el servidor en la zona del usuario, como hace el check.
 ///
-/// Cada envío sale de aquí con su `clave` nueva y, si va bien, el panel se
-/// cierra y devuelve lo que ha pasado: la celebración la hace Hoy, igual que
-/// al marcar un hábito de veces, para no apilar hojas. Si falla, el panel se
-/// queda abierto con el error. Null si se cierra sin hacer nada.
+/// Cada envío sale de aquí con su `clave` y, si va bien, el panel se cierra
+/// y devuelve lo que ha pasado: la celebración la hace Hoy, igual que al
+/// marcar un hábito de veces, para no apilar hojas. Si falla, el panel se
+/// queda abierto con el error.
+///
+/// Mientras envía no se puede cerrar (ni con atrás ni tocando fuera), y no se
+/// arrastra para cerrar: el arrastre de la hoja hace `pop` sin preguntar a
+/// `PopScope`. Si se cierra después de un envío sin respuesta clara, devuelve
+/// [TipoResultadoMinutos.desconocido] para que Hoy recargue. Null si se
+/// cierra sin haber enviado nada.
 Future<ResultadoMinutos?> mostrarPanelMinutos(
   BuildContext context, {
   required FilaHoy fila,
   required String fechaDia,
   required bool esHoy,
-}) {
+}) async {
   final id = identidad(context);
   final t = tokens(context);
-  return showModalBottomSheet<ResultadoMinutos>(
+  var incierto = false;
+  final resultado = await showModalBottomSheet<ResultadoMinutos>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
+    enableDrag: false,
     backgroundColor: t.surface,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(id.radioHero)),
     ),
-    builder: (context) =>
-        _PanelMinutosVista(fila: fila, fechaDia: fechaDia, esHoy: esHoy),
+    builder: (context) => _PanelMinutosVista(
+      fila: fila,
+      fechaDia: fechaDia,
+      esHoy: esHoy,
+      alQuedarIncierto: () => incierto = true,
+    ),
   );
+  if (resultado == null && incierto) {
+    return const ResultadoMinutos.desconocido();
+  }
+  return resultado;
 }
 
 class _PanelMinutosVista extends StatefulWidget {
@@ -93,10 +152,14 @@ class _PanelMinutosVista extends StatefulWidget {
   final String fechaDia;
   final bool esHoy;
 
+  /// Un envío ha fallado sin respuesta clara: puede que se registrara.
+  final VoidCallback alQuedarIncierto;
+
   const _PanelMinutosVista({
     required this.fila,
     required this.fechaDia,
     required this.esHoy,
+    required this.alQuedarIncierto,
   });
 
   @override
@@ -117,6 +180,9 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
   /// La última entrada del día, para decir cuánto se deshace. Null mientras
   /// carga, o si no hay ninguna.
   Registro? _ultima;
+
+  /// El último envío sin respuesta clara, para repetirlo con su clave.
+  EnvioPendiente? _pendiente;
 
   FilaHoy get _fila => widget.fila;
 
@@ -147,27 +213,42 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
   Future<void> _enviar(int minutos) async {
     if (_enviando) return;
     final l = AppLocalizations.of(context)!;
+    final fecha = widget.esHoy ? null : widget.fechaDia;
+    final clave = claveParaEnvio(
+      _pendiente,
+      minutos: minutos,
+      fecha: fecha,
+      nueva: PanelMinutos.nuevaClaveEnvio,
+    );
     setState(() {
       _enviando = true;
       _error = null;
     });
     try {
+      // Si la clave ya se usó y llegó, el backend responde 200 con el
+      // resultado del original (sin premios nuevos): se trata como éxito, y
+      // Hoy recarga igualmente después de cualquier completado.
       final resultado = await PanelMinutos.completar(
         _fila.habito.habitoId,
-        fecha: widget.esHoy ? null : widget.fechaDia,
+        fecha: fecha,
         minutos: minutos,
-        clave: PanelMinutos.nuevaClaveEnvio(),
+        clave: clave,
         origen: origenManual,
       );
       if (!mounted) return;
-      Navigator.pop(
-        context,
-        ResultadoMinutos(minutos: minutos, completado: resultado),
-      );
+      _pendiente = null;
+      Navigator.pop(context, ResultadoMinutos.sumado(minutos, resultado));
     } catch (e) {
       if (!mounted) return;
+      final incierto = esResultadoIncierto(e);
+      if (incierto) widget.alQuedarIncierto();
       setState(() {
         _enviando = false;
+        // Sin respuesta clara se guarda la clave para repetir el mismo envío;
+        // con un 4xx no se registró nada y el siguiente lleva clave nueva.
+        _pendiente = incierto
+            ? (clave: clave, minutos: minutos, fecha: fecha)
+            : null;
         _error = MensajesError.de(context, e, generico: l.minErrorEnviar);
       });
     }
@@ -205,9 +286,14 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
       final registros = await PanelMinutos.registros(_fila.habito.habitoId);
       final ultima = ultimoRegistroDe(registros, widget.fechaDia);
       if (ultima == null) throw StateError('No hay registros ese día');
-      await PanelMinutos.deshacer(ultima.registroId);
+      try {
+        await PanelMinutos.deshacer(ultima.registroId);
+      } catch (e) {
+        if (esResultadoIncierto(e)) widget.alQuedarIncierto();
+        rethrow;
+      }
       if (!mounted) return;
-      Navigator.pop(context, ResultadoMinutos(minutos: -ultima.cantidad));
+      Navigator.pop(context, ResultadoMinutos.deshecho(-ultima.cantidad));
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -229,176 +315,181 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
     final objetivo = _fila.minutosObjetivo ?? 0;
     final faltan = objetivo - hechos;
 
-    return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        AppSpacing.sm,
-        AppSpacing.md,
-        AppSpacing.md + MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Mientras sale un envío, una línea fina arriba: los botones ya se
-          // apagan, y esto dice que está pasando algo.
-          SizedBox(
-            height: AppSpacing.xs,
-            child: _enviando ? const LinearProgressIndicator() : null,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Row(
-            children: [
-              SizedBox(
-                width: 56,
-                height: 56,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    AnilloIdentidad(
-                      tamano: 56,
-                      pct: _fila.fraccionDia,
-                      color: t.success,
-                    ),
-                    Icon(LucideIcons.timer, size: 22, color: t.successText),
-                  ],
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _fila.habito.nombre,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: texto.titleMedium?.copyWith(color: t.text),
-                    ),
-                    Text(
-                      l.minDeObjetivo(hechos, objetivo),
-                      style: texto.titleLarge?.copyWith(color: t.text),
-                    ),
-                    Text(
-                      faltan > 0 ? l.minPanelFaltan(faltan) : l.minPanelHecho,
-                      style: texto.bodySmall?.copyWith(color: t.textMuted),
-                    ),
-                    if (!widget.esHoy)
-                      Text(
-                        l.minPanelOtroDia(
-                          DateFormat.MMMMEEEEd(
-                            locale,
-                          ).format(DateTime.parse(widget.fechaDia)),
-                        ),
-                        style: texto.bodySmall?.copyWith(color: t.streakText),
+    // Mientras sale un envío, el panel no se cierra: atrás y tocar fuera
+    // preguntan a PopScope. Si se cerrara, no se sabría qué ha pasado.
+    return PopScope(
+      canPop: !_enviando,
+      child: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.sm,
+          AppSpacing.md,
+          AppSpacing.md + MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Mientras sale un envío, una línea fina arriba: los botones ya se
+            // apagan, y esto dice que está pasando algo.
+            SizedBox(
+              height: AppSpacing.xs,
+              child: _enviando ? const LinearProgressIndicator() : null,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              children: [
+                SizedBox(
+                  width: 56,
+                  height: 56,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      AnilloIdentidad(
+                        tamano: 56,
+                        pct: _fila.fraccionDia,
+                        color: t.success,
                       ),
-                  ],
+                      Icon(LucideIcons.timer, size: 22, color: t.successText),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Row(
-            children: [
-              for (final (i, n) in sumasRapidasMinutos.indexed) ...[
-                if (i > 0) const SizedBox(width: AppSpacing.sm),
+                const SizedBox(width: AppSpacing.md),
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: _enviando ? null : () => _enviar(n),
-                    child: Text(l.minSumaRapida(n)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _fila.habito.nombre,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: texto.titleMedium?.copyWith(color: t.text),
+                      ),
+                      Text(
+                        l.minDeObjetivo(hechos, objetivo),
+                        style: texto.titleLarge?.copyWith(color: t.text),
+                      ),
+                      Text(
+                        faltan > 0 ? l.minPanelFaltan(faltan) : l.minPanelHecho,
+                        style: texto.bodySmall?.copyWith(color: t.textMuted),
+                      ),
+                      if (!widget.esHoy)
+                        Text(
+                          l.minPanelOtroDia(
+                            DateFormat.MMMMEEEEd(
+                              locale,
+                            ).format(DateTime.parse(widget.fechaDia)),
+                          ),
+                          style: texto.bodySmall?.copyWith(color: t.streakText),
+                        ),
+                    ],
                   ),
                 ),
               ],
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          SegmentedButton<ModoMinutos>(
-            segments: [
-              ButtonSegment(
-                value: ModoMinutos.sumar,
-                label: Text(l.minModoSumar),
-              ),
-              ButtonSegment(
-                value: ModoMinutos.establecer,
-                label: Text(l.minModoEstablecer),
-              ),
-            ],
-            selected: {_modo},
-            onSelectionChanged: _enviando
-                ? null
-                : (nuevo) => setState(() {
-                    _modo = nuevo.first;
-                    _errorCampo = null;
-                  }),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _campo,
-                  enabled: !_enviando,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(3),
-                  ],
-                  onChanged: (_) {
-                    if (_errorCampo != null) {
-                      setState(() => _errorCampo = null);
-                    }
-                  },
-                  onSubmitted: (_) => _enviarCampo(),
-                  decoration: InputDecoration(
-                    labelText: _modo == ModoMinutos.sumar
-                        ? l.minCampoSumar
-                        : l.minCampoEstablecer,
-                    errorText: _errorCampo,
-                    errorMaxLines: 3,
-                    border: const OutlineInputBorder(),
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Padding(
-                padding: const EdgeInsets.only(top: AppSpacing.xs),
-                child: ElevatedButton(
-                  onPressed: _enviando ? null : _enviarCampo,
-                  child: Text(
-                    _modo == ModoMinutos.sumar
-                        ? l.minBotonSumar
-                        : l.minBotonEstablecer,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          if (_error != null) ...[
-            const SizedBox(height: AppSpacing.sm),
-            Text(_error!, style: TextStyle(color: tonoError(context).texto)),
-          ],
-          if (hechos > 0) ...[
-            const SizedBox(height: AppSpacing.sm),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed: _enviando ? null : _deshacer,
-                icon: const Icon(LucideIcons.undo2, size: 18),
-                label: Text(
-                  _ultima == null
-                      ? l.minDeshacerUltima
-                      : l.minDeshacerUltimaN(_ultima!.cantidad),
-                ),
-              ),
             ),
-          ],
-          // Aquí irá «Empezar sesión» de Norday Enfoque. Mientras
-          // `enfoqueDisponible` sea false no se pinta nada: no se implementa
-          // Enfoque hasta que exista.
-          if (PanelMinutos.enfoqueDisponible)
             const SizedBox(height: AppSpacing.md),
-        ],
+            Row(
+              children: [
+                for (final (i, n) in sumasRapidasMinutos.indexed) ...[
+                  if (i > 0) const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _enviando ? null : () => _enviar(n),
+                      child: Text(l.minSumaRapida(n)),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            SegmentedButton<ModoMinutos>(
+              segments: [
+                ButtonSegment(
+                  value: ModoMinutos.sumar,
+                  label: Text(l.minModoSumar),
+                ),
+                ButtonSegment(
+                  value: ModoMinutos.establecer,
+                  label: Text(l.minModoEstablecer),
+                ),
+              ],
+              selected: {_modo},
+              onSelectionChanged: _enviando
+                  ? null
+                  : (nuevo) => setState(() {
+                      _modo = nuevo.first;
+                      _errorCampo = null;
+                    }),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _campo,
+                    enabled: !_enviando,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(3),
+                    ],
+                    onChanged: (_) {
+                      if (_errorCampo != null) {
+                        setState(() => _errorCampo = null);
+                      }
+                    },
+                    onSubmitted: (_) => _enviarCampo(),
+                    decoration: InputDecoration(
+                      labelText: _modo == ModoMinutos.sumar
+                          ? l.minCampoSumar
+                          : l.minCampoEstablecer,
+                      errorText: _errorCampo,
+                      errorMaxLines: 3,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.xs),
+                  child: ElevatedButton(
+                    onPressed: _enviando ? null : _enviarCampo,
+                    child: Text(
+                      _modo == ModoMinutos.sumar
+                          ? l.minBotonSumar
+                          : l.minBotonEstablecer,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (_error != null) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Text(_error!, style: TextStyle(color: tonoError(context).texto)),
+            ],
+            if (hechos > 0) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: _enviando ? null : _deshacer,
+                  icon: const Icon(LucideIcons.undo2, size: 18),
+                  label: Text(
+                    _ultima == null
+                        ? l.minDeshacerUltima
+                        : l.minDeshacerUltimaN(_ultima!.cantidad),
+                  ),
+                ),
+              ),
+            ],
+            // Aquí irá «Empezar sesión» de Norday Enfoque. Mientras
+            // `enfoqueDisponible` sea false no se pinta nada: no se implementa
+            // Enfoque hasta que exista.
+            if (PanelMinutos.enfoqueDisponible)
+              const SizedBox(height: AppSpacing.md),
+          ],
+        ),
       ),
     );
   }
