@@ -30,46 +30,45 @@ double fraccionMinutos(int hechos, int? objetivo) {
 bool diaHechoEnMinutos(int hechos, int? objetivo) =>
     fraccionMinutos(hechos, objetivo) >= 1.0;
 
-/// Cómo se lee la cifra libre del panel: se suma a lo que hay, o es el total
-/// que se quiere tener ese día.
-enum ModoMinutos { sumar, establecer }
+/// Lo que envía «Completar»: exactamente lo que falta para el [objetivo], o
+/// null si no falta nada (meta cumplida, o sin objetivo).
+int? minutosParaCompletar(int hechos, int? objetivo) {
+  if (objetivo == null || objetivo <= 0) return null;
+  final faltan = objetivo - hechos;
+  return faltan > 0 ? faltan : null;
+}
+
+/// Los botones rápidos que se enseñan, en su orden fijo. Mientras falte algo,
+/// solo los menores estrictos que lo que falta: para llegar justo está
+/// «Completar». Con la meta cumplida (o sin objetivo), todos, para sumar de
+/// más.
+List<int> sumasRapidasVisibles(int hechos, int? objetivo) {
+  final faltan = minutosParaCompletar(hechos, objetivo);
+  if (faltan == null) return sumasRapidasMinutos;
+  return [
+    for (final n in sumasRapidasMinutos)
+      if (n < faltan) n,
+  ];
+}
 
 /// Por qué no vale la cifra libre.
 enum ErrorMinutos {
   /// No hay número.
   vacio,
 
-  /// Lo que se enviaría no cae entre [minutosMinimo] y [minutosMaximo].
+  /// La cifra no cae entre [minutosMinimo] y [minutosMaximo].
   fueraDeRango,
-
-  /// En «Establecer», un total que no sube del que ya hay: el total solo puede
-  /// subir, porque bajar sería borrar registros, y para eso está «Deshacer».
-  noSube,
 }
 
 /// Lo que hay que enviar por la cifra libre [texto], o por qué no se puede.
-///
-/// En [ModoMinutos.sumar] se envía la cifra tal cual. En
-/// [ModoMinutos.establecer] la cifra es el total del día y se envía la
-/// diferencia con [totalActual]; si no sube, [ErrorMinutos.noSube].
-({int? minutos, ErrorMinutos? error}) minutosAEnviar(
-  ModoMinutos modo,
-  String texto,
-  int totalActual,
-) {
+/// La cifra siempre se suma a lo que hay.
+({int? minutos, ErrorMinutos? error}) minutosAEnviar(String texto) {
   final cifra = int.tryParse(texto.trim());
   if (cifra == null) return (minutos: null, error: ErrorMinutos.vacio);
-  final enviar = switch (modo) {
-    ModoMinutos.sumar => cifra,
-    ModoMinutos.establecer => cifra - totalActual,
-  };
-  if (modo == ModoMinutos.establecer && enviar <= 0) {
-    return (minutos: null, error: ErrorMinutos.noSube);
-  }
-  if (enviar < minutosMinimo || enviar > minutosMaximo) {
+  if (cifra < minutosMinimo || cifra > minutosMaximo) {
     return (minutos: null, error: ErrorMinutos.fueraDeRango);
   }
-  return (minutos: enviar, error: null);
+  return (minutos: cifra, error: null);
 }
 
 /// Si una cifra vale como objetivo de minutos por día.

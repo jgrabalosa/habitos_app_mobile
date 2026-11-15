@@ -122,19 +122,41 @@ void main() {
 
   /// El aro de la fila de minutos: el botón que anuncia sumar minutos.
   Finder aroDeLeer() =>
-      find.bySemanticsLabel(l.a11yMinutosHabito('Leer', 20, 30));
+      find.bySemanticsLabel('Sumar minutos a Leer. Llevas 20 de 30 min');
 
   testWidgets('la fila de minutos lleva su chip y su aro; la de veces, check', (
     tester,
   ) async {
     await montar(tester);
 
-    expect(find.text(l.dashChipMinutos(l.frecDiario, 20, 30)), findsOneWidget);
+    expect(find.text('${l.frecDiario} · 20 / 30 min'), findsOneWidget);
     expect(find.text(l.dashChipFrecuencia(l.frecDiario, 0, 1)), findsOneWidget);
     // Un solo check (el de veces) y el aro de la identidad en la de minutos.
     expect(find.byType(CheckCircular), findsOneWidget);
     expect(find.byType(AnilloIdentidad), findsOneWidget);
     expect(aroDeLeer(), findsOneWidget);
+  });
+
+  testWidgets('pasada la hora, la fila y el aro hablan en horas', (
+    tester,
+  ) async {
+    DashboardScreen.cargarHoy = (int usuarioId, {String? fecha}) async {
+      final hoy = hoyConMinutos();
+      final fila =
+          (hoy['delDia'] as Map<String, dynamic>)['habitos'][0]
+              as Map<String, dynamic>;
+      (fila['habito'] as Map<String, dynamic>)['minutosObjetivo'] = 90;
+      fila['minutosObjetivo'] = 90;
+      return hoy;
+    };
+    await montar(tester);
+    expect(find.text('${l.frecDiario} · 20 min / 1 h 30 min'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel(
+        'Sumar minutos a Leer. Llevas 20 min de 1 h 30 min',
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('tocar el aro abre el panel, no completa de golpe', (

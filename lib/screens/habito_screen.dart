@@ -197,6 +197,16 @@ class _HabitoScreenState extends State<HabitoScreen> {
           ? plantilla.dias!.split(',').map(int.parse).toSet()
           : {};
       _codigoCategoriaPendiente = plantilla.categoriaCodigo;
+      _unidad = plantilla.unidad;
+      final minutos = plantilla.minutos;
+      if (_unidad == UnidadHabito.minutos && minutos != null) {
+        _minutosLibre = !metasRapidasMinutos.contains(minutos);
+        if (_minutosLibre) {
+          _minutosController.text = '$minutos';
+        } else {
+          _minutosObjetivo = minutos;
+        }
+      }
     }
     if (widget.categoriasIniciales != null) {
       _categorias = widget.categoriasIniciales!;
@@ -721,7 +731,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
           children: [
             for (final n in metasRapidasMinutos)
               ChoiceChip(
-                label: Text(l.minCifra(n)),
+                label: Text(duracionLegible(l, n)),
                 selected: !_minutosLibre && _minutosObjetivo == n,
                 onSelected: (_) => setState(() {
                   _minutosLibre = false;
@@ -758,9 +768,11 @@ class _HabitoScreenState extends State<HabitoScreen> {
         if (objetivoMinutosValido(minutos)) ...[
           const SizedBox(height: AppSpacing.sm),
           Text(
-            _frecuencia == 'DIARIO'
-                ? l.habMinutosEtiquetaDiario(minutos!)
-                : l.habMinutosEtiquetaSemanal(minutos!),
+            etiquetaObjetivoMinutos(
+              l,
+              minutos!,
+              diario: _frecuencia == 'DIARIO',
+            ),
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(color: t.successText),

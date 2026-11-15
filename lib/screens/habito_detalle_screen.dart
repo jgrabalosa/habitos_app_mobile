@@ -270,14 +270,15 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
       // cada día que lo hagas»: nunca «N×X a la semana».
       final locale = Localizations.localeOf(context).toLanguageTag();
       final dias = _habitoDelDetalle().diasPlanificados;
-      texto = esDiario
-          ? l.detMinutosDiario(minutos)
-          : l.detMinutosSemanal(
-              dias.isNotEmpty
+      texto = etiquetaMinutosDetalle(
+        l,
+        minutos,
+        semanal: esDiario
+            ? null
+            : (dias.isNotEmpty
                   ? diasFijosLegibles(dias, locale)
-                  : l.objDiasSemana(meta),
-              minutos,
-            );
+                  : l.objDiasSemana(meta)),
+      );
     } else if (esDiario) {
       texto = meta > 1 ? l.detDiarioMeta(meta) : l.frecDiario;
     } else if (diasSemana != null && diasSemana.trim().isNotEmpty) {
@@ -703,12 +704,13 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     final l = AppLocalizations.of(context)!;
     final diaMinutos = _diaMinutos(dia);
     if (diaMinutos != null) {
-      // «20 / 30 min», con el objetivo que valía ese día.
+      // «20 / 30 min» o «45 min / 1 h 30 min», con el objetivo que valía ese
+      // día.
       if (diaMinutos.nivel == NivelDiaMinutos.vacio) {
         return '$base · ${l.detSinCompletar}';
       }
       return '$base · '
-          '${l.minDeObjetivo(diaMinutos.minutos, diaMinutos.objetivo ?? 0)}';
+          '${progresoMinutos(l, diaMinutos.minutos, diaMinutos.objetivo ?? 0)}';
     }
     final int veces = _vecesDe(dia);
     if (veces == 0) return '$base · ${l.detSinCompletar}';
@@ -784,7 +786,8 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                             // backend lo manda.
                             if (_esMinutos && r['cantidad'] is num)
                               Text(
-                                l.detRegistroMinutos(
+                                textoRegistroMinutos(
+                                  l,
                                   (r['cantidad'] as num).toInt(),
                                 ),
                                 style: Theme.of(context).textTheme.bodySmall

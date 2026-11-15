@@ -10,8 +10,8 @@ en producción en Google Play (`com.norday.habitos`).
   una tira y el progreso del día dibujado en el fondo de la identidad.
 - **Hábitos** diarios o semanales, con meta de veces, días concretos,
   categoría, descripción y recordatorio a una hora. Siete plantillas para
-  empezar (beber agua, leer 20 minutos, ejercicio, meditar, dormir 8 horas,
-  caminar, escribir diario).
+  empezar (beber agua, leer 30 min, ejercicio, meditar 15 min, dormir 8
+  horas, caminar, escribir diario).
 - **Detalle** de cada hábito con su historial, ritmo y notas.
 - **Ritmo, puntos y logros**: cada hábito tiene un ritmo que sube al cumplirlo
   y baja despacio al fallar, y los hábitos se pueden pausar. Alcanzar la meta

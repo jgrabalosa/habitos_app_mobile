@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -5,6 +7,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 
 import '../l10n/app_localizations.dart';
+import '../l10n/textos_minutos.dart';
 import '../models/hoy.dart';
 import '../models/minutos.dart';
 import '../models/registro.dart';
@@ -177,7 +180,6 @@ class _PanelMinutosVista extends StatefulWidget {
 
 class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
   final _campo = TextEditingController();
-  ModoMinutos _modo = ModoMinutos.sumar;
   bool _enviando = false;
 
   /// Abriendo Enfoque: el botón no se puede pulsar dos veces.
@@ -210,8 +212,8 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
     super.dispose();
   }
 
-  /// Solo para la etiqueta del botón: si no llega, el botón dice lo mismo
-  /// sin la cifra.
+  /// Solo para la etiqueta del botón (cantidad y hora): si no llega, el botón
+  /// dice lo mismo sin la cifra.
   Future<void> _cargarUltima() async {
     try {
       final registros = await PanelMinutos.registros(_fila.habito.habitoId);
@@ -268,14 +270,13 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
 
   void _enviarCampo() {
     final l = AppLocalizations.of(context)!;
-    final r = minutosAEnviar(_modo, _campo.text, _fila.minutosHechos);
+    final r = minutosAEnviar(_campo.text);
     final minutos = r.minutos;
     if (minutos == null) {
       setState(() {
         _errorCampo = switch (r.error!) {
           ErrorMinutos.vacio => l.minErrorVacio,
           ErrorMinutos.fueraDeRango => l.minErrorRango,
-          ErrorMinutos.noSube => l.minErrorNoSube(_fila.minutosHechos),
         };
       });
       return;
@@ -352,18 +353,27 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
     final locale = Localizations.localeOf(context).toLanguageTag();
     final hechos = _fila.minutosHechos;
     final objetivo = _fila.minutosObjetivo ?? 0;
-    final faltan = objetivo - hechos;
+    // «Completar» suma justo lo que falta; null con la meta cumplida.
+    final completar = minutosParaCompletar(hechos, _fila.minutosObjetivo);
+    final rapidas = sumasRapidasVisibles(hechos, _fila.minutosObjetivo);
 
     // Mientras sale un envío, el panel no se cierra: atrás y tocar fuera
     // preguntan a PopScope. Si se cerrara, no se sabría qué ha pasado.
     return PopScope(
       canPop: !_enviando,
       child: SingleChildScrollView(
+        // `useSafeArea` no aparta de abajo: se suma la barra del sistema, o el
+        // teclado si está abierto (que ya la tapa), lo que sea mayor. Igual
+        // que en el panel del ritmo.
         padding: EdgeInsets.fromLTRB(
           AppSpacing.md,
           AppSpacing.sm,
           AppSpacing.md,
-          AppSpacing.md + MediaQuery.of(context).viewInsets.bottom,
+          AppSpacing.md +
+              math.max(
+                MediaQuery.viewInsetsOf(context).bottom,
+                MediaQuery.viewPaddingOf(context).bottom,
+              ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -405,11 +415,15 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
                         style: texto.titleMedium?.copyWith(color: t.text),
                       ),
                       Text(
-                        l.minDeObjetivo(hechos, objetivo),
+                        progresoMinutos(l, hechos, objetivo),
                         style: texto.titleLarge?.copyWith(color: t.text),
                       ),
                       Text(
-                        faltan > 0 ? l.minPanelFaltan(faltan) : l.minPanelHecho,
+                        textoEstadoPanel(
+                          l,
+                          hechos: hechos,
+                          objetivo: _fila.minutosObjetivo,
+                        ),
                         style: texto.bodySmall?.copyWith(color: t.textMuted),
                       ),
                       if (!widget.esHoy)
@@ -426,41 +440,45 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
                 ),
               ],
             ),
-            const SizedBox(height: AppSpacing.md),
-            Row(
-              children: [
-                for (final (i, n) in sumasRapidasMinutos.indexed) ...[
-                  if (i > 0) const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: _enviando ? null : () => _enviar(n),
-                      child: Text(l.minSumaRapida(n)),
+            // Lo principal, arriba y a todo lo ancho: llegar justo a la meta.
+            // Es una suma normal, con su clave y MANUAL, como cualquier otra.
+            if (completar != null) ...[
+              const SizedBox(height: AppSpacing.md),
+              ElevatedButton.icon(
+                onPressed: _enviando ? null : () => _enviar(completar),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                icon: const Icon(LucideIcons.check, size: 18),
+                label: Semantics(
+                  label: l.minCompletarA11y(duracionLegible(l, completar)),
+                  excludeSemantics: true,
+                  child: Text(textoCompletar(l, completar)),
+                ),
+              ),
+            ],
+            // Los botones rápidos, siempre en su orden y en su casilla: los
+            // que no salen dejan la suya vacía, para que los demás no se
+            // muevan ni cambien de tamaño.
+            if (rapidas.isNotEmpty) ...[
+              const SizedBox(height: AppSpacing.md),
+              Row(
+                children: [
+                  for (final (i, n) in sumasRapidasMinutos.indexed) ...[
+                    if (i > 0) const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: rapidas.contains(n)
+                          ? OutlinedButton(
+                              onPressed: _enviando ? null : () => _enviar(n),
+                              child: Text(l.minSumaRapida(n)),
+                            )
+                          : const SizedBox.shrink(),
                     ),
-                  ),
+                  ],
                 ],
-              ],
-            ),
+              ),
+            ],
             const SizedBox(height: AppSpacing.md),
-            SegmentedButton<ModoMinutos>(
-              segments: [
-                ButtonSegment(
-                  value: ModoMinutos.sumar,
-                  label: Text(l.minModoSumar),
-                ),
-                ButtonSegment(
-                  value: ModoMinutos.establecer,
-                  label: Text(l.minModoEstablecer),
-                ),
-              ],
-              selected: {_modo},
-              onSelectionChanged: _enviando
-                  ? null
-                  : (nuevo) => setState(() {
-                      _modo = nuevo.first;
-                      _errorCampo = null;
-                    }),
-            ),
-            const SizedBox(height: AppSpacing.sm),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -480,9 +498,7 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
                     },
                     onSubmitted: (_) => _enviarCampo(),
                     decoration: InputDecoration(
-                      labelText: _modo == ModoMinutos.sumar
-                          ? l.minCampoSumar
-                          : l.minCampoEstablecer,
+                      labelText: l.minCampoSumar,
                       errorText: _errorCampo,
                       errorMaxLines: 3,
                       border: const OutlineInputBorder(),
@@ -494,11 +510,7 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
                   padding: const EdgeInsets.only(top: AppSpacing.xs),
                   child: ElevatedButton(
                     onPressed: _enviando ? null : _enviarCampo,
-                    child: Text(
-                      _modo == ModoMinutos.sumar
-                          ? l.minBotonSumar
-                          : l.minBotonEstablecer,
-                    ),
+                    child: Text(l.minBotonSumar),
                   ),
                 ),
               ],
@@ -514,11 +526,7 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
                 child: TextButton.icon(
                   onPressed: _enviando ? null : _deshacer,
                   icon: const Icon(LucideIcons.undo2, size: 18),
-                  label: Text(
-                    _ultima == null
-                        ? l.minDeshacerUltima
-                        : l.minDeshacerUltimaN(_ultima!.cantidad),
-                  ),
+                  label: Text(etiquetaDeshacer(l, _ultima, locale: locale)),
                 ),
               ),
             ],

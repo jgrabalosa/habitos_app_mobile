@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:habitos_app_mobile/l10n/app_localizations.dart';
+import 'package:habitos_app_mobile/models/habito.dart';
 import 'package:habitos_app_mobile/screens/habito_screen.dart';
 import 'package:habitos_app_mobile/screens/ideas_habito_screen.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
@@ -14,6 +15,7 @@ void main() {
 
   final identidadInicial = identidadEquipadaNotifier.value;
   final cargarCategoriasOriginal = HabitoScreen.cargarCategorias;
+  final crearOriginal = HabitoScreen.crearHabito;
 
   final categorias = [
     {'categoriaId': 2, 'codigo': 'CAT_ESTUDIO', 'nombre': 'Estudio'},
@@ -28,6 +30,7 @@ void main() {
   tearDown(() {
     aplicarIdentidadEquipada(identidadInicial.codigo);
     HabitoScreen.cargarCategorias = cargarCategoriasOriginal;
+    HabitoScreen.crearHabito = crearOriginal;
   });
 
   Widget montar(Widget child, {String locale = 'es', double textScale = 1}) =>
@@ -78,7 +81,7 @@ void main() {
     await tester.pumpAndSettle();
     for (final id in [
       'beberAgua',
-      'leer20Min',
+      'leer',
       'ejercicio',
       'meditar',
       'dormir8h',
@@ -122,6 +125,94 @@ void main() {
       find.byType(DropdownButtonFormField<String>),
     );
     expect(frecuencia.initialValue, 'DIARIO');
+  });
+
+  testWidgets('Leer abre el formulario en minutos, 30 min cada día', (
+    tester,
+  ) async {
+    final l = await cargarL('es');
+    Map<String, Object?>? creado;
+    HabitoScreen.crearHabito =
+        (
+          String nombre,
+          String descripcion,
+          String frecuencia,
+          int meta,
+          int usuarioId,
+          int? categoriaId, {
+          String? diasSemana,
+          bool recordatorioActivo = true,
+          String? recordatorioHora,
+          String? unidad,
+          int? minutosObjetivo,
+        }) async {
+          creado = {
+            'nombre': nombre,
+            'frecuencia': frecuencia,
+            'meta': meta,
+            'unidad': unidad,
+            'minutosObjetivo': minutosObjetivo,
+          };
+          return <String>[];
+        };
+    await tester.pumpWidget(montar(ideas()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('idea_leer')));
+    await tester.pumpAndSettle();
+
+    final nombre = tester.widget<TextField>(find.byType(TextField).first);
+    expect(nombre.controller!.text, 'Leer');
+    final unidad = tester.widget<SegmentedButton<UnidadHabito>>(
+      find.byType(SegmentedButton<UnidadHabito>),
+    );
+    expect(unidad.selected, {UnidadHabito.minutos});
+    await tester.ensureVisible(find.text('30 min cada día'));
+    expect(find.text('30 min cada día'), findsOneWidget);
+
+    // Sin recordatorio, para poder guardar sin elegir hora.
+    await tester.ensureVisible(find.byType(SwitchListTile));
+    await tester.tap(find.byType(SwitchListTile));
+    await tester.pumpAndSettle();
+    final crear = find.widgetWithText(ElevatedButton, l.habBotonCrear);
+    await tester.ensureVisible(crear);
+    await tester.tap(crear);
+    await tester.pumpAndSettle();
+    expect(creado, {
+      'nombre': 'Leer',
+      'frecuencia': 'DIARIO',
+      'meta': 1,
+      'unidad': 'MINUTOS',
+      'minutosObjetivo': 30,
+    });
+  });
+
+  testWidgets('Meditar abre el formulario en minutos, 15 min cada día', (
+    tester,
+  ) async {
+    await tester.pumpWidget(montar(ideas()));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('idea_meditar')),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.byKey(const ValueKey('idea_meditar')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('15 min cada día'));
+    expect(find.text('15 min cada día'), findsOneWidget);
+  });
+
+  testWidgets('Beber agua sigue abriendo el formulario en veces', (
+    tester,
+  ) async {
+    await tester.pumpWidget(montar(ideas()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('idea_beberAgua')));
+    await tester.pumpAndSettle();
+    final unidad = tester.widget<SegmentedButton<UnidadHabito>>(
+      find.byType(SegmentedButton<UnidadHabito>),
+    );
+    expect(unidad.selected, {UnidadHabito.veces});
   });
 
   testWidgets('la categoría de la plantilla queda elegida', (tester) async {
@@ -246,7 +337,7 @@ void main() {
       final l = await cargarL('es');
       final todas = [
         l.plantillaBeberAgua,
-        l.plantillaLeer20Min,
+        l.plantillaLeer,
         l.plantillaEjercicio,
         l.plantillaMeditar,
         l.plantillaDormir8h,
