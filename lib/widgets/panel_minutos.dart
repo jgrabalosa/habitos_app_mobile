@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -320,11 +322,18 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
     return PopScope(
       canPop: !_enviando,
       child: SingleChildScrollView(
+        // `useSafeArea` no aparta de abajo: se suma la barra del sistema, o el
+        // teclado si está abierto (que ya la tapa), lo que sea mayor. Igual
+        // que en el panel del ritmo.
         padding: EdgeInsets.fromLTRB(
           AppSpacing.md,
           AppSpacing.sm,
           AppSpacing.md,
-          AppSpacing.md + MediaQuery.of(context).viewInsets.bottom,
+          AppSpacing.md +
+              math.max(
+                MediaQuery.viewInsetsOf(context).bottom,
+                MediaQuery.viewPaddingOf(context).bottom,
+              ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,

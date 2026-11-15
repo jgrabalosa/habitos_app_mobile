@@ -100,10 +100,18 @@ void main() {
     FilaHoy? f,
     String fechaDia = '2026-11-15',
     bool esHoy = true,
+    double barraSistema = 0,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.deTema(temaEquipadoNotifier.value),
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            viewPadding: EdgeInsets.only(bottom: barraSistema),
+            padding: EdgeInsets.only(bottom: barraSistema),
+          ),
+          child: child!,
+        ),
         locale: const Locale('es'),
         localizationsDelegates: [
           ...AppLocalizations.localizationsDelegates,
@@ -134,6 +142,20 @@ void main() {
     await tester.tap(find.text('abrir'));
     await tester.pumpAndSettle();
   }
+
+  testWidgets('lo último del panel queda por encima de la barra del sistema', (
+    tester,
+  ) async {
+    const barra = 48.0;
+    await abrir(tester, [], barraSistema: barra);
+    final pantalla =
+        tester.view.physicalSize.height / tester.view.devicePixelRatio;
+    final contenido = find
+        .descendant(of: find.byType(BottomSheet), matching: find.byType(Column))
+        .first;
+    final hastaAbajo = pantalla - tester.getBottomLeft(contenido).dy;
+    expect(hastaAbajo, greaterThanOrEqualTo(barra));
+  });
 
   testWidgets('enseña lo que lleva el día: «20 / 30 min» y lo que falta', (
     tester,
