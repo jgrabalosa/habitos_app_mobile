@@ -436,7 +436,7 @@
   "logroDescRitmoGeneralFuerte": "Lleva tu ritmo general a «Gran ritmo»",
   "logroDescRitmoTodos": "Ten tres hábitos o más, todos en «Buen ritmo» o por encima",
   "logroDescRitmoVuelta": "Sube un hábito de «Retomando» a «Buen ritmo» en una semana",
-  "dashExtraSemana": "+{n} por completar la semana",
+  "dashExtraSemana": "{n, plural, =1{+1 punto por completar la semana} other{+{n} puntos por completar la semana}}",
   "@dashExtraSemana": {
     "placeholders": {
       "n": {

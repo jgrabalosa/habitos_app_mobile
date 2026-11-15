@@ -297,7 +297,7 @@
   "logroDescRitmoGeneralFuerte": "Bring your overall pace to “Great pace”",
   "logroDescRitmoTodos": "Have three or more habits, all at “Good pace” or above",
   "logroDescRitmoVuelta": "Lift a habit from “Getting back” to “Good pace” in a week",
-  "dashExtraSemana": "+{n} for completing the week",
+  "dashExtraSemana": "{n, plural, =1{+1 point for completing the week} other{+{n} points for completing the week}}",
   "pausaProducto": "Pause",
   "pausaProductoDesc": "Pause a habit without losing its rhythm: it leaves Today and stays quiet until you resume it. Use it with “Pause”, in Habits or from a habit's details.",
   "pausaProductoUso": "Use it with “Pause”, in Habits or from a habit's details.",
