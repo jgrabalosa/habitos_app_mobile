@@ -30,6 +30,14 @@ class MainActivity : FlutterActivity() {
                 }
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(enlace))
                 call.argument<String>("paquete")?.let { intent.setPackage(it) }
+                // En su propia tarea, no encima de Habits: «A new activity, by
+                // default, is launched into the task of the activity that
+                // called startActivity()», y con FLAG_ACTIVITY_NEW_TASK «The
+                // system starts the activity in a new task. If a task is
+                // already running for the activity being started, that task is
+                // brought to the foreground with its last state restored»
+                // (https://developer.android.com/guide/components/activities/tasks-and-back-stack).
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 result.success(abrir(intent))
             }
     }
