@@ -1,8 +1,9 @@
 # habitos_app_mobile — Norday Habits
 
 App Android de **Norday Habits**, la app de hábitos del ecosistema **Norday**.
-Versión en desarrollo: 1.1.0 (5). La publicada hasta ahora es la 1.0.0 (3),
-en producción en Google Play (`com.norday.habitos`).
+Publicada: 1.1.0 (5), en Producción en Google Play (`com.norday.habitos`)
+desde el 22-oct-2026. En desarrollo: versión a decidir (versionCode ≥ 6),
+que sale junto con Norday Focus.
 
 ## Qué hace
 
@@ -12,6 +13,13 @@ en producción en Google Play (`com.norday.habitos`).
   categoría, descripción y recordatorio a una hora. Siete plantillas para
   empezar (beber agua, leer 30 min, ejercicio, meditar 15 min, dormir 8
   horas, caminar, escribir diario).
+- **Hábitos de minutos**: un objetivo de minutos por día (de 1 a 600), al
+  que se llega con varias sesiones que se suman. En Hoy, un panel con +5,
+  +15 y +30, una cifra libre y «Completar», que suma lo que falta. Desde 60
+  minutos, todo se enseña en horas («1 h 30 min»).
+- **«Empezar sesión»**: desde el panel de minutos, abre Norday Focus con ese
+  hábito (o su ficha de Google Play si no está instalada). Solo cuando el
+  día que se mira es hoy.
 - **Detalle** de cada hábito con su historial, ritmo y notas.
 - **Ritmo, puntos y logros**: cada hábito tiene un ritmo que sube al cumplirlo
   y baja despacio al fallar, y los hábitos se pueden pausar. Alcanzar la meta
@@ -89,7 +97,8 @@ Se compila siempre desde un `main` limpio e igual al remoto. En PowerShell,
 desde la raíz del repo:
 
 ```powershell
-git status --short                      # vacío, y sin pubspec_overrides.yaml
+git status --short                      # vacío
+Test-Path pubspec_overrides.yaml        # False: está en .gitignore y git status no lo enseña
 git fetch origin
 git log -1 --format="%h %s"             # el mismo commit que origin/main
 Select-String -Path pubspec.yaml -Pattern "^version:","ref: v0"
