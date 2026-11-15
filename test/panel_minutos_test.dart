@@ -37,6 +37,17 @@ class LanzadorFalso implements LanzadorEnlaces {
   }
 }
 
+/// Un lanzador que no contesta hasta que se completa [respuesta]: «Empezar
+/// sesión» se queda en vuelo.
+class LanzadorEnVuelo implements LanzadorEnlaces {
+  final Future<bool> respuesta;
+
+  LanzadorEnVuelo(this.respuesta);
+
+  @override
+  Future<bool> abrir(Uri enlace, {String? paquete}) => respuesta;
+}
+
 FilaHoy fila({int hechos = 20, int objetivo = 30}) => FilaHoy.fromJson({
   'habito': {
     'habitoId': 5,
@@ -400,6 +411,54 @@ void main() {
       expect(resultado, isEmpty);
       expect(find.text(l.minErrorAbrirEnfoque), findsOneWidget);
       expect(find.text(l.minEmpezarSesion), findsOneWidget);
+    });
+
+    testWidgets('con «Empezar sesión» en vuelo, Completar no envía nada', (
+      tester,
+    ) async {
+      final abierto = Completer<bool>();
+      PanelMinutos.lanzadorEnlaces = LanzadorEnVuelo(abierto.future);
+      PanelMinutos.flavor = () => 'produccion';
+      final resultado = <ResultadoMinutos?>[];
+      await abrir(tester, resultado);
+      final empezar = find.text(l.minEmpezarSesion);
+      await tester.ensureVisible(empezar);
+      await tester.pumpAndSettle();
+      await tester.tap(empezar);
+      await tester.pump();
+
+      // Todo lo que envía o deshace, apagado mientras se abre Enfoque.
+      final completar = find.widgetWithText(
+        ElevatedButton,
+        'Completar · +10 min',
+      );
+      expect(tester.widget<ElevatedButton>(completar).onPressed, isNull);
+      expect(
+        tester
+            .widget<OutlinedButton>(
+              find.widgetWithText(OutlinedButton, l.minSumaRapida(5)),
+            )
+            .onPressed,
+        isNull,
+      );
+      expect(
+        tester
+            .widget<ElevatedButton>(
+              find.widgetWithText(ElevatedButton, l.minBotonSumar),
+            )
+            .onPressed,
+        isNull,
+      );
+      expect(tester.widget<TextField>(find.byType(TextField)).enabled, isFalse);
+      await tester.ensureVisible(completar);
+      await tester.tap(completar, warnIfMissed: false);
+      await tester.pump();
+      expect(envios, isEmpty);
+
+      abierto.complete(true);
+      await tester.pumpAndSettle();
+      expect(envios, isEmpty);
+      expect(resultado, [null]);
     });
 
     testWidgets('desde otro día de la semana no sale', (tester) async {

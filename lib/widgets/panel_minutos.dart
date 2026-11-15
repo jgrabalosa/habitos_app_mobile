@@ -182,7 +182,9 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
   final _campo = TextEditingController();
   bool _enviando = false;
 
-  /// Abriendo Enfoque: el botón no se puede pulsar dos veces.
+  /// Abriendo Enfoque: el botón no se puede pulsar dos veces, y nada suma
+  /// ni deshace mientras tanto (si Enfoque se abre, el panel se cierra y el
+  /// resultado de ese envío se perdería).
   bool _abriendo = false;
 
   /// El error del campo libre, ya traducido. Se borra al escribir.
@@ -225,7 +227,7 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
   }
 
   Future<void> _enviar(int minutos) async {
-    if (_enviando) return;
+    if (_enviando || _abriendo) return;
     final l = AppLocalizations.of(context)!;
     final fecha = widget.esHoy ? null : widget.fechaDia;
     final clave = claveParaEnvio(
@@ -289,7 +291,7 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
   /// desde otro sitio. El backend solo deja deshacer el último registro del
   /// hábito; si no lo es, 409.
   Future<void> _deshacer() async {
-    if (_enviando) return;
+    if (_enviando || _abriendo) return;
     final l = AppLocalizations.of(context)!;
     setState(() {
       _enviando = true;
@@ -445,7 +447,9 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
             if (completar != null) ...[
               const SizedBox(height: AppSpacing.md),
               ElevatedButton.icon(
-                onPressed: _enviando ? null : () => _enviar(completar),
+                onPressed: _enviando || _abriendo
+                    ? null
+                    : () => _enviar(completar),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
                 ),
@@ -469,7 +473,9 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
                     Expanded(
                       child: rapidas.contains(n)
                           ? OutlinedButton(
-                              onPressed: _enviando ? null : () => _enviar(n),
+                              onPressed: _enviando || _abriendo
+                                  ? null
+                                  : () => _enviar(n),
                               child: Text(l.minSumaRapida(n)),
                             )
                           : const SizedBox.shrink(),
@@ -485,7 +491,7 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
                 Expanded(
                   child: TextField(
                     controller: _campo,
-                    enabled: !_enviando,
+                    enabled: !_enviando && !_abriendo,
                     keyboardType: TextInputType.number,
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,
@@ -509,7 +515,7 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
                 Padding(
                   padding: const EdgeInsets.only(top: AppSpacing.xs),
                   child: ElevatedButton(
-                    onPressed: _enviando ? null : _enviarCampo,
+                    onPressed: _enviando || _abriendo ? null : _enviarCampo,
                     child: Text(l.minBotonSumar),
                   ),
                 ),
@@ -524,7 +530,7 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: TextButton.icon(
-                  onPressed: _enviando ? null : _deshacer,
+                  onPressed: _enviando || _abriendo ? null : _deshacer,
                   icon: const Icon(LucideIcons.undo2, size: 18),
                   label: Text(etiquetaDeshacer(l, _ultima, locale: locale)),
                 ),
