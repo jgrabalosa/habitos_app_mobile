@@ -77,6 +77,26 @@ void main() {
       );
     });
 
+    test('un nombre que empieza por la plantilla la oculta: «Reading»', () {
+      List<String> ocultas(String nombre) => [
+        for (final p in plantillasHabito)
+          if (!plantillasDisponibles([nombre]).contains(p)) p.id,
+      ];
+      expect(ocultas('Reading'), contains('leer'));
+      expect(ocultas('Walking'), contains('caminar'));
+      expect(ocultas('Ejercicios'), contains('ejercicio'));
+      expect(ocultas('Exercises'), contains('ejercicio'));
+      expect(ocultas('Journaling'), contains('escribirDiario'));
+    });
+
+    test('un nombre que es solo un trozo de la plantilla no la oculta', () {
+      // «Be» está al principio de «Beber agua», pero no es una palabra suya.
+      expect(
+        plantillasDisponibles(['Be']).map((p) => p.id),
+        contains('beberAgua'),
+      );
+    });
+
     test('un nombre que solo contiene las letras no la oculta', () {
       // «Ler» (pt) está dentro de «Taller», y «Read» dentro de «Bread».
       expect(

@@ -162,16 +162,19 @@ final List<AppLocalizations> _todosLosIdiomas = [
   lookupAppLocalizations(const Locale('pt')),
 ];
 
-/// Si [parte] aparece en [texto] como palabras enteras: «leer» está en «leer
-/// 20 min», pero «ler» no está en «taller» ni «read» en «bake bread». Con
-/// nombres cortos como «Leer», contener las letras ya no basta.
-bool _contienePalabras(String texto, String parte) {
+/// Si [parte] aparece en [texto] empezando una palabra, y con [entera] además
+/// terminándola. «leer» empieza una palabra en «leer 20 min» y «read» en
+/// «reading», pero «ler» no en «taller» ni «read» en «bake bread».
+bool _empiezaPalabra(String texto, String parte, {bool entera = false}) {
   if (parte.isEmpty) return false;
-  return RegExp(
-    '(^|[^a-z0-9])${RegExp.escape(parte)}(\$|[^a-z0-9])',
-  ).hasMatch(texto);
+  final fin = entera ? r'($|[^a-z0-9])' : '';
+  return RegExp('(^|[^a-z0-9])${RegExp.escape(parte)}$fin').hasMatch(texto);
 }
 
+/// Un hábito ya cubre una idea si se llama igual, si su nombre contiene el
+/// de la idea empezando una palabra («Reading» cubre «Read», «Ejercicios»
+/// cubre «Ejercicio»), o si su nombre es una palabra entera del de la idea
+/// («Agua» cubre «Beber agua», pero «Be» no).
 bool _yaExiste(PlantillaHabito p, List<String> nombresExistentes) {
   final variantes = _todosLosIdiomas
       .map((l) => _normalizar(nombrePlantilla(l, p.id)))
@@ -179,7 +182,10 @@ bool _yaExiste(PlantillaHabito p, List<String> nombresExistentes) {
   return nombresExistentes.any((nombre) {
     final n = _normalizar(nombre);
     return variantes.any(
-      (v) => n == v || _contienePalabras(n, v) || _contienePalabras(v, n),
+      (v) =>
+          n == v ||
+          _empiezaPalabra(n, v) ||
+          _empiezaPalabra(v, n, entera: true),
     );
   });
 }
