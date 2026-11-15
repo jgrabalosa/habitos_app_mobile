@@ -120,7 +120,7 @@ void main() {
 
     final nombre = tester.widget<TextField>(find.byType(TextField).first);
     expect(nombre.controller!.text, l.plantillaBeberAgua);
-    expect(find.text('4'), findsOneWidget);
+    expect(find.text('4 veces al día'), findsOneWidget);
     final frecuencia = tester.widget<DropdownButtonFormField<String>>(
       find.byType(DropdownButtonFormField<String>),
     );

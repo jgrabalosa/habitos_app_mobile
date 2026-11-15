@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/textos_minutos.dart';
+import '../l10n/textos_objetivo.dart';
 import '../models/minutos.dart';
 import '../models/objetivo_programado.dart';
 import '../services/api_service_habitos.dart';
@@ -1028,9 +1029,18 @@ class _HabitoScreenState extends State<HabitoScreen> {
                             if (_meta > 1) _meta--;
                           }),
                         ),
-                        Text(
-                          '$_meta',
-                          style: Theme.of(context).textTheme.headlineSmall,
+                        // La cifra con su unidad: «3 veces al día», «3 días
+                        // por semana». Si no cabe, baja de línea.
+                        Flexible(
+                          child: Text(
+                            textoMetaFormulario(
+                              l,
+                              diario: _frecuencia == 'DIARIO',
+                              meta: _meta,
+                            ),
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
                         ),
                         IconButton(
                           icon: const Icon(LucideIcons.plus),

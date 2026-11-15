@@ -7,6 +7,7 @@ import '../services/descubrimiento_detalle.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../l10n/textos_minutos.dart';
+import '../l10n/textos_objetivo.dart';
 import '../models/habito.dart';
 import '../models/hoy.dart';
 import '../models/minutos.dart';
@@ -280,7 +281,7 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                   : l.objDiasSemana(meta)),
       );
     } else if (esDiario) {
-      texto = meta > 1 ? l.detDiarioMeta(meta) : l.frecDiario;
+      texto = textoFrecuenciaVeces(l, diario: true, meta: meta);
     } else if (diasSemana != null && diasSemana.trim().isNotEmpty) {
       // Semanal con días planificados: "Semanal · M · J · S"
       final dias = diasSemana
@@ -289,9 +290,7 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
           .join(' · ');
       texto = l.detSemanalDias(dias);
     } else {
-      texto = meta > 1
-          ? l.detSemanalMeta(meta)
-          : '${l.frecSemanal} · ${l.detSemanalUnDia}';
+      texto = textoFrecuenciaVeces(l, diario: false, meta: meta);
     }
 
     return Padding(

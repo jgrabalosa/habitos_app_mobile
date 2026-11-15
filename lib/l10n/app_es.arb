@@ -169,8 +169,7 @@
   "detCompletado": "Completado",
   "detUltimosRegistros": "Últimos registros",
   "detVacioTitulo": "Tu historia empieza hoy",
-  "detSemanalUnDia": "1 día/semana",
-  "detDiarioMeta": "Diario · objetivo {n}/día",
+  "detDiarioMeta": "Diario · {n, plural, =1{1 vez al día} other{{n} veces al día}}",
   "@detDiarioMeta": {
     "placeholders": {
       "n": {
@@ -178,7 +177,7 @@
       }
     }
   },
-  "detSemanalMeta": "Semanal · objetivo {n}/semana",
+  "detSemanalMeta": "Semanal · {n, plural, =1{1 día por semana} other{{n} días por semana}}",
   "@detSemanalMeta": {
     "placeholders": {
       "n": {
