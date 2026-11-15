@@ -45,9 +45,10 @@ String progresoMinutos(AppLocalizations l, int hechos, int objetivo) {
   return l.minDeObjetivo(par.hechos, par.objetivo);
 }
 
-/// La primera cifra de [minutos] tal como la dice [duracionLegible]: las
-/// horas si hay, si no los minutos. Decide el singular de «Te falta 1 h».
-int _primeraCifra(int minutos) => minutos >= 60 ? minutos ~/ 60 : minutos;
+/// La cifra que decide el singular de lo que falta: 1 solo si es justo
+/// «1 min» o «1 h». «1 h 30 min» es un sujeto compuesto y va en plural: «Te
+/// faltan 1 h 30 min».
+int _cifraPlural(int minutos) => minutos == 60 ? 1 : minutos;
 
 /// La línea bajo el progreso del panel: «Te faltan 10 min», «Meta cumplida»
 /// o «Meta cumplida · +13 min de más».
@@ -58,7 +59,7 @@ String textoEstadoPanel(
 }) {
   final faltan = minutosParaCompletar(hechos, objetivo);
   if (faltan != null) {
-    return l.minPanelFaltan(_primeraCifra(faltan), duracionLegible(l, faltan));
+    return l.minPanelFaltan(_cifraPlural(faltan), duracionLegible(l, faltan));
   }
   final exceso = hechos - (objetivo ?? 0);
   if (objetivo == null || objetivo <= 0 || exceso <= 0) return l.minPanelHecho;

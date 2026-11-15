@@ -593,7 +593,7 @@
   },
   "minPanelFaltan": "{n, plural, =1{Te falta {duracion}} other{Te faltan {duracion}}}",
   "@minPanelFaltan": {
-    "description": "Panel de minutos: lo que falta para la meta. n es la primera cifra de la duración (las horas si hay, si no los minutos), para el singular",
+    "description": "Panel de minutos: lo que falta para la meta. n vale 1 solo si falta justo 1 min o 1 h (singular); en todo lo demás, plural: «Te faltan 1 h 30 min»",
     "placeholders": {
       "n": {
         "type": "int"

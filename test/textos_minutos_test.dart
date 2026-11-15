@@ -83,7 +83,7 @@ void main() {
       expect(progresoMinutos(pt, 45, 90), '45 min / 1 h 30 min');
     });
 
-    test('lo que falta, en singular con 1 min y con 1 h', () {
+    test('lo que falta: singular solo con 1 min o 1 h justos', () {
       expect(
         textoEstadoPanel(es, hechos: 20, objetivo: 30),
         'Te faltan 10 min',
@@ -93,16 +93,22 @@ void main() {
       expect(textoEstadoPanel(es, hechos: 0, objetivo: 60), 'Te falta 1 h');
       expect(
         textoEstadoPanel(es, hechos: 0, objetivo: 61),
-        'Te falta 1 h 1 min',
+        'Te faltan 1 h 1 min',
       );
       expect(
         textoEstadoPanel(es, hechos: 0, objetivo: 90),
-        'Te falta 1 h 30 min',
+        'Te faltan 1 h 30 min',
       );
       expect(textoEstadoPanel(es, hechos: 0, objetivo: 120), 'Te faltan 2 h');
       expect(textoEstadoPanel(en, hechos: 20, objetivo: 30), '10 min to go');
       expect(textoEstadoPanel(pt, hechos: 20, objetivo: 30), 'Faltam 10 min');
       expect(textoEstadoPanel(pt, hechos: 0, objetivo: 60), 'Falta 1 h');
+      expect(
+        textoEstadoPanel(pt, hechos: 0, objetivo: 90),
+        'Faltam 1 h 30 min',
+      );
+      expect(textoEstadoPanel(pt, hechos: 29, objetivo: 30), 'Falta 1 min');
+      expect(textoEstadoPanel(en, hechos: 0, objetivo: 90), '1 h 30 min to go');
     });
 
     test('meta cumplida, y lo que sobra si sobra', () {

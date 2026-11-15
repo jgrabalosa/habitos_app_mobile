@@ -592,7 +592,7 @@ void main() {
       ];
       await abrir(tester, [], f: fila(hechos: 20, objetivo: 90));
       expect(find.text('20 min / 1 h 30 min'), findsOneWidget);
-      expect(find.text('Te falta 1 h 10 min'), findsOneWidget);
+      expect(find.text('Te faltan 1 h 10 min'), findsOneWidget);
       expect(find.text('Completar · +1 h 10 min'), findsOneWidget);
       expect(find.text('Deshacer +1 h 15 min (9:30)'), findsOneWidget);
     });
