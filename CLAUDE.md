@@ -44,7 +44,10 @@ completa, en el `CLAUDE.md` del paquete.
   (`recorrido_onboarding.dart`, y `anclas_recorrido.dart`, que hoy tiene una
   sola ancla: el check del hábito),
   `descubrimiento_detalle.dart` (si el usuario ya entró alguna vez en un
-  detalle) y `habitos_refresh.dart` (aviso de que la lista ha cambiado).
+  detalle), `habitos_refresh.dart` (aviso de que la lista ha cambiado) y
+  `abrir_enfoque.dart` («Empezar sesión» del panel de minutos: abre Norday
+  Focus con el hábito, o su ficha de Play, por un canal de `MainActivity.kt`;
+  los dos paquetes de Enfoque van en `<queries>` del AndroidManifest).
 - `models/habito.dart`.
 - `l10n/` — `AppLocalizations` y `Catalogos` (categorías y logros de hábito).
 - `widgets/` — ver abajo.
@@ -110,6 +113,12 @@ puntos:
 9. **El grano de papel** — el `builder` del `MaterialApp` (en `main.dart`,
    `envolverConGrano`) pone `GranoPapel` (core v0.45.0) encima de todo;
    solo pinta en Dulce.
+10. **Los textos de la app en pantallas del core** — `registrarTextosHabits()`
+    (`l10n/textos_habits.dart`) en `main()`, antes de `runApp`, llama a
+    `TextosApp.registrar` (core v0.55.0) con el nombre, el lema del login y
+    los textos de actualización obligatoria y de borrado de cuenta, que viven
+    en los `app_*.arb`. Sin eso el core dice «Norday» y frases neutras.
+    `onGenerateTitle` usa `appNombre` de la app, no `appTitulo` del core.
 
 ## Identidad de marca (aplicar siempre en UI nueva)
 
