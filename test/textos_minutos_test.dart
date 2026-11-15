@@ -88,6 +88,20 @@ void main() {
         'Los 40 min se aplican desde mañana. Hoy ya tienes registros con la '
         'meta anterior.',
       );
+      // Un cambio que no es de minutos, un miércoles: mañana es jueves.
+      expect(
+        avisoAplicaDesde(
+          es,
+          aplicaDesde: DateTime(2026, 11, 19),
+          hoy: DateTime(2026, 11, 18),
+          locale: 'es',
+        ),
+        es.habAplicaManana,
+      );
+    });
+
+    test('en domingo, un cambio de días que vale el lunes dice el lunes', () {
+      // Domingo 15: el cambio de días o de frecuencia empieza el lunes 16.
       expect(
         avisoAplicaDesde(
           es,
@@ -95,7 +109,19 @@ void main() {
           hoy: hoy,
           locale: 'es',
         ),
-        es.habAplicaManana,
+        'El cambio se aplica desde el lunes. Esta semana ya tienes registros '
+        'con la meta anterior.',
+      );
+      // Uno de minutos, el mismo domingo, sigue diciendo mañana.
+      expect(
+        avisoAplicaDesde(
+          es,
+          aplicaDesde: DateTime(2026, 11, 16),
+          hoy: hoy,
+          locale: 'es',
+          minutosNuevos: 40,
+        ),
+        es.habAplicaMinutosManana(40),
       );
     });
 

@@ -376,7 +376,6 @@
   "progDesdeFecha": "From {fecha}: {objetivo}",
   "objDiasSemana": "{n, plural, =1{1 day a week} other{{n} days a week}}",
   "objVecesDia": "{n, plural, =1{once a day} other{{n} times a day}}",
-  "objEnVeces": "in times",
   "detMinutosDiario": "Daily · {n} min every day",
   "detMinutosSemanal": "Weekly · {dias} · {n} min each day you do it",
   "detTiempoTotal": "Total time",

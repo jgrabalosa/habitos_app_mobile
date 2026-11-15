@@ -34,10 +34,15 @@ String? avisoAplicaDesde(
   if (aplicaDesde == null) return null;
   return switch (cuandoAplica(aplicaDesde, hoy)) {
     CuandoAplica.hoy => null,
+    // Un cambio de días o de frecuencia se aplica por semanas: si mañana es
+    // lunes (guardado en domingo), lo que se dice es «desde el lunes», no
+    // «hoy ya tienes registros». El de minutos se aplica por días.
     CuandoAplica.manana =>
       minutosNuevos != null
           ? l.habAplicaMinutosManana(minutosNuevos)
-          : l.habAplicaManana,
+          : (aplicaDesde.weekday == DateTime.monday
+                ? l.habAplicaLunes
+                : l.habAplicaManana),
     CuandoAplica.lunes => l.habAplicaLunes,
     CuandoAplica.otraFecha => l.habAplicaFecha(
       DateFormat.MMMMd(locale).format(aplicaDesde),

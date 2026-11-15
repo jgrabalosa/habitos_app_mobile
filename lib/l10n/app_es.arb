@@ -737,7 +737,6 @@
       }
     }
   },
-  "objEnVeces": "en veces",
   "detMinutosDiario": "Diario · {n} min cada día",
   "@detMinutosDiario": {
     "placeholders": {

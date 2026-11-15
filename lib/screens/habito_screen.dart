@@ -238,6 +238,13 @@ class _HabitoScreenState extends State<HabitoScreen> {
     super.dispose();
   }
 
+  /// Al cambiar de unidad o de frecuencia, la meta se recorta a lo que admite:
+  /// un diario de veces de 8 que pasa a minutos semanal se queda en 7 días.
+  /// Se llama dentro de un `setState`.
+  void _recortarMeta() {
+    _meta = metaParaUnidad(_meta, _unidad);
+  }
+
   /// Si falla, no se enseña: editar sigue funcionando sin saberlo, y el aviso
   /// de `aplicaDesde` dirá cuándo vale lo que se guarde.
   Future<void> _cargarProgramado() async {
@@ -383,9 +390,12 @@ class _HabitoScreenState extends State<HabitoScreen> {
         : null;
     // Un diario de minutos tiene siempre un día por día: el servidor también
     // lo fuerza.
+    // En un semanal de minutos, entre 1 y 7 días por semana.
     final int meta = _metaDerivada
         ? _diasSeleccionados.length
-        : (_esMinutos && _frecuencia == 'DIARIO' ? 1 : _meta);
+        : (_esMinutos && _frecuencia == 'DIARIO'
+              ? 1
+              : metaParaUnidad(_meta, _unidad));
     // Un hábito de veces no manda los campos de minutos: el body queda igual
     // que antes de existir los de minutos.
     final String? unidad = _esMinutos ? codigoUnidad(_unidad) : null;
@@ -676,6 +686,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
           onSelectionChanged: (nuevo) => setState(() {
             _unidad = nuevo.first;
             _error = null;
+            _recortarMeta();
           }),
         ),
         if (_sinVueltaAVeces) ...[
@@ -769,9 +780,14 @@ class _HabitoScreenState extends State<HabitoScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.ms),
-      decoration: BoxDecoration(
+      // La figura de la identidad, al radio de las tarjetas de contenido:
+      // redondeada en Profundidad, a lápiz en Dulce, achaflanada en Neotokyo+.
+      decoration: ShapeDecoration(
         color: t.surface2,
-        borderRadius: BorderRadius.circular(AppRadius.md),
+        shape: formaIdentidad(
+          identidad(context),
+          radio: identidad(context).radioSecundario,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -947,6 +963,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                         .toList(),
                     onChanged: (v) => setState(() {
                       _frecuencia = v!;
+                      _recortarMeta();
                     }),
                   ),
                   if (_frecuencia == 'SEMANAL') ...[
@@ -1005,9 +1022,12 @@ class _HabitoScreenState extends State<HabitoScreen> {
                         ),
                         IconButton(
                           icon: const Icon(LucideIcons.plus),
-                          onPressed: () => setState(() {
-                            _meta++;
-                          }),
+                          // En minutos, como mucho 7 días por semana.
+                          onPressed: _esMinutos && _meta >= diasMaximosSemana
+                              ? null
+                              : () => setState(() {
+                                  _meta++;
+                                }),
                         ),
                       ],
                     ),

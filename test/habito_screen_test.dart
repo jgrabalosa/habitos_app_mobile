@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:habitos_app_mobile/l10n/app_localizations.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:habitos_app_mobile/models/habito.dart';
 import 'package:habitos_app_mobile/models/objetivo_programado.dart';
 import 'package:habitos_app_mobile/screens/habito_screen.dart';
@@ -274,6 +275,46 @@ void main() {
         'unidad': 'MINUTOS',
         'minutosObjetivo': 15,
       });
+    });
+
+    testWidgets('de veces diario con meta 8 a minutos semanal: 7 días', (
+      tester,
+    ) async {
+      final l = await AppLocalizations.delegate.load(const Locale('es'));
+      await abrirFormulario(tester, []);
+      await rellenar(tester, 'Correr');
+      // Diario de veces con meta 8: siete toques al «+».
+      final mas = find.widgetWithIcon(IconButton, LucideIcons.plus);
+      await tester.ensureVisible(mas);
+      for (var i = 0; i < 7; i++) {
+        await tester.tap(mas);
+        await tester.pump();
+      }
+      expect(find.text('8'), findsOneWidget);
+
+      await tester.ensureVisible(find.text(l.habUnidadMinutos));
+      await tester.tap(find.text(l.habUnidadMinutos));
+      await tester.pumpAndSettle();
+      // Diario de minutos: no hay objetivo de veces que enseñar.
+      expect(find.text('8'), findsNothing);
+
+      await tester.ensureVisible(find.text(l.frecDiario));
+      await tester.tap(find.text(l.frecDiario));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l.frecSemanal).last);
+      await tester.pumpAndSettle();
+
+      expect(find.text('7'), findsOneWidget);
+      // Y no deja pasar de 7.
+      final masSemanal = tester.widget<IconButton>(
+        find.widgetWithIcon(IconButton, LucideIcons.plus),
+      );
+      expect(masSemanal.onPressed, isNull);
+
+      await guardar(tester, l);
+      expect(creado['frecuencia'], 'SEMANAL');
+      expect(creado['meta'], 7);
+      expect(creado['unidad'], 'MINUTOS');
     });
 
     testWidgets('una cifra propia fuera de 1-600 no se guarda', (tester) async {
