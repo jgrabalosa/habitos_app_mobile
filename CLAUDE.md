@@ -48,6 +48,9 @@ completa, en el `CLAUDE.md` del paquete.
   `abrir_enfoque.dart` («Empezar sesión» del panel de minutos: abre Norday
   Focus con el hábito, o su ficha de Play, por un canal de `MainActivity.kt`;
   los dos paquetes de Enfoque van en `<queries>` del AndroidManifest).
+  **Esta versión de Habits no se publica en Play antes de que exista la
+  ficha de `com.norday.enfoque`**, aunque sea en prueba cerrada: sin ella,
+  «Empezar sesión» lleva a una ficha que no existe.
 - `models/habito.dart`.
 - `l10n/` — `AppLocalizations` y `Catalogos` (categorías y logros de hábito).
 - `widgets/` — ver abajo.
@@ -205,6 +208,13 @@ allí, se cambia aquí el `ref:` al tag nuevo y se hace
 resuelto. Antes de probar, comprobar el `resolved-ref` del `pubspec.lock`.
 Para probar una rama del core sin tag, `pubspec_overrides.yaml` con
 `path: ../norday_flutter_core`, que no se commitea.
+
+**Pendiente con el core 0.55.0** (rama `wip-enfoque`): el `ref:` ya apunta a
+`v0.55.0`, pero el `pubspec.lock` no está commiteado porque con el override
+apunta a la ruta local. Cuando Quim ponga el tag `v0.55.0` en el core: quitar
+`pubspec_overrides.yaml`, `flutter pub upgrade norday_flutter_core`, comprobar
+que el `resolved-ref` del `pubspec.lock` es el commit que da
+`git rev-parse v0.55.0^{commit}` en el core, y entonces commitear el lock.
 
 ## Variantes: produccion y prueba
 
