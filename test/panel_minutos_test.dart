@@ -276,6 +276,17 @@ void main() {
     expect(find.text(l.minErrorVacio), findsOneWidget);
   });
 
+  testWidgets('Sumar fuera de 1–600 no envía y dice la unidad y las horas', (
+    tester,
+  ) async {
+    await abrir(tester, []);
+    await tester.enterText(find.byType(TextField), '700');
+    await tester.tap(find.widgetWithText(ElevatedButton, l.minBotonSumar));
+    await tester.pumpAndSettle();
+    expect(envios, isEmpty);
+    expect(find.text('Entre 1 y 600 minutos (10 h) cada vez.'), findsOneWidget);
+  });
+
   testWidgets('si el envío falla, el panel sigue abierto con el error', (
     tester,
   ) async {

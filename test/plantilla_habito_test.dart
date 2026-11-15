@@ -135,10 +135,10 @@ void main() {
       );
     });
 
-    test('semanal con días dice las veces por semana y los días en orden', () {
+    test('semanal con días dice los días por semana y cuáles, en orden', () {
       expect(
         descripcionPlantilla(es, _plantilla('ejercicio')),
-        '3 veces por semana · mar, jue, sáb',
+        '3 días por semana · mar, jue, sáb',
       );
     });
 
@@ -149,7 +149,7 @@ void main() {
       );
       expect(
         descripcionPlantilla(pt, _plantilla('ejercicio')),
-        '3 vezes por semana · ter, qui, sáb',
+        '3 dias por semana · ter, qui, sáb',
       );
     });
   });

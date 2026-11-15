@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/textos_minutos.dart';
+import '../l10n/textos_objetivo.dart';
 import '../models/minutos.dart';
 import '../models/objetivo_programado.dart';
 import '../services/api_service_habitos.dart';
@@ -390,7 +391,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
     final int? minutos = _esMinutos ? _minutosElegidos : null;
     if (_esMinutos && !objetivoMinutosValido(minutos)) {
       setState(() {
-        _error = l.habMinutosRango;
+        _error = textoMinutosRango(l);
       });
       return;
     }
@@ -740,7 +741,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                 }),
               ),
             ChoiceChip(
-              label: Text(l.habMinutosOtra),
+              label: Text(textoMinutosOtra(l)),
               selected: _minutosLibre,
               onSelected: (_) => setState(() {
                 _minutosLibre = true;
@@ -760,7 +761,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
             ],
             onChanged: (_) => setState(() {}),
             decoration: InputDecoration(
-              labelText: l.habMinutosOtra,
+              labelText: textoMinutosOtra(l),
               border: const OutlineInputBorder(),
             ),
           ),
@@ -996,9 +997,12 @@ class _HabitoScreenState extends State<HabitoScreen> {
                           etiquetaSemantica: l.habAyudaMetaEtiqueta,
                           superindice: true,
                         ),
-                        Text(
-                          l.habDiasSemanaMeta(_diasSeleccionados.length),
-                          style: Theme.of(context).textTheme.titleLarge,
+                        // «3 días por semana»: si no cabe, baja de línea.
+                        Flexible(
+                          child: Text(
+                            l.habDiasSemanaMeta(_diasSeleccionados.length),
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
                         ),
                       ],
                     )
@@ -1028,9 +1032,18 @@ class _HabitoScreenState extends State<HabitoScreen> {
                             if (_meta > 1) _meta--;
                           }),
                         ),
-                        Text(
-                          '$_meta',
-                          style: Theme.of(context).textTheme.headlineSmall,
+                        // La cifra con su unidad: «3 veces al día», «3 días
+                        // por semana». Si no cabe, baja de línea.
+                        Flexible(
+                          child: Text(
+                            textoMetaFormulario(
+                              l,
+                              diario: _frecuencia == 'DIARIO',
+                              meta: _meta,
+                            ),
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
                         ),
                         IconButton(
                           icon: const Icon(LucideIcons.plus),

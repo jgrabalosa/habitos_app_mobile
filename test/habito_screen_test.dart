@@ -290,13 +290,13 @@ void main() {
         await tester.tap(mas);
         await tester.pump();
       }
-      expect(find.text('8'), findsOneWidget);
+      expect(find.text('8 veces al día'), findsOneWidget);
 
       await tester.ensureVisible(find.text(l.habUnidadMinutos));
       await tester.tap(find.text(l.habUnidadMinutos));
       await tester.pumpAndSettle();
       // Diario de minutos: no hay objetivo de veces que enseñar.
-      expect(find.text('8'), findsNothing);
+      expect(find.textContaining('8 veces'), findsNothing);
 
       await tester.ensureVisible(find.text(l.frecDiario));
       await tester.tap(find.text(l.frecDiario));
@@ -304,7 +304,7 @@ void main() {
       await tester.tap(find.text(l.frecSemanal).last);
       await tester.pumpAndSettle();
 
-      expect(find.text('7'), findsOneWidget);
+      expect(find.text('7 días por semana'), findsOneWidget);
       // Y no deja pasar de 7.
       final masSemanal = tester.widget<IconButton>(
         find.widgetWithIcon(IconButton, LucideIcons.plus),
@@ -317,6 +317,28 @@ void main() {
       expect(creado['unidad'], 'MINUTOS');
     });
 
+    testWidgets('un semanal de veces cuenta días por semana', (tester) async {
+      final l = await AppLocalizations.delegate.load(const Locale('es'));
+      await abrirFormulario(tester, []);
+      await rellenar(tester, 'Correr');
+      expect(find.text('1 vez al día'), findsOneWidget);
+
+      await tester.ensureVisible(find.text(l.frecDiario));
+      await tester.tap(find.text(l.frecDiario));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l.frecSemanal).last);
+      await tester.pumpAndSettle();
+      expect(find.text('1 día por semana'), findsOneWidget);
+
+      final mas = find.widgetWithIcon(IconButton, LucideIcons.plus);
+      await tester.ensureVisible(mas);
+      await tester.tap(mas);
+      await tester.pump();
+      await tester.tap(mas);
+      await tester.pump();
+      expect(find.text('3 días por semana'), findsOneWidget);
+    });
+
     testWidgets('una cifra propia fuera de 1-600 no se guarda', (tester) async {
       final l = await AppLocalizations.delegate.load(const Locale('es'));
       final resultado = <bool?>[];
@@ -325,19 +347,21 @@ void main() {
       await tester.ensureVisible(find.text(l.habUnidadMinutos));
       await tester.tap(find.text(l.habUnidadMinutos));
       await tester.pumpAndSettle();
-      final otra = find.widgetWithText(ChoiceChip, l.habMinutosOtra);
+      // Los textos, literales: tienen que decir la unidad y las horas.
+      const otraCifra = 'Otra cifra, en minutos (1–600)';
+      final otra = find.widgetWithText(ChoiceChip, otraCifra);
       await tester.ensureVisible(otra);
       await tester.tap(otra);
       await tester.pumpAndSettle();
-      await tester.enterText(
-        find.widgetWithText(TextField, l.habMinutosOtra),
-        '700',
-      );
+      await tester.enterText(find.widgetWithText(TextField, otraCifra), '700');
       await guardar(tester, l);
 
       expect(creado, isEmpty);
       expect(resultado, isEmpty);
-      expect(find.text(l.habMinutosRango), findsOneWidget);
+      expect(
+        find.text('Elige entre 1 y 600 minutos (10 h) por día.'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('editando uno de minutos, «Veces» no se ofrece', (

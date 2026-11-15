@@ -278,7 +278,7 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
       setState(() {
         _errorCampo = switch (r.error!) {
           ErrorMinutos.vacio => l.minErrorVacio,
-          ErrorMinutos.fueraDeRango => l.minErrorRango,
+          ErrorMinutos.fueraDeRango => textoErrorRangoMinutos(l),
         };
       });
       return;
