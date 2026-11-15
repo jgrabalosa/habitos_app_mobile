@@ -162,7 +162,7 @@ void main() {
   ) async {
     await abrir(tester, []);
     expect(find.text('20 / 30 min'), findsOneWidget);
-    expect(find.text(l.minPanelFaltan(10)), findsOneWidget);
+    expect(find.text('Te faltan 10 min'), findsOneWidget);
   });
 
   testWidgets('+5 envía 5 minutos hoy, sin fecha, con clave y MANUAL', (
@@ -189,7 +189,8 @@ void main() {
     tester,
   ) async {
     final resultado = <ResultadoMinutos?>[];
-    await abrir(tester, resultado);
+    // Con 40 por hacer salen los tres.
+    await abrir(tester, resultado, f: fila(objetivo: 60));
     await tester.tap(find.text(l.minSumaRapida(15)));
     await tester.pumpAndSettle();
     await tester.tap(find.text('abrir'));
@@ -203,7 +204,13 @@ void main() {
   });
 
   testWidgets('en un día pasado manda la fecha de ese día', (tester) async {
-    await abrir(tester, [], fechaDia: '2026-11-12', esHoy: false);
+    await abrir(
+      tester,
+      [],
+      f: fila(objetivo: 60),
+      fechaDia: '2026-11-12',
+      esHoy: false,
+    );
     await tester.tap(find.text(l.minSumaRapida(30)));
     await tester.pumpAndSettle();
     expect(envios.single.fecha, '2026-11-12');
@@ -217,33 +224,17 @@ void main() {
     expect(envios.single.minutos, 25);
   });
 
-  testWidgets('Establecer 50 con 20 hechos envía la diferencia: 30', (
+  testWidgets('no hay selector de modo: el campo libre siempre suma', (
     tester,
   ) async {
-    final resultado = <ResultadoMinutos?>[];
-    await abrir(tester, resultado);
-    await tester.tap(find.text(l.minModoEstablecer));
-    await tester.pumpAndSettle();
+    await abrir(tester, []);
+    expect(find.byWidgetPredicate((w) => w is SegmentedButton), findsNothing);
+    expect(find.textContaining('Establecer'), findsNothing);
+    expect(find.text('Guardar total'), findsNothing);
     await tester.enterText(find.byType(TextField), '50');
-    await tester.tap(find.widgetWithText(ElevatedButton, l.minBotonEstablecer));
+    await tester.tap(find.widgetWithText(ElevatedButton, l.minBotonSumar));
     await tester.pumpAndSettle();
-    expect(envios.single.minutos, 30);
-    expect(resultado.single!.minutos, 30);
-  });
-
-  testWidgets('Establecer por debajo de lo que hay no envía y lo dice', (
-    tester,
-  ) async {
-    final resultado = <ResultadoMinutos?>[];
-    await abrir(tester, resultado);
-    await tester.tap(find.text(l.minModoEstablecer));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), '10');
-    await tester.tap(find.widgetWithText(ElevatedButton, l.minBotonEstablecer));
-    await tester.pumpAndSettle();
-    expect(envios, isEmpty);
-    expect(resultado, isEmpty);
-    expect(find.text(l.minErrorNoSube(20)), findsOneWidget);
+    expect(envios.single.minutos, 50);
   });
 
   testWidgets('Sumar sin cifra no envía y lo dice', (tester) async {
@@ -280,7 +271,7 @@ void main() {
     final resultado = <ResultadoMinutos?>[];
     await abrir(tester, resultado);
     // La etiqueta dice cuánto se deshace: la entrada 12, de 15 min.
-    final boton = find.text(l.minDeshacerUltimaN(15));
+    final boton = find.text('Deshacer la última entrada (15 min)');
     expect(boton, findsOneWidget);
     await tester.tap(boton);
     await tester.pumpAndSettle();
@@ -298,7 +289,7 @@ void main() {
     );
     final resultado = <ResultadoMinutos?>[];
     await abrir(tester, resultado);
-    await tester.tap(find.text(l.minDeshacerUltimaN(15)));
+    await tester.tap(find.text('Deshacer la última entrada (15 min)'));
     await tester.pumpAndSettle();
     expect(resultado, isEmpty);
     expect(find.text(l.dashDeshacerSoloUltimo), findsOneWidget);
@@ -315,7 +306,7 @@ void main() {
   ) async {
     await abrir(tester, [], f: fila(hechos: 43));
     expect(find.text('43 / 30 min'), findsOneWidget);
-    expect(find.text(l.minPanelHecho), findsOneWidget);
+    expect(find.text('Meta cumplida · +13 min de más'), findsOneWidget);
     await tester.tap(find.text(l.minSumaRapida(5)));
     await tester.pumpAndSettle();
     expect(envios.single.minutos, 5);
@@ -421,7 +412,7 @@ void main() {
             throw const ApiException(TipoErrorApi.sinConexion);
         final resultado = <ResultadoMinutos?>[];
         await abrir(tester, resultado);
-        await tester.tap(find.text(l.minDeshacerUltimaN(15)));
+        await tester.tap(find.text('Deshacer la última entrada (15 min)'));
         await tester.pumpAndSettle();
         await atras(tester);
         expect(resultado.single!.tipo, TipoResultadoMinutos.desconocido);
@@ -433,7 +424,7 @@ void main() {
     ) async {
       completarQueFalla([const ApiException(TipoErrorApi.timeout)]);
       final resultado = <ResultadoMinutos?>[];
-      await abrir(tester, resultado);
+      await abrir(tester, resultado, f: fila(objetivo: 60));
       await tester.tap(find.text(l.minSumaRapida(15)));
       await tester.pumpAndSettle();
       await tester.tap(find.text(l.minSumaRapida(15)));
@@ -448,7 +439,7 @@ void main() {
       tester,
     ) async {
       completarQueFalla([const ApiException(TipoErrorApi.servidor)]);
-      await abrir(tester, []);
+      await abrir(tester, [], f: fila(objetivo: 60));
       await tester.tap(find.text(l.minSumaRapida(15)));
       await tester.pumpAndSettle();
       await tester.tap(find.text(l.minSumaRapida(30)));
@@ -464,7 +455,7 @@ void main() {
       completarQueFalla([
         const ApiException(TipoErrorApi.peticionInvalida, codigoEstado: 409),
       ]);
-      await abrir(tester, []);
+      await abrir(tester, [], f: fila(objetivo: 60));
       await tester.tap(find.text(l.minSumaRapida(15)));
       await tester.pumpAndSettle();
       await tester.tap(find.text(l.minSumaRapida(15)));
@@ -472,6 +463,138 @@ void main() {
 
       expect(envios, hasLength(2));
       expect(envios[1].clave, isNot(envios[0].clave));
+    });
+  });
+
+  group('solo Sumar: Completar, botones según lo que falta y Deshacer', () {
+    testWidgets(
+      '«Completar · +10 min» va arriba, ancho, y envía lo que falta',
+      (tester) async {
+        final resultado = <ResultadoMinutos?>[];
+        await abrir(tester, resultado);
+        final completar = find.widgetWithText(
+          ElevatedButton,
+          'Completar · +10 min',
+        );
+        expect(completar, findsOneWidget);
+        final mas5 = find.widgetWithText(OutlinedButton, l.minSumaRapida(5));
+        expect(
+          tester.getTopLeft(completar).dy,
+          lessThan(tester.getTopLeft(mas5).dy),
+        );
+        // Ancho: todo el panel, no una casilla de la fila de botones.
+        expect(
+          tester.getSize(completar).width,
+          greaterThan(tester.getSize(mas5).width * 2),
+        );
+
+        await tester.tap(completar);
+        await tester.pumpAndSettle();
+        expect(envios, hasLength(1));
+        expect(envios.single.minutos, 10);
+        expect(envios.single.fecha, isNull);
+        expect(envios.single.origen, 'MANUAL');
+        expect(envios.single.clave, matches(RegExp(r'^[0-9a-f-]{36}$')));
+        expect(resultado.single!.tipo, TipoResultadoMinutos.sumado);
+        expect(resultado.single!.minutos, 10);
+      },
+    );
+
+    testWidgets('Completar en un día pasado manda la fecha de ese día', (
+      tester,
+    ) async {
+      await abrir(
+        tester,
+        [],
+        f: fila(hechos: 5),
+        fechaDia: '2026-11-12',
+        esHoy: false,
+      );
+      await tester.tap(find.text('Completar · +25 min'));
+      await tester.pumpAndSettle();
+      expect(envios.single.minutos, 25);
+      expect(envios.single.fecha, '2026-11-12');
+    });
+
+    testWidgets('Completar lo anuncia el lector de pantalla', (tester) async {
+      final semantica = tester.ensureSemantics();
+      await abrir(tester, []);
+      expect(
+        find.semantics.byLabel('Completar la meta: sumar 10 min'),
+        findsOne,
+      );
+      semantica.dispose();
+    });
+
+    testWidgets('con la meta cumplida no hay Completar', (tester) async {
+      await abrir(tester, [], f: fila(hechos: 30));
+      expect(find.textContaining('Completar'), findsNothing);
+      expect(find.text('Meta cumplida'), findsOneWidget);
+    });
+
+    testWidgets('con 20 por hacer, solo +5 y +15', (tester) async {
+      await abrir(tester, [], f: fila(hechos: 10));
+      expect(find.text(l.minSumaRapida(5)), findsOneWidget);
+      expect(find.text(l.minSumaRapida(15)), findsOneWidget);
+      expect(find.text(l.minSumaRapida(30)), findsNothing);
+      expect(find.text('Te faltan 20 min'), findsOneWidget);
+    });
+
+    testWidgets('con 5 por hacer, ningún botón rápido: solo Completar', (
+      tester,
+    ) async {
+      await abrir(tester, [], f: fila(hechos: 25));
+      for (final n in [5, 15, 30]) {
+        expect(find.text(l.minSumaRapida(n)), findsNothing);
+      }
+      expect(find.text('Completar · +5 min'), findsOneWidget);
+    });
+
+    testWidgets('con la meta cumplida, los tres en orden para sumar de más', (
+      tester,
+    ) async {
+      await abrir(tester, [], f: fila(hechos: 30));
+      final xs = [
+        for (final n in [5, 15, 30])
+          tester.getTopLeft(find.text(l.minSumaRapida(n))).dx,
+      ];
+      expect(xs[0], lessThan(xs[1]));
+      expect(xs[1], lessThan(xs[2]));
+    });
+
+    testWidgets('Deshacer dice la cantidad y la hora de la entrada', (
+      tester,
+    ) async {
+      registros = [
+        Registro(
+          registroId: 12,
+          fecha: '2026-11-15',
+          cantidad: 15,
+          creadoEn: DateTime(2026, 11, 15, 14, 5).toUtc(),
+        ),
+      ];
+      await abrir(tester, []);
+      final boton = find.text('Deshacer +15 min (14:05)');
+      expect(boton, findsOneWidget);
+      await tester.tap(boton);
+      await tester.pumpAndSettle();
+      expect(deshechos, [12]);
+    });
+
+    testWidgets('pasada la hora, todo el panel en horas', (tester) async {
+      registros = [
+        Registro(
+          registroId: 12,
+          fecha: '2026-11-15',
+          cantidad: 75,
+          creadoEn: DateTime(2026, 11, 15, 9, 30).toUtc(),
+        ),
+      ];
+      await abrir(tester, [], f: fila(hechos: 20, objetivo: 90));
+      expect(find.text('20 min / 1 h 30 min'), findsOneWidget);
+      expect(find.text('Te falta 1 h 10 min'), findsOneWidget);
+      expect(find.text('Completar · +1 h 10 min'), findsOneWidget);
+      expect(find.text('Deshacer +1 h 15 min (9:30)'), findsOneWidget);
     });
   });
 

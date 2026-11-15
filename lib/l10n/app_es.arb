@@ -536,14 +536,15 @@
       }
     }
   },
-  "minDeObjetivo": "{hechos} / {objetivo} min",
+  "minDeObjetivo": "{hechos} / {objetivo}",
   "@minDeObjetivo": {
+    "description": "Lo hecho respecto al objetivo, ya escrito con parMinutos: «20 / 30 min» bajo la hora, «45 min / 1 h 30 min» si alguna llega a 60",
     "placeholders": {
       "hechos": {
-        "type": "int"
+        "type": "String"
       },
       "objetivo": {
-        "type": "int"
+        "type": "String"
       }
     }
   },
@@ -595,15 +596,28 @@
       }
     }
   },
-  "minPanelFaltan": "{n, plural, =1{Te falta 1 min} other{Te faltan {n} min}}",
+  "minPanelFaltan": "{n, plural, =1{Te falta {duracion}} other{Te faltan {duracion}}}",
   "@minPanelFaltan": {
+    "description": "Panel de minutos: lo que falta para la meta. n es la primera cifra de la duración (las horas si hay, si no los minutos), para el singular",
     "placeholders": {
       "n": {
         "type": "int"
+      },
+      "duracion": {
+        "type": "String"
       }
     }
   },
-  "minPanelHecho": "Objetivo cumplido. Puedes seguir sumando.",
+  "minPanelHecho": "Meta cumplida",
+  "minPanelHechoExceso": "Meta cumplida · +{duracion} de más",
+  "@minPanelHechoExceso": {
+    "description": "Panel de minutos: meta cumplida y lo que se ha hecho de más",
+    "placeholders": {
+      "duracion": {
+        "type": "String"
+      }
+    }
+  },
   "minPanelOtroDia": "Para el {fecha}",
   "@minPanelOtroDia": {
     "placeholders": {
@@ -620,28 +634,46 @@
       }
     }
   },
-  "minModoSumar": "Sumar",
-  "minModoEstablecer": "Establecer",
-  "minCampoSumar": "Minutos que sumar",
-  "minCampoEstablecer": "Total del día, en minutos",
-  "minBotonSumar": "Sumar",
-  "minBotonEstablecer": "Guardar total",
-  "minErrorVacio": "Escribe cuántos minutos.",
-  "minErrorRango": "Entre 1 y 600 minutos cada vez.",
-  "minErrorNoSube": "El total solo puede subir: ahora llevas {n} min. Para quitar, deshaz la última entrada.",
-  "@minErrorNoSube": {
+  "minCompletar": "Completar · +{duracion}",
+  "@minCompletar": {
+    "description": "Panel de minutos: botón principal que suma exactamente lo que falta para la meta",
     "placeholders": {
-      "n": {
-        "type": "int"
+      "duracion": {
+        "type": "String"
       }
     }
   },
+  "minCompletarA11y": "Completar la meta: sumar {duracion}",
+  "@minCompletarA11y": {
+    "description": "Panel de minutos: lo que dice el lector de pantalla del botón Completar",
+    "placeholders": {
+      "duracion": {
+        "type": "String"
+      }
+    }
+  },
+  "minCampoSumar": "Minutos que sumar",
+  "minBotonSumar": "Sumar",
+  "minErrorVacio": "Escribe cuántos minutos.",
+  "minErrorRango": "Entre 1 y 600 minutos cada vez.",
   "minDeshacerUltima": "Deshacer la última entrada",
-  "minDeshacerUltimaN": "Deshacer la última entrada ({n} min)",
+  "minDeshacerUltimaN": "Deshacer la última entrada ({duracion})",
   "@minDeshacerUltimaN": {
     "placeholders": {
-      "n": {
-        "type": "int"
+      "duracion": {
+        "type": "String"
+      }
+    }
+  },
+  "minDeshacerConHora": "Deshacer +{duracion} ({hora})",
+  "@minDeshacerConHora": {
+    "description": "Panel de minutos: deshacer la última entrada, con su cantidad y la hora local en que se sumó",
+    "placeholders": {
+      "duracion": {
+        "type": "String"
+      },
+      "hora": {
+        "type": "String"
       }
     }
   },

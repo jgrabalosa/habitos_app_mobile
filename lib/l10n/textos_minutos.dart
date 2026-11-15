@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../models/habito.dart';
 import '../models/minutos.dart';
 import '../models/objetivo_programado.dart';
+import '../models/registro.dart';
 import 'app_localizations.dart';
 
 /// Los textos de los hábitos de minutos que se componen con varias claves.
@@ -17,6 +18,73 @@ String duracionLegible(AppLocalizations l, int minutos) {
   if (horas == 0) return l.durMinutos(resto);
   if (resto == 0) return l.durHoras(horas);
   return l.durHorasMinutos(horas, resto);
+}
+
+/// Un par hecho/objetivo con la regla de todos los pares: si las dos cifras
+/// son menores de 60, la primera va sola y la segunda con «min» («20» y «30
+/// min»: «20 / 30 min»); si alguna llega a 60, cada una con su unidad («45
+/// min» y «1 h 30 min»).
+({String hechos, String objetivo}) parMinutos(
+  AppLocalizations l,
+  int hechos,
+  int objetivo,
+) {
+  final h = hechos < 0 ? 0 : hechos;
+  if (h < 60 && objetivo < 60) {
+    return (hechos: '$h', objetivo: l.durMinutos(objetivo));
+  }
+  return (
+    hechos: duracionLegible(l, h),
+    objetivo: duracionLegible(l, objetivo),
+  );
+}
+
+/// Lo hecho respecto al objetivo: «20 / 30 min», «45 min / 1 h 30 min».
+String progresoMinutos(AppLocalizations l, int hechos, int objetivo) {
+  final par = parMinutos(l, hechos, objetivo);
+  return l.minDeObjetivo(par.hechos, par.objetivo);
+}
+
+/// La primera cifra de [minutos] tal como la dice [duracionLegible]: las
+/// horas si hay, si no los minutos. Decide el singular de «Te falta 1 h».
+int _primeraCifra(int minutos) => minutos >= 60 ? minutos ~/ 60 : minutos;
+
+/// La línea bajo el progreso del panel: «Te faltan 10 min», «Meta cumplida»
+/// o «Meta cumplida · +13 min de más».
+String textoEstadoPanel(
+  AppLocalizations l, {
+  required int hechos,
+  required int? objetivo,
+}) {
+  final faltan = minutosParaCompletar(hechos, objetivo);
+  if (faltan != null) {
+    return l.minPanelFaltan(_primeraCifra(faltan), duracionLegible(l, faltan));
+  }
+  final exceso = hechos - (objetivo ?? 0);
+  if (objetivo == null || objetivo <= 0 || exceso <= 0) return l.minPanelHecho;
+  return l.minPanelHechoExceso(duracionLegible(l, exceso));
+}
+
+/// El botón principal del panel: «Completar · +10 min».
+String textoCompletar(AppLocalizations l, int minutos) =>
+    l.minCompletar(duracionLegible(l, minutos));
+
+/// La etiqueta de Deshacer: «Deshacer +20 min (14:05)», con la hora local en
+/// que se sumó y en el formato del idioma. Sin hora, «Deshacer la última
+/// entrada (20 min)»; sin la entrada (no ha llegado), sin cifra.
+String etiquetaDeshacer(
+  AppLocalizations l,
+  Registro? ultima, {
+  required String locale,
+}) {
+  if (ultima == null) return l.minDeshacerUltima;
+  final duracion = duracionLegible(l, ultima.cantidad);
+  final creado = ultima.creadoEn;
+  if (creado == null) return l.minDeshacerUltimaN(duracion);
+  return l.minDeshacerConHora(
+    duracion,
+    DateFormat.jm(locale).format(creado.toLocal()),
+  );
 }
 
 /// El aviso tras guardar un cambio que no vale hasta otro día, o null si ya

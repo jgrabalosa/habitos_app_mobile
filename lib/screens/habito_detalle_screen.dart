@@ -703,12 +703,13 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
     final l = AppLocalizations.of(context)!;
     final diaMinutos = _diaMinutos(dia);
     if (diaMinutos != null) {
-      // «20 / 30 min», con el objetivo que valía ese día.
+      // «20 / 30 min» o «45 min / 1 h 30 min», con el objetivo que valía ese
+      // día.
       if (diaMinutos.nivel == NivelDiaMinutos.vacio) {
         return '$base · ${l.detSinCompletar}';
       }
       return '$base · '
-          '${l.minDeObjetivo(diaMinutos.minutos, diaMinutos.objetivo ?? 0)}';
+          '${progresoMinutos(l, diaMinutos.minutos, diaMinutos.objetivo ?? 0)}';
     }
     final int veces = _vecesDe(dia);
     if (veces == 0) return '$base · ${l.detSinCompletar}';

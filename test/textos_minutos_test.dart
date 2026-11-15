@@ -1,10 +1,12 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 import 'package:habitos_app_mobile/l10n/app_localizations.dart';
 import 'package:habitos_app_mobile/l10n/textos_minutos.dart';
 import 'package:habitos_app_mobile/models/habito.dart';
 import 'package:habitos_app_mobile/models/objetivo_programado.dart';
+import 'package:habitos_app_mobile/models/registro.dart';
 
 Habito habito({
   String frecuencia = 'DIARIO',
@@ -56,8 +58,123 @@ void main() {
       expect(duracionLegible(pt, 755), '12 h 35 min');
     });
 
+    test('en los bordes de la hora: 59, 60, 61, 90 y 120', () {
+      expect(duracionLegible(es, 59), '59 min');
+      expect(duracionLegible(es, 60), '1 h');
+      expect(duracionLegible(es, 61), '1 h 1 min');
+      expect(duracionLegible(es, 90), '1 h 30 min');
+      expect(duracionLegible(es, 120), '2 h');
+    });
+
     test('un total negativo no se pinta negativo', () {
       expect(duracionLegible(es, -5), '0 min');
+    });
+  });
+
+  group('el panel de minutos', () {
+    test('progreso: «20 / 30 min» bajo la hora, horas en cuanto toca', () {
+      expect(progresoMinutos(es, 20, 30), '20 / 30 min');
+      expect(progresoMinutos(es, 59, 59), '59 / 59 min');
+      expect(progresoMinutos(es, 20, 60), '20 min / 1 h');
+      expect(progresoMinutos(es, 61, 90), '1 h 1 min / 1 h 30 min');
+      expect(progresoMinutos(es, 45, 120), '45 min / 2 h');
+      expect(progresoMinutos(es, 60, 30), '1 h / 30 min');
+      expect(progresoMinutos(en, 45, 90), '45 min / 1 h 30 min');
+      expect(progresoMinutos(pt, 45, 90), '45 min / 1 h 30 min');
+    });
+
+    test('lo que falta, en singular con 1 min y con 1 h', () {
+      expect(
+        textoEstadoPanel(es, hechos: 20, objetivo: 30),
+        'Te faltan 10 min',
+      );
+      expect(textoEstadoPanel(es, hechos: 29, objetivo: 30), 'Te falta 1 min');
+      expect(textoEstadoPanel(es, hechos: 1, objetivo: 60), 'Te faltan 59 min');
+      expect(textoEstadoPanel(es, hechos: 0, objetivo: 60), 'Te falta 1 h');
+      expect(
+        textoEstadoPanel(es, hechos: 0, objetivo: 61),
+        'Te falta 1 h 1 min',
+      );
+      expect(
+        textoEstadoPanel(es, hechos: 0, objetivo: 90),
+        'Te falta 1 h 30 min',
+      );
+      expect(textoEstadoPanel(es, hechos: 0, objetivo: 120), 'Te faltan 2 h');
+      expect(textoEstadoPanel(en, hechos: 20, objetivo: 30), '10 min to go');
+      expect(textoEstadoPanel(pt, hechos: 20, objetivo: 30), 'Faltam 10 min');
+      expect(textoEstadoPanel(pt, hechos: 0, objetivo: 60), 'Falta 1 h');
+    });
+
+    test('meta cumplida, y lo que sobra si sobra', () {
+      expect(textoEstadoPanel(es, hechos: 30, objetivo: 30), 'Meta cumplida');
+      expect(
+        textoEstadoPanel(es, hechos: 43, objetivo: 30),
+        'Meta cumplida · +13 min de más',
+      );
+      expect(
+        textoEstadoPanel(es, hechos: 91, objetivo: 30),
+        'Meta cumplida · +1 h 1 min de más',
+      );
+      expect(
+        textoEstadoPanel(en, hechos: 43, objetivo: 30),
+        'Goal reached · +13 min extra',
+      );
+      expect(
+        textoEstadoPanel(pt, hechos: 43, objetivo: 30),
+        'Meta cumprida · +13 min a mais',
+      );
+    });
+
+    test('Completar dice lo que suma', () {
+      expect(textoCompletar(es, 10), 'Completar · +10 min');
+      expect(textoCompletar(es, 70), 'Completar · +1 h 10 min');
+      expect(textoCompletar(en, 60), 'Complete · +1 h');
+      expect(textoCompletar(pt, 60), 'Completar · +1 h');
+    });
+
+    test('Deshacer dice la cantidad y la hora local de la entrada', () {
+      // 14:05 en la hora local de la máquina, guardado en UTC como el backend.
+      final creado = DateTime(2026, 11, 15, 14, 5).toUtc();
+      Registro r(int cantidad, {DateTime? creadoEn}) => Registro(
+        registroId: 1,
+        fecha: '2026-11-15',
+        cantidad: cantidad,
+        creadoEn: creadoEn,
+      );
+      expect(
+        etiquetaDeshacer(es, r(20, creadoEn: creado), locale: 'es'),
+        'Deshacer +20 min (14:05)',
+      );
+      expect(
+        etiquetaDeshacer(pt, r(20, creadoEn: creado), locale: 'pt'),
+        'Desfazer +20 min (14:05)',
+      );
+      expect(
+        etiquetaDeshacer(es, r(90, creadoEn: creado), locale: 'es'),
+        'Deshacer +1 h 30 min (14:05)',
+      );
+      // En inglés, el formato de hora de intl: «2:05 PM».
+      final horaEn = DateFormat.jm('en').format(DateTime(2026, 11, 15, 14, 5));
+      expect(horaEn, contains('2:05'));
+      expect(
+        etiquetaDeshacer(en, r(20, creadoEn: creado), locale: 'en'),
+        'Undo +20 min ($horaEn)',
+      );
+    });
+
+    test('Deshacer sin hora dice la cantidad, y sin entrada, nada más', () {
+      expect(
+        etiquetaDeshacer(
+          es,
+          const Registro(registroId: 1, fecha: '2026-11-15', cantidad: 20),
+          locale: 'es',
+        ),
+        'Deshacer la última entrada (20 min)',
+      );
+      expect(
+        etiquetaDeshacer(es, null, locale: 'es'),
+        'Deshacer la última entrada',
+      );
     });
   });
 

@@ -224,56 +224,55 @@ void main() {
     });
   });
 
-  group('Establecer y sumar en el panel', () {
-    test('Sumar envía la cifra tal cual', () {
-      final r = minutosAEnviar(ModoMinutos.sumar, '25', 40);
+  group('el campo libre del panel suma', () {
+    test('envía la cifra tal cual', () {
+      final r = minutosAEnviar('25');
       expect(r.minutos, 25);
       expect(r.error, isNull);
     });
 
-    test('Sumar fuera de 1-600 no se envía', () {
-      expect(
-        minutosAEnviar(ModoMinutos.sumar, '0', 0).error,
-        ErrorMinutos.fueraDeRango,
-      );
-      expect(
-        minutosAEnviar(ModoMinutos.sumar, '601', 0).error,
-        ErrorMinutos.fueraDeRango,
-      );
-      expect(minutosAEnviar(ModoMinutos.sumar, '600', 0).minutos, 600);
+    test('fuera de 1-600 no se envía', () {
+      expect(minutosAEnviar('0').error, ErrorMinutos.fueraDeRango);
+      expect(minutosAEnviar('601').error, ErrorMinutos.fueraDeRango);
+      expect(minutosAEnviar('600').minutos, 600);
     });
 
     test('sin número, vacío', () {
-      expect(
-        minutosAEnviar(ModoMinutos.sumar, '', 0).error,
-        ErrorMinutos.vacio,
-      );
+      expect(minutosAEnviar('').error, ErrorMinutos.vacio);
+    });
+  });
+
+  group('Completar y botones rápidos del panel', () {
+    test('Completar envía exactamente lo que falta', () {
+      expect(minutosParaCompletar(20, 30), 10);
+      expect(minutosParaCompletar(0, 90), 90);
+      expect(minutosParaCompletar(29, 30), 1);
     });
 
-    test('Establecer envía la diferencia con lo que hay', () {
-      final r = minutosAEnviar(ModoMinutos.establecer, '50', 20);
-      expect(r.minutos, 30);
-      expect(r.error, isNull);
+    test('con la meta cumplida, o sin objetivo, no hay Completar', () {
+      expect(minutosParaCompletar(30, 30), isNull);
+      expect(minutosParaCompletar(43, 30), isNull);
+      expect(minutosParaCompletar(10, null), isNull);
+      expect(minutosParaCompletar(10, 0), isNull);
     });
 
-    test('Establecer no deja bajar ni quedarse igual', () {
-      expect(
-        minutosAEnviar(ModoMinutos.establecer, '10', 20).error,
-        ErrorMinutos.noSube,
-      );
-      expect(
-        minutosAEnviar(ModoMinutos.establecer, '20', 20).error,
-        ErrorMinutos.noSube,
-      );
+    test('mientras falta, solo los menores estrictos que lo que falta', () {
+      expect(sumasRapidasVisibles(10, 30), [5, 15]);
+      expect(sumasRapidasVisibles(20, 30), [5]);
+      expect(sumasRapidasVisibles(15, 30), [5]);
+      expect(sumasRapidasVisibles(25, 30), isEmpty);
+      expect(sumasRapidasVisibles(0, 31), [5, 15, 30]);
+      expect(sumasRapidasVisibles(0, 30), [5, 15]);
     });
 
-    test('Establecer con una diferencia de más de 600, fuera de rango', () {
-      expect(
-        minutosAEnviar(ModoMinutos.establecer, '700', 50).error,
-        ErrorMinutos.fueraDeRango,
-      );
+    test('con la meta cumplida o sin objetivo, los tres para sumar de más', () {
+      expect(sumasRapidasVisibles(30, 30), [5, 15, 30]);
+      expect(sumasRapidasVisibles(43, 30), [5, 15, 30]);
+      expect(sumasRapidasVisibles(0, null), [5, 15, 30]);
     });
+  });
 
+  group('objetivo de minutos', () {
     test('objetivo de minutos válido entre 1 y 600', () {
       expect(objetivoMinutosValido(null), isFalse);
       expect(objetivoMinutosValido(0), isFalse);
