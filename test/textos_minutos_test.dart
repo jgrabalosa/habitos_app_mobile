@@ -184,6 +184,44 @@ void main() {
     });
   });
 
+  group('límites de minutos con su unidad', () {
+    test('en español', () {
+      expect(textoMinutosOtra(es), 'Otra cifra, en minutos (1–600)');
+      expect(
+        textoMinutosRango(es),
+        'Elige entre 1 y 600 minutos (10 h) por día.',
+      );
+      expect(
+        textoErrorRangoMinutos(es),
+        'Entre 1 y 600 minutos (10 h) cada vez.',
+      );
+    });
+
+    test('en inglés', () {
+      expect(textoMinutosOtra(en), 'Other amount, in minutes (1–600)');
+      expect(
+        textoMinutosRango(en),
+        'Choose between 1 and 600 minutes (10 h) per day.',
+      );
+      expect(
+        textoErrorRangoMinutos(en),
+        'Between 1 and 600 minutes (10 h) at a time.',
+      );
+    });
+
+    test('en portugués', () {
+      expect(textoMinutosOtra(pt), 'Outro valor, em minutos (1–600)');
+      expect(
+        textoMinutosRango(pt),
+        'Escolhe entre 1 e 600 minutos (10 h) por dia.',
+      );
+      expect(
+        textoErrorRangoMinutos(pt),
+        'Entre 1 e 600 minutos (10 h) de cada vez.',
+      );
+    });
+  });
+
   group('duraciones en horas fuera del panel', () {
     test('el aviso de mañana dice la duración en horas', () {
       expect(

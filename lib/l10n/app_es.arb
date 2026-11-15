@@ -650,7 +650,21 @@
   "minCampoSumar": "Minutos que sumar",
   "minBotonSumar": "Sumar",
   "minErrorVacio": "Escribe cuántos minutos.",
-  "minErrorRango": "Entre 1 y 600 minutos cada vez.",
+  "minErrorRango": "Entre {minimo} y {maximo} minutos ({maximoLegible}) cada vez.",
+  "@minErrorRango": {
+    "description": "Error del panel con una cifra fuera de los límites; minimo y maximo salen de minutosMinimo y minutosMaximo, maximoLegible es maximo con duracionLegible («10 h»)",
+    "placeholders": {
+      "minimo": {
+        "type": "int"
+      },
+      "maximo": {
+        "type": "int"
+      },
+      "maximoLegible": {
+        "type": "String"
+      }
+    }
+  },
   "minDeshacerUltima": "Deshacer la última entrada",
   "minDeshacerUltimaN": "Deshacer la última entrada ({duracion})",
   "@minDeshacerUltimaN": {
@@ -680,7 +694,18 @@
   "habAyudaUnidad": "Veces: lo marcas al hacerlo. Minutos: sumas el tiempo que le dedicas, y el día cuenta al llegar a tu objetivo.",
   "habUnidadSinVuelta": "Un hábito de minutos no puede volver a contarse en veces.",
   "habMinutosPorDia": "Minutos por día",
-  "habMinutosOtra": "Otra cifra (1-600)",
+  "habMinutosOtra": "Otra cifra, en minutos ({minimo}–{maximo})",
+  "@habMinutosOtra": {
+    "description": "Etiqueta de la cifra propia en el formulario; minimo y maximo salen de minutosMinimo y minutosMaximo",
+    "placeholders": {
+      "minimo": {
+        "type": "int"
+      },
+      "maximo": {
+        "type": "int"
+      }
+    }
+  },
   "habMinutosEtiquetaDiario": "{duracion} cada día",
   "@habMinutosEtiquetaDiario": {
     "placeholders": {
@@ -697,7 +722,21 @@
       }
     }
   },
-  "habMinutosRango": "Elige entre 1 y 600 minutos por día.",
+  "habMinutosRango": "Elige entre {minimo} y {maximo} minutos ({maximoLegible}) por día.",
+  "@habMinutosRango": {
+    "description": "Error del formulario con un objetivo fuera de los límites; minimo y maximo salen de minutosMinimo y minutosMaximo, maximoLegible es maximo con duracionLegible («10 h»)",
+    "placeholders": {
+      "minimo": {
+        "type": "int"
+      },
+      "maximo": {
+        "type": "int"
+      },
+      "maximoLegible": {
+        "type": "String"
+      }
+    }
+  },
   "habAyudaMetaSemanalMinutos": "Cuántos días por semana quieres llegar a tus minutos, el día que te venga bien. Si marcas días concretos, el objetivo sale de ellos.",
   "habAplicaMinutosManana": "El objetivo de {duracion} se aplica desde mañana. Hoy ya tienes registros con la meta anterior.",
   "@habAplicaMinutosManana": {

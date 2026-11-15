@@ -88,6 +88,28 @@ String etiquetaDeshacer(
   );
 }
 
+/// La etiqueta de la cifra propia en el formulario, con la unidad y los
+/// límites: «Otra cifra, en minutos (1–600)». Las cifras salen de
+/// [minutosMinimo] y [minutosMaximo].
+String textoMinutosOtra(AppLocalizations l) =>
+    l.habMinutosOtra(minutosMinimo, minutosMaximo);
+
+/// El error del formulario con una cifra fuera de los límites: «Elige entre
+/// 1 y 600 minutos (10 h) por día.».
+String textoMinutosRango(AppLocalizations l) => l.habMinutosRango(
+  minutosMinimo,
+  minutosMaximo,
+  duracionLegible(l, minutosMaximo),
+);
+
+/// El error del panel con una cifra fuera de los límites: «Entre 1 y 600
+/// minutos (10 h) cada vez.».
+String textoErrorRangoMinutos(AppLocalizations l) => l.minErrorRango(
+  minutosMinimo,
+  minutosMaximo,
+  duracionLegible(l, minutosMaximo),
+);
+
 /// La frase del objetivo en el formulario: «30 min cada día», «1 h 30 min
 /// cada día que lo hagas».
 String etiquetaObjetivoMinutos(

@@ -390,7 +390,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
     final int? minutos = _esMinutos ? _minutosElegidos : null;
     if (_esMinutos && !objetivoMinutosValido(minutos)) {
       setState(() {
-        _error = l.habMinutosRango;
+        _error = textoMinutosRango(l);
       });
       return;
     }
@@ -740,7 +740,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                 }),
               ),
             ChoiceChip(
-              label: Text(l.habMinutosOtra),
+              label: Text(textoMinutosOtra(l)),
               selected: _minutosLibre,
               onSelected: (_) => setState(() {
                 _minutosLibre = true;
@@ -760,7 +760,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
             ],
             onChanged: (_) => setState(() {}),
             decoration: InputDecoration(
-              labelText: l.habMinutosOtra,
+              labelText: textoMinutosOtra(l),
               border: const OutlineInputBorder(),
             ),
           ),

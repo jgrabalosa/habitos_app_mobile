@@ -325,19 +325,21 @@ void main() {
       await tester.ensureVisible(find.text(l.habUnidadMinutos));
       await tester.tap(find.text(l.habUnidadMinutos));
       await tester.pumpAndSettle();
-      final otra = find.widgetWithText(ChoiceChip, l.habMinutosOtra);
+      // Los textos, literales: tienen que decir la unidad y las horas.
+      const otraCifra = 'Otra cifra, en minutos (1–600)';
+      final otra = find.widgetWithText(ChoiceChip, otraCifra);
       await tester.ensureVisible(otra);
       await tester.tap(otra);
       await tester.pumpAndSettle();
-      await tester.enterText(
-        find.widgetWithText(TextField, l.habMinutosOtra),
-        '700',
-      );
+      await tester.enterText(find.widgetWithText(TextField, otraCifra), '700');
       await guardar(tester, l);
 
       expect(creado, isEmpty);
       expect(resultado, isEmpty);
-      expect(find.text(l.habMinutosRango), findsOneWidget);
+      expect(
+        find.text('Elige entre 1 y 600 minutos (10 h) por día.'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('editando uno de minutos, «Veces» no se ofrece', (
