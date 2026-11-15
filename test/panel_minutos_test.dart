@@ -562,6 +562,87 @@ void main() {
       expect(xs[1], lessThan(xs[2]));
     });
 
+    testWidgets('las casillas no se mueven: +15 queda en su sitio', (
+      tester,
+    ) async {
+      // Con 20 por hacer falta +30, y +15 no se corre a la derecha.
+      await abrir(tester, [], f: fila(hechos: 10));
+      final conHueco = tester.getTopLeft(find.text(l.minSumaRapida(15))).dx;
+      final anchoConHueco = tester
+          .getSize(find.widgetWithText(OutlinedButton, l.minSumaRapida(15)))
+          .width;
+      Navigator.of(tester.element(find.byType(BottomSheet))).pop();
+      await tester.pumpAndSettle();
+      await abrir(tester, [], f: fila(hechos: 30));
+      expect(tester.getTopLeft(find.text(l.minSumaRapida(15))).dx, conHueco);
+      expect(
+        tester
+            .getSize(find.widgetWithText(OutlinedButton, l.minSumaRapida(15)))
+            .width,
+        anchoConHueco,
+      );
+    });
+
+    testWidgets('mientras envía, Completar se apaga y no envía dos veces', (
+      tester,
+    ) async {
+      final respuesta = Completer<Map<String, dynamic>>();
+      PanelMinutos.completar =
+          (
+            int habitoId, {
+            String? fecha,
+            int? minutos,
+            String? clave,
+            String? origen,
+          }) {
+            envios.add(Envio(habitoId, fecha, minutos, clave, origen));
+            return respuesta.future;
+          };
+      await abrir(tester, []);
+      final completar = find.widgetWithText(
+        ElevatedButton,
+        'Completar · +10 min',
+      );
+      await tester.tap(completar);
+      await tester.pump();
+      expect(tester.widget<ElevatedButton>(completar).onPressed, isNull);
+      await tester.tap(completar, warnIfMissed: false);
+      await tester.pump();
+      expect(envios, hasLength(1));
+
+      respuesta.complete({'logros': <String>[], 'puntosGanados': 5});
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('Completar tras un timeout repite con la misma clave', (
+      tester,
+    ) async {
+      var fallos = 1;
+      PanelMinutos.completar =
+          (
+            int habitoId, {
+            String? fecha,
+            int? minutos,
+            String? clave,
+            String? origen,
+          }) async {
+            envios.add(Envio(habitoId, fecha, minutos, clave, origen));
+            if (fallos-- > 0) throw const ApiException(TipoErrorApi.timeout);
+            return {'logros': <String>[], 'puntosGanados': 5};
+          };
+      final resultado = <ResultadoMinutos?>[];
+      await abrir(tester, resultado);
+      await tester.tap(find.text('Completar · +10 min'));
+      await tester.pumpAndSettle();
+      expect(resultado, isEmpty);
+      await tester.tap(find.text('Completar · +10 min'));
+      await tester.pumpAndSettle();
+
+      expect(envios.map((e) => e.minutos), [10, 10]);
+      expect(envios[1].clave, envios[0].clave);
+      expect(resultado.single!.tipo, TipoResultadoMinutos.sumado);
+    });
+
     testWidgets('Deshacer dice la cantidad y la hora de la entrada', (
       tester,
     ) async {
