@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habitos_app_mobile/services/abrir_enfoque.dart';
 
@@ -80,6 +81,64 @@ void main() {
       lanzador: LanzadorFalso({}),
     );
     expect(r, AperturaEnfoque.nada);
+  });
+
+  group('contrato del canal con MainActivity.kt', () {
+    const canal = MethodChannel('com.norday.habitos/abrir');
+    final mensajero =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    late List<MethodCall> llamadas;
+
+    setUp(() => llamadas = []);
+    tearDown(() => mensajero.setMockMethodCallHandler(canal, null));
+
+    void responder(Object? Function(MethodCall) respuesta) {
+      mensajero.setMockMethodCallHandler(canal, (llamada) async {
+        llamadas.add(llamada);
+        return respuesta(llamada);
+      });
+    }
+
+    test('con paquete: método abrir, enlace y paquete', () async {
+      responder((_) => true);
+      final abierto = await const LanzadorEnlacesAndroid().abrir(
+        enlaceSesionEnfoque(42),
+        paquete: 'com.norday.enfoque.prueba',
+      );
+      expect(abierto, isTrue);
+      expect(llamadas.single.method, 'abrir');
+      expect(llamadas.single.arguments, {
+        'enlace': enlace,
+        'paquete': 'com.norday.enfoque.prueba',
+      });
+    });
+
+    test('sin paquete no manda la clave paquete', () async {
+      responder((_) => false);
+      final abierto = await const LanzadorEnlacesAndroid().abrir(
+        fichaPlayEnfoque,
+      );
+      expect(abierto, isFalse);
+      final argumentos = llamadas.single.arguments as Map;
+      expect(argumentos, {'enlace': market});
+      expect(argumentos.containsKey('paquete'), isFalse);
+    });
+
+    test('PlatformException del lado nativo: false', () async {
+      responder((_) => throw PlatformException(code: 'ERROR'));
+      expect(
+        await const LanzadorEnlacesAndroid().abrir(fichaWebEnfoque),
+        isFalse,
+      );
+    });
+
+    test('respuesta nula: false', () async {
+      responder((_) => null);
+      expect(
+        await const LanzadorEnlacesAndroid().abrir(fichaWebEnfoque),
+        isFalse,
+      );
+    });
   });
 
   test('sin la parte nativa, el lanzador real dice que no', () async {
