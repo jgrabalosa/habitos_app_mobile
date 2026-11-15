@@ -7,6 +7,7 @@ import 'package:habitos_app_mobile/models/registro.dart';
 import 'package:habitos_app_mobile/screens/dashboard_logica.dart';
 import 'package:habitos_app_mobile/services/api_service_habitos.dart';
 import 'package:habitos_app_mobile/services/clave_envio.dart';
+import 'package:norday_flutter_core/norday_flutter_core.dart';
 
 /// Un hábito tal como lo manda un backend anterior a los minutos: sin
 /// `unidad` ni `minutosObjetivo`.
@@ -393,7 +394,6 @@ void main() {
       ];
       expect(ultimoRegistroDe(registros, '2026-11-15')!.registroId, 7);
       expect(ultimoRegistroDe(registros, '2026-11-13'), isNull);
-      expect(minutosPorDia(registros), {'2026-11-15': 25, '2026-11-14': 5});
     });
 
     test('objetivo programado: se lee, y sin él o sin fecha es null', () {
@@ -415,11 +415,122 @@ void main() {
   });
 
   group('calendario del detalle', () {
-    test('vacío, a medias o hecho según su objetivo', () {
-      expect(nivelDiaMinutos(0, 30), NivelDiaMinutos.vacio);
-      expect(nivelDiaMinutos(20, 30), NivelDiaMinutos.parcial);
-      expect(nivelDiaMinutos(30, 30), NivelDiaMinutos.hecho);
-      expect(nivelDiaMinutos(90, 30), NivelDiaMinutos.hecho);
+    test('hecho lo decide el servidor, no la cuenta de minutos', () {
+      // 20 min con `completado`: ese día el objetivo era 20 (hoy es 30).
+      final d = leerDiaCalendarioMinutos({
+        'fecha': '2026-11-10',
+        'completado': true,
+        'minutos': 20,
+        'minutosObjetivo': 20,
+      }, objetivoActual: 30)!;
+      expect(d.nivel, NivelDiaMinutos.hecho);
+      expect(d.minutos, 20);
+      expect(d.objetivo, 20);
+    });
+
+    test('a medias: minutos sin completar, con el objetivo de ese día', () {
+      final d = leerDiaCalendarioMinutos({
+        'fecha': '2026-11-10',
+        'completado': false,
+        'minutos': 20,
+        'minutosObjetivo': 45,
+      }, objetivoActual: 30)!;
+      expect(d.nivel, NivelDiaMinutos.parcial);
+      expect(d.objetivo, 45);
+    });
+
+    test('muchos minutos sin completado del servidor siguen a medias', () {
+      final d = leerDiaCalendarioMinutos({
+        'completado': false,
+        'minutos': 90,
+        'minutosObjetivo': 120,
+      }, objetivoActual: 30)!;
+      expect(d.nivel, NivelDiaMinutos.parcial);
+    });
+
+    test('sin minutosObjetivo del día, el de hoy como caída', () {
+      final d = leerDiaCalendarioMinutos({
+        'completado': false,
+        'minutos': 10,
+      }, objetivoActual: 30)!;
+      expect(d.objetivo, 30);
+    });
+
+    test('sin minutos ni completado, vacío', () {
+      final d = leerDiaCalendarioMinutos({
+        'completado': false,
+        'minutos': 0,
+        'minutosObjetivo': 30,
+      }, objetivoActual: 30)!;
+      expect(d.nivel, NivelDiaMinutos.vacio);
+    });
+
+    test('sin minutos (día de veces o backend viejo) no es día de minutos', () {
+      expect(
+        leerDiaCalendarioMinutos({
+          'fecha': '2026-11-01',
+          'completado': true,
+          'veces': 2,
+          'minutosObjetivo': null,
+        }, objetivoActual: 30),
+        isNull,
+      );
+    });
+  });
+
+  group('días por semana en minutos', () {
+    test('en minutos, entre 1 y 7; en veces no se toca', () {
+      expect(metaParaUnidad(8, UnidadHabito.minutos), 7);
+      expect(metaParaUnidad(0, UnidadHabito.minutos), 1);
+      expect(metaParaUnidad(4, UnidadHabito.minutos), 4);
+      expect(metaParaUnidad(8, UnidadHabito.veces), 8);
+    });
+  });
+
+  group('envíos sin respuesta clara', () {
+    test('timeout, sin conexión, 5xx y respuesta ilegible son inciertos', () {
+      for (final tipo in [
+        TipoErrorApi.timeout,
+        TipoErrorApi.sinConexion,
+        TipoErrorApi.servidor,
+        TipoErrorApi.respuestaInesperada,
+      ]) {
+        expect(
+          esResultadoIncierto(ApiException(tipo)),
+          isTrue,
+          reason: '$tipo',
+        );
+      }
+      expect(esResultadoIncierto(Exception('x')), isTrue);
+    });
+
+    test('un 4xx es una respuesta clara: no se registró nada', () {
+      expect(
+        esResultadoIncierto(
+          const ApiException(TipoErrorApi.peticionInvalida, codigoEstado: 409),
+        ),
+        isFalse,
+      );
+      expect(
+        esResultadoIncierto(const ApiException(TipoErrorApi.noAutorizado)),
+        isFalse,
+      );
+    });
+  });
+
+  group('Analytics de minutos', () {
+    test('cuenta solo la entrada que deja el día hecho', () {
+      expect(entradaDejaDiaHecho(filaMinutos(hechos: 20), 5), isFalse);
+      expect(entradaDejaDiaHecho(filaMinutos(hechos: 20), 10), isTrue);
+      expect(entradaDejaDiaHecho(filaMinutos(hechos: 20), 25), isTrue);
+      // Ya hecho: lo de por encima de la meta no cuenta.
+      expect(
+        entradaDejaDiaHecho(
+          filaMinutos(hechos: 30, completados: 1, hecho: true),
+          15,
+        ),
+        isFalse,
+      );
     });
   });
 

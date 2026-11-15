@@ -44,12 +44,3 @@ Registro? ultimoRegistroDe(List<Registro> registros, String fecha) {
   }
   return ultimo;
 }
-
-/// La suma de [Registro.cantidad] de cada día.
-Map<String, int> minutosPorDia(List<Registro> registros) {
-  final porDia = <String, int>{};
-  for (final r in registros) {
-    porDia[r.fecha] = (porDia[r.fecha] ?? 0) + r.cantidad;
-  }
-  return porDia;
-}

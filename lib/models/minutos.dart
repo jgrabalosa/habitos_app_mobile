@@ -2,6 +2,8 @@
 /// para poder probarlas. Las pantallas las llaman tal cual.
 library;
 
+import 'habito.dart';
+
 /// Lo mínimo y lo máximo que admite un registro, y también el objetivo de un
 /// día. El backend aplica los mismos límites: aquí es para no dejar escribir
 /// algo que va a rechazar.
@@ -111,13 +113,64 @@ DateTime? fechaSinHoraDe(Object? valor) {
   return fecha == null ? null : DateTime(fecha.year, fecha.month, fecha.day);
 }
 
+/// Días por semana de un semanal de minutos: entre 1 y 7. Cada día cuenta
+/// una vez, así que no se puede pedir más de siete.
+const int diasMinimosSemana = 1;
+const int diasMaximosSemana = 7;
+
+/// La meta recortada a lo que admite [unidad]. En minutos, entre 1 y 7 días
+/// por semana (y en un diario el servidor la fuerza a 1 de todos modos). En
+/// veces no se toca: un diario de veces puede pedir 8 al día.
+int metaParaUnidad(int meta, UnidadHabito unidad) => switch (unidad) {
+  UnidadHabito.veces => meta,
+  UnidadHabito.minutos => meta.clamp(diasMinimosSemana, diasMaximosSemana),
+};
+
 /// Cómo se pinta un día de un hábito de minutos en el calendario del
-/// detalle: sin nada, a medias (algo, sin llegar a su objetivo) o hecho.
+/// detalle: sin nada, a medias o hecho.
 enum NivelDiaMinutos { vacio, parcial, hecho }
 
-NivelDiaMinutos nivelDiaMinutos(int minutos, int? objetivo) {
-  if (minutos <= 0) return NivelDiaMinutos.vacio;
-  return diaHechoEnMinutos(minutos, objetivo)
-      ? NivelDiaMinutos.hecho
-      : NivelDiaMinutos.parcial;
+/// El nivel de un día de minutos del calendario. Manda el servidor:
+/// [completado] dice si el día llegó al objetivo que valía ESE día. A medias
+/// es tener minutos sin estar completado. Pasarse no lo hace «más hecho».
+NivelDiaMinutos nivelDiaCalendario({
+  required bool completado,
+  required int minutos,
+}) {
+  if (completado) return NivelDiaMinutos.hecho;
+  return minutos > 0 ? NivelDiaMinutos.parcial : NivelDiaMinutos.vacio;
+}
+
+/// Un día de minutos del calendario del detalle, ya leído.
+class DiaCalendarioMinutos {
+  final NivelDiaMinutos nivel;
+  final int minutos;
+
+  /// El objetivo que valía ese día, o el de hoy si el backend no lo manda.
+  final int? objetivo;
+
+  const DiaCalendarioMinutos({
+    required this.nivel,
+    required this.minutos,
+    required this.objetivo,
+  });
+}
+
+/// Lee un día del calendario de un hábito de minutos. Null si el día no trae
+/// `minutos` (ese día el hábito era de veces, o el backend es anterior): se
+/// pinta como un día de veces.
+DiaCalendarioMinutos? leerDiaCalendarioMinutos(
+  Map<String, dynamic> dia, {
+  required int? objetivoActual,
+}) {
+  final minutos = (dia['minutos'] as num?)?.toInt();
+  if (minutos == null) return null;
+  return DiaCalendarioMinutos(
+    nivel: nivelDiaCalendario(
+      completado: dia['completado'] == true,
+      minutos: minutos,
+    ),
+    minutos: minutos,
+    objetivo: (dia['minutosObjetivo'] as num?)?.toInt() ?? objetivoActual,
+  );
 }
