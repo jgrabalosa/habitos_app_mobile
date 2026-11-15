@@ -197,6 +197,16 @@ class _HabitoScreenState extends State<HabitoScreen> {
           ? plantilla.dias!.split(',').map(int.parse).toSet()
           : {};
       _codigoCategoriaPendiente = plantilla.categoriaCodigo;
+      _unidad = plantilla.unidad;
+      final minutos = plantilla.minutos;
+      if (_unidad == UnidadHabito.minutos && minutos != null) {
+        _minutosLibre = !metasRapidasMinutos.contains(minutos);
+        if (_minutosLibre) {
+          _minutosController.text = '$minutos';
+        } else {
+          _minutosObjetivo = minutos;
+        }
+      }
     }
     if (widget.categoriasIniciales != null) {
       _categorias = widget.categoriasIniciales!;

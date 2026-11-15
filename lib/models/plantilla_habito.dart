@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../l10n/app_localizations.dart';
+import '../l10n/textos_minutos.dart';
+import 'habito.dart';
 
 /// Una idea de hábito para empezar: un punto de partida que se puede cambiar
 /// entero en el formulario.
@@ -19,6 +21,12 @@ class PlantillaHabito {
   final String? dias;
   final String categoriaCodigo;
 
+  /// En qué se mide. Veces si no se dice.
+  final UnidadHabito unidad;
+
+  /// Los minutos por día, solo en las de [UnidadHabito.minutos].
+  final int? minutos;
+
   const PlantillaHabito({
     required this.id,
     required this.icono,
@@ -26,6 +34,8 @@ class PlantillaHabito {
     required this.meta,
     this.dias,
     required this.categoriaCodigo,
+    this.unidad = UnidadHabito.veces,
+    this.minutos,
   });
 }
 
@@ -39,12 +49,17 @@ const List<PlantillaHabito> plantillasHabito = [
     meta: 4,
     categoriaCodigo: 'CAT_SALUD',
   ),
+  // Leer y Meditar son de minutos (decidido el 15-nov-2026). Leer era «Leer
+  // 20 min» de veces; ahora se llama «Leer» y los 30 min los dice la
+  // etiqueta del objetivo.
   PlantillaHabito(
-    id: 'leer20Min',
+    id: 'leer',
     icono: LucideIcons.bookOpen,
     frecuencia: 'DIARIO',
     meta: 1,
     categoriaCodigo: 'CAT_ESTUDIO',
+    unidad: UnidadHabito.minutos,
+    minutos: 30,
   ),
   PlantillaHabito(
     id: 'ejercicio',
@@ -60,6 +75,8 @@ const List<PlantillaHabito> plantillasHabito = [
     frecuencia: 'DIARIO',
     meta: 1,
     categoriaCodigo: 'CAT_MENTE',
+    unidad: UnidadHabito.minutos,
+    minutos: 15,
   ),
   PlantillaHabito(
     id: 'dormir8h',
@@ -87,7 +104,7 @@ const List<PlantillaHabito> plantillasHabito = [
 /// Nombre de una plantilla en un idioma concreto.
 String nombrePlantilla(AppLocalizations l, String id) => switch (id) {
   'beberAgua' => l.plantillaBeberAgua,
-  'leer20Min' => l.plantillaLeer20Min,
+  'leer' => l.plantillaLeer,
   'ejercicio' => l.plantillaEjercicio,
   'meditar' => l.plantillaMeditar,
   'dormir8h' => l.plantillaDormir8h,
@@ -96,8 +113,17 @@ String nombrePlantilla(AppLocalizations l, String id) => switch (id) {
   _ => id,
 };
 
-/// Lo que dice cada fila debajo del nombre: cuántas veces y en qué días.
+/// Lo que dice cada fila debajo del nombre: cuántas veces y en qué días, o en
+/// una de minutos, sus minutos («30 min cada día»).
 String descripcionPlantilla(AppLocalizations l, PlantillaHabito p) {
+  final minutos = p.minutos;
+  if (p.unidad == UnidadHabito.minutos && minutos != null) {
+    return etiquetaObjetivoMinutos(
+      l,
+      minutos,
+      diario: p.frecuencia == 'DIARIO',
+    );
+  }
   if (p.frecuencia == 'SEMANAL' && p.dias != null) {
     final dias = (p.dias!.split(',').map(int.parse).toList()..sort())
         .map((d) => _nombreDia(l, d))
@@ -136,13 +162,25 @@ final List<AppLocalizations> _todosLosIdiomas = [
   lookupAppLocalizations(const Locale('pt')),
 ];
 
+/// Si [parte] aparece en [texto] como palabras enteras: «leer» está en «leer
+/// 20 min», pero «ler» no está en «taller» ni «read» en «bake bread». Con
+/// nombres cortos como «Leer», contener las letras ya no basta.
+bool _contienePalabras(String texto, String parte) {
+  if (parte.isEmpty) return false;
+  return RegExp(
+    '(^|[^a-z0-9])${RegExp.escape(parte)}(\$|[^a-z0-9])',
+  ).hasMatch(texto);
+}
+
 bool _yaExiste(PlantillaHabito p, List<String> nombresExistentes) {
   final variantes = _todosLosIdiomas
       .map((l) => _normalizar(nombrePlantilla(l, p.id)))
       .toSet();
   return nombresExistentes.any((nombre) {
     final n = _normalizar(nombre);
-    return variantes.any((v) => n == v || n.contains(v) || v.contains(n));
+    return variantes.any(
+      (v) => n == v || _contienePalabras(n, v) || _contienePalabras(v, n),
+    );
   });
 }
 
