@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:habitos_app_mobile/l10n/app_localizations.dart';
 import 'package:habitos_app_mobile/models/hoy.dart';
 import 'package:habitos_app_mobile/models/registro.dart';
+import 'package:habitos_app_mobile/services/abrir_enfoque.dart';
 import 'package:habitos_app_mobile/widgets/panel_minutos.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
@@ -19,6 +20,21 @@ class Envio {
   final String? origen;
 
   Envio(this.habitoId, this.fecha, this.minutos, this.clave, this.origen);
+}
+
+/// Un lanzador de enlaces falso: apunta lo que se le pide abrir y contesta
+/// con [abre] para cada enlace (false si no está).
+class LanzadorFalso implements LanzadorEnlaces {
+  final Map<String, bool> abre;
+  final List<(String, String?)> pedidos = [];
+
+  LanzadorFalso(this.abre);
+
+  @override
+  Future<bool> abrir(Uri enlace, {String? paquete}) async {
+    pedidos.add((enlace.toString(), paquete));
+    return abre[enlace.toString()] ?? false;
+  }
 }
 
 FilaHoy fila({int hechos = 20, int objetivo = 30}) => FilaHoy.fromJson({
@@ -47,6 +63,8 @@ void main() {
   final completarOriginal = PanelMinutos.completar;
   final registrosOriginal = PanelMinutos.registros;
   final deshacerOriginal = PanelMinutos.deshacer;
+  final lanzadorOriginal = PanelMinutos.lanzadorEnlaces;
+  final flavorOriginal = PanelMinutos.flavor;
 
   late List<Envio> envios;
   late List<int> deshechos;
@@ -91,6 +109,8 @@ void main() {
     PanelMinutos.completar = completarOriginal;
     PanelMinutos.registros = registrosOriginal;
     PanelMinutos.deshacer = deshacerOriginal;
+    PanelMinutos.lanzadorEnlaces = lanzadorOriginal;
+    PanelMinutos.flavor = flavorOriginal;
   });
 
   /// Abre el panel como lo abre Hoy y deja en [resultado] lo que devuelve.
@@ -299,8 +319,80 @@ void main() {
     expect(envios.single.minutos, 5);
   });
 
-  testWidgets('el hueco de Enfoque sigue apagado', (tester) async {
-    expect(PanelMinutos.enfoqueDisponible, isFalse);
+  group('Empezar sesión (Norday Focus)', () {
+    const enlace = 'norday-enfoque://sesion?destino=habito&id=5';
+    const market = 'market://details?id=com.norday.enfoque';
+    const web =
+        'https://play.google.com/store/apps/details?id=com.norday.enfoque';
+
+    Future<void> pulsar(WidgetTester tester) async {
+      final boton = find.text(l.minEmpezarSesion);
+      await tester.ensureVisible(boton);
+      await tester.pumpAndSettle();
+      await tester.tap(boton);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('con Enfoque instalada la abre con el hábito y se cierra', (
+      tester,
+    ) async {
+      final lanzador = LanzadorFalso({enlace: true});
+      PanelMinutos.lanzadorEnlaces = lanzador;
+      PanelMinutos.flavor = () => 'produccion';
+      final resultado = <ResultadoMinutos?>[];
+      await abrir(tester, resultado);
+      expect(PanelMinutos.enfoqueDisponible, isTrue);
+      await pulsar(tester);
+      expect(lanzador.pedidos, [(enlace, 'com.norday.enfoque')]);
+      // Cerrado sin resultado: los minutos llegan desde Enfoque.
+      expect(resultado, [null]);
+      expect(find.text(l.minEmpezarSesion), findsNothing);
+      expect(envios, isEmpty);
+    });
+
+    testWidgets('la Habits de prueba abre la Enfoque de prueba', (
+      tester,
+    ) async {
+      final lanzador = LanzadorFalso({enlace: true});
+      PanelMinutos.lanzadorEnlaces = lanzador;
+      PanelMinutos.flavor = () => 'prueba';
+      await abrir(tester, []);
+      await pulsar(tester);
+      expect(lanzador.pedidos, [(enlace, 'com.norday.enfoque.prueba')]);
+    });
+
+    testWidgets('sin Enfoque abre su ficha de Google Play', (tester) async {
+      final lanzador = LanzadorFalso({market: true});
+      PanelMinutos.lanzadorEnlaces = lanzador;
+      PanelMinutos.flavor = () => 'produccion';
+      final resultado = <ResultadoMinutos?>[];
+      await abrir(tester, resultado);
+      await pulsar(tester);
+      expect(lanzador.pedidos, [
+        (enlace, 'com.norday.enfoque'),
+        (market, null),
+      ]);
+      expect(resultado, [null]);
+    });
+
+    testWidgets('si no se abre nada, se queda abierto con el error', (
+      tester,
+    ) async {
+      final lanzador = LanzadorFalso({});
+      PanelMinutos.lanzadorEnlaces = lanzador;
+      final resultado = <ResultadoMinutos?>[];
+      await abrir(tester, resultado);
+      await pulsar(tester);
+      expect(lanzador.pedidos.map((p) => p.$1), [enlace, market, web]);
+      expect(resultado, isEmpty);
+      expect(find.text(l.minErrorAbrirEnfoque), findsOneWidget);
+      expect(find.text(l.minEmpezarSesion), findsOneWidget);
+    });
+
+    testWidgets('desde otro día de la semana no sale', (tester) async {
+      await abrir(tester, [], fechaDia: '2026-11-13', esHoy: false);
+      expect(find.text(l.minEmpezarSesion), findsNothing);
+    });
   });
 
   group('cierre y claves con envíos sin respuesta clara', () {

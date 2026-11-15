@@ -385,5 +385,7 @@
   "appNombre": "Norday Habits",
   "loginLema": "Cria hábitos, transforma a tua vida",
   "actualizacionObligatoriaTexto": "Para continuares a usar o Norday, atualiza a app. Os teus hábitos e o teu progresso ficam tal como estão.",
-  "eliminarCuentaCuerpo": "Todos os teus hábitos, registos, sequências, conquistas e pontos serão apagados para sempre.\n\nEsta ação não pode ser anulada."
+  "eliminarCuentaCuerpo": "Todos os teus hábitos, registos, sequências, conquistas e pontos serão apagados para sempre.\n\nEsta ação não pode ser anulada.",
+  "minEmpezarSesion": "Começar sessão",
+  "minErrorAbrirEnfoque": "Não foi possível abrir o Norday Focus."
 }

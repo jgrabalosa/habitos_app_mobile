@@ -385,5 +385,7 @@
   "appNombre": "Norday Habits",
   "loginLema": "Build habits, transform your life",
   "actualizacionObligatoriaTexto": "To keep using Norday, update the app. Your habits and progress stay just as they are.",
-  "eliminarCuentaCuerpo": "All your habits, entries, streaks, achievements and points will be gone for good.\n\nThis can't be undone."
+  "eliminarCuentaCuerpo": "All your habits, entries, streaks, achievements and points will be gone for good.\n\nThis can't be undone.",
+  "minEmpezarSesion": "Start session",
+  "minErrorAbrirEnfoque": "Couldn't open Norday Focus."
 }

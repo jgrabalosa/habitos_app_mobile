@@ -782,5 +782,13 @@
   "eliminarCuentaCuerpo": "Se borrarán para siempre todos tus hábitos, registros, rachas, logros y puntos.\n\nEsta acción no se puede deshacer.",
   "@eliminarCuentaCuerpo": {
     "description": "Perfil del core: primera confirmación de borrado de cuenta (TextosApp.eliminarCuenta)"
+  },
+  "minEmpezarSesion": "Empezar sesión",
+  "@minEmpezarSesion": {
+    "description": "Panel de minutos: botón que abre Norday Focus con este hábito como destino"
+  },
+  "minErrorAbrirEnfoque": "No se ha podido abrir Norday Focus.",
+  "@minErrorAbrirEnfoque": {
+    "description": "Panel de minutos: no se pudo abrir ni Norday Focus ni su ficha de Google Play"
   }
 }

@@ -9,6 +9,7 @@ import '../models/hoy.dart';
 import '../models/minutos.dart';
 import '../models/registro.dart';
 import '../screens/dashboard_logica.dart';
+import '../services/abrir_enfoque.dart';
 import '../services/api_service_habitos.dart';
 import '../services/clave_envio.dart';
 
@@ -17,9 +18,17 @@ import '../services/clave_envio.dart';
 class PanelMinutos {
   PanelMinutos._();
 
-  /// El hueco de «Empezar sesión» (Norday Enfoque). Apagado: Enfoque no existe
-  /// todavía, y hasta entonces el panel no enseña nada en su sitio.
-  static const bool enfoqueDisponible = false;
+  /// El botón «Empezar sesión», que abre Norday Focus (la app Enfoque) con
+  /// este hábito como destino, o su ficha de Google Play si no está.
+  static const bool enfoqueDisponible = true;
+
+  /// Quién abre Enfoque o su ficha. En los tests, un falso.
+  @visibleForTesting
+  static LanzadorEnlaces lanzadorEnlaces = const LanzadorEnlacesAndroid();
+
+  /// El flavor con el que corre la app, para abrir la Enfoque que le toca.
+  @visibleForTesting
+  static String? Function() flavor = () => appFlavor;
 
   @visibleForTesting
   static Future<Map<String, dynamic>> Function(
@@ -171,6 +180,9 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
   ModoMinutos _modo = ModoMinutos.sumar;
   bool _enviando = false;
 
+  /// Abriendo Enfoque: el botón no se puede pulsar dos veces.
+  bool _abriendo = false;
+
   /// El error del campo libre, ya traducido. Se borra al escribir.
   String? _errorCampo;
 
@@ -303,6 +315,33 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
             : MensajesError.de(context, e, generico: l.dashDeshacerError);
       });
     }
+  }
+
+  /// Abre Enfoque con este hábito (o su ficha de Google Play) y cierra el
+  /// panel: los minutos de la sesión llegan desde Enfoque, y al volver a la
+  /// app Hoy recarga. Si no se ha podido abrir nada, el panel se queda
+  /// abierto con el error.
+  Future<void> _empezarSesion() async {
+    if (_enviando || _abriendo) return;
+    final l = AppLocalizations.of(context)!;
+    setState(() {
+      _abriendo = true;
+      _error = null;
+    });
+    final apertura = await abrirEnfoque(
+      habitoId: _fila.habito.habitoId,
+      flavor: PanelMinutos.flavor(),
+      lanzador: PanelMinutos.lanzadorEnlaces,
+    );
+    if (!mounted) return;
+    if (apertura == AperturaEnfoque.nada) {
+      setState(() {
+        _abriendo = false;
+        _error = l.minErrorAbrirEnfoque;
+      });
+      return;
+    }
+    Navigator.pop(context);
   }
 
   @override
@@ -483,11 +522,17 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
                 ),
               ),
             ],
-            // Aquí irá «Empezar sesión» de Norday Enfoque. Mientras
-            // `enfoqueDisponible` sea false no se pinta nada: no se implementa
-            // Enfoque hasta que exista.
-            if (PanelMinutos.enfoqueDisponible)
+            // «Empezar sesión» de Norday Focus (la app Enfoque). Solo para
+            // hoy: una sesión cuenta en el día en que empieza, así que desde
+            // otro día de la semana sumaría a hoy y no al que se mira.
+            if (PanelMinutos.enfoqueDisponible && widget.esHoy) ...[
               const SizedBox(height: AppSpacing.md),
+              OutlinedButton.icon(
+                onPressed: _enviando || _abriendo ? null : _empezarSesion,
+                icon: const Icon(LucideIcons.play, size: 18),
+                label: Text(l.minEmpezarSesion),
+              ),
+            ],
           ],
         ),
       ),
