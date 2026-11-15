@@ -178,6 +178,101 @@ void main() {
     });
   });
 
+  group('duraciones en horas fuera del panel', () {
+    test('el aviso de mañana dice la duración en horas', () {
+      expect(
+        avisoAplicaDesde(
+          es,
+          aplicaDesde: DateTime(2026, 11, 16),
+          hoy: DateTime(2026, 11, 15),
+          locale: 'es',
+          minutosNuevos: 90,
+        ),
+        'El objetivo de 1 h 30 min se aplica desde mañana. Hoy ya tienes '
+        'registros con la meta anterior.',
+      );
+      expect(
+        avisoAplicaDesde(
+          en,
+          aplicaDesde: DateTime(2026, 11, 16),
+          hoy: DateTime(2026, 11, 15),
+          locale: 'en',
+          minutosNuevos: 60,
+        ),
+        'The 1 h goal applies from tomorrow. You already have entries today '
+        'with the previous goal.',
+      );
+      expect(
+        avisoAplicaDesde(
+          pt,
+          aplicaDesde: DateTime(2026, 11, 16),
+          hoy: DateTime(2026, 11, 15),
+          locale: 'pt',
+          minutosNuevos: 60,
+        ),
+        'O objetivo de 1 h aplica-se a partir de amanhã. Hoje já tens '
+        'registos com a meta anterior.',
+      );
+    });
+
+    test('la etiqueta del objetivo en el formulario', () {
+      expect(etiquetaObjetivoMinutos(es, 30, diario: true), '30 min cada día');
+      expect(etiquetaObjetivoMinutos(es, 60, diario: true), '1 h cada día');
+      expect(
+        etiquetaObjetivoMinutos(es, 90, diario: false),
+        '1 h 30 min cada día que lo hagas',
+      );
+      expect(etiquetaObjetivoMinutos(en, 120, diario: true), '2 h every day');
+      expect(
+        etiquetaObjetivoMinutos(pt, 61, diario: false),
+        '1 h 1 min em cada dia que o fizeres',
+      );
+    });
+
+    test('la frecuencia del detalle', () {
+      expect(etiquetaMinutosDetalle(es, 60), 'Diario · 1 h cada día');
+      expect(etiquetaMinutosDetalle(es, 59), 'Diario · 59 min cada día');
+      expect(
+        etiquetaMinutosDetalle(es, 90, semanal: 'lun · mié'),
+        'Semanal · lun · mié · 1 h 30 min cada día que lo hagas',
+      );
+      expect(etiquetaMinutosDetalle(pt, 120), 'Diário · 2 h todos os dias');
+    });
+
+    test('lo que sumó cada registro del detalle', () {
+      expect(textoRegistroMinutos(es, 20), '+20 min');
+      expect(textoRegistroMinutos(es, 60), '+1 h');
+      expect(textoRegistroMinutos(es, 75), '+1 h 15 min');
+    });
+
+    test('el par de Hoy y el del lector de pantalla siguen la regla', () {
+      final corto = parMinutos(es, 20, 30);
+      expect(
+        es.dashChipMinutos('Diario', corto.hechos, corto.objetivo),
+        'Diario · 20 / 30 min',
+      );
+      final largo = parMinutos(es, 20, 90);
+      expect(
+        es.dashChipMinutos('Diario', largo.hechos, largo.objetivo),
+        'Diario · 20 min / 1 h 30 min',
+      );
+      expect(
+        es.a11yMinutosHabito('Leer', largo.hechos, largo.objetivo),
+        'Sumar minutos a Leer. Llevas 20 min de 1 h 30 min',
+      );
+      expect(
+        es.dashChipMinutosSemanal(
+          'Semanal',
+          2,
+          3,
+          corto.hechos,
+          corto.objetivo,
+        ),
+        'Semanal · 2/3 días · 20 / 30 min',
+      );
+    });
+  });
+
   group('aviso de aplicaDesde', () {
     // Domingo 15 de noviembre de 2026.
     final hoy = DateTime(2026, 11, 15);
@@ -202,8 +297,8 @@ void main() {
           locale: 'es',
           minutosNuevos: 40,
         ),
-        'Los 40 min se aplican desde mañana. Hoy ya tienes registros con la '
-        'meta anterior.',
+        'El objetivo de 40 min se aplica desde mañana. Hoy ya tienes '
+        'registros con la meta anterior.',
       );
       // Un cambio que no es de minutos, un miércoles: mañana es jueves.
       expect(
@@ -238,7 +333,7 @@ void main() {
           locale: 'es',
           minutosNuevos: 40,
         ),
-        es.habAplicaMinutosManana(40),
+        es.habAplicaMinutosManana('40 min'),
       );
     });
 
@@ -326,6 +421,26 @@ void main() {
       );
     });
 
+    test('«Desde mañana: 1 h 30 min» pasada la hora', () {
+      final p = ObjetivoProgramado(
+        desde: DateTime(2026, 11, 16),
+        unidad: UnidadHabito.minutos,
+        frecuencia: 'DIARIO',
+        meta: 1,
+        minutosObjetivo: 90,
+      );
+      expect(
+        textoObjetivoProgramado(
+          es,
+          p,
+          actual: habito(unidad: UnidadHabito.minutos, minutos: 30),
+          hoy: DateTime(2026, 11, 15),
+          locale: 'es',
+        ),
+        'Desde mañana: 1 h 30 min',
+      );
+    });
+
     test('pasar de veces a minutos dice los minutos', () {
       final p = ObjetivoProgramado(
         desde: DateTime(2026, 11, 16),
@@ -360,7 +475,7 @@ void main() {
           ),
           locale: 'en',
         ),
-        '60 min · 3 days a week',
+        '1 h · 3 days a week',
       );
     });
   });

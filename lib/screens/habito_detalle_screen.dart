@@ -270,14 +270,15 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
       // cada día que lo hagas»: nunca «N×X a la semana».
       final locale = Localizations.localeOf(context).toLanguageTag();
       final dias = _habitoDelDetalle().diasPlanificados;
-      texto = esDiario
-          ? l.detMinutosDiario(minutos)
-          : l.detMinutosSemanal(
-              dias.isNotEmpty
+      texto = etiquetaMinutosDetalle(
+        l,
+        minutos,
+        semanal: esDiario
+            ? null
+            : (dias.isNotEmpty
                   ? diasFijosLegibles(dias, locale)
-                  : l.objDiasSemana(meta),
-              minutos,
-            );
+                  : l.objDiasSemana(meta)),
+      );
     } else if (esDiario) {
       texto = meta > 1 ? l.detDiarioMeta(meta) : l.frecDiario;
     } else if (diasSemana != null && diasSemana.trim().isNotEmpty) {
@@ -785,7 +786,8 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                             // backend lo manda.
                             if (_esMinutos && r['cantidad'] is num)
                               Text(
-                                l.detRegistroMinutos(
+                                textoRegistroMinutos(
+                                  l,
                                   (r['cantidad'] as num).toInt(),
                                 ),
                                 style: Theme.of(context).textTheme.bodySmall

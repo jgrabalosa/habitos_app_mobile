@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
+import '../l10n/textos_minutos.dart';
 import '../services/api_service_habitos.dart';
 import '../services/analytics_service.dart';
 import '../services/habitos_refresh.dart';
@@ -1325,22 +1326,23 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   /// El texto del chip: la frecuencia con lo que lleva. En un hábito de
   /// minutos, los minutos del día respecto a su objetivo («Diario · 20 / 30
-  /// min»), y en un semanal también los días de la semana.
+  /// min», «Diario · 45 min / 1 h 30 min»), y en un semanal también los días
+  /// de la semana.
   String _textoChip(AppLocalizations l, FilaHoy f) {
     final frecuencia = _frecuenciaLegible(l, f.habito.frecuencia);
     if (!f.esMinutos) {
       return l.dashChipFrecuencia(frecuencia, f.completados, f.meta);
     }
-    final objetivo = f.minutosObjetivo ?? 0;
+    final par = parMinutos(l, f.minutosHechos, f.minutosObjetivo ?? 0);
     return f.esSemanal
         ? l.dashChipMinutosSemanal(
             frecuencia,
             f.completados,
             f.meta,
-            f.minutosHechos,
-            objetivo,
+            par.hechos,
+            par.objetivo,
           )
-        : l.dashChipMinutos(frecuencia, f.minutosHechos, objetivo);
+        : l.dashChipMinutos(frecuencia, par.hechos, par.objetivo);
   }
 
   /// El control de un hábito de minutos, donde los de veces llevan el check:
@@ -1362,6 +1364,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       pistaActiva: pistaActiva,
     );
     final hecho = f.diaHechoMinutos;
+    final par = parMinutos(l, f.minutosHechos, f.minutosObjetivo ?? 0);
     final VoidCallback? alTocar = tocable
         ? () => _abrirPanelMinutos(h.habitoId)
         : null;
@@ -1373,11 +1376,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       child: Semantics(
         button: true,
         enabled: tocable,
-        label: l.a11yMinutosHabito(
-          h.nombre,
-          f.minutosHechos,
-          f.minutosObjetivo ?? 0,
-        ),
+        label: l.a11yMinutosHabito(h.nombre, par.hechos, par.objetivo),
         onTap: alTocar,
         child: ExcludeSemantics(
           child: InkResponse(

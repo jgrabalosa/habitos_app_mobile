@@ -263,10 +263,10 @@ void main() {
       await tester.ensureVisible(find.text(l.habUnidadMinutos));
       await tester.tap(find.text(l.habUnidadMinutos));
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text(l.minCifra(15)));
-      await tester.tap(find.text(l.minCifra(15)));
+      await tester.ensureVisible(find.text('15 min'));
+      await tester.tap(find.text('15 min'));
       await tester.pumpAndSettle();
-      expect(find.text(l.habMinutosEtiquetaDiario(15)), findsOneWidget);
+      expect(find.text('15 min cada día'), findsOneWidget);
       await guardar(tester, l);
 
       expect(creado, {
@@ -380,16 +380,24 @@ void main() {
 
       final resultado = <bool?>[];
       await abrirFormulario(tester, resultado, habito: habitoMinutos());
-      await tester.ensureVisible(find.text(l.minCifra(60)));
-      await tester.tap(find.text(l.minCifra(60)));
+      // La meta rápida de 60 se lee en horas.
+      await tester.ensureVisible(find.text('1 h'));
+      await tester.tap(find.text('1 h'));
       await tester.pumpAndSettle();
+      expect(find.text('1 h cada día'), findsOneWidget);
       final boton = find.widgetWithText(ElevatedButton, l.habBotonActualizar);
       await tester.ensureVisible(boton);
       await tester.tap(boton);
       await tester.pumpAndSettle();
 
       expect(resultado, [true]);
-      expect(find.text(l.habAplicaMinutosManana(60)), findsOneWidget);
+      expect(
+        find.text(
+          'El objetivo de 1 h se aplica desde mañana. Hoy ya tienes registros '
+          'con la meta anterior.',
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('el cambio programado se ve y se puede anular', (tester) async {
@@ -413,7 +421,7 @@ void main() {
         programado: programado,
       );
       expect(find.text(l.habProgramadoTitulo), findsOneWidget);
-      expect(find.text(l.progDesdeManana(l.minCifra(40))), findsOneWidget);
+      expect(find.text('Desde mañana: 40 min'), findsOneWidget);
 
       await tester.tap(find.text(l.habProgramadoAnular));
       await tester.pumpAndSettle();

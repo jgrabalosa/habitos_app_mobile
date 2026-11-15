@@ -87,11 +87,42 @@ String etiquetaDeshacer(
   );
 }
 
+/// La frase del objetivo en el formulario: «30 min cada día», «1 h 30 min
+/// cada día que lo hagas».
+String etiquetaObjetivoMinutos(
+  AppLocalizations l,
+  int minutos, {
+  required bool diario,
+}) {
+  final duracion = duracionLegible(l, minutos);
+  return diario
+      ? l.habMinutosEtiquetaDiario(duracion)
+      : l.habMinutosEtiquetaSemanal(duracion);
+}
+
+/// La frecuencia de un hábito de minutos en el detalle: «Diario · 1 h cada
+/// día» o, con [semanal] (los días o los días por semana ya escritos),
+/// «Semanal · lun · mié · 1 h 30 min cada día que lo hagas».
+String etiquetaMinutosDetalle(
+  AppLocalizations l,
+  int minutos, {
+  String? semanal,
+}) {
+  final duracion = duracionLegible(l, minutos);
+  return semanal == null
+      ? l.detMinutosDiario(duracion)
+      : l.detMinutosSemanal(semanal, duracion);
+}
+
+/// Lo que sumó un registro, en el detalle: «+20 min», «+1 h 15 min».
+String textoRegistroMinutos(AppLocalizations l, int cantidad) =>
+    l.detRegistroMinutos(duracionLegible(l, cantidad));
+
 /// El aviso tras guardar un cambio que no vale hasta otro día, o null si ya
 /// vale ([aplicaDesde] es hoy, anterior o no viene).
 ///
 /// Con [minutosNuevos] —el cambio toca los minutos por día— y efecto mañana,
-/// se dice la cifra: «Los 40 min se aplican desde mañana…».
+/// se dice la cifra: «El objetivo de 1 h 30 min se aplica desde mañana…».
 String? avisoAplicaDesde(
   AppLocalizations l, {
   required DateTime? aplicaDesde,
@@ -107,7 +138,7 @@ String? avisoAplicaDesde(
     // «hoy ya tienes registros». El de minutos se aplica por días.
     CuandoAplica.manana =>
       minutosNuevos != null
-          ? l.habAplicaMinutosManana(minutosNuevos)
+          ? l.habAplicaMinutosManana(duracionLegible(l, minutosNuevos))
           : (aplicaDesde.weekday == DateTime.monday
                 ? l.habAplicaLunes
                 : l.habAplicaManana),
@@ -145,7 +176,7 @@ String describirObjetivo(
       p.meta != actual.meta ||
       (p.diasSemana ?? '') != (actual.diasSemana ?? '');
 
-  String minutos() => l.minCifra(p.minutosObjetivo ?? 0);
+  String minutos() => duracionLegible(l, p.minutosObjetivo ?? 0);
   String frecuencia() {
     if (p.frecuencia == 'SEMANAL') {
       final dias = p.diasPlanificados;

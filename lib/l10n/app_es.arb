@@ -528,14 +528,6 @@
       }
     }
   },
-  "minCifra": "{n} min",
-  "@minCifra": {
-    "placeholders": {
-      "n": {
-        "type": "int"
-      }
-    }
-  },
   "minDeObjetivo": "{hechos} / {objetivo}",
   "@minDeObjetivo": {
     "description": "Lo hecho respecto al objetivo, ya escrito con parMinutos: «20 / 30 min» bajo la hora, «45 min / 1 h 30 min» si alguna llega a 60",
@@ -548,22 +540,24 @@
       }
     }
   },
-  "dashChipMinutos": "{frecuencia} · {hechos} / {objetivo} min",
+  "dashChipMinutos": "{frecuencia} · {hechos} / {objetivo}",
   "@dashChipMinutos": {
+    "description": "Chip de una fila de minutos en Hoy; hechos y objetivo ya escritos con parMinutos: «20» y «30 min», o «45 min» y «1 h 30 min»",
     "placeholders": {
       "frecuencia": {
         "type": "String"
       },
       "hechos": {
-        "type": "int"
+        "type": "String"
       },
       "objetivo": {
-        "type": "int"
+        "type": "String"
       }
     }
   },
-  "dashChipMinutosSemanal": "{frecuencia} · {dias}/{meta} días · {hechos} / {objetivo} min",
+  "dashChipMinutosSemanal": "{frecuencia} · {dias}/{meta} días · {hechos} / {objetivo}",
   "@dashChipMinutosSemanal": {
+    "description": "Chip de un semanal de minutos en Hoy; hechos y objetivo ya escritos con parMinutos: «20» y «30 min», o «45 min» y «1 h 30 min»",
     "placeholders": {
       "frecuencia": {
         "type": "String"
@@ -575,24 +569,25 @@
         "type": "int"
       },
       "hechos": {
-        "type": "int"
+        "type": "String"
       },
       "objetivo": {
-        "type": "int"
+        "type": "String"
       }
     }
   },
-  "a11yMinutosHabito": "Sumar minutos a {nombre}. Llevas {hechos} de {objetivo} min",
+  "a11yMinutosHabito": "Sumar minutos a {nombre}. Llevas {hechos} de {objetivo}",
   "@a11yMinutosHabito": {
+    "description": "Lector de pantalla del aro de minutos en Hoy; hechos y objetivo ya escritos con parMinutos: «20» y «30 min», o «45 min» y «1 h 30 min»",
     "placeholders": {
       "nombre": {
         "type": "String"
       },
       "hechos": {
-        "type": "int"
+        "type": "String"
       },
       "objetivo": {
-        "type": "int"
+        "type": "String"
       }
     }
   },
@@ -686,29 +681,29 @@
   "habUnidadSinVuelta": "Un hábito de minutos no puede volver a contarse en veces.",
   "habMinutosPorDia": "Minutos por día",
   "habMinutosOtra": "Otra cifra (1-600)",
-  "habMinutosEtiquetaDiario": "{n} min cada día",
+  "habMinutosEtiquetaDiario": "{duracion} cada día",
   "@habMinutosEtiquetaDiario": {
     "placeholders": {
-      "n": {
-        "type": "int"
+      "duracion": {
+        "type": "String"
       }
     }
   },
-  "habMinutosEtiquetaSemanal": "{n} min cada día que lo hagas",
+  "habMinutosEtiquetaSemanal": "{duracion} cada día que lo hagas",
   "@habMinutosEtiquetaSemanal": {
     "placeholders": {
-      "n": {
-        "type": "int"
+      "duracion": {
+        "type": "String"
       }
     }
   },
   "habMinutosRango": "Elige entre 1 y 600 minutos por día.",
   "habAyudaMetaSemanalMinutos": "Cuántos días por semana quieres llegar a tus minutos, el día que te venga bien. Si marcas días concretos, el objetivo sale de ellos.",
-  "habAplicaMinutosManana": "Los {n} min se aplican desde mañana. Hoy ya tienes registros con la meta anterior.",
+  "habAplicaMinutosManana": "El objetivo de {duracion} se aplica desde mañana. Hoy ya tienes registros con la meta anterior.",
   "@habAplicaMinutosManana": {
     "placeholders": {
-      "n": {
-        "type": "int"
+      "duracion": {
+        "type": "String"
       }
     }
   },
@@ -769,33 +764,33 @@
       }
     }
   },
-  "detMinutosDiario": "Diario · {n} min cada día",
+  "detMinutosDiario": "Diario · {duracion} cada día",
   "@detMinutosDiario": {
     "placeholders": {
-      "n": {
-        "type": "int"
+      "duracion": {
+        "type": "String"
       }
     }
   },
-  "detMinutosSemanal": "Semanal · {dias} · {n} min cada día que lo hagas",
+  "detMinutosSemanal": "Semanal · {dias} · {duracion} cada día que lo hagas",
   "@detMinutosSemanal": {
     "placeholders": {
       "dias": {
         "type": "String"
       },
-      "n": {
-        "type": "int"
+      "duracion": {
+        "type": "String"
       }
     }
   },
   "detTiempoTotal": "Tiempo total",
   "detAyudaTiempoTotalEtiqueta": "Ayuda sobre el tiempo total",
   "detAyudaTiempoTotal": "Todos los minutos que le has dedicado desde que lo creaste, también los que pasan de tu objetivo.",
-  "detRegistroMinutos": "+{n} min",
+  "detRegistroMinutos": "+{duracion}",
   "@detRegistroMinutos": {
     "placeholders": {
-      "n": {
-        "type": "int"
+      "duracion": {
+        "type": "String"
       }
     }
   }
