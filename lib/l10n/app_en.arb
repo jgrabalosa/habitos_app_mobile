@@ -76,7 +76,7 @@
       }
     }
   },
-  "ideasFrecSemanal": "{n, plural, =1{1 time a week · {dias}} other{{n} times a week · {dias}}}",
+  "ideasFrecSemanal": "{n, plural, =1{1 day a week · {dias}} other{{n} days a week · {dias}}}",
   "@ideasFrecSemanal": {
     "placeholders": {
       "n": {
@@ -106,7 +106,7 @@
   "habMeta": "Goal: ",
   "habAyudaMetaEtiqueta": "Help about the goal",
   "habAyudaMetaDiaria": "How many times a day you want to do it. Drinking water might be 4; meditating, 1.",
-  "habAyudaMetaSemanal": "How many times a week, whichever day suits you. If you pick specific days, the goal comes from them.",
+  "habAyudaMetaSemanal": "How many days a week you want to do it, whichever days suit you. If you pick specific days, the goal comes from them.",
   "habAyudaMetaDias": "With specific days, the goal is those days: one for each day you pick.",
   "habAyudaFrecuenciaEtiqueta": "Help about the frequency",
   "habAyudaFrecuencia": "Daily: every day. Weekly: a few times a week, on whichever days suit you.",
@@ -131,7 +131,7 @@
   "habBotonCrear": "Create habit",
   "habBotonActualizar": "Update habit",
   "habBotonEliminar": "Delete habit",
-  "habDiasSemanaMeta": "{n} days/week",
+  "habDiasSemanaMeta": "{n, plural, =1{1 day a week} other{{n} days a week}}",
   "habALas": "At {hora}",
   "habCambiarHora": "Change time ({hora})",
   "detErrorCargar": "Couldn't load the habit",
@@ -176,7 +176,7 @@
   "dashVacioCuerpo": "Big changes start with one small step. Go to the Habits tab to create your first one.",
   "dashChipFrecuencia": "{frecuencia} · {hechos}/{meta}",
   "dashFlexiblesTitulo": "THIS WEEK",
-  "dashFlexibleProgreso": "{meta} times this week · {hechos}/{meta} done",
+  "dashFlexibleProgreso": "{meta, plural, =1{1 day this week} other{{meta} days this week}} · {hechos}/{meta} done",
   "dashDiaSinHabitos": "No habits scheduled for this day.",
   "habitosTodas": "All",
   "habitosOrdenRecientes": "Most recent",

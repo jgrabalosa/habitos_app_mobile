@@ -113,4 +113,47 @@ void main() {
       );
     });
   });
+  group('los semanales cuentan días, no veces', () {
+    test('en español', () {
+      expect(
+        es.habAyudaMetaSemanal,
+        'Cuántos días por semana quieres hacerlo, los que te vengan bien. '
+        'Si marcas días concretos, el objetivo sale de ellos.',
+      );
+      expect(es.ideasFrecSemanal(3, 'mar'), '3 días por semana · mar');
+      expect(es.ideasFrecSemanal(1, 'mar'), '1 día por semana · mar');
+      expect(es.dashFlexibleProgreso(1, 3), '3 días esta semana · 1/3 hechos');
+      expect(es.dashFlexibleProgreso(0, 1), '1 día esta semana · 0/1 hechos');
+      expect(es.habDiasSemanaMeta(3), '3 días por semana');
+      expect(es.habDiasSemanaMeta(1), '1 día por semana');
+    });
+
+    test('en inglés', () {
+      expect(
+        en.habAyudaMetaSemanal,
+        'How many days a week you want to do it, whichever days suit you. '
+        'If you pick specific days, the goal comes from them.',
+      );
+      expect(en.ideasFrecSemanal(3, 'Tue'), '3 days a week · Tue');
+      expect(en.ideasFrecSemanal(1, 'Tue'), '1 day a week · Tue');
+      expect(en.dashFlexibleProgreso(1, 3), '3 days this week · 1/3 done');
+      expect(en.dashFlexibleProgreso(0, 1), '1 day this week · 0/1 done');
+      expect(en.habDiasSemanaMeta(3), '3 days a week');
+      expect(en.habDiasSemanaMeta(1), '1 day a week');
+    });
+
+    test('en portugués', () {
+      expect(
+        pt.habAyudaMetaSemanal,
+        'Quantos dias por semana queres fazê-lo, os que te derem jeito. '
+        'Se marcares dias concretos, o objetivo sai deles.',
+      );
+      expect(pt.ideasFrecSemanal(3, 'ter'), '3 dias por semana · ter');
+      expect(pt.ideasFrecSemanal(1, 'ter'), '1 dia por semana · ter');
+      expect(pt.dashFlexibleProgreso(1, 3), '3 dias esta semana · 1/3 feitos');
+      expect(pt.dashFlexibleProgreso(0, 1), '1 dia esta semana · 0/1 feitos');
+      expect(pt.habDiasSemanaMeta(3), '3 dias por semana');
+      expect(pt.habDiasSemanaMeta(1), '1 dia por semana');
+    });
+  });
 }

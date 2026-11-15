@@ -997,9 +997,12 @@ class _HabitoScreenState extends State<HabitoScreen> {
                           etiquetaSemantica: l.habAyudaMetaEtiqueta,
                           superindice: true,
                         ),
-                        Text(
-                          l.habDiasSemanaMeta(_diasSeleccionados.length),
-                          style: Theme.of(context).textTheme.titleLarge,
+                        // «3 días por semana»: si no cabe, baja de línea.
+                        Flexible(
+                          child: Text(
+                            l.habDiasSemanaMeta(_diasSeleccionados.length),
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
                         ),
                       ],
                     )

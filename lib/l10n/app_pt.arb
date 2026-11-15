@@ -76,7 +76,7 @@
       }
     }
   },
-  "ideasFrecSemanal": "{n, plural, =1{1 vez por semana · {dias}} other{{n} vezes por semana · {dias}}}",
+  "ideasFrecSemanal": "{n, plural, =1{1 dia por semana · {dias}} other{{n} dias por semana · {dias}}}",
   "@ideasFrecSemanal": {
     "placeholders": {
       "n": {
@@ -106,7 +106,7 @@
   "habMeta": "Objetivo: ",
   "habAyudaMetaEtiqueta": "Ajuda sobre o objetivo",
   "habAyudaMetaDiaria": "Quantas vezes por dia queres fazê-lo. Beber água pode ser 4; meditar, 1.",
-  "habAyudaMetaSemanal": "Quantas vezes por semana, no dia que te der jeito. Se marcares dias concretos, o objetivo sai deles.",
+  "habAyudaMetaSemanal": "Quantos dias por semana queres fazê-lo, os que te derem jeito. Se marcares dias concretos, o objetivo sai deles.",
   "habAyudaMetaDias": "Com dias concretos, o objetivo são esses dias: um por cada dia marcado.",
   "habAyudaFrecuenciaEtiqueta": "Ajuda sobre a frequência",
   "habAyudaFrecuencia": "Diário: todos os dias. Semanal: algumas vezes por semana, nos dias que te derem mais jeito.",
@@ -131,7 +131,7 @@
   "habBotonCrear": "Criar hábito",
   "habBotonActualizar": "Atualizar hábito",
   "habBotonEliminar": "Eliminar hábito",
-  "habDiasSemanaMeta": "{n} dias/semana",
+  "habDiasSemanaMeta": "{n, plural, =1{1 dia por semana} other{{n} dias por semana}}",
   "habALas": "Às {hora}",
   "habCambiarHora": "Alterar hora ({hora})",
   "detErrorCargar": "Não foi possível carregar o hábito",
@@ -176,7 +176,7 @@
   "dashVacioCuerpo": "As grandes mudanças começam com um pequeno passo. Vai ao separador Hábitos para criares o primeiro.",
   "dashChipFrecuencia": "{frecuencia} · {hechos}/{meta}",
   "dashFlexiblesTitulo": "ESTA SEMANA",
-  "dashFlexibleProgreso": "{meta} vezes esta semana · {hechos}/{meta} feitas",
+  "dashFlexibleProgreso": "{meta, plural, =1{1 dia esta semana} other{{meta} dias esta semana}} · {hechos}/{meta} feitos",
   "dashDiaSinHabitos": "Nenhum hábito programado para este dia.",
   "habitosTodas": "Todas",
   "habitosOrdenRecientes": "Mais recentes",
