@@ -227,16 +227,13 @@ class ApiServiceHabitos {
       () => ApiServiceCore.cliente.post(
         Uri.parse('$_baseUrl/registros/completar/$habitoId'),
         headers: headers,
-        body: jsonEncode({
-          'nota': nota,
-          // Elemento null-aware: con `fecha` a null la clave no se envía,
-          // exactamente igual que con el `if` anterior. Lo mismo con los
-          // campos de minutos, que un hábito de veces no manda.
-          'fecha': ?fecha,
-          'minutos': ?minutos?.toString(),
-          'clave': ?clave,
-          'origen': ?origen,
-        }),
+        body: cuerpoCompletar(
+          nota: nota,
+          fecha: fecha,
+          minutos: minutos,
+          clave: clave,
+          origen: origen,
+        ),
       ),
     );
     ApiServiceCore.verificar(
@@ -246,6 +243,63 @@ class ApiServiceHabitos {
     return ApiServiceCore.parsear(
       () => leerCompletado(jsonDecode(response.body)),
     );
+  }
+
+  /// El body de completar, tal como sale por la red. Un hábito de veces lo
+  /// llama sin los campos de minutos y sale idéntico al de antes de existir:
+  /// `{"nota":""}`, o con `fecha` si se marca otro día.
+  @visibleForTesting
+  static String cuerpoCompletar({
+    String nota = '',
+    String? fecha,
+    int? minutos,
+    String? clave,
+    String? origen,
+  }) => jsonEncode({
+    'nota': nota,
+    // Elemento null-aware: con `fecha` a null la clave no se envía,
+    // exactamente igual que con el `if` anterior. Lo mismo con los campos
+    // de minutos, que un hábito de veces no manda.
+    'fecha': ?fecha,
+    'minutos': ?minutos?.toString(),
+    'clave': ?clave,
+    'origen': ?origen,
+  });
+
+  /// El body del alta (POST) y de la edición (PUT) de un hábito, tal como sale
+  /// por la red. Sin [unidad] ni [minutosObjetivo] (un hábito de veces) sale
+  /// idéntico al de antes de existir los de minutos: campo ausente = sin
+  /// cambio en el backend.
+  @visibleForTesting
+  static String cuerpoHabito(
+    String nombre,
+    String descripcion,
+    String frecuencia,
+    int meta,
+    int usuarioId,
+    int? categoriaId, {
+    String? diasSemana,
+    bool recordatorioActivo = true,
+    String? recordatorioHora,
+    String? unidad,
+    int? minutosObjetivo,
+  }) {
+    final body = {
+      'nombre': nombre,
+      'descripcion': descripcion,
+      'frecuencia': frecuencia,
+      'meta': meta,
+      'propietario': {'usuarioId': usuarioId},
+      'diasSemana': diasSemana,
+      'recordatorioActivo': recordatorioActivo,
+      'recordatorioHora': recordatorioHora,
+      'unidad': ?unidad,
+      'minutosObjetivo': ?minutosObjetivo,
+    };
+    if (categoriaId != null) {
+      body['categoriaId'] = categoriaId;
+    }
+    return jsonEncode(body);
   }
 
   /// Lee la respuesta de completar. Los campos de minutos faltan en un
@@ -316,28 +370,24 @@ class ApiServiceHabitos {
     int? minutosObjetivo,
   }) async {
     final headers = await ApiServiceCore.getHeaders();
-    final body = {
-      'nombre': nombre,
-      'descripcion': descripcion,
-      'frecuencia': frecuencia,
-      'meta': meta,
-      'propietario': {'usuarioId': usuarioId},
-      'diasSemana': diasSemana,
-      'recordatorioActivo': recordatorioActivo,
-      'recordatorioHora': recordatorioHora,
-      // Campo ausente = sin cambio en el backend: un hábito de veces no los
-      // manda, igual que antes de existir los de minutos.
-      'unidad': ?unidad,
-      'minutosObjetivo': ?minutosObjetivo,
-    };
-    if (categoriaId != null) {
-      body['categoriaId'] = categoriaId;
-    }
+    final body = cuerpoHabito(
+      nombre,
+      descripcion,
+      frecuencia,
+      meta,
+      usuarioId,
+      categoriaId,
+      diasSemana: diasSemana,
+      recordatorioActivo: recordatorioActivo,
+      recordatorioHora: recordatorioHora,
+      unidad: unidad,
+      minutosObjetivo: minutosObjetivo,
+    );
     final response = await ApiServiceCore.enviar(
       () => ApiServiceCore.cliente.post(
         Uri.parse('$_baseUrl/habitos'),
         headers: headers,
-        body: jsonEncode(body),
+        body: body,
       ),
     );
     ApiServiceCore.verificar(response, ok: const [201]);
@@ -366,28 +416,24 @@ class ApiServiceHabitos {
     int? minutosObjetivo,
   }) async {
     final headers = await ApiServiceCore.getHeaders();
-    final body = {
-      'nombre': nombre,
-      'descripcion': descripcion,
-      'frecuencia': frecuencia,
-      'meta': meta,
-      'propietario': {'usuarioId': usuarioId},
-      'diasSemana': diasSemana,
-      'recordatorioActivo': recordatorioActivo,
-      'recordatorioHora': recordatorioHora,
-      // Campo ausente = sin cambio en el backend: un hábito de veces no los
-      // manda, igual que antes de existir los de minutos.
-      'unidad': ?unidad,
-      'minutosObjetivo': ?minutosObjetivo,
-    };
-    if (categoriaId != null) {
-      body['categoriaId'] = categoriaId;
-    }
+    final body = cuerpoHabito(
+      nombre,
+      descripcion,
+      frecuencia,
+      meta,
+      usuarioId,
+      categoriaId,
+      diasSemana: diasSemana,
+      recordatorioActivo: recordatorioActivo,
+      recordatorioHora: recordatorioHora,
+      unidad: unidad,
+      minutosObjetivo: minutosObjetivo,
+    );
     final response = await ApiServiceCore.enviar(
       () => ApiServiceCore.cliente.put(
         Uri.parse('$_baseUrl/habitos/$habitoId'),
         headers: headers,
-        body: jsonEncode(body),
+        body: body,
       ),
     );
     ApiServiceCore.verificar(response);
