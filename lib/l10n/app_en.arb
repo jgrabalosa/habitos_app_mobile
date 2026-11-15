@@ -381,5 +381,9 @@
   "detTiempoTotal": "Total time",
   "detAyudaTiempoTotalEtiqueta": "Help about the total time",
   "detAyudaTiempoTotal": "All the minutes you've spent on it since you created it, including those beyond your goal.",
-  "detRegistroMinutos": "+{n} min"
+  "detRegistroMinutos": "+{n} min",
+  "appNombre": "Norday Habits",
+  "loginLema": "Build habits, transform your life",
+  "actualizacionObligatoriaTexto": "To keep using Norday, update the app. Your habits and progress stay just as they are.",
+  "eliminarCuentaCuerpo": "All your habits, entries, streaks, achievements and points will be gone for good.\n\nThis can't be undone."
 }

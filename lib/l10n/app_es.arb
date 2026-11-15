@@ -766,5 +766,21 @@
         "type": "int"
       }
     }
+  },
+  "appNombre": "Norday Habits",
+  "@appNombre": {
+    "description": "Nombre de la app: título de la tarea y wordmark del login (TextosApp.nombre del core)"
+  },
+  "loginLema": "Construye hábitos, transforma tu vida",
+  "@loginLema": {
+    "description": "Lema bajo el nombre en el login (TextosApp.lemaLogin del core)"
+  },
+  "actualizacionObligatoriaTexto": "Para seguir usando Norday, actualiza la app. Tus hábitos y tu progreso se quedan tal cual.",
+  "@actualizacionObligatoriaTexto": {
+    "description": "Pantalla de actualización obligatoria del core: explicación (TextosApp.actualizacionObligatoria)"
+  },
+  "eliminarCuentaCuerpo": "Se borrarán para siempre todos tus hábitos, registros, rachas, logros y puntos.\n\nEsta acción no se puede deshacer.",
+  "@eliminarCuentaCuerpo": {
+    "description": "Perfil del core: primera confirmación de borrado de cuenta (TextosApp.eliminarCuenta)"
   }
 }
