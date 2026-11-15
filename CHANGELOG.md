@@ -80,17 +80,14 @@ Estado: publicada en Producción el 2026-10-22.
 
 Para anunciar: el ritmo, el nuevo aspecto de Dulce y el rediseño de la app.
 
-## Próxima versión (en preparación, junto con Norday Focus)
+## 1.2.0 (6) — en preparación
 
-Estado: en preparación. Número de versión a decidir (versionCode ≥ 6). Sale a
-la vez que Norday Focus: «Empezar sesión» no puede llegar a Producción antes
-de que Norday Focus sea visible en Producción.
+Estado: en preparación. Sale sin "Empezar sesión": el botón llega con una versión posterior, cuando Norday Focus esté en Producción.
 
 ### Novedades
 
 - Hábitos de minutos: al crear un hábito se elige «Veces» o «Minutos». En minutos, un objetivo por día (10, 15, 30 o 60 de un toque, o una cifra de 1 a 600) al que se llega con varias sesiones que se suman.
 - Panel de minutos en Hoy: +5, +15 y +30, una cifra libre, «Completar · +X», que suma justo lo que falta, y Deshacer la última entrada, con su cantidad y su hora. Con la meta cumplida se puede seguir sumando.
-- «Empezar sesión» en el panel: abre Norday Focus con ese hábito, o su ficha de Google Play si no está instalada. Solo cuando el día que se mira es hoy.
 - Detalle de un hábito de minutos: tiempo total, días a medias en el calendario y minutos por día.
 - Cambios de objetivo programados: si un cambio vale desde otro día (mañana o el lunes), se avisa al guardar, se ve en el formulario y se puede anular.
 
