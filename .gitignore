@@ -49,3 +49,6 @@ lib/l10n/app_localizations*.dart
 
 android/build/
 log_login.txt
+
+# Override local del core para probar una rama sin tag (CLAUDE.md, «Tocar el paquete»)
+pubspec_overrides.yaml
