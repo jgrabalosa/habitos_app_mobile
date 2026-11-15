@@ -21,9 +21,13 @@ import '../services/clave_envio.dart';
 class PanelMinutos {
   PanelMinutos._();
 
-  /// El botón «Empezar sesión», que abre Norday Focus (la app Enfoque) con
-  /// este hábito como destino, o su ficha de Google Play si no está.
-  static const bool enfoqueDisponible = true;
+  /// El botón «Empezar sesión», que abre Norday Focus con este hábito como
+  /// destino, o su ficha de Google Play si no está; apagado hasta que Norday
+  /// Focus esté en Producción (la salida B), porque la ficha de una app en
+  /// prueba cerrada no la ve nadie fuera de los testers. Para encenderlo,
+  /// cambiar false por true.
+  @visibleForTesting
+  static bool enfoqueDisponible = false;
 
   /// Quién abre Enfoque o su ficha. En los tests, un falso.
   @visibleForTesting

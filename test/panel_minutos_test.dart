@@ -355,6 +355,9 @@ void main() {
   });
 
   group('Empezar sesión (Norday Focus)', () {
+    setUp(() => PanelMinutos.enfoqueDisponible = true);
+    tearDown(() => PanelMinutos.enfoqueDisponible = false);
+
     const enlace = 'norday-enfoque://sesion?destino=habito&id=5';
     const market = 'market://details?id=com.norday.enfoque';
     const web =
@@ -476,6 +479,15 @@ void main() {
       await abrir(tester, [], fechaDia: '2026-11-13', esHoy: false);
       expect(find.text(l.minEmpezarSesion), findsNothing);
     });
+  });
+
+  testWidgets('sin Norday Focus en Producción no sale "Empezar sesión"', (
+    tester,
+  ) async {
+    // Sin tocar la marca: se comprueba el valor por defecto de producción.
+    final resultado = <ResultadoMinutos?>[];
+    await abrir(tester, resultado);
+    expect(find.text(l.minEmpezarSesion), findsNothing);
   });
 
   group('cierre y claves con envíos sin respuesta clara', () {
