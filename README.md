@@ -2,7 +2,7 @@
 
 App Android de **Norday Habits**, la app de hábitos del ecosistema **Norday**.
 Versión en desarrollo: 1.1.0 (5). La publicada hasta ahora es la 1.0.0 (3),
-en prueba cerrada en Google Play (`com.norday.habitos`).
+en producción en Google Play (`com.norday.habitos`).
 
 ## Qué hace
 
