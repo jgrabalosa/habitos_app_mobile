@@ -111,4 +111,4 @@ Estado: rama `wip-focus-economia`. Sale con la versión que encienda «Empezar s
 
 ### Mejoras
 
-- Las ayudas del ánimo y de la experiencia de Nori dicen cómo funciona de verdad: Nori se alegra en cuanto das un paso y está exultante con todo hecho, y las sesiones de Norday Focus también cuentan.
+- Las ayudas del ánimo y de la experiencia de Nori dicen cómo funciona de verdad: Nori se alegra en cuanto das un paso y está exultante con todo hecho, y las sesiones de Norday Focus también cuentan (quien usa las dos apps necesita además sus 50 minutos para verla exultante).
