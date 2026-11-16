@@ -341,10 +341,13 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
       lanzador: PanelMinutos.lanzadorEnlaces,
     );
     if (!mounted) return;
-    if (apertura == AperturaEnfoque.nada) {
+    if (apertura == AperturaEnfoque.nada ||
+        apertura == AperturaEnfoque.faltaPrueba) {
       setState(() {
         _abriendo = false;
-        _error = l.minErrorAbrirEnfoque;
+        _error = apertura == AperturaEnfoque.faltaPrueba
+            ? textoFaltaEnfoquePrueba
+            : l.minErrorAbrirEnfoque;
       });
       return;
     }

@@ -29,6 +29,21 @@ String? errorDeEntorno({required String? flavor, required String url}) {
   }
 }
 
+/// La cinta «PRUEBA» en la esquina de arriba, encima de todas las pantallas,
+/// diálogos y hojas del flavor `prueba`: para saber de un vistazo que la app
+/// habla con staging, también en la pantalla de inicio de sesión. En
+/// `produccion` (y sin flavor) devuelve [child] tal cual. No recibe toques:
+/// el `Banner` pinta encima sin quedarse con ellos. Sin traducir, como
+/// [PantallaEntornoIncorrecto]: sólo la ve quien desarrolla.
+Widget conCintaDeEntorno(String? flavor, Widget child) => flavor == 'prueba'
+    ? Banner(
+        message: 'PRUEBA',
+        location: BannerLocation.topEnd,
+        color: const Color(0xFFB45309),
+        child: child,
+      )
+    : child;
+
 /// Lo único que se pinta si el entorno no cuadra: sin Firebase, sin sesión
 /// y sin ninguna petición. Es sólo para desarrollo, por eso no se traduce.
 class PantallaEntornoIncorrecto extends StatelessWidget {
