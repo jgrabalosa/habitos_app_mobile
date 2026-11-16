@@ -82,7 +82,7 @@ Para anunciar: el ritmo, el nuevo aspecto de Dulce y el rediseño de la app.
 
 ## 1.2.0 (6) — en preparación
 
-Estado: en preparación. Sale sin "Empezar sesión": el botón llega con una versión posterior, cuando Norday Focus esté en Producción.
+Estado: en preparación. Sale sin «Empezar sesión»: el botón llega con una versión posterior, cuando Norday Focus esté en Producción.
 
 ### Novedades
 
