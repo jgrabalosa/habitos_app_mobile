@@ -104,3 +104,11 @@ Estado: en preparación. Sale sin "Empezar sesión": el botón llega con una ver
 - Ideas para empezar: un hábito oculta una idea solo si coinciden por palabras. Un nombre corto como «Be» ya no oculta «Beber agua»; «Agua» o «Reading» la siguen ocultando.
 
 Para anunciar: a decidir.
+
+## Sin publicar
+
+Estado: rama `wip-focus-economia`. Sale con la versión que encienda «Empezar sesión», después del backend con la V27 (Norday Focus paga lo suyo).
+
+### Mejoras
+
+- Las ayudas del ánimo y de la experiencia de Nori dicen cómo funciona de verdad: Nori se alegra en cuanto das un paso y está exultante con todo hecho, y las sesiones de Norday Focus también cuentan.
