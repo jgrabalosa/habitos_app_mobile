@@ -58,7 +58,8 @@ completa, en el `CLAUDE.md` del paquete.
   (el UUID v4 de la `clave` de cada envío de minutos, con `Random.secure()`),
   `pausa.dart` (el código del producto `PAUSA_HABITO` y cuántas pausas hay
   en el inventario) y `abrir_enfoque.dart` («Empezar sesión» del panel de
-  minutos: abre Norday Focus con el hábito, o su ficha de Play, por un canal
+  minutos: abre Norday Focus con el hábito, o su ficha de Play (nunca desde
+  la de prueba), por un canal
   de `MainActivity.kt`; los dos paquetes de Enfoque van en `<queries>` del
   AndroidManifest).
   **Norday Habits con «Empezar sesión» no sale a Producción hasta que Norday
@@ -288,6 +289,14 @@ Cuando Quim ponga el tag `v0.55.0` en el core:
 - **`lib/entorno.dart` para la app al arrancar** si el flavor y la URL no
   cuadran: `prueba` contra producción, `produccion` contra otra cosa, o sin
   flavor. No se quita ni se salta.
+- **La de prueba se ve: cinta «PRUEBA»** arriba a la derecha en todas las
+  pantallas, también en el login (`conCintaDeEntorno` de `lib/entorno.dart`,
+  en el `builder` del `MaterialApp`). Sin cinta, es la de producción. Se puso
+  el 16-nov-2026: con varias apps de prueba y de Play instaladas, Quim entró
+  con una cuenta sin saber si era staging o producción.
+- **La de prueba nunca abre Google Play.** Si falta Norday Focus PRUEBA,
+  «Empezar sesión» avisa (`AperturaEnfoque.faltaPrueba`) en vez de ir a la
+  ficha de Play, que lleva a la Focus de producción. Mismo 16-nov.
 - **El nombre visible sale de `manifestPlaceholders["appLabel"]`** en
   `android/app/build.gradle.kts`, no del manifest.
 - **`google-services.json` lleva las dos apps.** Google Sign-In de la de prueba

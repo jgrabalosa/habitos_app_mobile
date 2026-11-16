@@ -52,15 +52,23 @@ void main() {
     final lanzador = LanzadorFalso({market, web});
     final r = await abrirEnfoque(
       habitoId: 42,
-      flavor: 'prueba',
+      flavor: 'produccion',
       lanzador: lanzador,
     );
     expect(r, AperturaEnfoque.fichaPlay);
-    // La ficha siempre es la de Play, también desde la Habits de prueba.
-    expect(lanzador.pedidos, [
-      (enlace, 'com.norday.enfoque.prueba'),
-      (market, null),
-    ]);
+    expect(lanzador.pedidos, [(enlace, 'com.norday.enfoque'), (market, null)]);
+  });
+
+  test('prueba sin la Enfoque de prueba: no cae a Google Play', () async {
+    // Aunque Play y la web abrirían: su ficha es la de producción.
+    final lanzador = LanzadorFalso({market, web});
+    final r = await abrirEnfoque(
+      habitoId: 42,
+      flavor: 'prueba',
+      lanzador: lanzador,
+    );
+    expect(r, AperturaEnfoque.faltaPrueba);
+    expect(lanzador.pedidos, [(enlace, 'com.norday.enfoque.prueba')]);
   });
 
   test('sin Google Play: la ficha en la web', () async {

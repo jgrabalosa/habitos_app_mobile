@@ -413,6 +413,21 @@ void main() {
       expect(resultado, [null]);
     });
 
+    testWidgets('la Habits de prueba sin la Enfoque de prueba no va a Play', (
+      tester,
+    ) async {
+      final lanzador = LanzadorFalso({market: true, web: true});
+      PanelMinutos.lanzadorEnlaces = lanzador;
+      PanelMinutos.flavor = () => 'prueba';
+      final resultado = <ResultadoMinutos?>[];
+      await abrir(tester, resultado);
+      await pulsar(tester);
+      expect(lanzador.pedidos, [(enlace, 'com.norday.enfoque.prueba')]);
+      expect(resultado, isEmpty);
+      expect(find.text(textoFaltaEnfoquePrueba), findsOneWidget);
+      expect(find.text(l.minEmpezarSesion), findsOneWidget);
+    });
+
     testWidgets('si no se abre nada, se queda abierto con el error', (
       tester,
     ) async {

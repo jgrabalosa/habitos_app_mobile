@@ -51,8 +51,8 @@ Uri enlaceSesionEnfoque(int habitoId) => Uri(
   queryParameters: {'destino': 'habito', 'id': '$habitoId'},
 );
 
-/// La ficha de Enfoque en la app de Google Play. Siempre la de Play: la de
-/// prueba no tiene ficha.
+/// La ficha de Enfoque en la app de Google Play. Sólo desde la Habits de
+/// Play: la de prueba no tiene ficha, y la de Play habla con producción.
 final Uri fichaPlayEnfoque = Uri.parse('market://details?id=$paqueteEnfoque');
 
 /// La misma ficha en la web, si no hay app de Google Play.
@@ -102,13 +102,20 @@ enum AperturaEnfoque {
   /// La ficha de Enfoque en el navegador.
   fichaWeb,
 
+  /// Nada, desde la Habits de prueba sin la Enfoque de prueba instalada. No
+  /// se cae a Google Play: su ficha es la de la Enfoque de Play, que habla
+  /// con producción, y desde allí se acababa entrando en la app equivocada
+  /// (prueba del 16-nov-2026).
+  faltaPrueba,
+
   /// Nada: ni Enfoque, ni Google Play, ni navegador.
   nada,
 }
 
 /// Abre Enfoque con el hábito [habitoId]; si no está, su ficha de Google
 /// Play, y si tampoco hay Google Play, la ficha en la web. Para en lo primero
-/// que se abra.
+/// que se abra. Con el flavor `prueba` sólo intenta la Enfoque de prueba: si
+/// no está, [AperturaEnfoque.faltaPrueba].
 Future<AperturaEnfoque> abrirEnfoque({
   required int habitoId,
   required String? flavor,
@@ -120,7 +127,15 @@ Future<AperturaEnfoque> abrirEnfoque({
   )) {
     return AperturaEnfoque.app;
   }
+  if (flavor == 'prueba') return AperturaEnfoque.faltaPrueba;
   if (await lanzador.abrir(fichaPlayEnfoque)) return AperturaEnfoque.fichaPlay;
   if (await lanzador.abrir(fichaWebEnfoque)) return AperturaEnfoque.fichaWeb;
   return AperturaEnfoque.nada;
 }
+
+/// Lo que se enseña con [AperturaEnfoque.faltaPrueba]. Sólo lo ve quien
+/// desarrolla (la Habits de prueba), por eso no se traduce, como
+/// `PantallaEntornoIncorrecto`.
+const String textoFaltaEnfoquePrueba =
+    'Instala Norday Focus PRUEBA: la app de prueba no abre Google Play, '
+    'que lleva a la de producción.';
