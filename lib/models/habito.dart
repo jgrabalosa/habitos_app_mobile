@@ -1,5 +1,22 @@
 import 'package:flutter/material.dart';
 
+/// En qué se mide un hábito. `veces` es lo de siempre: se marca y cuenta uno.
+/// `minutos` suma los minutos de cada registro del día, y el día está hecho al
+/// llegar a [Habito.minutosObjetivo].
+enum UnidadHabito { veces, minutos }
+
+/// La unidad que manda el backend. Cualquier cosa que no sea `MINUTOS` —un
+/// backend anterior que no la manda, o un valor que esta versión no conoce—
+/// es `veces`, que es como se ha comportado siempre la app.
+UnidadHabito unidadDe(Object? codigo) =>
+    codigo == 'MINUTOS' ? UnidadHabito.minutos : UnidadHabito.veces;
+
+/// El código de [unidad] tal como lo espera el backend.
+String codigoUnidad(UnidadHabito unidad) => switch (unidad) {
+  UnidadHabito.veces => 'VECES',
+  UnidadHabito.minutos => 'MINUTOS',
+};
+
 class Habito {
   final int habitoId;
   final String nombre;
@@ -21,6 +38,13 @@ class Habito {
   /// Día del alta, solo fecha. Null si el backend no la manda.
   final DateTime? fechaInicio;
 
+  /// En qué se mide. Sin el campo (backend anterior), `veces`.
+  final UnidadHabito unidad;
+
+  /// Minutos que hacen falta en un día para darlo por hecho. Solo en los de
+  /// minutos; null en los de veces o si el backend no lo manda.
+  final int? minutosObjetivo;
+
   Habito({
     required this.habitoId,
     required this.nombre,
@@ -35,7 +59,11 @@ class Habito {
     this.recordatorioActivo = true,
     this.recordatorioHora,
     this.fechaInicio,
+    this.unidad = UnidadHabito.veces,
+    this.minutosObjetivo,
   });
+
+  bool get esMinutos => unidad == UnidadHabito.minutos;
 
   /// «AAAA-MM-DD» a fecha sin hora. Cualquier otra cosa es null.
   static DateTime? _fechaSinHora(Object? valor) {
@@ -59,6 +87,8 @@ class Habito {
       recordatorioActivo: json['recordatorioActivo'] ?? true,
       recordatorioHora: json['recordatorioHora'],
       fechaInicio: _fechaSinHora(json['fechaInicio']),
+      unidad: unidadDe(json['unidad']),
+      minutosObjetivo: (json['minutosObjetivo'] as num?)?.toInt(),
     );
   }
 

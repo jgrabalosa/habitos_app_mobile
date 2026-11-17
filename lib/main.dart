@@ -10,6 +10,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import 'l10n/app_localizations.dart';
 import 'l10n/catalogos.dart';
+import 'l10n/textos_habits.dart';
 import 'entorno.dart';
 import 'services/crashlytics_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -31,6 +32,9 @@ void main() async {
   // El core es compartido por varias apps; esta app fija su dominio antes
   // de que cualquier catálogo pueda hacer una petición.
   ApiServiceCore.appId = 'habitos';
+  // El core habla en neutro («Norday»): el nombre, el lema del login y los
+  // textos de actualización obligatoria y de borrado de cuenta los pone la app.
+  registrarTextosHabits();
   // Cada vez que la app vuelve a primer plano, si está por debajo de la
   // versión mínima que da el backend, se bloquea hasta actualizar. El
   // arranque lo comprueba el splash.
@@ -109,8 +113,9 @@ class HabitosApp extends StatelessWidget {
               // cosas que no cuelgan de ninguna pantalla (la celebración de un
               // logro puede dispararse desde cualquier sitio).
               navigatorKey: nordayNavigatorKey,
+              // El nombre es de la app: el `appTitulo` del core dice «Norday».
               onGenerateTitle: (context) =>
-                  NordayCoreLocalizations.of(context)!.appTitulo,
+                  AppLocalizations.of(context)!.appNombre,
               debugShowCheckedModeBanner: false,
               theme: AppTheme.deTema(tema),
               locale: locale,
@@ -122,7 +127,12 @@ class HabitosApp extends StatelessWidget {
                 GlobalWidgetsLocalizations.delegate,
                 GlobalCupertinoLocalizations.delegate,
               ],
-              builder: envolverConGrano,
+              // La cinta «PRUEBA» por fuera del grano: tiene que verse en
+              // cualquier identidad.
+              builder: (context, child) => conCintaDeEntorno(
+                appFlavor,
+                envolverConGrano(context, child),
+              ),
               home: const SplashScreen(),
             );
           },

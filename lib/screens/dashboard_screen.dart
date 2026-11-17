@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
+import '../l10n/textos_minutos.dart';
 import '../services/api_service_habitos.dart';
 import '../services/analytics_service.dart';
 import '../services/habitos_refresh.dart';
@@ -21,6 +22,7 @@ import '../widgets/tira_semana.dart';
 import '../widgets/transito_fila.dart';
 import '../services/descubrimiento_detalle.dart';
 import '../widgets/chevron_detalle.dart';
+import '../widgets/panel_minutos.dart';
 import 'dashboard_logica.dart';
 import 'habito_detalle_screen.dart';
 
@@ -70,6 +72,16 @@ class DashboardScreen extends StatefulWidget {
 
   const DashboardScreen({super.key, this.activa = true});
 
+  /// Seam de test: el usuario de la sesión. En producción, el guardado.
+  @visibleForTesting
+  static Future<Map<String, dynamic>?> Function() cargarUsuario =
+      ApiServiceCore.getUsuarioLocal;
+
+  /// Seam de test: de dónde sale `/hoy`. En producción, la red.
+  @visibleForTesting
+  static Future<Map<String, dynamic>> Function(int usuarioId, {String? fecha})
+  cargarHoy = ApiServiceHabitos.getHoy;
+
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
@@ -88,6 +100,10 @@ class _DashboardScreenState extends State<DashboardScreen>
   /// `/hoy` todavía no ha devuelto, por hábito. Se vacía en cada carga: es
   /// sólo para que el check, el contador y el anillo cambien al momento.
   final Map<int, int> _pasosPendientes = {};
+
+  /// Lo mismo para los hábitos de minutos: minutos sumados (positivos) o
+  /// deshechos (negativos) que `/hoy` todavía no ha devuelto.
+  final Map<int, int> _minutosPendientes = {};
 
   /// Cada carga lleva un número. Si el usuario toca dos días seguidos, la
   /// respuesta del primero no debe pisar la del segundo.
@@ -197,7 +213,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Future<void> _cargarDatos() async {
-    final usuario = await ApiServiceCore.getUsuarioLocal();
+    final usuario = await DashboardScreen.cargarUsuario();
     if (usuario == null || !mounted) return;
     setState(() {
       _usuarioId = usuario['usuarioId'] ?? 0;
@@ -215,7 +231,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   Future<void> _cargarHoy() async {
     final carga = ++_cargaEnCurso;
     try {
-      final data = await ApiServiceHabitos.getHoy(
+      final data = await DashboardScreen.cargarHoy(
         _usuarioId,
         fecha: _fechaMirada,
       );
@@ -224,6 +240,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       setState(() {
         _hoy = hoy;
         _pasosPendientes.clear();
+        _minutosPendientes.clear();
         _loading = false;
         _errorCarga = false;
       });
@@ -308,8 +325,13 @@ class _DashboardScreenState extends State<DashboardScreen>
   /// devuelto la recarga.
   FilaHoy _vista(FilaHoy f, {required bool delDia}) {
     final hoy = _hoy;
+    if (hoy == null) return f;
+    if (f.esMinutos) {
+      final minutos = _minutosPendientes[f.habito.habitoId] ?? 0;
+      return f.conMinutos(minutos, delDia: delDia, fecha: hoy.fecha);
+    }
     final pasos = _pasosPendientes[f.habito.habitoId] ?? 0;
-    if (hoy == null || pasos == 0) return f;
+    if (pasos == 0) return f;
     return f.conPasos(pasos, delDia: delDia, fecha: hoy.fecha);
   }
 
@@ -390,23 +412,14 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
     final esHoy = hoy.viendoHoy;
 
-    List<String> logrosOtorgados;
-    int puntosGanados;
-    int puntosExtraSemana;
-    int? registroId;
-    bool mostrarValoracion;
+    final Map<String, dynamic> resultado;
     try {
       // Hoy se manda sin fecha y lo resuelve el servidor en la zona del
       // usuario; otro día, con la suya.
-      final resultado = await ApiServiceHabitos.completarHabito(
+      resultado = await ApiServiceHabitos.completarHabito(
         habitoId,
         fecha: esHoy ? null : hoy.fecha,
       );
-      logrosOtorgados = resultado['logros'];
-      puntosGanados = resultado['puntosGanados'];
-      puntosExtraSemana = resultado['puntosExtraSemana'] ?? 0;
-      registroId = resultado['registroId'];
-      mostrarValoracion = resultado['mostrarValoracion'] ?? false;
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -424,23 +437,121 @@ class _DashboardScreenState extends State<DashboardScreen>
       return;
     }
 
+    await _trasCompletar(
+      habitoId,
+      antes: antes,
+      enDelDia: enDelDia,
+      esHoy: esHoy,
+      resultado: resultado,
+      // El paso cuenta ya en pantalla, sin esperar a la recarga: el cambio
+      // dispara la animación del check.
+      aplicarEnPantalla: () {
+        _pasosPendientes[habitoId] = (_pasosPendientes[habitoId] ?? 0) + 1;
+      },
+    );
+  }
+
+  /// Abre el panel de minutos de un hábito de minutos, para el día que se
+  /// mira. Tocar su anillo no completa nada de golpe: los minutos se eligen
+  /// en el panel, y lo que vuelve de él se pinta y se celebra aquí, igual que
+  /// un check.
+  Future<void> _abrirPanelMinutos(int habitoId) async {
+    // Red de seguridad, como en `_completar`: con la pista abierta el anillo
+    // no responde (ver `minutosTocables`).
+    if (RecorridoOnboarding.instancia.activo) return;
+    final hoy = _hoy;
+    final fila = _filaDe(habitoId);
+    if (hoy == null || fila == null) return;
+
+    final resultado = await mostrarPanelMinutos(
+      context,
+      fila: fila,
+      fechaDia: hoy.fecha,
+      esHoy: hoy.viendoHoy,
+    );
+    if (resultado == null || !mounted) return;
+    // Mientras el panel estaba abierto ha podido llegar una recarga: lo que
+    // cuenta es la fila de ahora.
+    final antes = _filaDe(habitoId) ?? fila;
+    final ahora = _hoy ?? hoy;
+
+    if (resultado.tipo == TipoResultadoMinutos.desconocido) {
+      // Se cerró tras un envío sin respuesta clara: puede que se registrara.
+      // Manda el servidor.
+      solicitarRefrescoMascota();
+      await _cargarHoy();
+      return;
+    }
+
+    final completado = resultado.completado;
+    if (resultado.tipo == TipoResultadoMinutos.deshecho || completado == null) {
+      // Deshecho: se quita en pantalla al momento y manda la recarga, igual
+      // que al deshacer un check.
+      setState(() {
+        _minutosPendientes[habitoId] =
+            (_minutosPendientes[habitoId] ?? 0) + resultado.minutos;
+      });
+      _publicarProgreso();
+      HapticFeedback.selectionClick();
+      solicitarRefrescoMascota();
+      await _cargarHoy();
+      return;
+    }
+
+    await _trasCompletar(
+      habitoId,
+      antes: antes,
+      enDelDia: ahora.delDia.habitos.any((f) => f.habito.habitoId == habitoId),
+      esHoy: ahora.viendoHoy,
+      resultado: completado,
+      // En minutos, «hábito completado» es la entrada que deja el día hecho;
+      // no cada entrada ni las de por encima de la meta.
+      contarEnAnalytics: entradaDejaDiaHecho(antes, resultado.minutos),
+      aplicarEnPantalla: () {
+        _minutosPendientes[habitoId] =
+            (_minutosPendientes[habitoId] ?? 0) + resultado.minutos;
+      },
+    );
+  }
+
+  /// Todo lo que sigue a un completado que el servidor ya ha aceptado, venga
+  /// del check o del panel de minutos: la mascota, el sonido, el cambio en
+  /// pantalla ([aplicarEnPantalla], dentro de un `setState`), el tránsito de
+  /// la fila, la recarga, los logros, los puntos, la valoración y el cierre
+  /// del día.
+  Future<void> _trasCompletar(
+    int habitoId, {
+    required FilaHoy antes,
+    required bool enDelDia,
+    required bool esHoy,
+    required Map<String, dynamic> resultado,
+    required VoidCallback aplicarEnPantalla,
+    bool contarEnAnalytics = true,
+  }) async {
+    final List<String> logrosOtorgados = resultado['logros'];
+    final int puntosGanados = resultado['puntosGanados'];
+    final int puntosExtraSemana = resultado['puntosExtraSemana'] ?? 0;
+    final int? registroId = resultado['registroId'];
+    final bool mostrarValoracion = resultado['mostrarValoracion'] ?? false;
+
     // Completar cambia el ánimo de la mascota en el servidor: hay que avisar a
     // quien la esté pintando (la mini-mascota flotante no se entera sola).
     solicitarRefrescoMascota();
 
     // Analytics en segundo plano: no bloquea la celebración
-    AnalyticsHabitos.habitoCompletado(antes.habito.frecuencia);
+    if (contarEnAnalytics) {
+      AnalyticsHabitos.habitoCompletado(antes.habito.frecuencia);
+    }
 
     // Feedback háptico + sonido
     HapticFeedback.mediumImpact();
     SonidoService.reproducir('completar');
 
-    // El paso cuenta ya en pantalla, sin esperar a la recarga: el cambio
-    // dispara la animación del check.
     if (!mounted) return;
-    setState(() {
-      _pasosPendientes[habitoId] = (_pasosPendientes[habitoId] ?? 0) + 1;
-    });
+    // Si el día ya estaba completo (minutos de más en un hábito de minutos),
+    // este completado no lo cierra: el cierre es para el que lo completa.
+    final completoAntes = esHoy && enDelDia && _diaCompleto();
+    setState(aplicarEnPantalla);
     final despues = _filaDe(habitoId);
 
     // El tránsito de la fila a "completados" sólo tiene sentido en la sección
@@ -457,7 +568,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     // Si con este paso el día queda completo, el cierre espera al final de
     // la secuencia (ver `_cierrePendiente`).
-    final diaCompleto = esHoy && enDelDia && _diaCompleto();
+    final diaCompleto = esHoy && enDelDia && !completoAntes && _diaCompleto();
     if (diaCompleto) _cierrePendiente = true;
 
     _publicarProgreso();
@@ -1034,7 +1145,10 @@ class _DashboardScreenState extends State<DashboardScreen>
     final bool hecho = f.hecho;
     // El check se ve marcado si la fila cuenta como hecha o, en un semanal,
     // si ya se hizo el día que se mira: un semanal se apunta una vez por día.
-    final bool checkMarcado = hecho || (f.esSemanal && f.completadoEnFecha);
+    // En uno de minutos, si el día que se mira llegó a sus minutos.
+    final bool checkMarcado = f.esMinutos
+        ? f.diaHechoMinutos
+        : hecho || (f.esSemanal && f.completadoEnFecha);
 
     return AnimatedOpacity(
       // La fila se apaga al completarse. Con "reducir movimiento" llega al
@@ -1105,13 +1219,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                     // con lo que lleva y el dibujo de su ritmo.
                     Row(
                       children: [
-                        ChipIdentidad(
-                          texto: l.dashChipFrecuencia(
-                            _frecuenciaLegible(l, h.frecuencia),
-                            f.completados,
-                            f.meta,
+                        Flexible(
+                          child: ChipIdentidad(
+                            texto: _textoChip(l, f),
+                            semanal: f.esSemanal,
                           ),
-                          semanal: f.esSemanal,
                         ),
                         const SizedBox(width: 8),
                         IndicadorNivel(
@@ -1160,41 +1272,138 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
               ),
               const SizedBox(width: 12),
-              // En un día que no se puede tocar (futuro o de una semana
-              // anterior) el check va apagado y sin toque.
-              AnimatedOpacity(
-                duration:
-                    (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
-                    ? Duration.zero
-                    : const Duration(milliseconds: 400),
-                opacity: habilitado ? 1.0 : 0.25,
-                child: CheckCircular(
-                  key:
-                      (primera || anclaPista) &&
-                          RecorridoOnboarding.instancia.activo
-                      ? AnclasRecorrido.checkHabito
-                      : null,
-                  hecho: checkMarcado,
-                  onTap:
-                      checkTocable(
-                        habilitado: habilitado,
-                        checkMarcado: checkMarcado,
-                        pistaActiva: RecorridoOnboarding.instancia.activo,
-                      )
-                      ? () => _completar(h.habitoId)
-                      : null,
-                  onDeshacer: habilitado && f.completadoEnFecha
-                      ? () => _deshacer(h.habitoId)
-                      : null,
-                  // El hábito hecho se pinta con `success`, no con
-                  // `primary`: `primary` es lo que se puede tocar y esto es
-                  // lo que ya está.
-                  color: t.success,
-                  etiquetaSemantica: l.a11yCompletarHabito(h.nombre),
-                  etiquetaSemanticaDeshacer: l.a11yDeshacerHabito(h.nombre),
+              // Un hábito de minutos no lleva check: lleva su anillo, que abre
+              // el panel de minutos.
+              if (f.esMinutos)
+                _controlMinutos(
+                  l,
+                  f,
+                  t,
+                  habilitado: habilitado,
+                  conAncla: primera || anclaPista,
+                )
+              else
+                // En un día que no se puede tocar (futuro o de una semana
+                // anterior) el check va apagado y sin toque.
+                AnimatedOpacity(
+                  duration:
+                      (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
+                      ? Duration.zero
+                      : const Duration(milliseconds: 400),
+                  opacity: habilitado ? 1.0 : 0.25,
+                  child: CheckCircular(
+                    key:
+                        (primera || anclaPista) &&
+                            RecorridoOnboarding.instancia.activo
+                        ? AnclasRecorrido.checkHabito
+                        : null,
+                    hecho: checkMarcado,
+                    onTap:
+                        checkTocable(
+                          habilitado: habilitado,
+                          checkMarcado: checkMarcado,
+                          pistaActiva: RecorridoOnboarding.instancia.activo,
+                        )
+                        ? () => _completar(h.habitoId)
+                        : null,
+                    onDeshacer: habilitado && f.completadoEnFecha
+                        ? () => _deshacer(h.habitoId)
+                        : null,
+                    // El hábito hecho se pinta con `success`, no con
+                    // `primary`: `primary` es lo que se puede tocar y esto es
+                    // lo que ya está.
+                    color: t.success,
+                    etiquetaSemantica: l.a11yCompletarHabito(h.nombre),
+                    etiquetaSemanticaDeshacer: l.a11yDeshacerHabito(h.nombre),
+                  ),
                 ),
-              ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// El texto del chip: la frecuencia con lo que lleva. En un hábito de
+  /// minutos, los minutos del día respecto a su objetivo («Diario · 20 / 30
+  /// min», «Diario · 45 min / 1 h 30 min»), y en un semanal también los días
+  /// de la semana.
+  String _textoChip(AppLocalizations l, FilaHoy f) {
+    final frecuencia = _frecuenciaLegible(l, f.habito.frecuencia);
+    if (!f.esMinutos) {
+      return l.dashChipFrecuencia(frecuencia, f.completados, f.meta);
+    }
+    final par = parMinutos(l, f.minutosHechos, f.minutosObjetivo ?? 0);
+    return f.esSemanal
+        ? l.dashChipMinutosSemanal(
+            frecuencia,
+            f.completados,
+            f.meta,
+            par.hechos,
+            par.objetivo,
+          )
+        : l.dashChipMinutos(frecuencia, par.hechos, par.objetivo);
+  }
+
+  /// El control de un hábito de minutos, donde los de veces llevan el check:
+  /// el aro de la identidad con lo que lleva el día y, dentro, un «+» o, con
+  /// el día hecho, el check. Tocarlo abre el panel de minutos, también con el
+  /// día hecho, porque se puede seguir sumando. Apagado en un día que no se
+  /// puede tocar, como el check.
+  Widget _controlMinutos(
+    AppLocalizations l,
+    FilaHoy f,
+    TokensContextuales t, {
+    required bool habilitado,
+    required bool conAncla,
+  }) {
+    final h = f.habito;
+    final pistaActiva = RecorridoOnboarding.instancia.activo;
+    final tocable = minutosTocables(
+      habilitado: habilitado,
+      pistaActiva: pistaActiva,
+    );
+    final hecho = f.diaHechoMinutos;
+    final par = parMinutos(l, f.minutosHechos, f.minutosObjetivo ?? 0);
+    final VoidCallback? alTocar = tocable
+        ? () => _abrirPanelMinutos(h.habitoId)
+        : null;
+    return AnimatedOpacity(
+      duration: (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
+          ? Duration.zero
+          : const Duration(milliseconds: 400),
+      opacity: habilitado ? 1.0 : 0.25,
+      child: Semantics(
+        button: true,
+        enabled: tocable,
+        label: l.a11yMinutosHabito(h.nombre, par.hechos, par.objetivo),
+        onTap: alTocar,
+        child: ExcludeSemantics(
+          child: InkResponse(
+            key: conAncla && pistaActiva ? AnclasRecorrido.checkHabito : null,
+            onTap: alTocar,
+            radius: 28,
+            child: SizedBox(
+              width: 44,
+              height: 44,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // El aro de la identidad: el mismo trazo que el de la
+                  // mascota, con su forma en cada una (a lápiz en Dulce).
+                  AnilloIdentidad(
+                    tamano: 44,
+                    pct: f.fraccionDia,
+                    color: t.success,
+                  ),
+                  Icon(
+                    hecho ? LucideIcons.check : LucideIcons.plus,
+                    size: 20,
+                    color: hecho ? t.successText : t.primaryTrazo,
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

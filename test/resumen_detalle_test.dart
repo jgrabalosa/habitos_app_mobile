@@ -8,7 +8,11 @@ void main() {
   final identidadInicial = identidadEquipadaNotifier.value;
   tearDown(() => aplicarIdentidadEquipada(identidadInicial.codigo));
 
-  Future<void> montar(WidgetTester tester, {required bool mesActual}) async {
+  Future<void> montar(
+    WidgetTester tester, {
+    required bool mesActual,
+    int? totalMinutos,
+  }) async {
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('es'),
@@ -22,6 +26,7 @@ void main() {
             totalCompletados: 7,
             diasMes: 3,
             mesActual: mesActual,
+            totalMinutos: totalMinutos,
           ),
         ),
       ),
@@ -92,4 +97,17 @@ void main() {
       }
     },
   );
+
+  testWidgets('en un hábito de minutos, el tiempo total en horas y minutos', (
+    tester,
+  ) async {
+    final l = await AppLocalizations.delegate.load(const Locale('es'));
+    await montar(tester, mesActual: true, totalMinutos: 755);
+
+    expect(find.text('12 h 35 min'), findsOneWidget);
+    expect(find.text(l.detTiempoTotal), findsOneWidget);
+    expect(find.text(l.detLoQueLlevas), findsNothing);
+    expect(find.text('7'), findsNothing);
+    expect(find.text('3'), findsOneWidget);
+  });
 }

@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
+import '../l10n/textos_minutos.dart';
+import '../l10n/textos_objetivo.dart';
+import '../models/minutos.dart';
+import '../models/objetivo_programado.dart';
 import '../services/api_service_habitos.dart';
 import '../services/analytics_service.dart';
 import '../l10n/catalogos.dart';
@@ -15,12 +20,17 @@ class HabitoScreen extends StatefulWidget {
 
   /// La idea de la que sale el hábito nuevo: se rellena el formulario con ella.
   final PlantillaHabito? plantilla;
+
+  /// El cambio de objetivo programado, si quien abre la edición ya lo tiene
+  /// (el detalle). Si no llega, el formulario lo pide al abrir.
+  final ObjetivoProgramado? objetivoProgramado;
   const HabitoScreen({
     super.key,
     required this.usuarioId,
     this.habito,
     this.categoriasIniciales,
     this.plantilla,
+    this.objetivoProgramado,
   });
 
   /// Seam de test: de dónde salen las categorías. En producción, la red.
@@ -40,8 +50,44 @@ class HabitoScreen extends StatefulWidget {
     String? diasSemana,
     bool recordatorioActivo,
     String? recordatorioHora,
+    String? unidad,
+    int? minutosObjetivo,
   })
   crearHabito = ApiServiceHabitos.crearHabito;
+
+  /// Seam de test: la llamada que guarda los cambios. Devuelve `aplicaDesde`.
+  @visibleForTesting
+  static Future<DateTime?> Function(
+    int habitoId,
+    String nombre,
+    String descripcion,
+    String frecuencia,
+    int meta,
+    int usuarioId,
+    int? categoriaId, {
+    String? diasSemana,
+    bool recordatorioActivo,
+    String? recordatorioHora,
+    String? unidad,
+    int? minutosObjetivo,
+  })
+  actualizarHabito = ApiServiceHabitos.actualizarHabito;
+
+  /// Seam de test: de dónde sale el cambio programado al editar.
+  @visibleForTesting
+  static Future<ObjetivoProgramado?> Function(int habitoId)
+  cargarObjetivoProgramado = _objetivoProgramadoDelDetalle;
+
+  /// Seam de test: la llamada que anula el cambio programado.
+  @visibleForTesting
+  static Future<void> Function(int habitoId) anularObjetivoProgramado =
+      ApiServiceHabitos.anularObjetivoProgramado;
+
+  static Future<ObjetivoProgramado?> _objetivoProgramadoDelDetalle(
+    int habitoId,
+  ) async => ObjetivoProgramado.deJson(
+    (await ApiServiceHabitos.getHabitoDetalle(habitoId))['objetivoProgramado'],
+  );
 
   @override
   State<HabitoScreen> createState() => _HabitoScreenState();
@@ -66,6 +112,23 @@ class _HabitoScreenState extends State<HabitoScreen> {
   Set<int> _diasSeleccionados = {}; // días ISO elegidos (solo SEMANAL)
   bool _recordatorioActivo = true;
   TimeOfDay? _recordatorioHora;
+
+  /// En qué se mide. Un hábito nuevo empieza en veces, como siempre.
+  UnidadHabito _unidad = UnidadHabito.veces;
+
+  /// Los minutos por día elegidos con las metas rápidas.
+  int _minutosObjetivo = 30;
+
+  /// Si se escribe una cifra propia en vez de una meta rápida.
+  bool _minutosLibre = false;
+  final _minutosController = TextEditingController();
+
+  /// El cambio de objetivo que todavía no vale, si lo hay.
+  ObjetivoProgramado? _programado;
+
+  /// Si se ha anulado el cambio programado: salir sin guardar también tiene
+  /// que avisar a quien abrió el formulario de que algo ha cambiado.
+  bool _huboCambios = false;
   bool _loading = false;
   String? _error;
 
@@ -87,6 +150,19 @@ class _HabitoScreenState extends State<HabitoScreen> {
   bool get _metaDerivada =>
       _frecuencia == 'SEMANAL' && _diasSeleccionados.isNotEmpty;
 
+  bool get _esMinutos => _unidad == UnidadHabito.minutos;
+
+  /// Un hábito que ya es de minutos no puede volver a veces (el backend
+  /// responde 409): el selector ni lo ofrece.
+  bool get _sinVueltaAVeces =>
+      _esEdicion && widget.habito!.unidad == UnidadHabito.minutos;
+
+  /// Los minutos por día que se guardarían, o null si la cifra propia no es
+  /// un número.
+  int? get _minutosElegidos => _minutosLibre
+      ? int.tryParse(_minutosController.text.trim())
+      : _minutosObjetivo;
+
   @override
   void initState() {
     super.initState();
@@ -99,6 +175,18 @@ class _HabitoScreenState extends State<HabitoScreen> {
       _diasSeleccionados = widget.habito!.diasPlanificados.toSet();
       _recordatorioActivo = widget.habito!.recordatorioActivo;
       _recordatorioHora = widget.habito!.recordatorioHoraTimeOfDay;
+      _unidad = widget.habito!.unidad;
+      final minutos = widget.habito!.minutosObjetivo;
+      if (minutos != null) {
+        _minutosLibre = !metasRapidasMinutos.contains(minutos);
+        if (_minutosLibre) {
+          _minutosController.text = '$minutos';
+        } else {
+          _minutosObjetivo = minutos;
+        }
+      }
+      _programado = widget.objetivoProgramado;
+      if (_programado == null) _cargarProgramado();
     }
     final plantilla = widget.plantilla;
     if (!_esEdicion && plantilla != null) {
@@ -110,6 +198,16 @@ class _HabitoScreenState extends State<HabitoScreen> {
           ? plantilla.dias!.split(',').map(int.parse).toSet()
           : {};
       _codigoCategoriaPendiente = plantilla.categoriaCodigo;
+      _unidad = plantilla.unidad;
+      final minutos = plantilla.minutos;
+      if (_unidad == UnidadHabito.minutos && minutos != null) {
+        _minutosLibre = !metasRapidasMinutos.contains(minutos);
+        if (_minutosLibre) {
+          _minutosController.text = '$minutos';
+        } else {
+          _minutosObjetivo = minutos;
+        }
+      }
     }
     if (widget.categoriasIniciales != null) {
       _categorias = widget.categoriasIniciales!;
@@ -147,7 +245,55 @@ class _HabitoScreenState extends State<HabitoScreen> {
   void dispose() {
     _nombreController.dispose();
     _descripcionController.dispose();
+    _minutosController.dispose();
     super.dispose();
+  }
+
+  /// Al cambiar de unidad o de frecuencia, la meta se recorta a lo que admite:
+  /// un diario de veces de 8 que pasa a minutos semanal se queda en 7 días.
+  /// Se llama dentro de un `setState`.
+  void _recortarMeta() {
+    _meta = metaParaUnidad(_meta, _unidad);
+  }
+
+  /// Si falla, no se enseña: editar sigue funcionando sin saberlo, y el aviso
+  /// de `aplicaDesde` dirá cuándo vale lo que se guarde.
+  Future<void> _cargarProgramado() async {
+    try {
+      final programado = await HabitoScreen.cargarObjetivoProgramado(
+        widget.habito!.habitoId,
+      );
+      if (mounted && programado != null) {
+        setState(() => _programado = programado);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _anularProgramado() async {
+    final l = AppLocalizations.of(context)!;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      await HabitoScreen.anularObjetivoProgramado(widget.habito!.habitoId);
+      if (!mounted) return;
+      setState(() {
+        _programado = null;
+        _huboCambios = true;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l.habProgramadoAnulado)));
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = MensajesError.de(context, e, generico: l.habProgramadoError);
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   Future<void> _cargarCategorias() async {
@@ -241,10 +387,29 @@ class _HabitoScreenState extends State<HabitoScreen> {
 
     // Días solo si es SEMANAL y hay elegidos; null = semanal flexible o diario.
     // Ordenados para un CSV estable ("2,4,6").
+    // Minutos por día: obligatorios y entre 1 y 600 en un hábito de minutos.
+    final int? minutos = _esMinutos ? _minutosElegidos : null;
+    if (_esMinutos && !objetivoMinutosValido(minutos)) {
+      setState(() {
+        _error = textoMinutosRango(l);
+      });
+      return;
+    }
+
     final String? diasSemana = _metaDerivada
         ? (_diasSeleccionados.toList()..sort()).join(',')
         : null;
-    final int meta = _metaDerivada ? _diasSeleccionados.length : _meta;
+    // Un diario de minutos tiene siempre un día por día: el servidor también
+    // lo fuerza.
+    // En un semanal de minutos, entre 1 y 7 días por semana.
+    final int meta = _metaDerivada
+        ? _diasSeleccionados.length
+        : (_esMinutos && _frecuencia == 'DIARIO'
+              ? 1
+              : metaParaUnidad(_meta, _unidad));
+    // Un hábito de veces no manda los campos de minutos: el body queda igual
+    // que antes de existir los de minutos.
+    final String? unidad = _esMinutos ? codigoUnidad(_unidad) : null;
     final String? recordatorioHora = _recordatorioHora == null
         ? null
         : '${_recordatorioHora!.hour.toString().padLeft(2, '0')}:${_recordatorioHora!.minute.toString().padLeft(2, '0')}';
@@ -255,8 +420,9 @@ class _HabitoScreenState extends State<HabitoScreen> {
     });
     try {
       if (_esEdicion) {
-        await ApiServiceHabitos.actualizarHabito(
-          widget.habito!.habitoId,
+        final original = widget.habito!;
+        final aplicaDesde = await HabitoScreen.actualizarHabito(
+          original.habitoId,
           _nombreController.text,
           _descripcionController.text,
           _frecuencia,
@@ -266,8 +432,33 @@ class _HabitoScreenState extends State<HabitoScreen> {
           diasSemana: diasSemana,
           recordatorioActivo: _recordatorioActivo,
           recordatorioHora: recordatorioHora,
+          unidad: unidad,
+          minutosObjetivo: minutos,
         );
-        if (mounted) Navigator.pop(context, true);
+        if (!mounted) return;
+        // Si el cambio no vale hasta otro día, se dice antes de cerrar. El
+        // aviso va al ScaffoldMessenger de la app, así que se sigue viendo en
+        // la pantalla a la que se vuelve.
+        final cambiaMinutos =
+            _esMinutos &&
+            (original.unidad != UnidadHabito.minutos ||
+                original.minutosObjetivo != minutos);
+        final aviso = avisoAplicaDesde(
+          l,
+          aplicaDesde: aplicaDesde,
+          hoy: DateTime.now(),
+          locale: Localizations.localeOf(context).toLanguageTag(),
+          minutosNuevos: cambiaMinutos ? minutos : null,
+        );
+        if (aviso != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(aviso),
+              duration: const Duration(seconds: 6),
+            ),
+          );
+        }
+        Navigator.pop(context, true);
       } else {
         final logrosOtorgados = await HabitoScreen.crearHabito(
           _nombreController.text,
@@ -279,6 +470,8 @@ class _HabitoScreenState extends State<HabitoScreen> {
           diasSemana: diasSemana,
           recordatorioActivo: _recordatorioActivo,
           recordatorioHora: recordatorioHora,
+          unidad: unidad,
+          minutosObjetivo: minutos,
         );
         await AnalyticsHabitos.habitoCreado(_frecuencia);
         if (logrosOtorgados.isNotEmpty) {
@@ -466,10 +659,208 @@ class _HabitoScreenState extends State<HabitoScreen> {
     );
   }
 
+  /// «Veces» o «Minutos». Editando uno de minutos, «Veces» sale apagado y se
+  /// dice por qué.
+  Widget _selectorUnidad(AppLocalizations l, TokensContextuales t) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              l.habLabelUnidad,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            AyudaCampo(
+              texto: l.habAyudaUnidad,
+              etiquetaSemantica: l.habAyudaUnidadEtiqueta,
+              superindice: true,
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        SegmentedButton<UnidadHabito>(
+          segments: [
+            ButtonSegment(
+              value: UnidadHabito.veces,
+              label: Text(l.habUnidadVeces),
+              icon: const Icon(LucideIcons.check),
+              enabled: !_sinVueltaAVeces,
+            ),
+            ButtonSegment(
+              value: UnidadHabito.minutos,
+              label: Text(l.habUnidadMinutos),
+              icon: const Icon(LucideIcons.timer),
+            ),
+          ],
+          selected: {_unidad},
+          onSelectionChanged: (nuevo) => setState(() {
+            _unidad = nuevo.first;
+            _error = null;
+            _recortarMeta();
+          }),
+        ),
+        if (_sinVueltaAVeces) ...[
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            l.habUnidadSinVuelta,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: t.textMuted),
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// Los minutos por día: las metas rápidas, una cifra propia y la frase que
+  /// dice el objetivo entero («30 min cada día»). Nunca «N×X a la semana»: en
+  /// un semanal cada día cuenta por sí solo.
+  Widget _selectorMinutos(AppLocalizations l, TokensContextuales t) {
+    final minutos = _minutosElegidos;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l.habMinutosPorDia,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.sm,
+          children: [
+            for (final n in metasRapidasMinutos)
+              ChoiceChip(
+                label: Text(duracionLegible(l, n)),
+                selected: !_minutosLibre && _minutosObjetivo == n,
+                onSelected: (_) => setState(() {
+                  _minutosLibre = false;
+                  _minutosObjetivo = n;
+                  _error = null;
+                }),
+              ),
+            ChoiceChip(
+              label: Text(textoMinutosOtra(l)),
+              selected: _minutosLibre,
+              onSelected: (_) => setState(() {
+                _minutosLibre = true;
+                _error = null;
+              }),
+            ),
+          ],
+        ),
+        if (_minutosLibre) ...[
+          const SizedBox(height: AppSpacing.ms),
+          TextField(
+            controller: _minutosController,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(3),
+            ],
+            onChanged: (_) => setState(() {}),
+            decoration: InputDecoration(
+              labelText: textoMinutosOtra(l),
+              border: const OutlineInputBorder(),
+            ),
+          ),
+        ],
+        if (objetivoMinutosValido(minutos)) ...[
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            etiquetaObjetivoMinutos(
+              l,
+              minutos!,
+              diario: _frecuencia == 'DIARIO',
+            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(color: t.successText),
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// El cambio de objetivo que aún no vale, con la opción de anularlo.
+  Widget _tarjetaProgramado(
+    AppLocalizations l,
+    TokensContextuales t,
+    ObjetivoProgramado programado,
+  ) {
+    final texto = Theme.of(context).textTheme;
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.ms),
+      // La figura de la identidad, al radio de las tarjetas de contenido:
+      // redondeada en Profundidad, a lápiz en Dulce, achaflanada en Neotokyo+.
+      decoration: ShapeDecoration(
+        color: t.surface2,
+        shape: formaIdentidad(
+          identidad(context),
+          radio: identidad(context).radioSecundario,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(LucideIcons.calendarClock, size: 18, color: t.streakText),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  l.habProgramadoTitulo,
+                  style: texto.titleSmall?.copyWith(color: t.text),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            textoObjetivoProgramado(
+              l,
+              programado,
+              actual: widget.habito!,
+              hoy: DateTime.now(),
+              locale: Localizations.localeOf(context).toLanguageTag(),
+            ),
+            style: texto.bodyMedium?.copyWith(color: t.text),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: _loading ? null : _anularProgramado,
+              child: Text(l.habProgramadoAnular),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final t = tokens(context);
+    final programado = _programado;
+    // Si se anuló el cambio programado, volver atrás sin guardar también
+    // devuelve true, para que quien abrió el formulario recargue.
+    return PopScope<bool>(
+      canPop: !_huboCambios,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) Navigator.pop(context, true);
+      },
+      child: _formulario(l, t, programado),
+    );
+  }
+
+  Widget _formulario(
+    AppLocalizations l,
+    TokensContextuales t,
+    ObjetivoProgramado? programado,
+  ) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -491,6 +882,8 @@ class _HabitoScreenState extends State<HabitoScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (_esEdicion && programado != null)
+                    _tarjetaProgramado(l, t, programado),
                   TextField(
                     controller: _nombreController,
                     textCapitalization: TextCapitalization.sentences,
@@ -547,7 +940,9 @@ class _HabitoScreenState extends State<HabitoScreen> {
                             _categoriaId = v;
                           }),
                         ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
+                  _selectorUnidad(l, t),
+                  const SizedBox(height: AppSpacing.md),
                   // El título va fuera del recuadro, como «Días de la semana», y
                   // la ayuda va pegada a él como un exponente, igual que en «Meta».
                   Row(
@@ -581,6 +976,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                         .toList(),
                     onChanged: (v) => setState(() {
                       _frecuencia = v!;
+                      _recortarMeta();
                     }),
                   ),
                   if (_frecuencia == 'SEMANAL') ...[
@@ -601,13 +997,18 @@ class _HabitoScreenState extends State<HabitoScreen> {
                           etiquetaSemantica: l.habAyudaMetaEtiqueta,
                           superindice: true,
                         ),
-                        Text(
-                          l.habDiasSemanaMeta(_diasSeleccionados.length),
-                          style: Theme.of(context).textTheme.titleLarge,
+                        // «3 días por semana»: si no cabe, baja de línea.
+                        Flexible(
+                          child: Text(
+                            l.habDiasSemanaMeta(_diasSeleccionados.length),
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
                         ),
                       ],
                     )
-                  else
+                  // Un diario de minutos no tiene objetivo de veces: es un día
+                  // por día, y lo que se elige son los minutos.
+                  else if (!(_esMinutos && _frecuencia == 'DIARIO'))
                     Row(
                       children: [
                         // `trimRight`: ver la fila de los días marcados.
@@ -615,8 +1016,11 @@ class _HabitoScreenState extends State<HabitoScreen> {
                         AyudaCampo(
                           // Diario: veces al día. Semanal sin días marcados:
                           // veces por semana, el día que sea. Con días
-                          // marcados no se llega aquí: es la otra fila.
-                          texto: _frecuencia == 'DIARIO'
+                          // marcados no se llega aquí: es la otra fila. En
+                          // minutos, días por semana que llegan a sus minutos.
+                          texto: _esMinutos
+                              ? l.habAyudaMetaSemanalMinutos
+                              : _frecuencia == 'DIARIO'
                               ? l.habAyudaMetaDiaria
                               : l.habAyudaMetaSemanal,
                           etiquetaSemantica: l.habAyudaMetaEtiqueta,
@@ -628,18 +1032,34 @@ class _HabitoScreenState extends State<HabitoScreen> {
                             if (_meta > 1) _meta--;
                           }),
                         ),
-                        Text(
-                          '$_meta',
-                          style: Theme.of(context).textTheme.headlineSmall,
+                        // La cifra con su unidad: «3 veces al día», «3 días
+                        // por semana». Si no cabe, baja de línea.
+                        Flexible(
+                          child: Text(
+                            textoMetaFormulario(
+                              l,
+                              diario: _frecuencia == 'DIARIO',
+                              meta: _meta,
+                            ),
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
                         ),
                         IconButton(
                           icon: const Icon(LucideIcons.plus),
-                          onPressed: () => setState(() {
-                            _meta++;
-                          }),
+                          // En minutos, como mucho 7 días por semana.
+                          onPressed: _esMinutos && _meta >= diasMaximosSemana
+                              ? null
+                              : () => setState(() {
+                                  _meta++;
+                                }),
                         ),
                       ],
                     ),
+                  if (_esMinutos) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    _selectorMinutos(l, t),
+                  ],
                   // Un semanal cobra un 20 % más al completar la semana: se
                   // dice aquí, que es donde se decide su objetivo.
                   if (_frecuencia == 'SEMANAL') ...[

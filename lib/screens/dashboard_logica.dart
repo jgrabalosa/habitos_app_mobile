@@ -1,6 +1,8 @@
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 
 import '../models/habito.dart';
+import '../models/hoy.dart';
+import '../models/minutos.dart';
 
 /// Decisiones de la pantalla de Hoy que no dependen de widgets ni de red,
 /// sacadas de `_DashboardScreenState` para poder probarlas. La pantalla las
@@ -131,3 +133,35 @@ bool esSoloDeshacerElUltimo(Object error) =>
     error is ApiException &&
     error.tipo == TipoErrorApi.peticionInvalida &&
     error.codigoEstado == 409;
+
+/// Si el anillo de un hábito de minutos responde al toque y abre su panel. Como
+/// el check, no responde en un día que no se puede tocar ni con la pista de
+/// Hoy abierta. A diferencia del check, sí responde con el día ya hecho: los
+/// minutos de más se pueden seguir sumando.
+bool minutosTocables({required bool habilitado, required bool pistaActiva}) =>
+    habilitado && !pistaActiva;
+
+/// Si un envío fallido pudo haber llegado al servidor: sin respuesta (timeout,
+/// sin conexión), un 5xx o una respuesta que no se pudo leer. Entonces no se
+/// sabe si se registró: repetir el mismo envío reutiliza su clave, y al
+/// cerrar el panel Hoy recarga. Un 4xx sí es una respuesta clara: no se
+/// registró nada.
+bool esResultadoIncierto(Object error) {
+  if (error is! ApiException) return true;
+  return switch (error.tipo) {
+    TipoErrorApi.sinConexion ||
+    TipoErrorApi.timeout ||
+    TipoErrorApi.servidor ||
+    TipoErrorApi.respuestaInesperada => true,
+    TipoErrorApi.noAutorizado || TipoErrorApi.peticionInvalida => false,
+  };
+}
+
+/// Si sumar [minutos] a [antes] deja hecho el día que se mira: el día no lo
+/// estaba y con esto llega a su objetivo. Es lo que cuenta como «hábito
+/// completado» en Analytics; una entrada que se queda corta o que va por
+/// encima de la meta, no.
+bool entradaDejaDiaHecho(FilaHoy antes, int minutos) =>
+    minutos > 0 &&
+    !antes.diaHechoMinutos &&
+    diaHechoEnMinutos(antes.minutosHechos + minutos, antes.minutosObjetivo);

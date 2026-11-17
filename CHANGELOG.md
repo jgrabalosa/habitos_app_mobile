@@ -79,3 +79,28 @@ Estado: publicada en Producción el 2026-10-22.
 - El panel «Tu ritmo» respeta la barra inferior del sistema.
 
 Para anunciar: el ritmo, el nuevo aspecto de Dulce y el rediseño de la app.
+
+## 1.2.0 (6) — en preparación
+
+Estado: en preparación. Sale sin «Empezar sesión»: el botón llega con una versión posterior, cuando Norday Focus esté en Producción.
+
+### Novedades
+
+- Hábitos de minutos: al crear un hábito se elige «Veces» o «Minutos». En minutos, un objetivo por día (10, 15, 30 o 60 de un toque, o una cifra de 1 a 600) al que se llega con varias sesiones que se suman.
+- Panel de minutos en Hoy: +5, +15 y +30, una cifra libre, «Completar · +X», que suma justo lo que falta, y Deshacer la última entrada, con su cantidad y su hora. Con la meta cumplida se puede seguir sumando.
+- Detalle de un hábito de minutos: tiempo total, días a medias en el calendario y minutos por día.
+- Cambios de objetivo programados: si un cambio vale desde otro día (mañana o el lunes), se avisa al guardar, se ve en el formulario y se puede anular.
+
+### Mejoras
+
+- Desde 60 minutos, todo lo que enseña minutos va en horas: «1 h», «1 h 30 min».
+- Los textos dicen su unidad: «3 veces al día», «3 días por semana» (un semanal cuenta días), «Entre 1 y 600 minutos (10 h)» y «+20 puntos por completar la semana».
+- Plantillas: «Leer» (30 min) y «Meditar» (15 min) pasan a ser hábitos de minutos.
+- El aviso del móvil se registra por app, para que Norday Focus no pise el de Norday Habits.
+
+### Arreglos
+
+- Actualización obligatoria: la comprobación de la versión mínima ya no se repite al abrir la app en frío. Era una segunda petición además de la del arranque y, con la app lanzada en segundo plano, fallaba por red. Volver a la app sigue comprobando.
+- Ideas para empezar: un hábito oculta una idea solo si coinciden por palabras. Un nombre corto como «Be» ya no oculta «Beber agua»; «Agua» o «Reading» la siguen ocultando.
+
+Para anunciar: a decidir.

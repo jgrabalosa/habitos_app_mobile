@@ -3,40 +3,62 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 
 import '../l10n/app_localizations.dart';
+import '../l10n/textos_minutos.dart';
 import 'identidad_ui.dart';
 
 /// Las dos cifras de lo que lleva un hábito: las veces marcadas desde que se
-/// creó y los días del mes en que se marcó.
+/// creó y los días del mes en que se marcó. En uno de minutos, la primera es
+/// el tiempo total, en horas y minutos.
 class ResumenDetalle extends StatelessWidget {
   final int totalCompletados;
   final int diasMes;
   final bool mesActual;
+
+  /// Los minutos de todos los registros, en un hábito de minutos. Con él, la
+  /// primera tarjeta dice el tiempo total en vez de las veces.
+  final int? totalMinutos;
 
   const ResumenDetalle({
     super.key,
     required this.totalCompletados,
     required this.diasMes,
     required this.mesActual,
+    this.totalMinutos,
   });
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final t = tokens(context);
+    final minutos = totalMinutos;
     return Row(
       children: [
-        _statCard(
-          context,
-          LucideIcons.chartColumn,
-          totalCompletados.toString(),
-          l.detLoQueLlevas,
-          t.successText,
-          ayuda: AyudaCampo(
-            texto: l.detAyudaLoQueLlevas,
-            etiquetaSemantica: l.detAyudaLoQueLlevasEtiqueta,
-            superindice: true,
+        if (minutos != null)
+          _statCard(
+            context,
+            LucideIcons.timer,
+            duracionLegible(l, minutos),
+            l.detTiempoTotal,
+            t.successText,
+            ayuda: AyudaCampo(
+              texto: l.detAyudaTiempoTotal,
+              etiquetaSemantica: l.detAyudaTiempoTotalEtiqueta,
+              superindice: true,
+            ),
+          )
+        else
+          _statCard(
+            context,
+            LucideIcons.chartColumn,
+            totalCompletados.toString(),
+            l.detLoQueLlevas,
+            t.successText,
+            ayuda: AyudaCampo(
+              texto: l.detAyudaLoQueLlevas,
+              etiquetaSemantica: l.detAyudaLoQueLlevasEtiqueta,
+              superindice: true,
+            ),
           ),
-        ),
         const SizedBox(width: 8),
         _statCard(
           context,

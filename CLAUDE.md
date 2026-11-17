@@ -22,9 +22,10 @@ Antes de escribir algo genérico aquí, para: probablemente va en el paquete.
 Sesión, usuario, preferencias, gamificación, tienda, mascota y
 notificaciones (`ApiServiceCore`), los servicios genéricos (celebración,
 sonido, idioma, zona), el tema y las identidades, los
-widgets genéricos, los fondos de cada identidad, el cierre del día, las 8
+widgets genéricos, los fondos de cada identidad, el cierre del día, las 9
 pantallas genéricas (login, recuperación, elección de identidad, tienda,
-mascota, logros, colección, perfil), `NordayCoreLocalizations`,
+mascota, logros, colección, perfil y actualización obligatoria),
+`NordayCoreLocalizations`,
 `CatalogosCore`, y los assets de animations, sounds y mascota. La lista
 completa, en el `CLAUDE.md` del paquete.
 
@@ -32,8 +33,12 @@ completa, en el `CLAUDE.md` del paquete.
 
 - `screens/` — `HomeShell` (las pestañas Hoy, Mascota y Hábitos, y el menú),
   `DashboardScreen` (Hoy) y `dashboard_logica.dart` (sus decisiones sin
-  widgets ni red, para poder probarlas), la lista de hábitos, el detalle y el
-  alta/edición. El alta nueva arranca en `HomeShell`: la bienvenida de una
+  widgets ni red, para poder probarlas), la lista de hábitos
+  (`habitos_screen.dart`), el detalle (`habito_detalle_screen.dart`), el
+  alta/edición (`habito_screen.dart`) y las ideas para empezar
+  (`ideas_habito_screen.dart`: «Empieza con una idea», con las plantillas;
+  `abrirAltaHabito` va al formulario vacío si no queda ninguna idea). El alta
+  nueva arranca en `HomeShell`: la bienvenida de una
   tarjeta (`widgets/bienvenida.dart`), el formulario real del primer hábito y,
   si se guarda, una pista sobre su círculo en Hoy. Nada de esto sale a quien
   no es alta nueva.
@@ -44,8 +49,33 @@ completa, en el `CLAUDE.md` del paquete.
   (`recorrido_onboarding.dart`, y `anclas_recorrido.dart`, que hoy tiene una
   sola ancla: el check del hábito),
   `descubrimiento_detalle.dart` (si el usuario ya entró alguna vez en un
-  detalle) y `habitos_refresh.dart` (aviso de que la lista ha cambiado).
-- `models/habito.dart`.
+  detalle), `habitos_refresh.dart` (aviso de que la lista ha cambiado),
+  `app_refresh.dart` (la señal para que las pantallas vivas se recarguen al
+  volver a primer plano), `al_volver.dart` (lo que pasa al volver a primer
+  plano, en un solo punto: esa señal, la mascota, la identidad y el registro
+  del aviso del móvil), `identidad_al_volver.dart` (vuelve a pedir la
+  identidad equipada al backend, sin solapar peticiones), `clave_envio.dart`
+  (el UUID v4 de la `clave` de cada envío de minutos, con `Random.secure()`),
+  `pausa.dart` (el código del producto `PAUSA_HABITO` y cuántas pausas hay
+  en el inventario) y `abrir_enfoque.dart` («Empezar sesión» del panel de
+  minutos: abre Norday Focus con el hábito, o su ficha de Play (nunca desde
+  la de prueba), por un canal
+  de `MainActivity.kt`; los dos paquetes de Enfoque van en `<queries>` del
+  AndroidManifest).
+  **Norday Habits con «Empezar sesión» no sale a Producción hasta que Norday
+  Focus sea visible en Producción** (o salen a la vez): sin ella, el botón
+  lleva a una ficha que no existe. En prueba cerrada solo vale si los testers
+  de Habits también lo son de Focus. La guía del despliegue conjunto está en
+  `docs/despliegue.md` del backend (`habitos-app`).
+- `models/` — `habito.dart` (con `UnidadHabito`: veces o minutos), `hoy.dart`
+  (lo que manda `/hoy`: filas, secciones, tira y tendencia del ritmo),
+  `minutos.dart` (las reglas de los hábitos de minutos, sin widgets ni red:
+  límites 1–600, metas y sumas rápidas, lo que envía «Completar»),
+  `registro.dart` (un registro de `/registros/habito/{id}`, con minutos,
+  origen `MANUAL`/`ENFOQUE` y `creadoEn`), `objetivo_programado.dart` (un
+  cambio de objetivo que aún no vale), `plantilla_habito.dart` (ver «Hábitos
+  de minutos») y `ritmo_reciente.dart` (si un hábito o la lista acaban de
+  empezar: menos de siete días desde el alta).
 - `l10n/` — `AppLocalizations` y `Catalogos` (categorías y logros de hábito).
 - `widgets/` — ver abajo.
 - `assets/branding/` — lo único de assets que **no** se comparte.
@@ -82,11 +112,19 @@ puntos:
 
 1. **`destinoTrasLogin`** (función suelta en `home_shell.dart`) — se le pasa a
    `LoginScreen` y a `PerfilScreen`, que no pueden conocer `HomeShell`.
-2. **`Catalogos.registrarEnElMotor()`** en `main()` — le da al motor los
-   logros de hábitos: los 32 de dominio que siembra el backend. En el
-   paquete sólo viven los que no saben de dominio
-   (`BIENVENIDO`, `PRIMEROS_PASOS`, `LOGIN_GOOGLE`, los tres de identidad,
-   los dos de la mascota e `INTERACCION_RESENA`, retirado).
+2. **`Catalogos.registrarEnElMotor()`** en `main()` — hace dos registros en
+   el motor:
+   - **`CatalogosCore.registrarLogrosDeDominio`**: los 38 logros de hábitos
+     que traduce la app. El backend siembra 39 con `origenApp` de hábitos
+     (`LogrosHabitosInitializer`); el que no está en la app es
+     `PRIMEROS_PASOS`, que traduce el core. En el paquete sólo viven los que
+     no saben de dominio (`BIENVENIDO`, `PRIMEROS_PASOS`, `LOGIN_GOOGLE`, los
+     tres de identidad, los dos de la mascota e `INTERACCION_RESENA`,
+     retirado).
+   - **`CatalogosCore.registrarProductosDeDominio`**: la pausa
+     (`PAUSA_HABITO`, de `ProductosHabitosInitializer` en el backend), con
+     nombre, descripción y uso. Como se gasta desde el detalle de un hábito,
+     Colección enseña el uso en vez del botón «Usar».
 3. **`nordayNavigatorKey`** — `MaterialApp` usa el del paquete en vez de uno
    propio, porque `CelebracionService` lo necesita.
 4. **`MascotaScreen.ayudaAnimo` y `ayudaXp`** — `HomeShell` le pasa dos
@@ -110,6 +148,12 @@ puntos:
 9. **El grano de papel** — el `builder` del `MaterialApp` (en `main.dart`,
    `envolverConGrano`) pone `GranoPapel` (core v0.45.0) encima de todo;
    solo pinta en Dulce.
+10. **Los textos de la app en pantallas del core** — `registrarTextosHabits()`
+    (`l10n/textos_habits.dart`) en `main()`, antes de `runApp`, llama a
+    `TextosApp.registrar` (core v0.55.0) con el nombre, el lema del login y
+    los textos de actualización obligatoria y de borrado de cuenta, que viven
+    en los `app_*.arb`. Sin eso el core dice «Norday» y frases neutras.
+    `onGenerateTitle` usa `appNombre` de la app, no `appTitulo` del core.
 
 ## Identidad de marca (aplicar siempre en UI nueva)
 
@@ -188,6 +232,29 @@ de las categorías que crea el usuario, que el backend admite aunque la app
 hoy no permita crearlas— se muestra el nombre que manda el backend. Nunca un
 código crudo.
 
+## Hábitos de minutos
+
+- **Duraciones**: todo lo que enseña minutos pasa por `duracionLegible`
+  (`l10n/textos_minutos.dart`): «45 min», «1 h», «1 h 30 min». Los pares
+  hecho/objetivo, por `parMinutos`: «20 / 30 min» si las dos cifras son
+  menores de 60, «45 min / 1 h 30 min» si alguna llega. Se guarda y se
+  escribe siempre en minutos: los campos de entrada y los botones +5/+15/+30
+  del panel siguen en minutos.
+- **Panel** (`widgets/panel_minutos.dart`): solo suma. Bajo el progreso,
+  «Te faltan …» o «Meta cumplida (· +… de más)». «Completar · +X», arriba y a
+  todo lo ancho, envía justo lo que falta como una suma más (su clave,
+  `MANUAL`); solo sale si falta algo. Los botones rápidos van en su casilla y,
+  mientras falta, solo salen los menores que lo que falta. Deshacer quita la
+  última entrada y dice su cantidad y la hora local (`Registro.creadoEn`, que
+  llega en UTC sin zona). Cada envío lleva su clave y repite la misma si no
+  hubo respuesta clara; mientras envía no se cierra, y cerrar tras un envío
+  incierto devuelve `desconocido`. El hueco de Enfoque es lo último del panel:
+  «Empezar sesión» solo sale si el día que se mira es hoy, porque una sesión
+  cuenta en el día en que empieza y desde otro día sumaría a hoy.
+- **Plantillas** (`models/plantilla_habito.dart`): son datos, con `unidad` y
+  `minutos`. Leer (30 min) y Meditar (15 min) son de minutos; las demás, de
+  veces.
+
 ## Tocar el paquete
 
 Un cambio en `norday_flutter_core` no llega solo: se mergea y se tagea
@@ -195,7 +262,23 @@ allí, se cambia aquí el `ref:` al tag nuevo y se hace
 `flutter pub upgrade norday_flutter_core`, porque pub cachea el commit
 resuelto. Antes de probar, comprobar el `resolved-ref` del `pubspec.lock`.
 Para probar una rama del core sin tag, `pubspec_overrides.yaml` con
-`path: ../norday_flutter_core`, que no se commitea.
+`path: ../norday_flutter_core`, que no se commitea (está en `.gitignore`).
+
+**Pendiente con el core 0.55.0** (rama `wip-enfoque`): el `ref:` del
+`pubspec.yaml` ya apunta a `v0.55.0`, pero el tag aún no existe y el
+desarrollo va con `pubspec_overrides.yaml`. El `pubspec.lock` **sí está
+versionado**, y el del repo es todavía el de v0.54.0 (`ref: "v0.54.0"`,
+`resolved-ref` `1f8add7`): no casa con el `ref:` del `pubspec.yaml`. El lock
+local, con el override, apunta a la ruta del core (`source: path`) y **no se
+commitea**: si sale modificado en `git status`, se deja fuera del commit.
+Cuando Quim ponga el tag `v0.55.0` en el core:
+
+1. Borrar `pubspec_overrides.yaml`.
+2. `flutter pub upgrade norday_flutter_core`.
+3. Comprobar que el lock dice `source: git` y `ref: "v0.55.0"`, y que su
+   `resolved-ref` es el commit que da `git rev-parse v0.55.0^{commit}` en
+   el core.
+4. `flutter analyze` y `flutter test`, y commitear el `pubspec.lock`.
 
 ## Variantes: produccion y prueba
 
@@ -206,11 +289,24 @@ Para probar una rama del core sin tag, `pubspec_overrides.yaml` con
 - **`lib/entorno.dart` para la app al arrancar** si el flavor y la URL no
   cuadran: `prueba` contra producción, `produccion` contra otra cosa, o sin
   flavor. No se quita ni se salta.
+- **La de prueba se ve: cinta «PRUEBA»** arriba a la derecha en todas las
+  pantallas, también en el login (`conCintaDeEntorno` de `lib/entorno.dart`,
+  en el `builder` del `MaterialApp`). Sin cinta, es la de producción. Se puso
+  el 16-nov-2026: con varias apps de prueba y de Play instaladas, Quim entró
+  con una cuenta sin saber si era staging o producción.
+- **La de prueba nunca abre Google Play.** Si falta Norday Focus PRUEBA,
+  «Empezar sesión» avisa (`AperturaEnfoque.faltaPrueba`) en vez de ir a la
+  ficha de Play, que lleva a la Focus de producción. Mismo 16-nov.
 - **El nombre visible sale de `manifestPlaceholders["appLabel"]`** en
   `android/app/build.gradle.kts`, no del manifest.
 - **`google-services.json` lleva las dos apps.** Google Sign-In de la de prueba
   tiene sus propios clientes OAuth Android en Google Cloud, con la huella de
-  depuración y la de subida.
+  depuración y la de subida. La de producción, además, se instala desde Play
+  firmada con la **clave de firma de apps de Play**, no con la de subida: la
+  SHA-1 de esa clave (Play Console → Integridad de la app → Firma de apps)
+  tiene que estar en Firebase y en un cliente OAuth Android de
+  `com.norday.habitos`. Sin ella, Google Sign-In falla en la app instalada
+  desde Play aunque funcione en una build local.
 - **Nunca se instala `--flavor produccion` en un móvil con la app de Play**:
   mismo paquete, otra firma, y la salida sería desinstalar la de Play.
 
@@ -290,12 +386,12 @@ Errores que ya se cometieron una vez. No se vuelven a cometer.
   Cloud (Firebase sola no basta). Cada máquina tiene su clave de depuración,
   así que cada una necesita su cliente. Sin eso, se prueba con APK de release.
 
-### Método de trabajo (vale para los cuatro repos)
+### Método de trabajo (vale para los cinco repos)
 
-- **La primera línea de un prompt se comprueba, no se recuerda.** Tres repos
-  están en `C:\Dev\Norday\` (`habitos-app`, `habitos_app_mobile`,
-  `norday_flutter_core`) y `conocimiento_app_mobile` está en
-  `C:\Dev\Conocimiento\`.
+- **La primera línea de un prompt se comprueba, no se recuerda.** Son cinco
+  repos: cuatro están en `C:\Dev\Norday\` (`habitos-app`,
+  `habitos_app_mobile`, `norday_flutter_core` y `enfoque_app_mobile`) y
+  `conocimiento_app_mobile` está en `C:\Dev\Conocimiento\`.
 - **Un solo agente por repo a la vez.** Todo lo que haga otro agente se revisa
   en el remoto antes de mergear.
 - **Las cifras de verificación se cuentan contra el repositorio**, nunca se

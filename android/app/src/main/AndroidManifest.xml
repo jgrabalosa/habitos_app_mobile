@@ -56,5 +56,19 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Norday Focus (la app Enfoque): «Empezar sesión» del panel de
+             minutos la abre con el enlace del hábito, fijando su paquete
+             (MainActivity.kt). La visibilidad limitada de Android 11+ «also
+             affects explicit interactions with other apps», y para una app
+             concreta se declara su paquete:
+             https://developer.android.com/training/package-visibility
+             https://developer.android.com/training/package-visibility/declaring
+             Los dos: la Habits de Play abre la Enfoque de Play y la de prueba
+             la de prueba (lib/services/abrir_enfoque.dart). La ficha de Play
+             no necesita nada aquí: startActivity con un enlace no requiere
+             visibilidad
+             (https://developer.android.com/training/package-visibility/use-cases). -->
+        <package android:name="com.norday.enfoque"/>
+        <package android:name="com.norday.enfoque.prueba"/>
     </queries>
 </manifest>
