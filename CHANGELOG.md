@@ -104,3 +104,13 @@ Estado: en preparación. Sale sin «Empezar sesión»: el botón llega con una v
 - Ideas para empezar: un hábito oculta una idea solo si coinciden por palabras. Un nombre corto como «Be» ya no oculta «Beber agua»; «Agua» o «Reading» la siguen ocultando.
 
 Para anunciar: a decidir.
+
+## Sin publicar
+
+### Mejoras
+
+- La app se queda siempre en vertical.
+
+### Arreglos
+
+- La app ya no se cierra al arrastrar a Nori en pantallas pequeñas.
