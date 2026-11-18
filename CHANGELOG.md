@@ -105,16 +105,23 @@ Estado: en preparación. Sale sin «Empezar sesión»: el botón llega con una v
 
 Para anunciar: a decidir.
 
-## Sin publicar
+## 1.3.0 (7) — en preparación
+
+Estado: en preparación. Con el core 0.56.0: Nori vestida, invierno y Navidad 2026.
 
 ### Novedades
 
+- Nori se viste: un vestidor en la pantalla de Nori, con una prenda para la cabeza y otra para el cuerpo. Nori sale vestida en su pantalla, en las fases y en la Nori pequeña de Hoy.
+- En la tienda, la sección «Nori»: las prendas de Invierno (gorro de lana y bufanda de rayas, hasta el 28 de febrero) y de Navidad (gorro de Papá Noel, gratis toda la Navidad, y traje de Papá Noel, hasta el 6 de enero). Se pueden probar antes de comprarlas. Lo comprado es tuyo para siempre.
+- El terrario de Nori se llena de nieve en Navidad.
 - Invita a un amigo desde el menú.
 - Siete ideas de hábito nuevas, y cada idea trae su hora de aviso.
 
 ### Mejoras
 
 - La app se queda siempre en vertical.
+- Al cerrar sesión, el móvil deja de recibir los avisos de esa cuenta.
+- El aviso del móvil se vuelve a registrar una vez con el cambio a un token por app.
 
 ### Arreglos
 
