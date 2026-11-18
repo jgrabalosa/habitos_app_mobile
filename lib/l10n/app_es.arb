@@ -855,5 +855,38 @@
   "minErrorAbrirEnfoque": "No se ha podido abrir Norday Focus.",
   "@minErrorAbrirEnfoque": {
     "description": "Panel de minutos: no se pudo abrir ni Norday Focus ni su ficha de Google Play"
+  },
+  "invitarMenu": "Invitar a un amigo",
+  "@invitarMenu": {
+    "description": "Entrada del menú y título de la pantalla que comparte la tarjeta de invitación"
+  },
+  "invitarTitular": "Constancia, no perfección",
+  "@invitarTitular": {
+    "description": "Tarjeta de invitación: titular bajo Nori"
+  },
+  "invitarFrase": "Yo cuido de mi Nori marcando hábitos. Sin rachas que se rompen.",
+  "@invitarFrase": {
+    "description": "Tarjeta de invitación: frase bajo el titular, en primera persona de quien comparte"
+  },
+  "invitarPie": "Gratis y sin anuncios · Android",
+  "@invitarPie": {
+    "description": "Tarjeta de invitación: línea pequeña bajo el enlace"
+  },
+  "invitarTextoCompartir": "Estoy usando Norday Habits para mis hábitos, sin rachas que se rompen. Pruébala: {enlace}",
+  "@invitarTextoCompartir": {
+    "description": "Texto que acompaña a la imagen al compartir. El enlace es el mismo en todos los idiomas",
+    "placeholders": {
+      "enlace": {
+        "type": "String"
+      }
+    }
+  },
+  "invitarCompartir": "Compartir",
+  "@invitarCompartir": {
+    "description": "Botón principal de la pantalla de invitación"
+  },
+  "invitarError": "No se ha podido compartir la invitación. Inténtalo de nuevo.",
+  "@invitarError": {
+    "description": "SnackBar si falla la captura de la tarjeta o el envío"
   }
 }

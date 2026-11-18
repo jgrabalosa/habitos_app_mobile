@@ -12,6 +12,7 @@ import '../services/habitos_refresh.dart';
 import '../services/al_volver.dart';
 import 'dashboard_screen.dart';
 import 'habitos_screen.dart';
+import 'invitar_screen.dart';
 
 /// Adónde va el motor cuando la sesión ya es buena.
 ///
@@ -118,29 +119,6 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     );
   }
 
-  void _abrirColeccion() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => ColeccionScreen(usuarioId: _usuarioId)),
-    );
-  }
-
-  void _abrirLogros() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => LogrosScreen(usuarioId: _usuarioId)),
-    );
-  }
-
-  /// Hasta ahora a la tienda sólo se llegaba desde el botón de la pantalla de
-  /// mascota, que no es donde nadie la busca.
-  void _abrirTienda() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => TiendaScreen(usuarioId: _usuarioId)),
-    );
-  }
-
   // Botón atrás Android: si no estás en "Hoy", vuelve ahí primero.
   // Si ya estás en "Hoy", hace falta pulsar dos veces seguidas para salir.
   Future<void> _manejarAtras() async {
@@ -243,122 +221,11 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     }
   }
 
-  /// El menú, que antes colgaba del AppBar. Se ancla abajo a la derecha,
-  /// encima del botón que lo abre: el menú sale donde ha ido el dedo. Mide
-  /// lo que mide su entrada más larga, no el ancho de la pantalla. No
-  /// repite las tres pestañas: están en la misma barra, a dos dedos.
-  void _abrirMenu() {
-    final l = AppLocalizations.of(context)!;
-    final t = tokens(context);
-    final id = identidad(context);
-
-    showDialog<void>(
-      context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.35),
-      builder: (hoja) {
-        Widget entrada(IconData icono, String texto, VoidCallback alPulsar) {
-          return InkWell(
-            onTap: () {
-              // Se cierra ANTES de navegar: si no, la ruta nueva se empuja
-              // debajo del panel y queda tapada.
-              Navigator.pop(hoja);
-              alPulsar();
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  Icon(icono, size: 18, color: t.points),
-                  const SizedBox(width: 12),
-                  Text(
-                    texto,
-                    style: TextStyle(
-                      color: t.text,
-                      fontSize: tamanoLectura(id, 14),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-
-        // En vez del Divider de borde a borde: un filo corto que se
-        // desvanece por los dos lados. Separa lo que uno abre por gusto de
-        // lo que uno abre por necesidad, sin cortar el panel en dos.
-        final filo = Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          child: Center(
-            child: Container(
-              height: 1,
-              width: 48,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    t.points.withValues(alpha: 0.0),
-                    t.points.withValues(alpha: 0.45),
-                    t.points.withValues(alpha: 0.0),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-
-        return Align(
-          alignment: Alignment.bottomRight,
-          child: Padding(
-            // Justo encima de la barra de navegación, separado del borde.
-            padding: EdgeInsets.only(
-              right: 8,
-              bottom: MediaQuery.of(context).padding.bottom + 88,
-              left: 8,
-            ),
-            child: Material(
-              color: t.surface,
-              elevation: 8,
-              borderRadius: BorderRadius.circular(id.radioSecundario),
-              clipBehavior: Clip.antiAlias,
-              child: IntrinsicWidth(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    entrada(
-                      LucideIcons.trophy,
-                      l.navColeccion,
-                      _abrirColeccion,
-                    ),
-                    entrada(LucideIcons.medal, l.logrosTitulo, _abrirLogros),
-                    entrada(
-                      LucideIcons.store,
-                      // El título sale del paquete, que es de quien es la
-                      // pantalla: aquí no se duplica la clave.
-                      NordayCoreLocalizations.of(context)!.tiendaTitulo,
-                      _abrirTienda,
-                    ),
-                    filo,
-                    entrada(LucideIcons.userRound, l.perfilTitulo, () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => PerfilScreen(
-                            usuarioId: _usuarioId,
-                            destinoTrasLogin: destinoTrasLogin,
-                          ),
-                        ),
-                      );
-                    }),
-                    entrada(LucideIcons.logOut, l.shellCerrarSesion, _logout),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
+  void _abrirMenu() => mostrarMenuShell(
+    context,
+    usuarioId: _usuarioId,
+    alCerrarSesion: _logout,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -537,4 +404,149 @@ class _MantenerVivoState extends State<_MantenerVivo>
     super.build(context);
     return widget.child;
   }
+}
+
+/// El menú, que antes colgaba del AppBar. Se ancla abajo a la derecha,
+/// encima del botón que lo abre: el menú sale donde ha ido el dedo. Mide
+/// lo que mide su entrada más larga, no el ancho de la pantalla. No
+/// repite las tres pestañas: están en la misma barra, a dos dedos.
+///
+/// Es una función suelta, y no un método de `HomeShell`, para poder probar
+/// sus entradas sin montar las tres pestañas. [context] es el de
+/// `HomeShell`: las pantallas se empujan desde ahí, no desde el panel, que
+/// ya está cerrado.
+void mostrarMenuShell(
+  BuildContext context, {
+  required int usuarioId,
+  required VoidCallback alCerrarSesion,
+}) {
+  final l = AppLocalizations.of(context)!;
+  final t = tokens(context);
+  final id = identidad(context);
+
+  void abrir(WidgetBuilder pantalla) {
+    Navigator.push(context, MaterialPageRoute(builder: pantalla));
+  }
+
+  showDialog<void>(
+    context: context,
+    barrierColor: Colors.black.withValues(alpha: 0.35),
+    builder: (hoja) {
+      Widget entrada(IconData icono, String texto, VoidCallback alPulsar) {
+        return InkWell(
+          onTap: () {
+            // Se cierra ANTES de navegar: si no, la ruta nueva se empuja
+            // debajo del panel y queda tapada.
+            Navigator.pop(hoja);
+            alPulsar();
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Icon(icono, size: 18, color: t.points),
+                const SizedBox(width: 12),
+                Text(
+                  texto,
+                  style: TextStyle(
+                    color: t.text,
+                    fontSize: tamanoLectura(id, 14),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
+      // En vez del Divider de borde a borde: un filo corto que se
+      // desvanece por los dos lados. Separa lo que uno abre por gusto de
+      // lo que uno abre por necesidad, sin cortar el panel en dos.
+      final filo = Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Center(
+          child: Container(
+            height: 1,
+            width: 48,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  t.points.withValues(alpha: 0.0),
+                  t.points.withValues(alpha: 0.45),
+                  t.points.withValues(alpha: 0.0),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      return Align(
+        alignment: Alignment.bottomRight,
+        child: Padding(
+          // Justo encima de la barra de navegación, separado del borde.
+          padding: EdgeInsets.only(
+            right: 8,
+            bottom: MediaQuery.of(context).padding.bottom + 88,
+            left: 8,
+          ),
+          child: Material(
+            color: t.surface,
+            elevation: 8,
+            borderRadius: BorderRadius.circular(id.radioSecundario),
+            clipBehavior: Clip.antiAlias,
+            child: IntrinsicWidth(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  entrada(
+                    LucideIcons.trophy,
+                    l.navColeccion,
+                    () => abrir((_) => ColeccionScreen(usuarioId: usuarioId)),
+                  ),
+                  entrada(
+                    LucideIcons.medal,
+                    l.logrosTitulo,
+                    () => abrir((_) => LogrosScreen(usuarioId: usuarioId)),
+                  ),
+                  entrada(
+                    LucideIcons.store,
+                    // El título sale del paquete, que es de quien es la
+                    // pantalla: aquí no se duplica la clave.
+                    NordayCoreLocalizations.of(context)!.tiendaTitulo,
+                    // Hasta ahora a la tienda sólo se llegaba desde el botón
+                    // de la pantalla de mascota, que no es donde nadie la
+                    // busca.
+                    () => abrir((_) => TiendaScreen(usuarioId: usuarioId)),
+                  ),
+                  filo,
+                  entrada(
+                    LucideIcons.gift,
+                    l.invitarMenu,
+                    () => abrir((_) => InvitarScreen(usuarioId: usuarioId)),
+                  ),
+                  entrada(
+                    LucideIcons.userRound,
+                    l.perfilTitulo,
+                    () => abrir(
+                      (_) => PerfilScreen(
+                        usuarioId: usuarioId,
+                        destinoTrasLogin: destinoTrasLogin,
+                      ),
+                    ),
+                  ),
+                  entrada(
+                    LucideIcons.logOut,
+                    l.shellCerrarSesion,
+                    alCerrarSesion,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }
