@@ -221,11 +221,8 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     }
   }
 
-  void _abrirMenu() => mostrarMenuShell(
-    context,
-    usuarioId: _usuarioId,
-    alCerrarSesion: _logout,
-  );
+  void _abrirMenu() =>
+      mostrarMenuShell(context, usuarioId: _usuarioId, alCerrarSesion: _logout);
 
   @override
   Widget build(BuildContext context) {
