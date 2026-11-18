@@ -107,6 +107,10 @@ Para anunciar: a decidir.
 
 ## Sin publicar
 
+### Novedades
+
+- Invita a un amigo desde el menú.
+
 ### Mejoras
 
 - La app se queda siempre en vertical.

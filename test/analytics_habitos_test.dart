@@ -14,4 +14,15 @@ void main() {
   test('habitoCompletado no lanza aunque Firebase falle', () async {
     await expectLater(AnalyticsHabitos.habitoCompletado('DIARIO'), completes);
   });
+
+  test('invitarAbierto no lanza aunque Firebase falle', () async {
+    await expectLater(AnalyticsHabitos.invitarAbierto(), completes);
+  });
+
+  test('invitarCompartido no lanza aunque Firebase falle', () async {
+    await expectLater(
+      AnalyticsHabitos.invitarCompartido('compartido'),
+      completes,
+    );
+  });
 }

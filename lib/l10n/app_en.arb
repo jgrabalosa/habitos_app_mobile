@@ -384,5 +384,12 @@
   "actualizacionObligatoriaTexto": "To keep using Norday, update the app. Your habits and progress stay just as they are.",
   "eliminarCuentaCuerpo": "All your habits, entries, streaks, achievements and points will be gone for good.\n\nThis can't be undone.",
   "minEmpezarSesion": "Start session",
-  "minErrorAbrirEnfoque": "Couldn't open Norday Focus."
+  "minErrorAbrirEnfoque": "Couldn't open Norday Focus.",
+  "invitarMenu": "Invite a friend",
+  "invitarTitular": "Consistency, not perfection",
+  "invitarFrase": "I look after my Nori by ticking off habits. No streaks to break.",
+  "invitarPie": "Free, no ads · Android",
+  "invitarTextoCompartir": "I'm using Norday Habits for my habits, with no streaks to break. Give it a try: {enlace}",
+  "invitarCompartir": "Share",
+  "invitarError": "Couldn't share the invite. Please try again."
 }

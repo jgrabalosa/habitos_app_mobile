@@ -35,4 +35,26 @@ class AnalyticsHabitos {
       debugPrint('Analytics: no se registró habito_completado: $e');
     }
   }
+
+  /// Se abre «Invitar a un amigo».
+  static Future<void> invitarAbierto() async {
+    try {
+      await AnalyticsCore.analytics.logEvent(name: 'invitar_abierto');
+    } catch (e) {
+      debugPrint('Analytics: no se registró invitar_abierto: $e');
+    }
+  }
+
+  /// Lo que devolvió el menú de compartir: `compartido`, `cancelado` o
+  /// `no_disponible`.
+  static Future<void> invitarCompartido(String resultado) async {
+    try {
+      await AnalyticsCore.analytics.logEvent(
+        name: 'invitar_compartido',
+        parameters: {'resultado': resultado},
+      );
+    } catch (e) {
+      debugPrint('Analytics: no se registró invitar_compartido: $e');
+    }
+  }
 }
