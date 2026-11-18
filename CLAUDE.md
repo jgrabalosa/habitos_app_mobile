@@ -49,6 +49,8 @@ completa, en el `CLAUDE.md` del paquete.
   no es alta nueva.
 - El permiso de notificaciones se pide al elegir la hora del recordatorio, en
   `habito_screen.dart`, con `NotificacionesService` del core: nunca al entrar.
+  Al crear desde una plantilla, que trae la hora puesta, se pide al guardar
+  si no se ha preguntado ya en ese formulario.
 - `services/` — `ApiServiceHabitos`, `AnalyticsHabitos`,
   `CrashlyticsService`, la pista de Hoy tras el primer hábito
   (`recorrido_onboarding.dart`, y `anclas_recorrido.dart`, que hoy tiene una
@@ -256,9 +258,12 @@ código crudo.
   incierto devuelve `desconocido`. El hueco de Enfoque es lo último del panel:
   «Empezar sesión» solo sale si el día que se mira es hoy, porque una sesión
   cuenta en el día en que empieza y desde otro día sumaría a hoy.
-- **Plantillas** (`models/plantilla_habito.dart`): son datos, con `unidad` y
-  `minutos`. Leer (30 min) y Meditar (15 min) son de minutos; las demás, de
-  veces.
+- **Plantillas** (`models/plantilla_habito.dart`): son datos, 14 en el orden
+  del día, con `unidad`, `minutos`, su hora de aviso (`horaAviso`, que el
+  formulario trae puesta) y `nombresAntiguos` (los que tuvieron, para seguir
+  ocultando la idea). Meditar (15 min), Caminar (30 min), Tocar un
+  instrumento (20 min) y Leer (30 min) son de minutos; las demás, de veces.
+  Los `id` no cambian nunca: van a Analytics.
 
 ## Tocar el paquete
 

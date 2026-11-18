@@ -10,9 +10,9 @@ que sale junto con Norday Focus.
 - **Hoy**: los hábitos del día, con un toque para completarlos, la semana en
   una tira y el progreso del día dibujado en el fondo de la identidad.
 - **Hábitos** diarios o semanales, con meta de veces, días concretos,
-  categoría, descripción y recordatorio a una hora. Siete plantillas para
-  empezar (beber agua, leer 30 min, ejercicio, meditar 15 min, dormir 8
-  horas, caminar, escribir diario).
+  categoría, descripción y recordatorio a una hora. Catorce ideas para
+  empezar, una o dos por categoría y cada una con su hora de aviso (de
+  meditar 15 min a las 8:00 a dormir 8 horas a las 23:00).
 - **Hábitos de minutos**: un objetivo de minutos por día (de 1 a 600), al
   que se llega con varias sesiones que se suman. En Hoy, un panel con +5,
   +15 y +30, una cifra libre y «Completar», que suma lo que falta. Desde 60

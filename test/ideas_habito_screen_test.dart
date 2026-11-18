@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:habitos_app_mobile/l10n/app_localizations.dart';
 import 'package:habitos_app_mobile/models/habito.dart';
+import 'package:habitos_app_mobile/models/plantilla_habito.dart';
 import 'package:habitos_app_mobile/screens/habito_screen.dart';
 import 'package:habitos_app_mobile/screens/ideas_habito_screen.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
@@ -51,6 +52,18 @@ void main() {
         home: child,
       );
 
+  /// La lista es perezosa: baja hasta que la fila de [id] está construida y
+  /// la lleva a la vista.
+  Future<void> llevarALaVista(WidgetTester tester, String id) async {
+    final fila = find.byKey(ValueKey('idea_$id'), skipOffstage: false);
+    for (var i = 0; i < 20 && fila.evaluate().isEmpty; i++) {
+      await tester.drag(find.byType(ListView), const Offset(0, -300));
+      await tester.pumpAndSettle();
+    }
+    await tester.ensureVisible(fila);
+    await tester.pumpAndSettle();
+  }
+
   Future<AppLocalizations> cargarL(String codigo) =>
       AppLocalizations.delegate.load(Locale(codigo));
 
@@ -79,21 +92,8 @@ void main() {
   testWidgets('hay una fila por plantilla disponible', (tester) async {
     await tester.pumpWidget(montar(ideas()));
     await tester.pumpAndSettle();
-    for (final id in [
-      'beberAgua',
-      'leer',
-      'ejercicio',
-      'meditar',
-      'dormir8h',
-      'caminar',
-      'escribirDiario',
-    ]) {
-      // La lista es perezosa: las filas de abajo hay que llevarlas a la vista.
-      await tester.scrollUntilVisible(
-        find.byKey(ValueKey('idea_$id')),
-        200,
-        scrollable: find.byType(Scrollable).first,
-      );
+    for (final id in plantillasHabito.map((p) => p.id)) {
+      await llevarALaVista(tester, id);
       expect(find.byKey(ValueKey('idea_$id')), findsOneWidget, reason: id);
     }
   });
@@ -157,6 +157,8 @@ void main() {
         };
     await tester.pumpWidget(montar(ideas()));
     await tester.pumpAndSettle();
+    // Leer va casi al final (la lista sigue la hora del aviso).
+    await llevarALaVista(tester, 'leer');
     await tester.tap(find.byKey(const ValueKey('idea_leer')));
     await tester.pumpAndSettle();
 
@@ -336,13 +338,7 @@ void main() {
     (tester) async {
       final l = await cargarL('es');
       final todas = [
-        l.plantillaBeberAgua,
-        l.plantillaLeer,
-        l.plantillaEjercicio,
-        l.plantillaMeditar,
-        l.plantillaDormir8h,
-        l.plantillaCaminar,
-        l.plantillaEscribirDiario,
+        for (final p in plantillasHabito) nombrePlantilla(l, p.id),
       ];
       await tester.pumpWidget(
         montar(

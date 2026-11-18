@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habitos_app_mobile/l10n/app_localizations.dart';
+import 'package:habitos_app_mobile/l10n/catalogos.dart';
 import 'package:habitos_app_mobile/models/habito.dart';
 import 'package:habitos_app_mobile/models/plantilla_habito.dart';
 
@@ -13,13 +14,44 @@ void main() {
   final pt = lookupAppLocalizations(const Locale('pt'));
 
   group('plantillasDisponibles', () {
-    test('sin hábitos existentes salen las 7', () {
-      expect(plantillasDisponibles(const []), hasLength(7));
+    test('sin hábitos existentes salen las 14, en el orden del día', () {
+      expect(plantillasDisponibles(const []).map((p) => p.id), [
+        'meditar',
+        'planificarDia',
+        'beberAgua',
+        'comerFrutaVerdura',
+        'caminar',
+        'tocarInstrumento',
+        'ejercicio',
+        'llamarQuerido',
+        'apuntarGastos',
+        'escribirDiario',
+        'leer',
+        'diaSinAlcohol',
+        'dejarMovil',
+        'dormir8h',
+      ]);
+    });
+
+    test('no hay ids repetidos', () {
+      final ids = plantillasHabito.map((p) => p.id).toList();
+      expect(ids.toSet(), hasLength(ids.length));
+    });
+
+    test('van ordenadas por la hora del aviso', () {
+      int minutos(TimeOfDay t) => t.hour * 60 + t.minute;
+      for (var i = 1; i < plantillasHabito.length; i++) {
+        expect(
+          minutos(plantillasHabito[i].horaAviso),
+          greaterThanOrEqualTo(minutos(plantillasHabito[i - 1].horaAviso)),
+          reason: plantillasHabito[i].id,
+        );
+      }
     });
 
     test('un hábito con el nombre de una plantilla la oculta', () {
       final disponibles = plantillasDisponibles([es.plantillaBeberAgua]);
-      expect(disponibles, hasLength(6));
+      expect(disponibles, hasLength(13));
       expect(disponibles.map((p) => p.id), isNot(contains('beberAgua')));
     });
 
@@ -30,15 +62,109 @@ void main() {
 
     test('si todas existen, no queda ninguna', () {
       final nombres = [
-        es.plantillaBeberAgua,
-        es.plantillaLeer,
-        es.plantillaEjercicio,
-        es.plantillaMeditar,
-        es.plantillaDormir8h,
-        es.plantillaCaminar,
-        es.plantillaEscribirDiario,
+        for (final p in plantillasHabito) nombrePlantilla(es, p.id),
       ];
       expect(plantillasDisponibles(nombres), isEmpty);
+    });
+
+    test('cada plantilla tiene nombre en es, en y pt', () {
+      for (final p in plantillasHabito) {
+        for (final l in [es, en, pt]) {
+          expect(nombrePlantilla(l, p.id), isNot(p.id), reason: p.id);
+        }
+      }
+    });
+
+    test('los nombres antiguos «Escribir diario» y «Dormir 8h» ocultan su '
+        'plantilla', () {
+      final ids = plantillasDisponibles([
+        'Escribir diario',
+        'Dormir 8h',
+      ]).map((p) => p.id);
+      expect(ids, isNot(contains('escribirDiario')));
+      expect(ids, isNot(contains('dormir8h')));
+      expect(
+        plantillasDisponibles(['Escrever diário']).map((p) => p.id),
+        isNot(contains('escribirDiario')),
+      );
+      expect(
+        plantillasDisponibles(['Sleep 8h']).map((p) => p.id),
+        isNot(contains('dormir8h')),
+      );
+    });
+
+    test('los nombres nuevos', () {
+      expect(nombrePlantilla(es, 'escribirDiario'), 'Escribir en el diario');
+      expect(nombrePlantilla(en, 'escribirDiario'), 'Journal');
+      expect(nombrePlantilla(pt, 'escribirDiario'), 'Escrever no diário');
+      expect(nombrePlantilla(es, 'dormir8h'), 'Dormir 8 horas');
+      expect(nombrePlantilla(en, 'dormir8h'), 'Sleep 8 hours');
+      expect(
+        nombrePlantilla(pt, 'dejarMovil'),
+        'Deixar o telemóvel antes de dormir',
+      );
+    });
+  });
+
+  group('valores de las plantillas', () {
+    testWidgets('cada categoría de la app tiene al menos una plantilla', (
+      tester,
+    ) async {
+      late Iterable<String> codigos;
+      await tester.pumpWidget(
+        Localizations(
+          locale: const Locale('es'),
+          delegates: AppLocalizations.localizationsDelegates,
+          child: Builder(
+            builder: (context) {
+              codigos = Catalogos.codigosCategoria(context).toList();
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+      expect(codigos, hasLength(10));
+      final conPlantilla = plantillasHabito.map((p) => p.categoriaCodigo);
+      for (final c in codigos) {
+        expect(conPlantilla, contains(c), reason: c);
+      }
+    });
+
+    test('cada una trae su hora de aviso', () {
+      final horas = {
+        for (final p in plantillasHabito)
+          p.id: '${p.horaAviso.hour}:${p.horaAviso.minute}',
+      };
+      expect(horas, {
+        'meditar': '8:0',
+        'planificarDia': '9:0',
+        'beberAgua': '10:0',
+        'comerFrutaVerdura': '13:0',
+        'caminar': '18:0',
+        'tocarInstrumento': '18:30',
+        'ejercicio': '19:0',
+        'llamarQuerido': '19:30',
+        'apuntarGastos': '21:0',
+        'escribirDiario': '21:30',
+        'leer': '22:0',
+        'diaSinAlcohol': '22:30',
+        'dejarMovil': '22:30',
+        'dormir8h': '23:0',
+      });
+    });
+
+    test('Caminar es de minutos: diario, 30 min', () {
+      final p = _plantilla('caminar');
+      expect(p.unidad, UnidadHabito.minutos);
+      expect(p.minutos, 30);
+      expect(p.frecuencia, 'DIARIO');
+    });
+
+    test('Llamar a alguien querido es semanal flexible de 2 días', () {
+      final p = _plantilla('llamarQuerido');
+      expect(p.frecuencia, 'SEMANAL');
+      expect(p.meta, 2);
+      expect(p.dias, isNull);
     });
   });
 
@@ -62,8 +188,9 @@ void main() {
     });
 
     test('las demás siguen en veces y sin minutos', () {
+      const deMinutos = {'leer', 'meditar', 'caminar', 'tocarInstrumento'};
       for (final p in plantillasHabito.where(
-        (p) => p.id != 'leer' && p.id != 'meditar',
+        (p) => !deMinutos.contains(p.id),
       )) {
         expect(p.unidad, UnidadHabito.veces, reason: p.id);
         expect(p.minutos, isNull, reason: p.id);
@@ -112,7 +239,22 @@ void main() {
 
   group('descripcionPlantilla', () {
     test('diario con meta 1 dice «Cada día»', () {
-      expect(descripcionPlantilla(es, _plantilla('caminar')), 'Cada día');
+      expect(descripcionPlantilla(es, _plantilla('dormir8h')), 'Cada día');
+    });
+
+    test('semanal sin días fijos dice los días por semana, no «Cada día»', () {
+      expect(
+        descripcionPlantilla(es, _plantilla('llamarQuerido')),
+        '2 días por semana',
+      );
+      expect(
+        descripcionPlantilla(en, _plantilla('llamarQuerido')),
+        '2 days a week',
+      );
+      expect(
+        descripcionPlantilla(pt, _plantilla('llamarQuerido')),
+        '2 dias por semana',
+      );
     });
 
     test('las de minutos dicen sus minutos', () {

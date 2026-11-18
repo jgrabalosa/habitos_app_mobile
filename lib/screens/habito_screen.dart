@@ -113,6 +113,10 @@ class _HabitoScreenState extends State<HabitoScreen> {
   bool _recordatorioActivo = true;
   TimeOfDay? _recordatorioHora;
 
+  /// Si en este formulario ya se ha mirado el permiso de avisos (al elegir la
+  /// hora o al guardar), para no preguntarlo dos veces.
+  bool _permisoPreguntado = false;
+
   /// En qué se mide. Un hábito nuevo empieza en veces, como siempre.
   UnidadHabito _unidad = UnidadHabito.veces;
 
@@ -199,6 +203,11 @@ class _HabitoScreenState extends State<HabitoScreen> {
           : {};
       _codigoCategoriaPendiente = plantilla.categoriaCodigo;
       _unidad = plantilla.unidad;
+      // La plantilla trae su hora de aviso: quien crea su primer hábito puede
+      // guardar sin abrir el selector. El permiso, entonces, se pide al
+      // guardar (ver _guardar).
+      _recordatorioActivo = true;
+      _recordatorioHora = plantilla.horaAviso;
       final minutos = plantilla.minutos;
       if (_unidad == UnidadHabito.minutos && minutos != null) {
         _minutosLibre = !metasRapidasMinutos.contains(minutos);
@@ -365,7 +374,22 @@ class _HabitoScreenState extends State<HabitoScreen> {
     });
   }
 
+  /// Si hay un `_guardar` en marcha. Desde una plantilla, `_guardar` espera
+  /// al permiso de avisos antes de apagar el botón: sin esto, un doble toque
+  /// crearía el hábito dos veces.
+  bool _guardando = false;
+
   Future<void> _guardar() async {
+    if (_guardando) return;
+    _guardando = true;
+    try {
+      await _guardarUnaVez();
+    } finally {
+      _guardando = false;
+    }
+  }
+
+  Future<void> _guardarUnaVez() async {
     final l = AppLocalizations.of(context)!;
 
     if (_nombreController.text.isEmpty) {
@@ -413,6 +437,18 @@ class _HabitoScreenState extends State<HabitoScreen> {
     final String? recordatorioHora = _recordatorioHora == null
         ? null
         : '${_recordatorioHora!.hour.toString().padLeft(2, '0')}:${_recordatorioHora!.minute.toString().padLeft(2, '0')}';
+
+    // Desde una plantilla la hora ya viene puesta y el selector, que es donde
+    // se pide el permiso, puede no abrirse nunca: sin esto el aviso quedaría
+    // encendido y no llegaría. Se pregunta antes de cerrar; diga lo que diga,
+    // el hábito se guarda igual. Si el selector ya lo preguntó, no se repite.
+    if (!_esEdicion &&
+        widget.plantilla != null &&
+        _recordatorioActivo &&
+        !_permisoPreguntado) {
+      await _asegurarPermisoNotificaciones();
+      if (!mounted) return;
+    }
 
     setState(() {
       _loading = true;
@@ -562,6 +598,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
   /// El permiso se pide aquí, en contexto: el usuario acaba de decir a qué
   /// hora quiere el recordatorio. Si ya está dado, no se pregunta nada.
   Future<void> _asegurarPermisoNotificaciones() async {
+    _permisoPreguntado = true;
     if (await NotificacionesService.concedido()) return;
     if (!mounted) return;
     final l = AppLocalizations.of(context)!;

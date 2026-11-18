@@ -50,6 +50,12 @@ class Catalogos {
     String nombreBackend,
   ) => CatalogosCore.traducir(_categorias(context), codigo, nombreBackend);
 
+  /// Los códigos de las categorías que traduce la app (para los tests: cada
+  /// una tiene al menos una plantilla).
+  @visibleForTesting
+  static Iterable<String> codigosCategoria(BuildContext context) =>
+      _categorias(context).keys;
+
   static Map<String, String> _categorias(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     return {

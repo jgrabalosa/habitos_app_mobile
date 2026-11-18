@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:habitos_app_mobile/l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:habitos_app_mobile/models/habito.dart';
 import 'package:habitos_app_mobile/models/objetivo_programado.dart';
+import 'package:habitos_app_mobile/models/plantilla_habito.dart';
 import 'package:habitos_app_mobile/screens/habito_screen.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 
@@ -56,6 +58,7 @@ void main() {
     List<bool?> resultado, {
     Habito? habito,
     ObjetivoProgramado? programado,
+    PlantillaHabito? plantilla,
   }) async {
     await tester.pumpWidget(
       montar(
@@ -72,6 +75,7 @@ void main() {
                           usuarioId: 7,
                           habito: habito,
                           objetivoProgramado: programado,
+                          plantilla: plantilla,
                         ),
                       ),
                     ),
@@ -200,6 +204,243 @@ void main() {
     expect(llamadas, 0);
     expect(resultado, isEmpty);
     expect(find.text(l.habNombreObligatorio), findsOneWidget);
+  });
+
+  group('desde una plantilla', () {
+    const canal = MethodChannel('flutter.baseflow.com/permissions/methods');
+    const denegado = 0;
+    const concedido = 1;
+
+    /// Lo que recibe el falso de crear: el body que iría a la red.
+    late Map<String, Object?> creado;
+    late int estadoPermiso;
+    late int consultasPermiso;
+    late Duration retrasoPermiso;
+
+    PlantillaHabito plantilla(String id) =>
+        plantillasHabito.firstWhere((p) => p.id == id);
+
+    setUp(() {
+      creado = {};
+      estadoPermiso = denegado;
+      consultasPermiso = 0;
+      retrasoPermiso = Duration.zero;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(canal, (call) async {
+            if (call.method == 'checkPermissionStatus') {
+              consultasPermiso++;
+              if (retrasoPermiso > Duration.zero) {
+                await Future<void>.delayed(retrasoPermiso);
+              }
+              return estadoPermiso;
+            }
+            if (call.method == 'shouldShowRequestPermissionRationale') {
+              return false;
+            }
+            return null;
+          });
+      HabitoScreen.crearHabito =
+          (
+            String nombre,
+            String descripcion,
+            String frecuencia,
+            int meta,
+            int usuarioId,
+            int? categoriaId, {
+            String? diasSemana,
+            bool recordatorioActivo = true,
+            String? recordatorioHora,
+            String? unidad,
+            int? minutosObjetivo,
+          }) async {
+            creado = {
+              'nombre': nombre,
+              'frecuencia': frecuencia,
+              'meta': meta,
+              'diasSemana': diasSemana,
+              'recordatorioActivo': recordatorioActivo,
+              'recordatorioHora': recordatorioHora,
+              'unidad': unidad,
+              'minutosObjetivo': minutosObjetivo,
+            };
+            return <String>[];
+          };
+    });
+
+    tearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(canal, null);
+    });
+
+    testWidgets('«Un día sin alcohol» trae el aviso encendido a las 22:30 y '
+        'se guarda sin tocar la hora', (tester) async {
+      final l = await AppLocalizations.delegate.load(const Locale('es'));
+      estadoPermiso = concedido;
+      final resultado = <bool?>[];
+      await abrirFormulario(
+        tester,
+        resultado,
+        plantilla: plantilla('diaSinAlcohol'),
+      );
+
+      final contexto = tester.element(find.byType(HabitoScreen));
+      final hora = const TimeOfDay(hour: 22, minute: 30).format(contexto);
+      expect(find.text(l.habALas(hora)), findsOneWidget);
+      await guardar(tester, l);
+
+      expect(find.text(l.habHoraObligatoria), findsNothing);
+      expect(creado['nombre'], 'Un día sin alcohol');
+      expect(creado['recordatorioActivo'], isTrue);
+      expect(creado['recordatorioHora'], '22:30');
+      expect(resultado, [true]);
+    });
+
+    testWidgets('con el permiso ya dado, guardar no pregunta nada', (
+      tester,
+    ) async {
+      final l = await AppLocalizations.delegate.load(const Locale('es'));
+      estadoPermiso = concedido;
+      final resultado = <bool?>[];
+      await abrirFormulario(
+        tester,
+        resultado,
+        plantilla: plantilla('diaSinAlcohol'),
+      );
+      await guardar(tester, l);
+
+      expect(find.text(l.permisoTitulo), findsNothing);
+      expect(resultado, [true]);
+    });
+
+    testWidgets('sin el permiso, guardar lo pide; con «Ahora no» el hábito se '
+        'guarda igual', (tester) async {
+      final l = await AppLocalizations.delegate.load(const Locale('es'));
+      final resultado = <bool?>[];
+      await abrirFormulario(
+        tester,
+        resultado,
+        plantilla: plantilla('diaSinAlcohol'),
+      );
+      await guardar(tester, l);
+
+      expect(find.text(l.permisoTitulo), findsOneWidget);
+      expect(creado, isEmpty);
+
+      await tester.tap(find.text(l.permisoAhoraNo));
+      await tester.pumpAndSettle();
+
+      expect(creado['recordatorioHora'], '22:30');
+      expect(resultado, [true]);
+    });
+
+    testWidgets('un doble toque en «Crear» no crea el hábito dos veces', (
+      tester,
+    ) async {
+      final l = await AppLocalizations.delegate.load(const Locale('es'));
+      estadoPermiso = concedido;
+      // El permiso tarda en contestar: el segundo toque llega mientras tanto.
+      retrasoPermiso = const Duration(milliseconds: 200);
+      var llamadas = 0;
+      final crear = HabitoScreen.crearHabito;
+      HabitoScreen.crearHabito =
+          (
+            String nombre,
+            String descripcion,
+            String frecuencia,
+            int meta,
+            int usuarioId,
+            int? categoriaId, {
+            String? diasSemana,
+            bool recordatorioActivo = true,
+            String? recordatorioHora,
+            String? unidad,
+            int? minutosObjetivo,
+          }) {
+            llamadas++;
+            return crear(
+              nombre,
+              descripcion,
+              frecuencia,
+              meta,
+              usuarioId,
+              categoriaId,
+              diasSemana: diasSemana,
+              recordatorioActivo: recordatorioActivo,
+              recordatorioHora: recordatorioHora,
+              unidad: unidad,
+              minutosObjetivo: minutosObjetivo,
+            );
+          };
+      await abrirFormulario(tester, [], plantilla: plantilla('diaSinAlcohol'));
+      final boton = find.widgetWithText(ElevatedButton, l.habBotonCrear);
+      await tester.ensureVisible(boton);
+      await tester.tap(boton);
+      await tester.tap(boton, warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      expect(llamadas, 1);
+    });
+
+    testWidgets('con el aviso apagado, guardar no pregunta por el permiso', (
+      tester,
+    ) async {
+      final l = await AppLocalizations.delegate.load(const Locale('es'));
+      final resultado = <bool?>[];
+      await abrirFormulario(
+        tester,
+        resultado,
+        plantilla: plantilla('diaSinAlcohol'),
+      );
+      await tester.ensureVisible(find.byType(SwitchListTile));
+      await tester.tap(find.byType(SwitchListTile));
+      await tester.pumpAndSettle();
+      await guardar(tester, l);
+
+      expect(find.text(l.permisoTitulo), findsNothing);
+      expect(creado['recordatorioActivo'], isFalse);
+      expect(resultado, [true]);
+    });
+
+    testWidgets('«Llamar a alguien querido» se guarda como semanal flexible '
+        'de 2 días', (tester) async {
+      final l = await AppLocalizations.delegate.load(const Locale('es'));
+      estadoPermiso = concedido;
+      await abrirFormulario(tester, [], plantilla: plantilla('llamarQuerido'));
+      await guardar(tester, l);
+
+      expect(creado['frecuencia'], 'SEMANAL');
+      expect(creado['meta'], 2);
+      expect(creado['diasSemana'], isNull);
+      expect(creado['recordatorioHora'], '19:30');
+    });
+
+    testWidgets('«Caminar» se guarda de minutos: diario, 30 min', (
+      tester,
+    ) async {
+      final l = await AppLocalizations.delegate.load(const Locale('es'));
+      estadoPermiso = concedido;
+      await abrirFormulario(tester, [], plantilla: plantilla('caminar'));
+      await guardar(tester, l);
+
+      expect(creado['frecuencia'], 'DIARIO');
+      expect(creado['unidad'], 'MINUTOS');
+      expect(creado['minutosObjetivo'], 30);
+      expect(creado['recordatorioHora'], '18:00');
+    });
+
+    testWidgets(
+      'desde cero, el aviso sigue sin hora y la hora es obligatoria',
+      (tester) async {
+        final l = await AppLocalizations.delegate.load(const Locale('es'));
+        await abrirFormulario(tester, []);
+        await tester.enterText(find.byType(TextField).first, 'Nadar');
+        await guardar(tester, l);
+
+        expect(find.text(l.habHoraObligatoria), findsOneWidget);
+        expect(creado, isEmpty);
+        expect(consultasPermiso, 0);
+      },
+    );
   });
 
   group('hábitos de minutos', () {

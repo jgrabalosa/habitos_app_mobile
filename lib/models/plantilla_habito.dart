@@ -18,6 +18,7 @@ class PlantillaHabito {
   final int meta;
 
   /// Días ISO separados por comas ("2,4,6"), solo en las semanales con días.
+  /// Una semanal sin días es flexible: [meta] días cualesquiera de la semana.
   final String? dias;
   final String categoriaCodigo;
 
@@ -26,6 +27,14 @@ class PlantillaHabito {
 
   /// Los minutos por día, solo en las de [UnidadHabito.minutos].
   final int? minutos;
+
+  /// La hora del aviso que propone. El formulario la trae puesta, con el
+  /// aviso encendido, y se puede cambiar o apagar.
+  final TimeOfDay horaAviso;
+
+  /// Nombres que tuvo la plantilla, en cualquier idioma: un hábito creado con
+  /// uno de ellos sigue ocultando la idea.
+  final List<String> nombresAntiguos;
 
   const PlantillaHabito({
     required this.id,
@@ -36,39 +45,21 @@ class PlantillaHabito {
     required this.categoriaCodigo,
     this.unidad = UnidadHabito.veces,
     this.minutos,
+    required this.horaAviso,
+    this.nombresAntiguos = const [],
   });
 }
 
-/// Las ideas que se ofrecen. Son datos: para cambiar cuáles salen o sus
-/// valores por defecto, se edita aquí y nada más.
+/// Las ideas que se ofrecen, en el orden del día (por la hora del aviso). Son
+/// datos: para cambiar cuáles salen o sus valores por defecto, se edita aquí y
+/// nada más. Los `id` que ya existían no cambian: van a Analytics (T-007).
+///
+/// Leer, Meditar, Caminar y Tocar un instrumento son de minutos. Leer era
+/// «Leer 20 min» de veces; desde el 15-nov-2026 se llama «Leer» y los 30 min
+/// los dice la etiqueta del objetivo. Caminar era de veces hasta el 17-nov.
+/// «Un día sin alcohol» y «Dejar el móvil antes de dormir» son hábitos
+/// normales que se marcan, con aviso por la noche (D-21).
 const List<PlantillaHabito> plantillasHabito = [
-  PlantillaHabito(
-    id: 'beberAgua',
-    icono: LucideIcons.droplet,
-    frecuencia: 'DIARIO',
-    meta: 4,
-    categoriaCodigo: 'CAT_SALUD',
-  ),
-  // Leer y Meditar son de minutos (decidido el 15-nov-2026). Leer era «Leer
-  // 20 min» de veces; ahora se llama «Leer» y los 30 min los dice la
-  // etiqueta del objetivo.
-  PlantillaHabito(
-    id: 'leer',
-    icono: LucideIcons.bookOpen,
-    frecuencia: 'DIARIO',
-    meta: 1,
-    categoriaCodigo: 'CAT_ESTUDIO',
-    unidad: UnidadHabito.minutos,
-    minutos: 30,
-  ),
-  PlantillaHabito(
-    id: 'ejercicio',
-    icono: LucideIcons.dumbbell,
-    frecuencia: 'SEMANAL',
-    meta: 3,
-    dias: '2,4,6',
-    categoriaCodigo: 'CAT_DEPORTE',
-  ),
   PlantillaHabito(
     id: 'meditar',
     icono: LucideIcons.flower2,
@@ -77,13 +68,31 @@ const List<PlantillaHabito> plantillasHabito = [
     categoriaCodigo: 'CAT_MENTE',
     unidad: UnidadHabito.minutos,
     minutos: 15,
+    horaAviso: TimeOfDay(hour: 8, minute: 0),
   ),
   PlantillaHabito(
-    id: 'dormir8h',
-    icono: LucideIcons.moon,
+    id: 'planificarDia',
+    icono: LucideIcons.listChecks,
     frecuencia: 'DIARIO',
     meta: 1,
-    categoriaCodigo: 'CAT_SUENO',
+    categoriaCodigo: 'CAT_TRABAJO',
+    horaAviso: TimeOfDay(hour: 9, minute: 0),
+  ),
+  PlantillaHabito(
+    id: 'beberAgua',
+    icono: LucideIcons.droplet,
+    frecuencia: 'DIARIO',
+    meta: 4,
+    categoriaCodigo: 'CAT_SALUD',
+    horaAviso: TimeOfDay(hour: 10, minute: 0),
+  ),
+  PlantillaHabito(
+    id: 'comerFrutaVerdura',
+    icono: LucideIcons.apple,
+    frecuencia: 'DIARIO',
+    meta: 3,
+    categoriaCodigo: 'CAT_ALIMENTACION',
+    horaAviso: TimeOfDay(hour: 13, minute: 0),
   ),
   PlantillaHabito(
     id: 'caminar',
@@ -91,6 +100,44 @@ const List<PlantillaHabito> plantillasHabito = [
     frecuencia: 'DIARIO',
     meta: 1,
     categoriaCodigo: 'CAT_SALUD',
+    unidad: UnidadHabito.minutos,
+    minutos: 30,
+    horaAviso: TimeOfDay(hour: 18, minute: 0),
+  ),
+  PlantillaHabito(
+    id: 'tocarInstrumento',
+    icono: LucideIcons.music,
+    frecuencia: 'DIARIO',
+    meta: 1,
+    categoriaCodigo: 'CAT_CREATIVIDAD',
+    unidad: UnidadHabito.minutos,
+    minutos: 20,
+    horaAviso: TimeOfDay(hour: 18, minute: 30),
+  ),
+  PlantillaHabito(
+    id: 'ejercicio',
+    icono: LucideIcons.dumbbell,
+    frecuencia: 'SEMANAL',
+    meta: 3,
+    dias: '2,4,6',
+    categoriaCodigo: 'CAT_DEPORTE',
+    horaAviso: TimeOfDay(hour: 19, minute: 0),
+  ),
+  PlantillaHabito(
+    id: 'llamarQuerido',
+    icono: LucideIcons.phone,
+    frecuencia: 'SEMANAL',
+    meta: 2,
+    categoriaCodigo: 'CAT_SOCIAL',
+    horaAviso: TimeOfDay(hour: 19, minute: 30),
+  ),
+  PlantillaHabito(
+    id: 'apuntarGastos',
+    icono: LucideIcons.piggyBank,
+    frecuencia: 'DIARIO',
+    meta: 1,
+    categoriaCodigo: 'CAT_FINANZAS',
+    horaAviso: TimeOfDay(hour: 21, minute: 0),
   ),
   PlantillaHabito(
     id: 'escribirDiario',
@@ -98,6 +145,43 @@ const List<PlantillaHabito> plantillasHabito = [
     frecuencia: 'DIARIO',
     meta: 1,
     categoriaCodigo: 'CAT_MENTE',
+    horaAviso: TimeOfDay(hour: 21, minute: 30),
+    nombresAntiguos: ['Escribir diario', 'Escrever diário'],
+  ),
+  PlantillaHabito(
+    id: 'leer',
+    icono: LucideIcons.bookOpen,
+    frecuencia: 'DIARIO',
+    meta: 1,
+    categoriaCodigo: 'CAT_ESTUDIO',
+    unidad: UnidadHabito.minutos,
+    minutos: 30,
+    horaAviso: TimeOfDay(hour: 22, minute: 0),
+  ),
+  PlantillaHabito(
+    id: 'diaSinAlcohol',
+    icono: LucideIcons.wineOff,
+    frecuencia: 'DIARIO',
+    meta: 1,
+    categoriaCodigo: 'CAT_SALUD',
+    horaAviso: TimeOfDay(hour: 22, minute: 30),
+  ),
+  PlantillaHabito(
+    id: 'dejarMovil',
+    icono: LucideIcons.phoneOff,
+    frecuencia: 'DIARIO',
+    meta: 1,
+    categoriaCodigo: 'CAT_SUENO',
+    horaAviso: TimeOfDay(hour: 22, minute: 30),
+  ),
+  PlantillaHabito(
+    id: 'dormir8h',
+    icono: LucideIcons.moon,
+    frecuencia: 'DIARIO',
+    meta: 1,
+    categoriaCodigo: 'CAT_SUENO',
+    horaAviso: TimeOfDay(hour: 23, minute: 0),
+    nombresAntiguos: ['Dormir 8h', 'Sleep 8h'],
   ),
 ];
 
@@ -110,6 +194,13 @@ String nombrePlantilla(AppLocalizations l, String id) => switch (id) {
   'dormir8h' => l.plantillaDormir8h,
   'caminar' => l.plantillaCaminar,
   'escribirDiario' => l.plantillaEscribirDiario,
+  'planificarDia' => l.plantillaPlanificarDia,
+  'comerFrutaVerdura' => l.plantillaComerFrutaVerdura,
+  'tocarInstrumento' => l.plantillaTocarInstrumento,
+  'llamarQuerido' => l.plantillaLlamarQuerido,
+  'apuntarGastos' => l.plantillaApuntarGastos,
+  'diaSinAlcohol' => l.plantillaDiaSinAlcohol,
+  'dejarMovil' => l.plantillaDejarMovil,
   _ => id,
 };
 
@@ -130,6 +221,8 @@ String descripcionPlantilla(AppLocalizations l, PlantillaHabito p) {
         .join(', ');
     return l.ideasFrecSemanal(p.meta, dias);
   }
+  // Semanal sin días fijos: «2 días por semana», no «Cada día».
+  if (p.frecuencia == 'SEMANAL') return l.habDiasSemanaMeta(p.meta);
   return p.meta == 1 ? l.ideasFrecDiario : l.ideasFrecDiarioN(p.meta);
 }
 
@@ -174,11 +267,13 @@ bool _empiezaPalabra(String texto, String parte, {bool entera = false}) {
 /// Un hábito ya cubre una idea si se llama igual, si su nombre contiene el
 /// de la idea empezando una palabra («Reading» cubre «Read», «Ejercicios»
 /// cubre «Ejercicio»), o si su nombre es una palabra entera del de la idea
-/// («Agua» cubre «Beber agua», pero «Be» no).
+/// («Agua» cubre «Beber agua», pero «Be» no). Cuentan los nombres de hoy en
+/// los tres idiomas y los que tuvo antes ([PlantillaHabito.nombresAntiguos]).
 bool _yaExiste(PlantillaHabito p, List<String> nombresExistentes) {
-  final variantes = _todosLosIdiomas
-      .map((l) => _normalizar(nombrePlantilla(l, p.id)))
-      .toSet();
+  final variantes = {
+    for (final l in _todosLosIdiomas) _normalizar(nombrePlantilla(l, p.id)),
+    for (final antiguo in p.nombresAntiguos) _normalizar(antiguo),
+  };
   return nombresExistentes.any((nombre) {
     final n = _normalizar(nombre);
     return variantes.any(
