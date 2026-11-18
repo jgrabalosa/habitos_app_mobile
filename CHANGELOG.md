@@ -120,6 +120,11 @@ Estado: en preparación. Con el core 0.56.0: Nori vestida, invierno y Navidad 20
 ### Mejoras
 
 - La app se queda siempre en vertical.
+- Seis dibujos de Nori a todo color (los cuatro huevos, y la cría triste y la dormida), y los huevos sin la sombra pegada debajo.
+- Cuando Nori está triste, «te espera» en vez de «te echa de menos».
+- Nori gasta menos memoria: cada dibujo se carga a su tamaño en pantalla.
+- Si una compra ya no se puede hacer (fuera de temporada o ya es tuya), la tienda lo dice y se pone al día.
+- Colección ya no enseña las prendas: se ponen en el vestidor.
 - Al cerrar sesión, el móvil deja de recibir los avisos de esa cuenta.
 - El aviso del móvil se vuelve a registrar una vez con el cambio a un token por app.
 
