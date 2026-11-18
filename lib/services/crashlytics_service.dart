@@ -33,9 +33,18 @@ class CrashlyticsService {
   }
 
   /// Identifica la sesion en el panel de Crashlytics. Sin datos personales:
-  /// solo el id que ya usa Analytics.
+  /// solo el id que ya usa Analytics. Nunca lanza: se llama sin esperar y
+  /// Firebase puede no estar listo (en los tests no lo esta). Se usa
+  /// FirebaseCrashlytics.instance dentro del try y no el campo estatico, que
+  /// lo evalua al primer uso y lanzaria fuera.
   static Future<void> identificarUsuario(int usuarioId) async {
-    await _crashlytics.setUserIdentifier(usuarioId.toString());
+    try {
+      await FirebaseCrashlytics.instance.setUserIdentifier(
+        usuarioId.toString(),
+      );
+    } catch (e) {
+      debugPrint('Crashlytics identificarUsuario falló: $e');
+    }
   }
 
   /// Error no fatal: la app sigue viva pero queda registrado.
