@@ -110,6 +110,7 @@ Para anunciar: a decidir.
 ### Novedades
 
 - Invita a un amigo desde el menú.
+- Siete ideas de hábito nuevas, y cada idea trae su hora de aviso.
 
 ### Mejoras
 
