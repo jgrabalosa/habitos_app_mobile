@@ -37,7 +37,12 @@ completa, en el `CLAUDE.md` del paquete.
   (`habitos_screen.dart`), el detalle (`habito_detalle_screen.dart`), el
   alta/edición (`habito_screen.dart`) y las ideas para empezar
   (`ideas_habito_screen.dart`: «Empieza con una idea», con las plantillas;
-  `abrirAltaHabito` va al formulario vacío si no queda ninguna idea). El alta
+  `abrirAltaHabito` va al formulario vacío si no queda ninguna idea) e
+  «Invitar a un amigo» (`invitar_screen.dart`: `TarjetaInvitacion`, 9:16 con
+  Nori y `norday.app/invitar`, que se comparte como PNG de 1080 × 1920 con
+  `share_plus`; sin nada personal). El panel del menú es la función suelta
+  `mostrarMenuShell`, para poder probar sus entradas sin montar las
+  pestañas. El alta
   nueva arranca en `HomeShell`: la bienvenida de una
   tarjeta (`widgets/bienvenida.dart`), el formulario real del primer hábito y,
   si se guarda, una pista sobre su círculo en Hoy. Nada de esto sale a quien

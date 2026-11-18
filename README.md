@@ -35,11 +35,14 @@ que sale junto con Norday Focus.
 - **Primer hábito** guiado: una bienvenida de una tarjeta lleva al formulario
   real, pide el permiso de notificaciones al elegir la hora de un recordatorio
   y, al guardarlo, Hoy señala su círculo una vez.
+- **Invitar a un amigo**, desde el menú: una tarjeta 9:16 con Nori y el
+  enlace `norday.app/invitar`, que se comparte como imagen. Ese enlace lo
+  resuelve Caddy en el servidor, no la app.
 - En **español, inglés y portugués**, con zona horaria propia.
 - Registro con email o con Google.
 
-Pestañas: Hoy, Mascota y Hábitos, más un menú con Colección, Logros, Tienda
-y Perfil.
+Pestañas: Hoy, Mascota y Hábitos, más un menú con Colección, Logros, Tienda,
+Invitar a un amigo y Perfil.
 
 ## Stack
 
