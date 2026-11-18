@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -152,6 +154,43 @@ void main() {
         bytes[i + 3];
     expect(entero(16), 1080);
     expect(entero(20), 1920);
+  });
+
+  testWidgets('la imagen compartida no tiene huecos: las esquinas son opacas', (
+    tester,
+  ) async {
+    // Fuera de las esquinas redondeadas o achaflanadas, un PNG transparente
+    // sale negro o blanco en una historia: detrás va el fondo de la identidad.
+    final enviados = <ShareParams>[];
+    await montar(
+      tester,
+      compartir: (p) async {
+        enviados.add(p);
+        return const ShareResult('', ShareResultStatus.success);
+      },
+    );
+    final alfas = await tester.runAsync(() async {
+      await tester.tap(find.text('Compartir'));
+      for (var i = 0; i < 50 && enviados.isEmpty; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+      }
+      final bytes = await enviados.single.files!.single.readAsBytes();
+      final codec = await ui.instantiateImageCodec(bytes);
+      final imagen = (await codec.getNextFrame()).image;
+      final rgba = (await imagen.toByteData())!;
+      int alfa(int x, int y) => rgba.getUint8((y * imagen.width + x) * 4 + 3);
+      final r = [
+        alfa(0, 0),
+        alfa(imagen.width - 1, 0),
+        alfa(0, imagen.height - 1),
+        alfa(imagen.width - 1, imagen.height - 1),
+      ];
+      imagen.dispose();
+      return r;
+    });
+    await tester.pump();
+
+    expect(alfas, [255, 255, 255, 255]);
   });
 
   testWidgets('si el envío falla, sale un SnackBar y no lanza', (tester) async {

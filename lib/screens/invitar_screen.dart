@@ -242,68 +242,82 @@ class TarjetaInvitacion extends StatelessWidget {
     return SizedBox(
       width: ancho,
       height: alto,
-      // La superficie de la identidad, no una pintada a mano: así sale a
-      // lápiz en Dulce, achaflanada en Neotokyo+ y de cristal en Profundidad,
-      // como la bienvenida (CLAUDE.md del core, «Equipamiento»).
-      child: SuperficieIdentidad(
-        protagonista: true,
-        relleno: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.xl,
-        ),
-        child: Column(
-          children: [
-            WordmarkIdentidad(
-              texto: l.appNombre,
-              color: t.text,
-              // El tamaño sale de un rol de la escala, no de un número.
-              tamano: tema.headlineSmall?.fontSize ?? 24,
-            ),
-            const Spacer(),
-            SizedBox(
-              width: tamanoNori,
-              height: tamanoNori,
-              child: cargando
-                  ? null
-                  : Image.asset(
-                      assetMascota(fase: fase, estado: 'exultante'),
-                      package: 'norday_flutter_core',
-                      width: tamanoNori,
-                      height: tamanoNori,
-                      // Si la fase no tuviera imagen, mejor un hueco que
-                      // una tarjeta rota.
-                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // El fondo de la identidad, a sangre: la imagen no tiene huecos
+          // transparentes, que en una historia saldrían negros o blancos.
+          // Debajo, el color de fondo de las pantallas (`bg`), que es sobre
+          // el que se pinta el dibujo de la identidad.
+          ColoredBox(color: t.bg),
+          const Positioned.fill(child: FondoIdentidad()),
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            // La superficie de la identidad, no una pintada a mano: así sale
+            // a lápiz en Dulce, achaflanada en Neotokyo+ y de cristal en
+            // Profundidad, como la bienvenida (CLAUDE.md del core).
+            child: SuperficieIdentidad(
+              protagonista: true,
+              relleno: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.xl,
+              ),
+              child: Column(
+                children: [
+                  WordmarkIdentidad(
+                    texto: l.appNombre,
+                    color: t.text,
+                    // El tamaño sale de un rol de la escala, no de un número.
+                    tamano: tema.headlineSmall?.fontSize ?? 24,
+                  ),
+                  const Spacer(),
+                  SizedBox(
+                    width: tamanoNori,
+                    height: tamanoNori,
+                    child: cargando
+                        ? null
+                        : Image.asset(
+                            assetMascota(fase: fase, estado: 'exultante'),
+                            package: 'norday_flutter_core',
+                            width: tamanoNori,
+                            height: tamanoNori,
+                            // Si la fase no tuviera imagen, mejor un hueco que
+                            // una tarjeta rota.
+                            errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                          ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  Text(
+                    l.invitarTitular,
+                    textAlign: TextAlign.center,
+                    style: tema.headlineSmall?.copyWith(color: t.text),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    l.invitarFrase,
+                    textAlign: TextAlign.center,
+                    style: tema.bodyLarge?.copyWith(color: t.textMuted),
+                  ),
+                  const Spacer(),
+                  Text(
+                    enlaceInvitacionVisible,
+                    textAlign: TextAlign.center,
+                    style: tema.headlineMedium?.copyWith(
+                      color: t.text,
+                      fontWeight: FontWeight.w700,
                     ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              l.invitarTitular,
-              textAlign: TextAlign.center,
-              style: tema.headlineSmall?.copyWith(color: t.text),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              l.invitarFrase,
-              textAlign: TextAlign.center,
-              style: tema.bodyLarge?.copyWith(color: t.textMuted),
-            ),
-            const Spacer(),
-            Text(
-              enlaceInvitacionVisible,
-              textAlign: TextAlign.center,
-              style: tema.headlineMedium?.copyWith(
-                color: t.text,
-                fontWeight: FontWeight.w700,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    l.invitarPie,
+                    textAlign: TextAlign.center,
+                    style: tema.labelSmall?.copyWith(color: t.textMuted),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              l.invitarPie,
-              textAlign: TextAlign.center,
-              style: tema.labelSmall?.copyWith(color: t.textMuted),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
