@@ -274,21 +274,10 @@ resuelto. Antes de probar, comprobar el `resolved-ref` del `pubspec.lock`.
 Para probar una rama del core sin tag, `pubspec_overrides.yaml` con
 `path: ../norday_flutter_core`, que no se commitea (está en `.gitignore`).
 
-**Pendiente con el core 0.55.0** (rama `wip-enfoque`): el `ref:` del
-`pubspec.yaml` ya apunta a `v0.55.0`, pero el tag aún no existe y el
-desarrollo va con `pubspec_overrides.yaml`. El `pubspec.lock` **sí está
-versionado**, y el del repo es todavía el de v0.54.0 (`ref: "v0.54.0"`,
-`resolved-ref` `1f8add7`): no casa con el `ref:` del `pubspec.yaml`. El lock
-local, con el override, apunta a la ruta del core (`source: path`) y **no se
-commitea**: si sale modificado en `git status`, se deja fuera del commit.
-Cuando Quim ponga el tag `v0.55.0` en el core:
-
-1. Borrar `pubspec_overrides.yaml`.
-2. `flutter pub upgrade norday_flutter_core`.
-3. Comprobar que el lock dice `source: git` y `ref: "v0.55.0"`, y que su
-   `resolved-ref` es el commit que da `git rev-parse v0.55.0^{commit}` en
-   el core.
-4. `flutter analyze` y `flutter test`, y commitear el `pubspec.lock`.
+**Core fijado por `v0.56.0`** (18-nov-2026, versión 1.3.0+7): `resolved-ref`
+`0ed6686506ab057b45005f21440e7890db614980`. El `pubspec.lock` se versiona;
+al cambiar de tag, comprobar que dice `source: git`, el `ref:` nuevo y el
+`resolved-ref` que da `git rev-parse <tag>^{commit}` en el core.
 
 ## Variantes: produccion y prueba
 
