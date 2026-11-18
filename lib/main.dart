@@ -12,12 +12,15 @@ import 'l10n/app_localizations.dart';
 import 'l10n/catalogos.dart';
 import 'l10n/textos_habits.dart';
 import 'entorno.dart';
+import 'orientacion.dart';
 import 'services/crashlytics_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/home_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Vertical siempre, también para la pantalla de entorno incorrecto.
+  await fijarOrientacionVertical();
   // Antes que nada: si el flavor y la URL del backend no van juntos, no se
   // arranca. Así la app de prueba no escribe en producción ni un AAB de Play
   // sale apuntando a staging.

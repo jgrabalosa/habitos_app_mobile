@@ -110,3 +110,11 @@ Para anunciar: a decidir.
 ### Novedades
 
 - Invita a un amigo desde el menú.
+
+### Mejoras
+
+- La app se queda siempre en vertical.
+
+### Arreglos
+
+- La app ya no se cierra al arrastrar a Nori en pantallas pequeñas.
