@@ -215,6 +215,7 @@ void main() {
     late Map<String, Object?> creado;
     late int estadoPermiso;
     late int consultasPermiso;
+    late Duration retrasoPermiso;
 
     PlantillaHabito plantilla(String id) =>
         plantillasHabito.firstWhere((p) => p.id == id);
@@ -223,10 +224,14 @@ void main() {
       creado = {};
       estadoPermiso = denegado;
       consultasPermiso = 0;
+      retrasoPermiso = Duration.zero;
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(canal, (call) async {
             if (call.method == 'checkPermissionStatus') {
               consultasPermiso++;
+              if (retrasoPermiso > Duration.zero) {
+                await Future<void>.delayed(retrasoPermiso);
+              }
               return estadoPermiso;
             }
             if (call.method == 'shouldShowRequestPermissionRationale') {
@@ -326,6 +331,54 @@ void main() {
 
       expect(creado['recordatorioHora'], '22:30');
       expect(resultado, [true]);
+    });
+
+    testWidgets('un doble toque en «Crear» no crea el hábito dos veces', (
+      tester,
+    ) async {
+      final l = await AppLocalizations.delegate.load(const Locale('es'));
+      estadoPermiso = concedido;
+      // El permiso tarda en contestar: el segundo toque llega mientras tanto.
+      retrasoPermiso = const Duration(milliseconds: 200);
+      var llamadas = 0;
+      final crear = HabitoScreen.crearHabito;
+      HabitoScreen.crearHabito =
+          (
+            String nombre,
+            String descripcion,
+            String frecuencia,
+            int meta,
+            int usuarioId,
+            int? categoriaId, {
+            String? diasSemana,
+            bool recordatorioActivo = true,
+            String? recordatorioHora,
+            String? unidad,
+            int? minutosObjetivo,
+          }) {
+            llamadas++;
+            return crear(
+              nombre,
+              descripcion,
+              frecuencia,
+              meta,
+              usuarioId,
+              categoriaId,
+              diasSemana: diasSemana,
+              recordatorioActivo: recordatorioActivo,
+              recordatorioHora: recordatorioHora,
+              unidad: unidad,
+              minutosObjetivo: minutosObjetivo,
+            );
+          };
+      await abrirFormulario(tester, [], plantilla: plantilla('diaSinAlcohol'));
+      final boton = find.widgetWithText(ElevatedButton, l.habBotonCrear);
+      await tester.ensureVisible(boton);
+      await tester.tap(boton);
+      await tester.tap(boton, warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      expect(llamadas, 1);
     });
 
     testWidgets('con el aviso apagado, guardar no pregunta por el permiso', (

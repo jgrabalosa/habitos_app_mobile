@@ -374,7 +374,22 @@ class _HabitoScreenState extends State<HabitoScreen> {
     });
   }
 
+  /// Si hay un `_guardar` en marcha. Desde una plantilla, `_guardar` espera
+  /// al permiso de avisos antes de apagar el botón: sin esto, un doble toque
+  /// crearía el hábito dos veces.
+  bool _guardando = false;
+
   Future<void> _guardar() async {
+    if (_guardando) return;
+    _guardando = true;
+    try {
+      await _guardarUnaVez();
+    } finally {
+      _guardando = false;
+    }
+  }
+
+  Future<void> _guardarUnaVez() async {
     final l = AppLocalizations.of(context)!;
 
     if (_nombreController.text.isEmpty) {
