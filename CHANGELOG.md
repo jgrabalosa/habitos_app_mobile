@@ -105,7 +105,7 @@ Estado: en preparación. Sale sin «Empezar sesión»: el botón llega con una v
 
 Para anunciar: a decidir.
 
-## 1.3.0 (7) — en preparación
+## 1.3.0 (8) — en preparación
 
 Estado: en preparación. Con el core 0.56.0: Nori vestida, invierno y Navidad 2026.
 
@@ -127,6 +127,7 @@ Estado: en preparación. Con el core 0.56.0: Nori vestida, invierno y Navidad 20
 - Colección ya no enseña las prendas: se ponen en el vestidor.
 - Al cerrar sesión, el móvil deja de recibir los avisos de esa cuenta.
 - El aviso del móvil se vuelve a registrar una vez con el cambio a un token por app.
+- La ayuda del ánimo de Nori explica cuándo se alegra y cuándo está radiante; en inglés y portugués, Nori es chico.
 
 ### Arreglos
 
