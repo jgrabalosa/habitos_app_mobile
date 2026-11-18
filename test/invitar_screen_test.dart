@@ -73,6 +73,20 @@ void main() {
     expect(find.text('Constancia, no perfección'), findsOneWidget);
   });
 
+  testWidgets('la tarjeta es la superficie protagonista de la identidad', (
+    tester,
+  ) async {
+    // Una tarjeta pintada a mano no sale a lápiz en Dulce ni achaflanada en
+    // Neotokyo+ (CLAUDE.md del core): tiene que ser SuperficieIdentidad.
+    await montar(tester);
+    final superficie = find.descendant(
+      of: find.byType(TarjetaInvitacion),
+      matching: find.byType(SuperficieIdentidad),
+    );
+    expect(superficie, findsOneWidget);
+    expect(tester.widget<SuperficieIdentidad>(superficie).protagonista, isTrue);
+  });
+
   testWidgets('la tarjeta lleva Nori en la fase que manda el backend', (
     tester,
   ) async {
