@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
@@ -5,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../widgets/identidad_ui.dart';
 import '../services/anclas_recorrido.dart';
+import '../services/crashlytics_service.dart';
 import '../services/recorrido_onboarding.dart';
 import '../widgets/bienvenida.dart';
 import 'ideas_habito_screen.dart';
@@ -182,6 +185,9 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
       _usuarioId = usuario['usuarioId'] ?? 0;
       _loading = false;
     });
+    if (_usuarioId > 0) {
+      unawaited(CrashlyticsService.identificarUsuario(_usuarioId));
+    }
 
     if (widget.mostrarOnboarding) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _empezarAltaNueva());
