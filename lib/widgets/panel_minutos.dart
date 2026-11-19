@@ -13,6 +13,7 @@ import '../models/minutos.dart';
 import '../models/registro.dart';
 import '../screens/dashboard_logica.dart';
 import '../services/abrir_enfoque.dart';
+import '../services/analytics_service.dart';
 import '../services/api_service_habitos.dart';
 import '../services/clave_envio.dart';
 
@@ -340,6 +341,7 @@ class _PanelMinutosVistaState extends State<_PanelMinutosVista> {
       flavor: PanelMinutos.flavor(),
       lanzador: PanelMinutos.lanzadorEnlaces,
     );
+    await AnalyticsHabitos.enfoqueAbierto(apertura);
     if (!mounted) return;
     if (apertura == AperturaEnfoque.nada ||
         apertura == AperturaEnfoque.faltaPrueba) {
