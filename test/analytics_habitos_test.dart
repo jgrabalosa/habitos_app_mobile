@@ -55,6 +55,13 @@ void main() {
     );
   });
 
+  test('identidadElegida no lanza aunque Firebase falle', () async {
+    await expectLater(
+      AnalyticsHabitos.identidadElegida('TEMA_PROFUNDIDAD'),
+      completes,
+    );
+  });
+
   test('invitarAbierto no lanza aunque Firebase falle', () async {
     await expectLater(AnalyticsHabitos.invitarAbierto(), completes);
   });

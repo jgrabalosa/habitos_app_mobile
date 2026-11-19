@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
@@ -10,6 +12,7 @@ import '../widgets/bienvenida.dart';
 import 'ideas_habito_screen.dart';
 import '../services/habitos_refresh.dart';
 import '../services/al_volver.dart';
+import '../services/analytics_service.dart';
 import 'dashboard_screen.dart';
 import 'habitos_screen.dart';
 import 'invitar_screen.dart';
@@ -39,12 +42,21 @@ Widget destinoConIdentidad(
   if (poseeIdentidad == false) {
     return EleccionIdentidadScreen(
       usuarioId: usuarioId,
-      alElegir: () => Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => HomeShell(mostrarOnboarding: mostrarOnboarding),
-        ),
-      ),
+      alElegir: () {
+        // El core deja la elegida en identidadEquipadaNotifier justo antes de
+        // llamar aquí. No se espera: medir no bloquea la navegación.
+        unawaited(
+          AnalyticsHabitos.identidadElegida(
+            identidadEquipadaNotifier.value.codigo,
+          ),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => HomeShell(mostrarOnboarding: mostrarOnboarding),
+          ),
+        );
+      },
     );
   }
   return HomeShell(mostrarOnboarding: mostrarOnboarding);

@@ -72,6 +72,19 @@ class AnalyticsHabitos {
     }
   }
 
+  /// La identidad que elige el usuario nuevo en el onboarding. Solo el código
+  /// del catálogo, nada personal.
+  static Future<void> identidadElegida(String codigo) async {
+    try {
+      await AnalyticsCore.analytics.logEvent(
+        name: 'identidad_elegida',
+        parameters: {'codigo': codigo},
+      );
+    } catch (e) {
+      debugPrint('Analytics: no se registró identidad_elegida: $e');
+    }
+  }
+
   static Future<void> habitoCompletado(String frecuencia) async {
     try {
       await AnalyticsCore.analytics.logEvent(
