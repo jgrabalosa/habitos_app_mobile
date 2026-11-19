@@ -6,8 +6,8 @@ import 'package:habitos_app_mobile/l10n/app_localizations.dart';
 import 'package:habitos_app_mobile/widgets/estados_hoy.dart';
 
 /// En Dulce, con el día cerrado, el ramo ocupa el sitio de «¡Todo hecho!».
-/// Antes de la ceremonia, Dulce deja un hueco y Profundidad, la tarjeta
-/// invisible (`FinalDelDiaHoy`).
+/// Antes de la ceremonia, Dulce deja un hueco; Profundidad y Neotokyo+, la
+/// tarjeta invisible (`FinalDelDiaHoy`).
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   GoogleFonts.config.allowRuntimeFetching = false;
@@ -129,7 +129,12 @@ void main() {
     },
   );
 
-  testWidgets('en Neotokyo+, la tarjeta de siempre', (tester) async {
+  // Desde la 1.3.0+9 (core 0.57.0), el sitio es del letrero del día (D-35),
+  // que pinta su capa en la misma banda: como en Profundidad, la tarjeta se
+  // queda invisible, con su hueco y su semántica.
+  testWidgets('en Neotokyo+, la tarjeta es invisible, como en Profundidad', (
+    tester,
+  ) async {
     aplicarIdentidadEquipada('TEMA_NEOTOKYO_PLUS');
     marcarDiaCerrado(false);
     await tester.pumpWidget(montarFinal());
@@ -142,7 +147,7 @@ void main() {
         of: find.byType(TarjetaTodoHecho),
         matching: find.byWidgetPredicate((w) => w is Opacity && w.opacity == 0),
       ),
-      findsNothing,
+      findsOneWidget,
     );
   });
 }
