@@ -509,7 +509,11 @@ class _HabitoScreenState extends State<HabitoScreen> {
           unidad: unidad,
           minutosObjetivo: minutos,
         );
-        await AnalyticsHabitos.habitoCreado(_frecuencia);
+        await AnalyticsHabitos.habitoCreado(
+          _frecuencia,
+          plantilla: widget.plantilla?.id ?? 'ninguna',
+          unidad: _esMinutos ? 'minutos' : 'veces',
+        );
         if (logrosOtorgados.isNotEmpty) {
           // Sale aquí, antes de cerrar: es donde se acaba de ganar.
           await CelebracionService.mostrar(logrosOtorgados);
@@ -628,6 +632,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
     final concedido = await NotificacionesService.pedirYRegistrar(
       widget.usuarioId,
     );
+    await AnalyticsHabitos.permisoAvisos(concedido);
     if (!concedido &&
         mounted &&
         await NotificacionesService.bloqueadoEnAjustes()) {
