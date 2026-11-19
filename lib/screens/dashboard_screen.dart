@@ -650,8 +650,8 @@ class _DashboardScreenState extends State<DashboardScreen>
       // Desde aquí el día ya cuenta como cerrado: la ceremonia enciende el
       // realce, y cualquier refresco a media ceremonia lo tiene que respetar.
       _cierrePendiente = false;
-      // La ceremonia de fin de día. Hace algo en Profundidad (la constelación)
-      // y en Dulce (el ramo); en Neotokyo+ termina en el acto. Al irse el velo
+      // La ceremonia de fin de día: la constelación en Profundidad, el ramo en
+      // Dulce y el letrero de neón en Neotokyo+ (core 0.57.0). Al irse el velo
       // queda el realce del día cerrado, que pone _publicarProgreso, justo
       // debajo.
       if (mounted) {

@@ -307,9 +307,9 @@ class RamoTodoHecho extends StatelessWidget {
 ///
 /// - Dulce: antes de cerrar, un hueco de [RamoTodoHecho.alto] para que la
 ///   lista no salte; con el día cerrado, el ramo.
-/// - Profundidad: la tarjeta siempre invisible, con su hueco. Así el sitio
-///   de la constelación no se mueve.
-/// - Neotokyo+: la tarjeta de siempre.
+/// - Profundidad y Neotokyo+: la tarjeta siempre invisible, con su hueco y su
+///   semántica. Así el sitio de la constelación o del letrero del día (core
+///   0.57.0, D-35), que pinta su capa en esa banda, no se mueve.
 class FinalDelDiaHoy extends StatelessWidget {
   /// Cuántos hábitos tiene hoy la sección del día.
   final int total;
@@ -327,11 +327,7 @@ class FinalDelDiaHoy extends StatelessWidget {
               ? RamoTodoHecho(total: total)
               : const SizedBox(height: RamoTodoHecho.alto);
         }
-        return Opacity(
-          opacity: fondo == FondoIdentidadTipo.cielo ? 0 : 1,
-          alwaysIncludeSemantics: true,
-          child: child,
-        );
+        return Opacity(opacity: 0, alwaysIncludeSemantics: true, child: child);
       },
       child: const TarjetaTodoHecho(),
     );
