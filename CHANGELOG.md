@@ -105,16 +105,17 @@ Estado: en preparación. Sale sin «Empezar sesión»: el botón llega con una v
 
 Para anunciar: a decidir.
 
-## 1.3.0 (10) — en preparación
+## 1.3.0 (11) — en preparación
 
-Estado: en preparación. Con el core 0.58.0: Nori vestida, invierno y Navidad 2026, el letrero del día de Neotokyo+ y el check amarillo de Profundidad.
+Estado: en preparación. Con el core 0.59.0: Nori vestida, invierno y Navidad 2026, el letrero del día de Neotokyo+ y el ramo de Dulce en su sitio de Hoy, el check amarillo de Profundidad y los sonidos más bajos.
 
 ### Novedades
 
 - Nori se viste: un vestidor en la pantalla de Nori, con una prenda para la cabeza y otra para el cuerpo. Nori sale vestida en su pantalla, en las fases y en la Nori pequeña de Hoy.
 - En la tienda, la sección «Nori»: las prendas de Invierno (gorro de lana y bufanda de rayas, hasta el 28 de febrero) y de Navidad (gorro de Papá Noel, gratis toda la Navidad, y traje de Papá Noel, hasta el 7 de enero). Se pueden probar antes de comprarlas. Lo comprado es tuyo para siempre.
 - El terrario de Nori se llena de nieve en Navidad.
-- En Neotokyo+, el día tiene su letrero de neón: cada hábito hecho añade un tubo y, al terminar el día, el letrero se enciende tubo a tubo. Ocho letreros, según cuántos hábitos tengas.
+- En Neotokyo+, el día tiene su letrero de neón, al final de la lista de Hoy: cada hábito hecho añade un tubo y, al terminar el día, el letrero se enciende tubo a tubo. Ocho letreros, según cuántos hábitos tengas.
+- En Dulce, el ramo del día crece al final de la lista de Hoy: una flor a lápiz por cada hábito hecho y, al terminar el día, se colorea y se ata.
 - En Profundidad, el círculo de un hábito por hacer es amarillo, para que se vea sobre el cielo, y pasa a verde al completarlo.
 - Invita a un amigo desde el menú.
 - Siete ideas de hábito nuevas, y cada idea trae su hora de aviso.
@@ -122,6 +123,7 @@ Estado: en preparación. Con el core 0.58.0: Nori vestida, invierno y Navidad 20
 ### Mejoras
 
 - La app se queda siempre en vertical.
+- Los sonidos, más bajos: el de completar un hábito sonaba demasiado fuerte.
 - Seis dibujos de Nori a todo color (los cuatro huevos, y la cría triste y la dormida), y los huevos sin la sombra pegada debajo.
 - Cuando Nori está triste, «te espera» en vez de «te echa de menos».
 - Nori gasta menos memoria: cada dibujo se carga a su tamaño en pantalla.
@@ -134,3 +136,4 @@ Estado: en preparación. Con el core 0.58.0: Nori vestida, invierno y Navidad 20
 ### Arreglos
 
 - La app ya no se cierra al arrastrar a Nori en pantallas pequeñas.
+- En «Empieza con una idea», la última idea ya no queda debajo de la barra de navegación de Android.
