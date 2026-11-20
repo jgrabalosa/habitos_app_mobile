@@ -5,6 +5,7 @@ import 'package:habitos_app_mobile/l10n/app_localizations.dart';
 import 'package:habitos_app_mobile/screens/dashboard_screen.dart';
 import 'package:habitos_app_mobile/widgets/panel_minutos.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -120,24 +121,77 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  /// El aro de la fila de minutos: el botón que anuncia sumar minutos.
+  /// El check de la fila de minutos: el botón que anuncia sumar minutos.
   Finder aroDeLeer() =>
       find.bySemanticsLabel('Sumar minutos a Leer. Llevas 20 de 30 min');
 
-  testWidgets('la fila de minutos lleva su chip y su aro; la de veces, check', (
-    tester,
-  ) async {
-    await montar(tester);
+  testWidgets(
+    'un solo check para todos: la fila de minutos lleva el mismo que la de '
+    'veces, sin aro ni «+» (Quim, 20-nov)',
+    (tester) async {
+      await montar(tester);
 
-    expect(find.text('${l.frecDiario} · 20 / 30 min'), findsOneWidget);
-    expect(find.text(l.dashChipFrecuencia(l.frecDiario, 0, 1)), findsOneWidget);
-    // Un solo check (el de veces) y el aro de la identidad en la de minutos.
-    expect(find.byType(CheckCircular), findsOneWidget);
-    expect(find.byType(AnilloIdentidad), findsOneWidget);
-    expect(aroDeLeer(), findsOneWidget);
-  });
+      expect(find.text('${l.frecDiario} · 20 / 30 min'), findsOneWidget);
+      expect(
+        find.text(l.dashChipFrecuencia(l.frecDiario, 0, 1)),
+        findsOneWidget,
+      );
+      expect(find.byType(CheckCircular), findsNWidgets(2));
+      expect(find.byType(AnilloIdentidad), findsNothing);
+      expect(find.byIcon(LucideIcons.plus), findsNothing);
+      expect(aroDeLeer(), findsOneWidget);
+      final checkLeer = tester.widget<CheckCircular>(
+        find.byType(CheckCircular).first,
+      );
+      expect(checkLeer.hecho, isFalse);
+    },
+  );
 
-  testWidgets('pasada la hora, la fila y el aro hablan en horas', (
+  testWidgets(
+    'con la meta cumplida, el check de minutos está marcado y tocarlo abre '
+    'el panel (se puede seguir sumando o deshacer)',
+    (tester) async {
+      var envios = 0;
+      PanelMinutos.completar =
+          (
+            int habitoId, {
+            String? fecha,
+            int? minutos,
+            String? clave,
+            String? origen,
+          }) async {
+            envios++;
+            return {'logros': <String>[], 'puntosGanados': 0};
+          };
+      DashboardScreen.cargarHoy = (int usuarioId, {String? fecha}) async {
+        final hoy = hoyConMinutos();
+        final fila =
+            (hoy['delDia'] as Map<String, dynamic>)['habitos'][0]
+                as Map<String, dynamic>;
+        fila['minutosHechos'] = 30;
+        fila['completados'] = 1;
+        fila['hecho'] = true;
+        return hoy;
+      };
+      await montar(tester);
+
+      final hecho = find.bySemanticsLabel(
+        'Sumar minutos a Leer. Llevas 30 de 30 min',
+      );
+      expect(hecho, findsOneWidget);
+      final checks = tester
+          .widgetList<CheckCircular>(find.byType(CheckCircular))
+          .toList();
+      expect(checks.where((c) => c.hecho), hasLength(1));
+
+      await tester.tap(hecho);
+      await tester.pumpAndSettle();
+      expect(envios, 0);
+      expect(find.text('30 / 30 min'), findsOneWidget);
+    },
+  );
+
+  testWidgets('pasada la hora, la fila y el check hablan en horas', (
     tester,
   ) async {
     DashboardScreen.cargarHoy = (int usuarioId, {String? fecha}) async {
@@ -159,7 +213,7 @@ void main() {
     );
   });
 
-  testWidgets('tocar el aro abre el panel, no completa de golpe', (
+  testWidgets('tocar el check de minutos abre el panel, no completa de golpe', (
     tester,
   ) async {
     var envios = 0;

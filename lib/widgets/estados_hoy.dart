@@ -274,8 +274,8 @@ class TarjetaTodoHecho extends StatelessWidget {
 }
 
 /// La figura del día en su sitio de la lista de Hoy (D-41): el letrero de
-/// Neotokyo+ o el ramo de Dulce, al final de la sección «Hoy», siempre, haya
-/// pendientes o no. Crece ahí con cada hábito hecho (lo pinta el core:
+/// Neotokyo+ o el ramo de Dulce, arriba de la sección «Hoy» (bajo su título y
+/// encima del primer hábito), siempre, haya pendientes o no. Crece ahí con cada hábito hecho (lo pinta el core:
 /// `LetreroDelDia` y `RamoDelDia`). Profundidad no tiene: su constelación va
 /// en la capa, por delante de la pantalla.
 ///
@@ -327,7 +327,7 @@ class FiguraDelDiaHoy extends StatelessWidget {
 /// - Profundidad: la tarjeta siempre invisible, con su hueco y su semántica.
 ///   Así el sitio de la constelación, que pinta su capa en esa banda, no se
 ///   mueve.
-/// - Neotokyo+ y Dulce: nada. Su figura está al final de la sección
+/// - Neotokyo+ y Dulce: nada. Su figura está arriba de la sección
 ///   ([FiguraDelDiaHoy], D-41) y es la que dice «¡Todo hecho!».
 class FinalDelDiaHoy extends StatelessWidget {
   /// Cuántos hábitos tiene hoy la sección del día.
