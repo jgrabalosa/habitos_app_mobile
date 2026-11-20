@@ -273,43 +273,62 @@ class TarjetaTodoHecho extends StatelessWidget {
   }
 }
 
-/// En Dulce, con el día cerrado, el ramo del día ocupa el sitio de la tarjeta
-/// «¡Todo hecho!»: un ramo a lápiz, una flor por hábito, el mismo que se ha
-/// dibujado en la ceremonia. Va en la lista, así que nunca queda lápiz encima
-/// del texto de los hábitos. El lector de pantalla oye lo mismo que en la
-/// tarjeta, con el nombre del ramo en medio.
-class RamoTodoHecho extends StatelessWidget {
+/// La figura del día en su sitio de la lista de Hoy (D-41): el letrero de
+/// Neotokyo+ o el ramo de Dulce, al final de la sección «Hoy», siempre, haya
+/// pendientes o no. Crece ahí con cada hábito hecho (lo pinta el core:
+/// `LetreroDelDia` y `RamoDelDia`). Profundidad no tiene: su constelación va
+/// en la capa, por delante de la pantalla.
+///
+/// Con el día cerrado se lee como la tarjeta «¡Todo hecho!», con el nombre de
+/// la figura en medio; abierto, la figura no se lee (las filas ya dicen lo
+/// hecho).
+class FiguraDelDiaHoy extends StatelessWidget {
   /// Cuántos hábitos tiene hoy la sección del día.
   final int total;
 
-  const RamoTodoHecho({super.key, required this.total});
+  const FiguraDelDiaHoy({super.key, required this.total});
 
-  /// Alto del ramo en la lista.
+  /// Alto del sitio en la lista.
   static const double alto = 220;
+
+  /// Si la identidad con este fondo tiene su figura en la lista.
+  static bool tieneSitio(FondoIdentidadTipo fondo) =>
+      fondo == FondoIdentidadTipo.ciudad ||
+      fondo == FondoIdentidadTipo.acumulacion;
 
   @override
   Widget build(BuildContext context) {
+    final fondo = identidad(context).fondo;
+    if (!tieneSitio(fondo)) return const SizedBox.shrink();
     final l = AppLocalizations.of(context)!;
     final lc = NordayCoreLocalizations.of(context)!;
-    return Semantics(
-      container: true,
-      label: '${l.dashTodoHecho}\n${nombreRamo(lc, total)}\n${l.dashDisfruta}',
-      child: Center(
-        child: RamoDulce(total: total, alto: alto),
+    final enNeotokyo = fondo == FondoIdentidadTipo.ciudad;
+    return ValueListenableBuilder<bool>(
+      valueListenable: diaCerradoNotifier,
+      builder: (context, cerrado, figura) => Semantics(
+        container: cerrado,
+        label: cerrado
+            ? '${l.dashTodoHecho}\n'
+                  '${enNeotokyo ? nombreLetrero(lc, total) : nombreRamo(lc, total)}'
+                  '\n${l.dashDisfruta}'
+            : null,
+        child: figura,
       ),
+      child: enNeotokyo
+          ? const LetreroDelDia(alto: alto)
+          : const RamoDelDia(alto: alto),
     );
   }
 }
 
 /// El final del día en la lista de Hoy: lo que ocupa el sitio de «¡Todo
-/// hecho!». No se ve la tarjeta del corazón antes de la ceremonia: el final
-/// del día es el ramo (Dulce) o la constelación (Profundidad).
+/// hecho!» cuando no queda nada pendiente.
 ///
-/// - Dulce: antes de cerrar, un hueco de [RamoTodoHecho.alto] para que la
-///   lista no salte; con el día cerrado, el ramo.
-/// - Profundidad y Neotokyo+: la tarjeta siempre invisible, con su hueco y su
-///   semántica. Así el sitio de la constelación o del letrero del día (core
-///   0.57.0, D-35), que pinta su capa en esa banda, no se mueve.
+/// - Profundidad: la tarjeta siempre invisible, con su hueco y su semántica.
+///   Así el sitio de la constelación, que pinta su capa en esa banda, no se
+///   mueve.
+/// - Neotokyo+ y Dulce: nada. Su figura está al final de la sección
+///   ([FiguraDelDiaHoy], D-41) y es la que dice «¡Todo hecho!».
 class FinalDelDiaHoy extends StatelessWidget {
   /// Cuántos hábitos tiene hoy la sección del día.
   final int total;
@@ -318,18 +337,13 @@ class FinalDelDiaHoy extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: diaCerradoNotifier,
-      builder: (context, cerrado, child) {
-        final fondo = identidad(context).fondo;
-        if (fondo == FondoIdentidadTipo.acumulacion) {
-          return cerrado
-              ? RamoTodoHecho(total: total)
-              : const SizedBox(height: RamoTodoHecho.alto);
-        }
-        return Opacity(opacity: 0, alwaysIncludeSemantics: true, child: child);
-      },
-      child: const TarjetaTodoHecho(),
+    if (FiguraDelDiaHoy.tieneSitio(identidad(context).fondo)) {
+      return const SizedBox.shrink();
+    }
+    return const Opacity(
+      opacity: 0,
+      alwaysIncludeSemantics: true,
+      child: TarjetaTodoHecho(),
     );
   }
 }

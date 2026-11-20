@@ -83,8 +83,17 @@ class IdeasHabitoScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l.habTituloNuevo)),
+      // Android 15 dibuja la app de borde a borde: la lista pasa por detrás
+      // de la barra de navegación del sistema y, al final, deja su alto
+      // debajo de la última idea para que no quede tapada. Arriba ya aparta
+      // la AppBar.
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.fromLTRB(
+          16,
+          16,
+          16,
+          16 + MediaQuery.paddingOf(context).bottom,
+        ),
         children: [
           Text(
             l.ideasTitulo,

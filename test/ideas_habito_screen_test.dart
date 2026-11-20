@@ -362,4 +362,29 @@ void main() {
       expect(find.byType(IdeasHabitoScreen), findsNothing);
     },
   );
+
+  testWidgets('la última idea no queda debajo de la barra de navegación', (
+    tester,
+  ) async {
+    // Android 15 dibuja la app de borde a borde: la barra de navegación del
+    // sistema (aquí, 48 px abajo) va encima de lo que la pantalla no aparte.
+    addTearDown(tester.view.reset);
+    const barra = 48.0;
+    final dpr = tester.view.devicePixelRatio;
+    tester.view.padding = FakeViewPadding(bottom: barra * dpr);
+    tester.view.viewPadding = FakeViewPadding(bottom: barra * dpr);
+    await tester.pumpWidget(montar(ideas()));
+    await tester.pumpAndSettle();
+
+    // Hasta el final de la lista.
+    for (var i = 0; i < 20; i++) {
+      await tester.drag(find.byType(ListView), const Offset(0, -600));
+      await tester.pumpAndSettle();
+    }
+    final ultima = plantillasHabito.last.id;
+    final fila = find.byKey(ValueKey('idea_$ultima'));
+    expect(fila, findsOneWidget);
+    final alto = tester.view.physicalSize.height / dpr;
+    expect(tester.getRect(fila).bottom, lessThanOrEqualTo(alto - barra));
+  });
 }

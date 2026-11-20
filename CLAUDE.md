@@ -141,7 +141,14 @@ puntos:
    del onboarding, a `HomeShell`.
 6. **El progreso del día** — `DashboardScreen` publica cuántos hay y cuántos
    hechos con `publicarProgresoDia`; `HomeShell` monta `FondoIdentidad` y
-   `CapaProgresoIdentidad`, y llama a `limpiarProgresoDia` al salir.
+   `CapaProgresoIdentidad` (la constelación de Profundidad), y llama a
+   `limpiarProgresoDia` al salir. **El letrero de Neotokyo+ y el ramo de
+   Dulce** (D-41, core v0.59.0) van en la lista: `DashboardScreen` monta
+   `FiguraDelDiaHoy` (`estados_hoy.dart`, con `LetreroDelDia` o
+   `RamoDelDia` del core) al final de la sección «Hoy», siempre que se mira
+   hoy, haya pendientes o no; con el día cerrado se lee «¡Todo hecho!» con
+   el nombre de la figura. `FinalDelDiaHoy` solo ocupa sitio en
+   Profundidad.
 7. **El cierre del día** — `HomeShell` monta `CapaCierreDelDia` y
    `DashboardScreen` llama a `mostrarCierreDelDia` al completar lo último del
    día. Sale una vez al día por usuario (fecha guardada en el dispositivo,
@@ -274,8 +281,9 @@ resuelto. Antes de probar, comprobar el `resolved-ref` del `pubspec.lock`.
 Para probar una rama del core sin tag, `pubspec_overrides.yaml` con
 `path: ../norday_flutter_core`, que no se commitea (está en `.gitignore`).
 
-**Core fijado por `v0.58.0`** (20-nov-2026, versión 1.3.0+10, el aro
-amarillo del check en Profundidad): `resolved-ref` `6280bc1a53eee9c20d484d9409b44c6daadf3c0a`. El `pubspec.lock` se versiona;
+**Core fijado por `v0.59.0`** (20-nov-2026, versión 1.3.0+11, D-41: el
+letrero y el ramo del día en su sitio de la lista de Hoy; los sonidos más
+bajos): `resolved-ref` `98c1560c4e30fe639155dc2330678cfbd2ad43b9`. El `pubspec.lock` se versiona;
 al cambiar de tag, comprobar que dice `source: git`, el `ref:` nuevo y el
 `resolved-ref` que da `git rev-parse <tag>^{commit}` en el core.
 
@@ -357,6 +365,14 @@ Errores que ya se cometieron una vez. No se vuelven a cometer.
   `unnecessary_null_comparison`.
 - **Test en rojo antes del arreglo.** Si el test nuevo pasa contra el código
   sin arreglar, no demuestra nada: parar.
+- **Android 15 dibuja la app de borde a borde** (`targetSdk` 36): la barra de
+  navegación del sistema va encima de lo que la pantalla no aparte. Una
+  pantalla que se abre encima (con su `Scaffold`) aparta abajo con
+  `SafeArea` o, si la lista debe pasar por detrás, sumando
+  `MediaQuery.paddingOf(context).bottom` a su `padding`; las hojas, como
+  `panel_minutos.dart`. «Empieza con una idea» se quedó sin ninguna de las
+  dos (20-nov-2026). Se prueba con `tester.view.padding`
+  (`ideas_habito_screen_test.dart`).
 
 ### Paquetes
 
