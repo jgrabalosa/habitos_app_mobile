@@ -960,6 +960,13 @@ class _DashboardScreenState extends State<DashboardScreen>
               (f) => _filaEnLista(l, f, true, t, habilitado: habilitado),
             ),
           ],
+          // El letrero de Neotokyo+ o el ramo de Dulce, siempre al final de
+          // la sección, creciendo con cada hábito hecho (D-41).
+          if (viendoHoy &&
+              FiguraDelDiaHoy.tieneSitio(identidad(context).fondo)) ...[
+            const SizedBox(height: 8),
+            FiguraDelDiaHoy(total: filasDia.length),
+          ],
         ],
         const SizedBox(height: 16),
       ],
