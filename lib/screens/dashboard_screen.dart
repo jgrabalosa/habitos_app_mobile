@@ -934,6 +934,14 @@ class _DashboardScreenState extends State<DashboardScreen>
         ),
         const SizedBox(height: 8),
         if (!_hoyPlegada) ...[
+          // El letrero de Neotokyo+ o el ramo de Dulce, siempre arriba de la
+          // sección, bajo su título y encima del primer hábito, creciendo con
+          // cada hábito hecho (D-41; arriba desde el 20-nov, Quim).
+          if (viendoHoy &&
+              FiguraDelDiaHoy.tieneSitio(identidad(context).fondo)) ...[
+            FiguraDelDiaHoy(total: filasDia.length),
+            const SizedBox(height: 8),
+          ],
           if (pendientes.isEmpty && viendoHoy)
             FinalDelDiaHoy(total: filasDia.length)
           else
@@ -959,13 +967,6 @@ class _DashboardScreenState extends State<DashboardScreen>
             ...completados.map(
               (f) => _filaEnLista(l, f, true, t, habilitado: habilitado),
             ),
-          ],
-          // El letrero de Neotokyo+ o el ramo de Dulce, siempre al final de
-          // la sección, creciendo con cada hábito hecho (D-41).
-          if (viendoHoy &&
-              FiguraDelDiaHoy.tieneSitio(identidad(context).fondo)) ...[
-            const SizedBox(height: 8),
-            FiguraDelDiaHoy(total: filasDia.length),
           ],
         ],
         const SizedBox(height: 16),
@@ -1279,7 +1280,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
               ),
               const SizedBox(width: 12),
-              // Un hábito de minutos no lleva check: lleva su anillo, que abre
+              // Un hábito de minutos lleva el mismo check, pero su toque abre
               // el panel de minutos.
               if (f.esMinutos)
                 _controlMinutos(
@@ -1352,11 +1353,12 @@ class _DashboardScreenState extends State<DashboardScreen>
         : l.dashChipMinutos(frecuencia, par.hechos, par.objetivo);
   }
 
-  /// El control de un hábito de minutos, donde los de veces llevan el check:
-  /// el aro de la identidad con lo que lleva el día y, dentro, un «+» o, con
-  /// el día hecho, el check. Tocarlo abre el panel de minutos, también con el
-  /// día hecho, porque se puede seguir sumando. Apagado en un día que no se
-  /// puede tocar, como el check.
+  /// El control de un hábito de minutos: el mismo check que los de veces
+  /// (Quim, 20-nov: un solo check en toda la app), marcado con el día hecho.
+  /// Tocarlo no completa de golpe: abre el panel de minutos, también con el
+  /// día hecho, porque se puede seguir sumando o deshacer. Lo que se lleva a
+  /// medias lo dice el chip de la fila. Apagado en un día que no se puede
+  /// tocar, como el de veces.
   Widget _controlMinutos(
     AppLocalizations l,
     FilaHoy f,
@@ -1370,49 +1372,25 @@ class _DashboardScreenState extends State<DashboardScreen>
       habilitado: habilitado,
       pistaActiva: pistaActiva,
     );
-    final hecho = f.diaHechoMinutos;
     final par = parMinutos(l, f.minutosHechos, f.minutosObjetivo ?? 0);
     final VoidCallback? alTocar = tocable
         ? () => _abrirPanelMinutos(h.habitoId)
         : null;
+    final etiqueta = l.a11yMinutosHabito(h.nombre, par.hechos, par.objetivo);
     return AnimatedOpacity(
       duration: (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
           ? Duration.zero
           : const Duration(milliseconds: 400),
       opacity: habilitado ? 1.0 : 0.25,
-      child: Semantics(
-        button: true,
-        enabled: tocable,
-        label: l.a11yMinutosHabito(h.nombre, par.hechos, par.objetivo),
+      child: CheckCircular(
+        key: conAncla && pistaActiva ? AnclasRecorrido.checkHabito : null,
+        hecho: f.diaHechoMinutos,
         onTap: alTocar,
-        child: ExcludeSemantics(
-          child: InkResponse(
-            key: conAncla && pistaActiva ? AnclasRecorrido.checkHabito : null,
-            onTap: alTocar,
-            radius: 28,
-            child: SizedBox(
-              width: 44,
-              height: 44,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  // El aro de la identidad: el mismo trazo que el de la
-                  // mascota, con su forma en cada una (a lápiz en Dulce).
-                  AnilloIdentidad(
-                    tamano: 44,
-                    pct: f.fraccionDia,
-                    color: t.success,
-                  ),
-                  Icon(
-                    hecho ? LucideIcons.check : LucideIcons.plus,
-                    size: 20,
-                    color: hecho ? t.successText : t.primaryTrazo,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
+        // Con el día hecho, el toque también abre el panel.
+        onDeshacer: alTocar,
+        color: t.success,
+        etiquetaSemantica: etiqueta,
+        etiquetaSemanticaDeshacer: etiqueta,
       ),
     );
   }

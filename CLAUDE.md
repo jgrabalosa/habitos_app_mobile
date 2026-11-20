@@ -145,8 +145,8 @@ puntos:
    `limpiarProgresoDia` al salir. **El letrero de Neotokyo+ y el ramo de
    Dulce** (D-41, core v0.59.0) van en la lista: `DashboardScreen` monta
    `FiguraDelDiaHoy` (`estados_hoy.dart`, con `LetreroDelDia` o
-   `RamoDelDia` del core) al final de la sección «Hoy», siempre que se mira
-   hoy, haya pendientes o no; con el día cerrado se lee «¡Todo hecho!» con
+   `RamoDelDia` del core) arriba de la sección «Hoy», bajo su título y
+   encima del primer hábito, siempre que se mira hoy, haya pendientes o no; con el día cerrado se lee «¡Todo hecho!» con
    el nombre de la figura. `FinalDelDiaHoy` solo ocupa sitio en
    Profundidad.
 7. **El cierre del día** — `HomeShell` monta `CapaCierreDelDia` y
@@ -248,6 +248,10 @@ código crudo.
 
 ## Hábitos de minutos
 
+- **El check**: en Hoy, un hábito de minutos lleva el mismo `CheckCircular`
+  que uno de veces (un solo check en toda la app, 20-nov-2026), marcado al
+  cumplir la meta. Su toque, hecho o no, abre el panel; lo que se lleva a
+  medias lo dice el chip de la fila.
 - **Duraciones**: todo lo que enseña minutos pasa por `duracionLegible`
   (`l10n/textos_minutos.dart`): «45 min», «1 h», «1 h 30 min». Los pares
   hecho/objetivo, por `parMinutos`: «20 / 30 min» si las dos cifras son

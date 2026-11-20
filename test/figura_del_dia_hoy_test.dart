@@ -4,13 +4,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:habitos_app_mobile/l10n/app_localizations.dart';
 import 'package:habitos_app_mobile/screens/dashboard_screen.dart';
 import 'package:habitos_app_mobile/widgets/estados_hoy.dart';
+import 'package:habitos_app_mobile/widgets/tira_semana.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// La figura del día en su sitio de la lista de Hoy (D-41): el letrero de
-/// Neotokyo+ y el ramo de Dulce, siempre al final de la sección «Hoy», que
-/// crecen ahí con cada hábito hecho. Profundidad sigue con su constelación
+/// Neotokyo+ y el ramo de Dulce, siempre arriba de la sección «Hoy», bajo su
+/// título y encima del primer hábito, que crecen ahí con cada hábito hecho. Profundidad sigue con su constelación
 /// en la capa y con la tarjeta invisible en el sitio de «¡Todo hecho!».
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -123,7 +124,7 @@ void main() {
     }
 
     testWidgets(
-      'en Neotokyo+ y en Dulce, ya no ocupa nada: la figura está al final',
+      'en Neotokyo+ y en Dulce, ya no ocupa nada: la figura está arriba',
       (tester) async {
         for (final codigo in ['TEMA_NEOTOKYO_PLUS', 'TEMA_DULCE']) {
           for (final cerrado in [false, true]) {
@@ -244,27 +245,38 @@ void main() {
     }
 
     testWidgets(
-      'con hábitos pendientes, el letrero ya está, debajo de los completados',
+      'con hábitos pendientes, el letrero ya está, arriba: bajo la tira y '
+      'encima del primer hábito (Quim, 20-nov)',
       (tester) async {
         await montarHoy(tester, 'TEMA_NEOTOKYO_PLUS');
         expect(find.byType(LetreroDelDia), findsOneWidget);
+        final letrero = find.byType(LetreroDelDia);
         expect(
-          tester.getTopLeft(find.byType(LetreroDelDia)).dy,
-          greaterThan(tester.getBottomLeft(find.text('Beber agua')).dy),
+          tester.getTopLeft(letrero).dy,
+          greaterThan(tester.getBottomLeft(find.byType(TiraSemana)).dy),
         );
         expect(
-          tester.getTopLeft(find.byType(LetreroDelDia)).dy,
-          greaterThan(tester.getBottomLeft(find.text('Leer')).dy),
+          tester.getBottomLeft(letrero).dy,
+          lessThanOrEqualTo(tester.getTopLeft(find.text('Leer')).dy),
+        );
+        expect(
+          tester.getBottomLeft(letrero).dy,
+          lessThanOrEqualTo(tester.getTopLeft(find.text('Beber agua')).dy),
         );
       },
     );
 
-    testWidgets('en Dulce, el ramo, también debajo de todo', (tester) async {
+    testWidgets('en Dulce, el ramo, también arriba', (tester) async {
       await montarHoy(tester, 'TEMA_DULCE');
-      expect(find.byType(RamoDelDia), findsOneWidget);
+      final ramo = find.byType(RamoDelDia);
+      expect(ramo, findsOneWidget);
       expect(
-        tester.getTopLeft(find.byType(RamoDelDia)).dy,
-        greaterThan(tester.getBottomLeft(find.text('Beber agua')).dy),
+        tester.getTopLeft(ramo).dy,
+        greaterThan(tester.getBottomLeft(find.byType(TiraSemana)).dy),
+      );
+      expect(
+        tester.getBottomLeft(ramo).dy,
+        lessThanOrEqualTo(tester.getTopLeft(find.text('Leer')).dy),
       );
     });
 
