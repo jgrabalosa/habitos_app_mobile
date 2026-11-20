@@ -83,32 +83,38 @@ class IdeasHabitoScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l.habTituloNuevo)),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(
-            l.ideasTitulo,
-            style: texto.headlineSmall?.copyWith(color: t.text),
-          ),
-          if (esPrimerHabito) ...[
-            const SizedBox(height: 8),
+      // Android 15 dibuja la app de borde a borde: sin esto, la última idea
+      // queda debajo de la barra de navegación del sistema. Arriba ya aparta
+      // la AppBar.
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
             Text(
-              l.ideasSugerencia,
-              style: texto.bodyMedium?.copyWith(color: t.textMuted),
+              l.ideasTitulo,
+              style: texto.headlineSmall?.copyWith(color: t.text),
             ),
-          ],
-          const SizedBox(height: 16),
-          _FilaDesdeCero(onTap: () => _abrirFormulario(context, null)),
-          const SizedBox(height: 12),
-          for (final p in disponibles) ...[
-            _FilaIdea(
-              key: ValueKey('idea_${p.id}'),
-              plantilla: p,
-              onTap: () => _abrirFormulario(context, p),
-            ),
+            if (esPrimerHabito) ...[
+              const SizedBox(height: 8),
+              Text(
+                l.ideasSugerencia,
+                style: texto.bodyMedium?.copyWith(color: t.textMuted),
+              ),
+            ],
+            const SizedBox(height: 16),
+            _FilaDesdeCero(onTap: () => _abrirFormulario(context, null)),
             const SizedBox(height: 12),
+            for (final p in disponibles) ...[
+              _FilaIdea(
+                key: ValueKey('idea_${p.id}'),
+                plantilla: p,
+                onTap: () => _abrirFormulario(context, p),
+              ),
+              const SizedBox(height: 12),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
