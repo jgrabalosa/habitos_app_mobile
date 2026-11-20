@@ -266,9 +266,15 @@ código crudo.
 - **Duraciones**: todo lo que enseña minutos pasa por `duracionLegible`
   (`l10n/textos_minutos.dart`): «45 min», «1 h», «1 h 30 min». Los pares
   hecho/objetivo, por `parMinutos`: «20 / 30 min» si las dos cifras son
-  menores de 60, «45 min / 1 h 30 min» si alguna llega. Se guarda y se
-  escribe siempre en minutos: los campos de entrada y los botones +5/+15/+30
-  del panel siguen en minutos.
+  menores de 60, «45 min / 1 h 30 min» si alguna llega. Se guarda siempre en
+  minutos; el campo de la cifra libre del panel y los botones +5/+15/+30
+  siguen en minutos. **La meta del formulario ya no se escribe** (T-033):
+  chips de `metasRapidasMinutos` (10, 15, 30 min, 1 h, 2 h) y «Otra…», que
+  abre `mostrarHojaMetaMinutos` (`widgets/hoja_meta_minutos.dart`): dos
+  `CupertinoPicker`, horas (0–10) y minutos (de 5 en 5), con «Listo». Sus
+  reglas, en `minutos.dart` (`minutosDeRueda`): con 10 h solo 0 min; con 0 h
+  no hay 0 min; una meta que ya existía y no es múltiplo de 5 (22 min) se
+  incluye tal cual en su hora y queda elegida: nunca se redondea sola.
 - **Panel** (`widgets/panel_minutos.dart`): solo suma. Bajo el progreso,
   «Te faltan …» o «Meta cumplida (· +… de más)». «Completar · +X», arriba y a
   todo lo ancho, envía justo lo que falta como una suma más (su clave,
