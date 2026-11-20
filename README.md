@@ -2,8 +2,8 @@
 
 App Android de **Norday Habits**, la app de hábitos del ecosistema **Norday**.
 Publicada: 1.1.0 (5), en Producción en Google Play (`com.norday.habitos`)
-desde el 22-oct-2026. En desarrollo: versión a decidir (versionCode ≥ 6),
-que sale junto con Norday Focus.
+desde el 22-oct-2026. En desarrollo: 1.3.0 (11), con el core v0.59.1. Sale
+sin «Empezar sesión», que llegará cuando Norday Focus esté en Producción.
 
 ## Qué hace
 
@@ -11,15 +11,16 @@ que sale junto con Norday Focus.
   una tira y el progreso del día dibujado en el fondo de la identidad.
 - **Hábitos** diarios o semanales, con meta de veces, días concretos,
   categoría, descripción y recordatorio a una hora. Catorce ideas para
-  empezar, una o dos por categoría y cada una con su hora de aviso (de
+  empezar, de una a tres por categoría y cada una con su hora de aviso (de
   meditar 15 min a las 8:00 a dormir 8 horas a las 23:00).
 - **Hábitos de minutos**: un objetivo de minutos por día (de 1 a 600), al
   que se llega con varias sesiones que se suman. En Hoy, un panel con +5,
   +15 y +30, una cifra libre y «Completar», que suma lo que falta. Desde 60
   minutos, todo se enseña en horas («1 h 30 min»).
-- **«Empezar sesión»**: desde el panel de minutos, abre Norday Focus con ese
-  hábito (o su ficha de Google Play si no está instalada). Solo cuando el
-  día que se mira es hoy.
+- **«Empezar sesión»** (apagado hasta que Norday Focus esté en Producción,
+  `PanelMinutos.enfoqueDisponible`): desde el panel de minutos abrirá Norday
+  Focus con ese hábito, o su ficha de Google Play si no está instalada. Solo
+  cuando el día que se mira es hoy.
 - **Detalle** de cada hábito con su historial, ritmo y notas.
 - **Ritmo, puntos y logros**: cada hábito tiene un ritmo que sube al cumplirlo
   y baja despacio al fallar, y los hábitos se pueden pausar. Alcanzar la meta
@@ -30,8 +31,9 @@ que sale junto con Norday Focus.
   cambian colores, tipografía, formas y fondo de toda la app. La primera se
   elige gratis al empezar; las demás, en la tienda.
 - **Cierre del día**: al completar lo último del día, en Profundidad se
-  ilumina la constelación y en Dulce se completa el ramo; en Neotokyo+ termina
-  en el acto.
+  ilumina la constelación, en Neotokyo+ se enciende el letrero de neón y en
+  Dulce el ramo se colorea y se ata. En Neotokyo+ y Dulce la figura crece
+  durante el día arriba de la lista de Hoy.
 - **Primer hábito** guiado: una bienvenida de una tarjeta lleva al formulario
   real, pide el permiso de notificaciones al elegir la hora de un recordatorio
   y, al guardarlo, Hoy señala su círculo una vez.
