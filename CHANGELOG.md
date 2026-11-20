@@ -80,7 +80,7 @@ Estado: publicada en Producción el 2026-10-22.
 
 Para anunciar: el ritmo, el nuevo aspecto de Dulce y el rediseño de la app.
 
-## 1.2.0 (6) — en preparación
+## 1.2.0 (6) — no publicada sola
 
 Estado: no se publicó sola; va dentro de la 1.3.0.
 
