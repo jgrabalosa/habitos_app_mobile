@@ -73,7 +73,10 @@ completa, en el `CLAUDE.md` del paquete.
   Focus sea visible en Producción** (o salen a la vez): sin ella, el botón
   lleva a una ficha que no existe. En prueba cerrada solo vale si los testers
   de Habits también lo son de Focus. La guía del despliegue conjunto está en
-  `docs/despliegue.md` del backend (`habitos-app`).
+  `docs/despliegue.md` del backend (`habitos-app`). **Hoy está apagado**:
+  `PanelMinutos.enfoqueDisponible = false` (salida A, 15-nov). Se enciende
+  cuando Focus sea visible en Producción; los tests de «Empezar sesión» lo
+  encienden en `setUp`.
 - `models/` — `habito.dart` (con `UnidadHabito`: veces o minutos), `hoy.dart`
   (lo que manda `/hoy`: filas, secciones, tira y tendencia del ritmo),
   `minutos.dart` (las reglas de los hábitos de minutos, sin widgets ni red:
@@ -93,7 +96,9 @@ completa, en el `CLAUDE.md` del paquete.
 
 También `lib/widgets/identidad_ui.dart` (tarjeta de hábito, chip de frecuencia,
 celda del heatmap y tema de la barra inferior) y `lib/widgets/estados_hoy.dart`
-(los cuatro estados de Hoy: carga, vacío, error y todo hecho), junto con
+(carga, vacío y error; la tarjeta «¡Todo hecho!», que solo queda, invisible,
+en Profundidad como hueco de la constelación; y `FiguraDelDiaHoy` y
+`FinalDelDiaHoy`, ver el punto 6), junto con
 `tira_semana.dart` (los siete días de Hoy, con sus flechas de semana a los
 extremos, sin recargar red) y `cabecera_otro_dia.dart` (el mes y el botón
 «Hoy», encima de la tira, solo cuando el día que se mira no es hoy),
@@ -146,7 +151,8 @@ puntos:
    Dulce** (D-41, core v0.59.0) van en la lista: `DashboardScreen` monta
    `FiguraDelDiaHoy` (`estados_hoy.dart`, con `LetreroDelDia` o
    `RamoDelDia` del core) arriba de la sección «Hoy», bajo su título y
-   encima del primer hábito, siempre que se mira hoy, haya pendientes o no; con el día cerrado se lee «¡Todo hecho!» con
+   encima del primer hábito, siempre que se mira hoy y la sección no está
+   plegada, haya pendientes o no; con el día cerrado se lee «¡Todo hecho!» con
    el nombre de la figura. `FinalDelDiaHoy` solo ocupa sitio en
    Profundidad.
 7. **El cierre del día** — `HomeShell` monta `CapaCierreDelDia` y
@@ -213,7 +219,9 @@ ya en el paquete.
 
 La fuente de verdad es el backend, no el dispositivo: `Equipamiento`
 (en el paquete) lee `getInventarioProductos()` y casa el `codigo` del
-producto contra `catalogoIdentidades`. Ya no se usa `SharedPreferences`.
+producto contra `catalogoIdentidades`. Solo se guarda en el dispositivo, por
+usuario, la última identidad que confirmó el backend, para aplicarla si falla
+la red al arrancar (ver el `CLAUDE.md` del paquete).
 
 Los avatares están retirados desde el 15-sep-2026: la app no los usa y el
 avatar del usuario es Nori.
@@ -233,8 +241,11 @@ clases**, y los dos delegados conviven en `MaterialApp`:
 
 Ocho claves viven duplicadas a propósito porque las usan los dos lados
 (`comunContinuar`, `logrosTitulo`, `navColeccion`, `navHoy`, `cancelar`,
-`perfilTitulo`, `plantillaBeberAgua`, `dashCompletados`): al cambiar una hay
-que cambiarla en los dos sitios.
+`perfilTitulo`, `plantillaBeberAgua`, `dashCompletados`).
+`comunContinuar` solo la usa el core y `dashCompletados` solo la app.
+`logrosTitulo` no vale lo mismo: «Mis logros» en el menú de la app y «Logros»
+en el título de la pantalla del core. Las demás: al cambiar una hay que
+cambiarla en los dos sitios.
 
 Los `app_localizations*.dart` los genera `flutter gen-l10n` y **no** se
 versionan. (En el paquete sí se versionan los suyos — ver su CLAUDE.md.)
@@ -268,7 +279,10 @@ código crudo.
   hubo respuesta clara; mientras envía no se cierra, y cerrar tras un envío
   incierto devuelve `desconocido`. El hueco de Enfoque es lo último del panel:
   «Empezar sesión» solo sale si el día que se mira es hoy, porque una sesión
-  cuenta en el día en que empieza y desde otro día sumaría a hoy.
+  cuenta en el día en que empieza y desde otro día sumaría a hoy. **Hoy está
+  apagado**: `PanelMinutos.enfoqueDisponible = false` (salida A, 15-nov).
+  Se enciende cuando Focus sea visible en Producción; los tests de «Empezar
+  sesión» lo encienden en `setUp`.
 - **Plantillas** (`models/plantilla_habito.dart`): son datos, 14 en el orden
   del día, con `unidad`, `minutos`, su hora de aviso (`horaAviso`, que el
   formulario trae puesta) y `nombresAntiguos` (los que tuvieron, para seguir
