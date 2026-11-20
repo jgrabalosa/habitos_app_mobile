@@ -107,7 +107,7 @@ Para anunciar: a decidir.
 
 ## 1.3.0 (11) — en preparación
 
-Estado: en preparación. Con el core 0.59.0: Nori vestida, invierno y Navidad 2026, el letrero del día de Neotokyo+ y el ramo de Dulce en su sitio de Hoy, el check amarillo de Profundidad y los sonidos más bajos.
+Estado: en preparación. Con el core 0.59.1: Nori vestida, invierno y Navidad 2026, el letrero del día de Neotokyo+ y el ramo de Dulce en su sitio de Hoy, el check amarillo de Profundidad y los sonidos más bajos.
 
 ### Novedades
 

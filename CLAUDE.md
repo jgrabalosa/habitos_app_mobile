@@ -285,9 +285,10 @@ resuelto. Antes de probar, comprobar el `resolved-ref` del `pubspec.lock`.
 Para probar una rama del core sin tag, `pubspec_overrides.yaml` con
 `path: ../norday_flutter_core`, que no se commitea (está en `.gitignore`).
 
-**Core fijado por `v0.59.0`** (20-nov-2026, versión 1.3.0+11, D-41: el
+**Core fijado por `v0.59.1`** (20-nov-2026, versión 1.3.0+11, D-41: el
 letrero y el ramo del día en su sitio de la lista de Hoy; los sonidos más
-bajos): `resolved-ref` `98c1560c4e30fe639155dc2330678cfbd2ad43b9`. El `pubspec.lock` se versiona;
+bajos; el letrero de la lista espera a que se vaya el velo del cierre):
+`resolved-ref` `c9cd3a503669f23b535bc1af2ccd42dbda9d9da0`. El `pubspec.lock` se versiona;
 al cambiar de tag, comprobar que dice `source: git`, el `ref:` nuevo y el
 `resolved-ref` que da `git rev-parse <tag>^{commit}` en el core.
 
