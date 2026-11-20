@@ -181,8 +181,10 @@ void main() {
       'fechasCompletadas': hecho ? ['2026-11-15'] : <String>[],
     };
 
+    var fecha = '2026-11-15';
+
     Map<String, dynamic> hoy() => {
-      'fecha': '2026-11-15',
+      'fecha': fecha,
       'hoy': '2026-11-15',
       'dias': [
         for (var d = 9; d <= 15; d++)
@@ -203,6 +205,7 @@ void main() {
     };
 
     setUp(() {
+      fecha = '2026-11-15';
       SharedPreferences.setMockInitialValues({
         'mini_mascota_oculta': true,
         'detalle_habito_descubierto': true,
@@ -264,6 +267,18 @@ void main() {
         greaterThan(tester.getBottomLeft(find.text('Beber agua')).dy),
       );
     });
+
+    testWidgets(
+      'mirando otro día de la tira, ni letrero ni ramo (revisión del 20-nov)',
+      (tester) async {
+        fecha = '2026-11-14';
+        await montarHoy(tester, 'TEMA_NEOTOKYO_PLUS');
+        expect(find.text('Beber agua'), findsOneWidget);
+        expect(find.byType(LetreroDelDia), findsNothing);
+        await montarHoy(tester, 'TEMA_DULCE');
+        expect(find.byType(RamoDelDia), findsNothing);
+      },
+    );
 
     testWidgets('en Profundidad, ni letrero ni ramo en la lista', (
       tester,

@@ -83,38 +83,41 @@ class IdeasHabitoScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l.habTituloNuevo)),
-      // Android 15 dibuja la app de borde a borde: sin esto, la última idea
-      // queda debajo de la barra de navegación del sistema. Arriba ya aparta
+      // Android 15 dibuja la app de borde a borde: la lista pasa por detrás
+      // de la barra de navegación del sistema y, al final, deja su alto
+      // debajo de la última idea para que no quede tapada. Arriba ya aparta
       // la AppBar.
-      body: SafeArea(
-        top: false,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            Text(
-              l.ideasTitulo,
-              style: texto.headlineSmall?.copyWith(color: t.text),
-            ),
-            if (esPrimerHabito) ...[
-              const SizedBox(height: 8),
-              Text(
-                l.ideasSugerencia,
-                style: texto.bodyMedium?.copyWith(color: t.textMuted),
-              ),
-            ],
-            const SizedBox(height: 16),
-            _FilaDesdeCero(onTap: () => _abrirFormulario(context, null)),
-            const SizedBox(height: 12),
-            for (final p in disponibles) ...[
-              _FilaIdea(
-                key: ValueKey('idea_${p.id}'),
-                plantilla: p,
-                onTap: () => _abrirFormulario(context, p),
-              ),
-              const SizedBox(height: 12),
-            ],
-          ],
+      body: ListView(
+        padding: EdgeInsets.fromLTRB(
+          16,
+          16,
+          16,
+          16 + MediaQuery.paddingOf(context).bottom,
         ),
+        children: [
+          Text(
+            l.ideasTitulo,
+            style: texto.headlineSmall?.copyWith(color: t.text),
+          ),
+          if (esPrimerHabito) ...[
+            const SizedBox(height: 8),
+            Text(
+              l.ideasSugerencia,
+              style: texto.bodyMedium?.copyWith(color: t.textMuted),
+            ),
+          ],
+          const SizedBox(height: 16),
+          _FilaDesdeCero(onTap: () => _abrirFormulario(context, null)),
+          const SizedBox(height: 12),
+          for (final p in disponibles) ...[
+            _FilaIdea(
+              key: ValueKey('idea_${p.id}'),
+              plantilla: p,
+              onTap: () => _abrirFormulario(context, p),
+            ),
+            const SizedBox(height: 12),
+          ],
+        ],
       ),
     );
   }
