@@ -196,5 +196,10 @@ paquetes, dispositivo y método de trabajo están en `docs/lecciones/`.
   `panel_minutos.dart`. «Empieza con una idea» se quedó sin ninguna de las
   dos (20-nov-2026). Se prueba con `tester.view.padding`
   (`ideas_habito_screen_test.dart`).
+- **Una pantalla que crea más de un `AnimationController` en su vida usa
+  `TickerProviderStateMixin`, no `SingleTickerProviderStateMixin`.** El
+  segundo ticker lanza un `assert` que solo salta en depuración: Hoy lo tuvo
+  desde el 15-sep y cortaba `_trasCompletar` en el segundo check (T-045,
+  `test/hoy_varios_checks_test.dart`).
 - **La caja de `NoriVestida` no es Nori** (deja aire, distinto en cada fase;
   T-034): su tamaño se mide en el PNG de `test/postal_exportar_test.dart`.

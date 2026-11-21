@@ -82,6 +82,12 @@ class DashboardScreen extends StatefulWidget {
   static Future<Map<String, dynamic>> Function(int usuarioId, {String? fecha})
   cargarHoy = ApiServiceHabitos.getHoy;
 
+  /// Seam de test: la llamada que marca un paso del hábito. En producción, la
+  /// red.
+  @visibleForTesting
+  static Future<Map<String, dynamic>> Function(int habitoId, {String? fecha})
+  completarHabito = _completarConLaRed;
+
   /// Seam de test: lo que pide la reseña de Play. Por defecto, In-App Review.
   @visibleForTesting
   static Future<void> Function() solicitarResena = _resenaConInAppReview;
@@ -89,6 +95,11 @@ class DashboardScreen extends StatefulWidget {
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
+
+Future<Map<String, dynamic>> _completarConLaRed(
+  int habitoId, {
+  String? fecha,
+}) => ApiServiceHabitos.completarHabito(habitoId, fecha: fecha);
 
 Future<void> _resenaConInAppReview() async {
   final InAppReview inAppReview = InAppReview.instance;
@@ -101,7 +112,7 @@ Future<void> _resenaConInAppReview() async {
 }
 
 class _DashboardScreenState extends State<DashboardScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   /// La pantalla entera, tal como la manda `/hoy` para el día que se mira.
   /// Null hasta la primera respuesta.
   HoyLeido? _hoy;
@@ -434,7 +445,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     try {
       // Hoy se manda sin fecha y lo resuelve el servidor en la zona del
       // usuario; otro día, con la suya.
-      resultado = await ApiServiceHabitos.completarHabito(
+      resultado = await DashboardScreen.completarHabito(
         habitoId,
         fecha: esHoy ? null : hoy.fecha,
       );
