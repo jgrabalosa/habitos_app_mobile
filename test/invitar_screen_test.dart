@@ -7,19 +7,25 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:habitos_app_mobile/l10n/app_localizations.dart';
 import 'package:habitos_app_mobile/screens/invitar_screen.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
+import 'package:norday_flutter_core/widgets/nori_vestida.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-Future<String?> faseCria(int _) async => 'cria';
+Future<DatoNori?> datoPipo(int _) async =>
+    const DatoNori(fase: 'cria', nombre: 'Pipo', nivel: 7);
 
 Future<ShareResult> compartirNada(ShareParams _) async =>
     const ShareResult('', ShareResultStatus.success);
 
+Future<void> medirNada(String _, {required bool conDato}) async {}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   GoogleFonts.config.allowRuntimeFetching = false;
+  final identidadInicial = identidadEquipadaNotifier.value;
 
   setUp(() => SharedPreferences.setMockInitialValues({}));
+  tearDown(() => aplicarIdentidadEquipada(identidadInicial.codigo));
 
   Widget app(Widget home) => MaterialApp(
     theme: AppTheme.deTema(temaEquipadoNotifier.value),
@@ -32,19 +38,20 @@ void main() {
     home: home,
   );
 
-  /// La imagen fija de Nori, contenta, en [fase].
-  Finder imagenNori(String fase) => find.byWidgetPredicate((w) {
-    if (w is! Image) return false;
-    final imagen = w.image;
-    return imagen is AssetImage &&
-        imagen.assetName == assetMascota(fase: fase, estado: 'exultante');
-  });
+  /// Nori, vestida y contenta, en [fase].
+  Finder imagenNori(String fase) => find.byWidgetPredicate(
+    (w) => w is NoriVestida && w.fase == fase && w.estado == 'exultante',
+  );
 
-  /// Monta la pantalla y deja que llegue la fase de Nori.
+  Finder enTarjeta(Finder f) =>
+      find.descendant(of: find.byType(TarjetaInvitacion), matching: f);
+
+  /// Monta la pantalla y deja que llegue el dato de Nori.
   Future<void> montar(
     WidgetTester tester, {
     CompartirInvitacion compartir = compartirNada,
-    CargarFaseNori cargarFase = faseCria,
+    CargarDatoNori cargarDato = datoPipo,
+    MedirCompartido medir = medirNada,
   }) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 2.75;
@@ -54,7 +61,8 @@ void main() {
         InvitarScreen(
           usuarioId: 1,
           compartir: compartir,
-          cargarFase: cargarFase,
+          cargarDato: cargarDato,
+          medirCompartido: medir,
         ),
       ),
     );
@@ -62,61 +70,163 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
   }
 
-  testWidgets('pinta la tarjeta con norday.app/invitar', (tester) async {
-    await montar(tester);
-    expect(find.byType(TarjetaInvitacion), findsOneWidget);
-    expect(
-      find.descendant(
-        of: find.byType(TarjetaInvitacion),
-        matching: find.text('norday.app/invitar'),
-      ),
-      findsOneWidget,
-    );
-    expect(find.text('Constancia, no perfección'), findsOneWidget);
-  });
-
-  testWidgets('la tarjeta es la superficie protagonista de la identidad', (
-    tester,
+  /// Pulsa «Compartir» y espera al menú (la captura y el PNG son trabajo
+  /// real del motor, no del reloj falso).
+  Future<ShareParams> compartirYEsperar(
+    WidgetTester tester,
+    List<ShareParams> enviados,
   ) async {
-    // Una tarjeta pintada a mano no sale a lápiz en Dulce ni achaflanada en
-    // Neotokyo+ (CLAUDE.md del core): tiene que ser SuperficieIdentidad.
-    await montar(tester);
-    final superficie = find.descendant(
-      of: find.byType(TarjetaInvitacion),
-      matching: find.byType(SuperficieIdentidad),
-    );
-    expect(superficie, findsOneWidget);
-    expect(tester.widget<SuperficieIdentidad>(superficie).protagonista, isTrue);
-  });
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Compartir'));
+      for (var i = 0; i < 100 && enviados.isEmpty; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+      }
+    });
+    await tester.pump();
+    expect(enviados, hasLength(1));
+    return enviados.single;
+  }
 
-  testWidgets('la tarjeta lleva Nori en la fase que manda el backend', (
+  testWidgets('con dato, la postal lleva el nombre y el nivel de Nori', (
     tester,
   ) async {
     await montar(tester);
+    expect(enTarjeta(find.text('Pipo ya es cría · nivel 7')), findsOneWidget);
+  });
+
+  testWidgets('sin nombre, el dato habla de «Mi Nori»', (tester) async {
+    await montar(
+      tester,
+      cargarDato: (_) async => const DatoNori(fase: 'cria', nivel: 7),
+    );
     expect(
-      find.descendant(
-        of: find.byType(TarjetaInvitacion),
-        matching: imagenNori('cria'),
-      ),
+      enTarjeta(find.text('Mi Nori ya es cría · nivel 7')),
       findsOneWidget,
     );
   });
 
-  testWidgets('si getMascota falla, Nori sale adulta y no lanza', (
+  testWidgets('el interruptor sale encendido y, apagado, quita el dato', (
     tester,
   ) async {
-    await montar(tester, cargarFase: (_) async => throw Exception('sin red'));
+    await montar(tester);
+    final interruptor = find.widgetWithText(
+      SwitchListTile,
+      'Incluir el nombre y el nivel de Nori',
+    );
+    expect(interruptor, findsOneWidget);
+    expect(tester.widget<SwitchListTile>(interruptor).value, isTrue);
+
+    await tester.tap(interruptor);
+    await tester.pump();
+
+    expect(tester.widget<SwitchListTile>(interruptor).value, isFalse);
+    expect(enTarjeta(find.textContaining('Pipo')), findsNothing);
+    expect(enTarjeta(find.textContaining('nivel')), findsNothing);
+    // Nori sigue en su fase: lo que se quita es el dato, no Nori.
+    expect(enTarjeta(imagenNori('cria')), findsOneWidget);
+  });
+
+  testWidgets('apagado, se comparte sin dato y Analytics lo dice', (
+    tester,
+  ) async {
+    final enviados = <ShareParams>[];
+    final medidos = <bool>[];
+    await montar(
+      tester,
+      compartir: (p) async {
+        enviados.add(p);
+        return const ShareResult('', ShareResultStatus.success);
+      },
+      medir: (_, {required conDato}) async => medidos.add(conDato),
+    );
+    await tester.tap(find.byType(SwitchListTile));
+    await tester.pump();
+    await compartirYEsperar(tester, enviados);
+    expect(medidos, [false]);
+  });
+
+  testWidgets('encendido, Analytics mide con_dato a true', (tester) async {
+    final enviados = <ShareParams>[];
+    final medidos = <bool>[];
+    await montar(
+      tester,
+      compartir: (p) async {
+        enviados.add(p);
+        return const ShareResult('', ShareResultStatus.success);
+      },
+      medir: (_, {required conDato}) async => medidos.add(conDato),
+    );
+    await compartirYEsperar(tester, enviados);
+    expect(medidos, [true]);
+  });
+
+  testWidgets('sin red, Nori sale adulta, sin dato, y se comparte igual', (
+    tester,
+  ) async {
+    final enviados = <ShareParams>[];
+    final medidos = <bool>[];
+    await montar(
+      tester,
+      cargarDato: (_) async => throw Exception('sin red'),
+      compartir: (p) async {
+        enviados.add(p);
+        return const ShareResult('', ShareResultStatus.success);
+      },
+      medir: (_, {required conDato}) async => medidos.add(conDato),
+    );
     expect(tester.takeException(), isNull);
-    expect(
-      find.descendant(
-        of: find.byType(TarjetaInvitacion),
-        matching: imagenNori('adulto'),
-      ),
-      findsOneWidget,
-    );
+    expect(enTarjeta(imagenNori('adulto')), findsOneWidget);
+    expect(enTarjeta(find.textContaining('nivel')), findsNothing);
+    // Sin dato no hay nada que quitar.
+    expect(find.byType(SwitchListTile), findsNothing);
+
+    final p = await compartirYEsperar(tester, enviados);
+    expect(p.files, hasLength(1));
+    expect(medidos, [false]);
   });
 
-  testWidgets('«Compartir» envía un PNG de 1080 × 1920 y el texto con enlace', (
+  testWidgets('la postal no lleva panel ni enlace dibujado', (tester) async {
+    await montar(tester);
+    expect(enTarjeta(find.byType(SuperficieIdentidad)), findsNothing);
+    expect(enTarjeta(find.textContaining('norday.app')), findsNothing);
+    expect(enTarjeta(find.byType(FondoIdentidad)), findsOneWidget);
+    expect(enTarjeta(find.byType(WordmarkIdentidad)), findsOneWidget);
+  });
+
+  testWidgets('Nori va vestida y ocupa entre el 55 y el 60 % del alto', (
+    tester,
+  ) async {
+    await montar(tester);
+    final nori = enTarjeta(find.byType(NoriVestida));
+    expect(nori, findsOneWidget);
+    expect(
+      tester.widget<NoriVestida>(nori).prendas,
+      same(prendasEquipadasNotifier),
+    );
+    final altoTarjeta = tester.getSize(find.byType(TarjetaInvitacion)).height;
+    final altoNori = tester.getSize(nori).height;
+    expect(altoNori / altoTarjeta, inInclusiveRange(0.55, 0.60));
+  });
+
+  for (final codigo in [
+    'TEMA_PROFUNDIDAD',
+    'TEMA_NEOTOKYO_PLUS',
+    'TEMA_DULCE',
+  ]) {
+    testWidgets('en $codigo, la postal se pinta sin panel y con su fondo', (
+      tester,
+    ) async {
+      aplicarIdentidadEquipada(codigo);
+      await montar(tester);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(enTarjeta(find.byType(SuperficieIdentidad)), findsNothing);
+      expect(enTarjeta(find.byType(FondoIdentidad)), findsOneWidget);
+      expect(enTarjeta(find.text('Pipo ya es cría · nivel 7')), findsOneWidget);
+    });
+  }
+
+  testWidgets('«Compartir» envía un PNG de 1080 × 1350 y el texto con enlace', (
     tester,
   ) async {
     final enviados = <ShareParams>[];
@@ -127,18 +237,9 @@ void main() {
         return const ShareResult('', ShareResultStatus.success);
       },
     );
-    // La captura y el PNG son trabajo real del motor, no del reloj falso.
-    await tester.runAsync(() async {
-      await tester.tap(find.text('Compartir'));
-      for (var i = 0; i < 50 && enviados.isEmpty; i++) {
-        await Future<void>.delayed(const Duration(milliseconds: 20));
-      }
-    });
-    await tester.pump();
+    final p = await compartirYEsperar(tester, enviados);
 
-    expect(enviados, hasLength(1));
-    final p = enviados.single;
-    expect(p.text, contains('https://norday.app/invitar'));
+    expect(p.text, endsWith('\nhttps://norday.app/invitar'));
     expect(p.fileNameOverrides, ['norday-invitacion.png']);
     expect(p.files, hasLength(1));
     final fichero = p.files!.single;
@@ -153,14 +254,14 @@ void main() {
         (bytes[i + 2] << 8) |
         bytes[i + 3];
     expect(entero(16), 1080);
-    expect(entero(20), 1920);
+    expect(entero(20), 1350);
   });
 
   testWidgets('la imagen compartida no tiene huecos: las esquinas son opacas', (
     tester,
   ) async {
-    // Fuera de las esquinas redondeadas o achaflanadas, un PNG transparente
-    // sale negro o blanco en una historia: detrás va el fondo de la identidad.
+    // Un PNG transparente sale negro o blanco en una historia: detrás va el
+    // fondo de la identidad.
     final enviados = <ShareParams>[];
     await montar(
       tester,
@@ -169,12 +270,9 @@ void main() {
         return const ShareResult('', ShareResultStatus.success);
       },
     );
+    final p = await compartirYEsperar(tester, enviados);
     final alfas = await tester.runAsync(() async {
-      await tester.tap(find.text('Compartir'));
-      for (var i = 0; i < 50 && enviados.isEmpty; i++) {
-        await Future<void>.delayed(const Duration(milliseconds: 20));
-      }
-      final bytes = await enviados.single.files!.single.readAsBytes();
+      final bytes = await p.files!.single.readAsBytes();
       final codec = await ui.instantiateImageCodec(bytes);
       final imagen = (await codec.getNextFrame()).image;
       final rgba = (await imagen.toByteData())!;
@@ -188,8 +286,6 @@ void main() {
       imagen.dispose();
       return r;
     });
-    await tester.pump();
-
     expect(alfas, [255, 255, 255, 255]);
   });
 
@@ -208,6 +304,68 @@ void main() {
       find.text('No se ha podido compartir la invitación. Inténtalo de nuevo.'),
       findsOneWidget,
     );
+  });
+
+  test('el texto que acompaña, en los tres idiomas, con el enlace aparte', () {
+    const enlace = 'https://norday.app/invitar';
+    expect(
+      lookupAppLocalizations(const Locale('es')).invitarTextoCompartir(enlace),
+      'Mira cómo va mi Nori: crece cada vez que marco un hábito, y si un día '
+      'fallo no pasa nada. ¿Te haces uno? Es gratis y sin anuncios.\n'
+      '$enlace',
+    );
+    expect(
+      lookupAppLocalizations(const Locale('en')).invitarTextoCompartir(enlace),
+      'Look how my Nori is doing: he grows every time I tick off a habit, '
+      'and if I miss a day, that\'s fine. Want one too? It\'s free and has no '
+      'ads.\n'
+      '$enlace',
+    );
+    expect(
+      lookupAppLocalizations(const Locale('pt')).invitarTextoCompartir(enlace),
+      'Vê como está o meu Nori: cresce sempre que marco um hábito e, se um '
+      'dia falho, não faz mal. Também queres um? É grátis e sem anúncios.\n'
+      '$enlace',
+    );
+  });
+
+  test('el dato, en los tres idiomas y en las tres fases', () {
+    String dato(String idioma, DatoNori d) =>
+        textoDatoNori(lookupAppLocalizations(Locale(idioma)), d);
+    const pipo = DatoNori(fase: 'cria', nombre: 'Pipo', nivel: 7);
+    const sinNombre = DatoNori(fase: 'cria', nivel: 7);
+    expect(dato('es', pipo), 'Pipo ya es cría · nivel 7');
+    expect(dato('es', sinNombre), 'Mi Nori ya es cría · nivel 7');
+    expect(
+      dato('es', const DatoNori(fase: 'huevo', nivel: 1)),
+      'Mi Nori aún es un huevo · nivel 1',
+    );
+    expect(
+      dato('es', const DatoNori(fase: 'adulto', nombre: 'Pipo', nivel: 12)),
+      'Pipo ya ha crecido · nivel 12',
+    );
+    expect(dato('en', pipo), 'Pipo is a hatchling now · level 7');
+    expect(dato('en', sinNombre), 'My Nori is a hatchling now · level 7');
+    expect(dato('pt', pipo), 'Pipo já é uma cria · nível 7');
+    expect(dato('pt', sinNombre), 'O meu Nori já é uma cria · nível 7');
+  });
+
+  test('el dato sale de getMascota: nombre, nivel y fase', () {
+    final d = DatoNori.desdeMascota({
+      'nombre': '  Pipo ',
+      'nivel': 7,
+      'fase': 'CRIA',
+    });
+    expect(d.nombre, 'Pipo');
+    expect(d.nivel, 7);
+    expect(d.fase, 'cria');
+    expect(d.tieneDato, isTrue);
+
+    final vacio = DatoNori.desdeMascota({'nombre': '', 'fase': 'dragón'});
+    expect(vacio.nombre, isNull);
+    expect(vacio.nivel, isNull);
+    expect(vacio.fase, 'adulto');
+    expect(vacio.tieneDato, isFalse);
   });
 
   test('el resultado del menú se mide con su nombre', () {

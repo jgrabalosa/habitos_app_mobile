@@ -68,8 +68,19 @@ void main() {
 
   test('invitarCompartido no lanza aunque Firebase falle', () async {
     await expectLater(
-      AnalyticsHabitos.invitarCompartido('compartido'),
+      AnalyticsHabitos.invitarCompartido('compartido', conDato: true),
       completes,
+    );
+  });
+
+  test('invitar_compartido lleva con_dato como true o false', () {
+    expect(
+      AnalyticsHabitos.parametrosInvitarCompartido('compartido', conDato: true),
+      {'resultado': 'compartido', 'con_dato': 'true'},
+    );
+    expect(
+      AnalyticsHabitos.parametrosInvitarCompartido('cancelado', conDato: false),
+      {'resultado': 'cancelado', 'con_dato': 'false'},
     );
   });
 }
