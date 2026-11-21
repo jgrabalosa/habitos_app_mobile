@@ -11,7 +11,9 @@ import '../services/analytics_service.dart';
 import '../l10n/catalogos.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/habito.dart';
+import '../models/iconos_habito.dart';
 import '../models/plantilla_habito.dart';
+import '../widgets/selector_icono_habito.dart';
 
 class HabitoScreen extends StatefulWidget {
   final int usuarioId;
@@ -129,11 +131,11 @@ class _HabitoScreenState extends State<HabitoScreen> {
   bool _minutosLibre = false;
   final _minutosController = TextEditingController();
 
-  /// El código del icono que se manda al guardar: el del hábito que se edita
-  /// o el de la idea de la que sale. Null en uno nuevo desde cero (sin
-  /// icono; el backend lo deja nulo) o en uno que nunca lo tuvo (el campo no
-  /// sale y el backend conserva lo que hubiera).
-  String? _codigoIcono;
+  /// El código del icono que se manda al guardar: el del hábito que se edita,
+  /// el de la idea de la que sale o, en uno nuevo desde cero, `sparkles`.
+  /// Null solo al editar un hábito que nunca tuvo icono y no se toca: el campo
+  /// no sale y el backend conserva lo que hubiera.
+  String? _codigoIcono = codigoIconoPorDefecto;
 
   /// El cambio de objetivo que todavía no vale, si lo hay.
   ObjetivoProgramado? _programado;
@@ -994,7 +996,12 @@ class _HabitoScreenState extends State<HabitoScreen> {
                             _categoriaId = v;
                           }),
                         ),
-                  const SizedBox(height: AppSpacing.md),
+                  const SizedBox(height: AppSpacing.sm),
+                  FilaIconoHabito(
+                    codigo: _codigoIcono,
+                    alElegir: (c) => setState(() => _codigoIcono = c),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
                   _selectorUnidad(l, t),
                   const SizedBox(height: AppSpacing.md),
                   // El título va fuera del recuadro, como «Días de la semana», y
