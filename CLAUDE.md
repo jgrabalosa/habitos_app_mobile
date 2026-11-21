@@ -38,9 +38,16 @@ completa, en el `CLAUDE.md` del paquete.
   alta/edición (`habito_screen.dart`) y las ideas para empezar
   (`ideas_habito_screen.dart`: «Empieza con una idea», con las plantillas;
   `abrirAltaHabito` va al formulario vacío si no queda ninguna idea) e
-  «Invitar a un amigo» (`invitar_screen.dart`: `TarjetaInvitacion`, 9:16 con
-  Nori y `norday.app/invitar`, que se comparte como PNG de 1080 × 1920 con
-  `share_plus`; sin nada personal). El panel del menú es la función suelta
+  «Invitar a un amigo» (`invitar_screen.dart`: `TarjetaInvitacion`, una
+  postal 4:5 que se comparte como PNG de 1080 × 1350 con `share_plus`: el
+  fondo de la identidad sin panel, Nori grande y vestida con `NoriVestida`,
+  que el core no exporta en su barrel, y, arriba, un dato de quien invita
+  sacado de `getMascota`, «Pipo ya es cría · nivel 7». El dato se puede
+  quitar con un interruptor, encendido por defecto; sin red, la postal sale
+  sin él. El enlace no se dibuja: va en su línea del texto que acompaña.
+  `invitar_compartido` lleva `con_dato`. Para ver la postal sin móvil:
+  `test/postal_exportar_test.dart`, que solo corre con
+  `--dart-define=EXPORTAR_POSTAL=true` y deja los PNG en `build/postal/`). El panel del menú es la función suelta
   `mostrarMenuShell`, para poder probar sus entradas sin montar las
   pestañas. El alta
   nueva arranca en `HomeShell`: la bienvenida de una
@@ -392,6 +399,11 @@ Errores que ya se cometieron una vez. No se vuelven a cometer.
   `panel_minutos.dart`. «Empieza con una idea» se quedó sin ninguna de las
   dos (20-nov-2026). Se prueba con `tester.view.padding`
   (`ideas_habito_screen_test.dart`).
+
+- **La caja de `NoriVestida` no es Nori.** El dibujo deja aire transparente,
+  distinto en cada fase: con la caja al 58 % del alto, la cría se veía al
+  37 % (T-034). Un tamaño «de Nori» se mide en el PNG exportado
+  (`test/postal_exportar_test.dart`), no en el widget.
 
 ### Paquetes
 
