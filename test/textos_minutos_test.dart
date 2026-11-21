@@ -186,7 +186,8 @@ void main() {
 
   group('límites de minutos con su unidad', () {
     test('en español', () {
-      expect(textoMinutosOtra(es), 'Otra cifra, en minutos (1–600)');
+      expect(textoMinutosOtra(es), 'Otra…');
+      expect(textoMinutosOtra(es, minutos: 90), 'Otra: 1 h 30 min');
       expect(
         textoMinutosRango(es),
         'Elige entre 1 y 600 minutos (10 h) por día.',
@@ -198,7 +199,8 @@ void main() {
     });
 
     test('en inglés', () {
-      expect(textoMinutosOtra(en), 'Other amount, in minutes (1–600)');
+      expect(textoMinutosOtra(en), 'Other…');
+      expect(textoMinutosOtra(en, minutos: 90), 'Other: 1 h 30 min');
       expect(
         textoMinutosRango(en),
         'Choose between 1 and 600 minutes (10 h) per day.',
@@ -210,7 +212,8 @@ void main() {
     });
 
     test('en portugués', () {
-      expect(textoMinutosOtra(pt), 'Outro valor, em minutos (1–600)');
+      expect(textoMinutosOtra(pt), 'Outro…');
+      expect(textoMinutosOtra(pt, minutos: 90), 'Outro: 1 h 30 min');
       expect(
         textoMinutosRango(pt),
         'Escolhe entre 1 e 600 minutos (10 h) por dia.',

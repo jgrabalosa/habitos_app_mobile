@@ -582,4 +582,34 @@ void main() {
       expect(claves.every(v4.hasMatch), isTrue);
     });
   });
+
+  group('rueda de la meta', () {
+    test('las metas rápidas son 10, 15, 30, 1 h y 2 h', () {
+      expect(metasRapidasMinutos, [10, 15, 30, 60, 120]);
+    });
+
+    test('de 5 en 5, con 0 solo si hay horas', () {
+      expect(minutosDeRueda(1), [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]);
+      expect(minutosDeRueda(0).first, 5);
+      expect(minutosDeRueda(0).last, 55);
+    });
+
+    test('con 10 h, solo 0: el máximo es 600', () {
+      expect(minutosDeRueda(10), [0]);
+    });
+
+    test('una meta que no es múltiplo de 5 se incluye en su hora', () {
+      expect(minutosDeRueda(0, existente: 7), contains(7));
+      expect(minutosDeRueda(0, existente: 3).first, 3);
+      expect(minutosDeRueda(1, existente: 82), contains(22));
+      // En otra hora no aparece.
+      expect(minutosDeRueda(2, existente: 82), isNot(contains(22)));
+    });
+
+    test('el minuto más cercano; si empatan, el menor', () {
+      expect(minutoMasCercano([5, 10, 15], 0), 5);
+      expect(minutoMasCercano([0], 35), 0);
+      expect(minutoMasCercano([0, 5, 10], 7), 5);
+    });
+  });
 }

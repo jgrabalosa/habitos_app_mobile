@@ -62,6 +62,13 @@ completa, en el `CLAUDE.md` del paquete.
   `habito_screen.dart`, con `NotificacionesService` del core: nunca al entrar.
   Al crear desde una plantilla, que trae la hora puesta, se pide al guardar
   si no se ha preguntado ya en ese formulario.
+- El icono del hábito: `habito_screen.dart` manda el `codigoIcono` de la
+  plantilla al crear desde ella y el que ya tenía el hábito al editar; desde
+  cero, `sparkles`. La fila «Icono» abre la rejilla
+  (`widgets/selector_icono_habito.dart`, con la forma de la identidad). El
+  icono se ve en Hoy (20), en la lista de hábitos y en el detalle (24), en
+  `textMuted`, y no cambia al completarse. El porqué, en
+  `docs/decisiones/0001-catalogo-iconos-habito.md`.
 - `services/` — `ApiServiceHabitos`, `AnalyticsHabitos`,
   `CrashlyticsService`, la pista de Hoy tras el primer hábito
   (`recorrido_onboarding.dart`, y `anclas_recorrido.dart`, que hoy tiene una
@@ -88,7 +95,11 @@ completa, en el `CLAUDE.md` del paquete.
   `PanelMinutos.enfoqueDisponible = false` (salida A, 15-nov). Se enciende
   cuando Focus sea visible en Producción; los tests de «Empezar sesión» lo
   encienden en `setUp`.
-- `models/` — `habito.dart` (con `UnidadHabito`: veces o minutos), `hoy.dart`
+- `models/` — `iconos_habito.dart` (el catálogo de 27 iconos de hábito, código
+  → `LucideIcons`; `iconoDeHabito(codigo)` da `sparkles` si el código es nulo
+  o desconocido, y `nombreIconoHabito` el nombre traducido para el lector de
+  pantalla, claves `iconoHabito…` de los ARB), `habito.dart` (con
+  `UnidadHabito`: veces o minutos, y `codigoIcono` / getter `icono`), `hoy.dart`
   (lo que manda `/hoy`: filas, secciones, tira y tendencia del ritmo),
   `minutos.dart` (las reglas de los hábitos de minutos, sin widgets ni red:
   límites 1–600, metas y sumas rápidas, lo que envía «Completar»),
@@ -277,9 +288,15 @@ código crudo.
 - **Duraciones**: todo lo que enseña minutos pasa por `duracionLegible`
   (`l10n/textos_minutos.dart`): «45 min», «1 h», «1 h 30 min». Los pares
   hecho/objetivo, por `parMinutos`: «20 / 30 min» si las dos cifras son
-  menores de 60, «45 min / 1 h 30 min» si alguna llega. Se guarda y se
-  escribe siempre en minutos: los campos de entrada y los botones +5/+15/+30
-  del panel siguen en minutos.
+  menores de 60, «45 min / 1 h 30 min» si alguna llega. Se guarda siempre en
+  minutos; el campo de la cifra libre del panel y los botones +5/+15/+30
+  siguen en minutos. **La meta del formulario ya no se escribe** (T-033):
+  chips de `metasRapidasMinutos` (10, 15, 30 min, 1 h, 2 h) y «Otra…», que
+  abre `mostrarHojaMetaMinutos` (`widgets/hoja_meta_minutos.dart`): dos
+  `CupertinoPicker`, horas (0–10) y minutos (de 5 en 5), con «Listo». Sus
+  reglas, en `minutos.dart` (`minutosDeRueda`): con 10 h solo 0 min; con 0 h
+  no hay 0 min; una meta que ya existía y no es múltiplo de 5 (22 min) se
+  incluye tal cual en su hora y queda elegida: nunca se redondea sola.
 - **Panel** (`widgets/panel_minutos.dart`): solo suma. Bajo el progreso,
   «Te faltan …» o «Meta cumplida (· +… de más)». «Completar · +X», arriba y a
   todo lo ancho, envía justo lo que falta como una suma más (su clave,
@@ -299,7 +316,11 @@ código crudo.
   formulario trae puesta) y `nombresAntiguos` (los que tuvieron, para seguir
   ocultando la idea). Meditar (15 min), Caminar (30 min), Tocar un
   instrumento (20 min) y Leer (30 min) son de minutos; las demás, de veces.
-  Los `id` no cambian nunca: van a Analytics.
+  Los `id` no cambian nunca: van a Analytics. Cada plantilla guarda el
+  `codigoIcono` del catálogo (`models/iconos_habito.dart`) y `icono` es un
+  getter que lo busca: una sola fuente para el icono de la idea y el del
+  hábito. Una plantilla nueva trae un código que ya esté en el catálogo (un
+  test lo comprueba).
 
 ## Tocar el paquete
 
@@ -310,10 +331,10 @@ resuelto. Antes de probar, comprobar el `resolved-ref` del `pubspec.lock`.
 Para probar una rama del core sin tag, `pubspec_overrides.yaml` con
 `path: ../norday_flutter_core`, que no se commitea (está en `.gitignore`).
 
-**Core fijado por `v0.59.1`** (20-nov-2026, versión 1.3.0+11, D-41: el
-letrero y el ramo del día en su sitio de la lista de Hoy; los sonidos más
-bajos; el letrero de la lista espera a que se vaya el velo del cierre):
-`resolved-ref` `c9cd3a503669f23b535bc1af2ccd42dbda9d9da0`. El `pubspec.lock` se versiona;
+**Core fijado por `v0.60.0`** (21-nov-2026, tras la 1.3.0+11: el check
+vivo, tu Nori como avatar, «Compartir» en el cierre del día y la prenda del
+login): `resolved-ref` `ae7494fcebfdc82df1880392c10c67478566f956`. La
+1.3.0+11 de Play salió con `v0.59.1` (`c9cd3a5`). El `pubspec.lock` se versiona;
 al cambiar de tag, comprobar que dice `source: git`, el `ref:` nuevo y el
 `resolved-ref` que da `git rev-parse <tag>^{commit}` en el core.
 

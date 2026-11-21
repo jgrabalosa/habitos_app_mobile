@@ -10,6 +10,7 @@ import '../l10n/textos_minutos.dart';
 import '../l10n/textos_objetivo.dart';
 import '../models/habito.dart';
 import '../models/hoy.dart';
+import '../models/iconos_habito.dart';
 import '../models/minutos.dart';
 import '../models/objetivo_programado.dart';
 import '../models/ritmo_reciente.dart';
@@ -30,6 +31,10 @@ class HabitoDetalleScreen extends StatefulWidget {
 
   /// Día del alta. Igual que `descripcion`: no la trae el DTO del detalle.
   final DateTime? fechaInicio;
+
+  /// Código del icono, para pintarlo desde el primer frame. Si el detalle
+  /// manda el suyo, manda el del detalle.
+  final String? codigoIcono;
   const HabitoDetalleScreen({
     super.key,
     required this.habitoId,
@@ -37,6 +42,7 @@ class HabitoDetalleScreen extends StatefulWidget {
     this.nombre,
     this.descripcion,
     this.fechaInicio,
+    this.codigoIcono,
   });
 
   @override
@@ -192,16 +198,34 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         // El Hero envuelve al condicional del texto
-        title: Hero(
-          tag: 'habito-nombre-${widget.habitoId}',
-          child: Material(
-            color: Colors.transparent,
-            child: Text(
-              _detalle != null ? _detalle!['nombre'] : (widget.nombre ?? ''),
-              style: Theme.of(context).textTheme.titleLarge,
-              overflow: TextOverflow.ellipsis,
+        title: Row(
+          children: [
+            ExcludeSemantics(
+              child: Icon(
+                iconoDeHabito(
+                  (_detalle?['icono'] as String?) ?? widget.codigoIcono,
+                ),
+                size: 24,
+                color: tokens(context).textMuted,
+              ),
             ),
-          ),
+            const SizedBox(width: AppSpacing.sm),
+            Flexible(
+              child: Hero(
+                tag: 'habito-nombre-${widget.habitoId}',
+                child: Material(
+                  color: Colors.transparent,
+                  child: Text(
+                    _detalle != null
+                        ? _detalle!['nombre']
+                        : (widget.nombre ?? ''),
+                    style: Theme.of(context).textTheme.titleLarge,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
         elevation: 1,
         actions: [
