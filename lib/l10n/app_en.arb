@@ -428,10 +428,10 @@
   "minEmpezarSesion": "Start session",
   "minErrorAbrirEnfoque": "Couldn't open Norday Focus.",
   "invitarMenu": "Invite a friend",
-  "invitarTitular": "Consistency, not perfection",
-  "invitarFrase": "I look after my Nori by ticking off habits. No streaks to break.",
-  "invitarPie": "Free, no ads · Android",
-  "invitarTextoCompartir": "I'm using Norday Habits for my habits, with no streaks to break. Give it a try: {enlace}",
+  "invitarDato": "{sujeto} {fase, select, huevo{is still an egg} cria{is a hatchling now} other{is all grown up}} · level {nivel}",
+  "invitarMiNori": "My Nori",
+  "invitarIncluirDato": "Include Nori's name and level",
+  "invitarTextoCompartir": "Look how my Nori is doing: he grows every time I tick off a habit, and if I miss a day, that's fine. Want one too? It's free and has no ads.\n{enlace}",
   "invitarCompartir": "Share",
   "invitarError": "Couldn't share the invite. Please try again."
 }

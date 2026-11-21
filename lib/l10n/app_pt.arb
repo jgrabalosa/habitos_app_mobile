@@ -428,10 +428,10 @@
   "minEmpezarSesion": "Começar sessão",
   "minErrorAbrirEnfoque": "Não foi possível abrir o Norday Focus.",
   "invitarMenu": "Convidar um amigo",
-  "invitarTitular": "Constância, não perfeição",
-  "invitarFrase": "Cuido do meu Nori a marcar hábitos. Sem sequências que se quebram.",
-  "invitarPie": "Grátis e sem anúncios · Android",
-  "invitarTextoCompartir": "Estou a usar o Norday Habits para os meus hábitos, sem sequências que se quebram. Experimenta: {enlace}",
+  "invitarDato": "{sujeto} {fase, select, huevo{ainda é um ovo} cria{já é uma cria} other{já cresceu}} · nível {nivel}",
+  "invitarMiNori": "O meu Nori",
+  "invitarIncluirDato": "Incluir o nome e o nível do Nori",
+  "invitarTextoCompartir": "Vê como está o meu Nori: cresce sempre que marco um hábito e, se um dia falho, não faz mal. Também queres um? É grátis e sem anúncios.\n{enlace}",
   "invitarCompartir": "Partilhar",
   "invitarError": "Não foi possível partilhar o convite. Tenta outra vez."
 }

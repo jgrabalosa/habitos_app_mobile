@@ -914,21 +914,32 @@
   "@invitarMenu": {
     "description": "Entrada del menú y título de la pantalla que comparte la tarjeta de invitación"
   },
-  "invitarTitular": "Constancia, no perfección",
-  "@invitarTitular": {
-    "description": "Tarjeta de invitación: titular bajo Nori"
+  "invitarDato": "{sujeto} {fase, select, huevo{aún es un huevo} cria{ya es cría} other{ya ha crecido}} · nivel {nivel}",
+  "@invitarDato": {
+    "description": "Postal de invitación: el dato de quien invita, arriba. {sujeto} es el nombre de Nori o invitarMiNori; {fase}, huevo, cria o adulto",
+    "placeholders": {
+      "sujeto": {
+        "type": "String"
+      },
+      "fase": {
+        "type": "String"
+      },
+      "nivel": {
+        "type": "int"
+      }
+    }
   },
-  "invitarFrase": "Yo cuido de mi Nori marcando hábitos. Sin rachas que se rompen.",
-  "@invitarFrase": {
-    "description": "Tarjeta de invitación: frase bajo el titular, en primera persona de quien comparte"
+  "invitarMiNori": "Mi Nori",
+  "@invitarMiNori": {
+    "description": "Postal de invitación: sujeto del dato cuando Nori no tiene nombre"
   },
-  "invitarPie": "Gratis y sin anuncios · Android",
-  "@invitarPie": {
-    "description": "Tarjeta de invitación: línea pequeña bajo el enlace"
+  "invitarIncluirDato": "Incluir el nombre y el nivel de Nori",
+  "@invitarIncluirDato": {
+    "description": "Interruptor bajo la postal: si se apaga, la postal sale sin el dato"
   },
-  "invitarTextoCompartir": "Estoy usando Norday Habits para mis hábitos, sin rachas que se rompen. Pruébala: {enlace}",
+  "invitarTextoCompartir": "Mira cómo va mi Nori: crece cada vez que marco un hábito, y si un día fallo no pasa nada. ¿Te haces uno? Es gratis y sin anuncios.\n{enlace}",
   "@invitarTextoCompartir": {
-    "description": "Texto que acompaña a la imagen al compartir. El enlace es el mismo en todos los idiomas",
+    "description": "Texto que acompaña a la postal al compartir, en primera persona. El enlace va en su propia línea y es el mismo en todos los idiomas. Sin premios ni promesas",
     "placeholders": {
       "enlace": {
         "type": "String"
