@@ -47,6 +47,17 @@ completa, en el `CLAUDE.md` del paquete.
   tarjeta (`widgets/bienvenida.dart`), el formulario real del primer hábito y,
   si se guarda, una pista sobre su círculo en Hoy. Nada de esto sale a quien
   no es alta nueva.
+- **La reseña de Play (In-App Review)** se pide justo después de la ceremonia
+  del cierre del día, nunca a mitad del día. `DashboardScreen` cuenta los días
+  de uso (distintos días en que se completa un hábito; `resena_dias_uso` y
+  `resena_ultima_fecha`) antes de `_cerrarDia`; al llegar a un hito de
+  `_hitosResena` (`[3, 15, 30]`, como mucho tres veces en la vida) solo guarda
+  `resena_pendiente`, y `_cerrarDia` la pide y la borra tras
+  `mostrarCierreDelDia`. Si no hay ceremonia (día ya cerrado, pista de Hoy
+  abierta) no se pide y la marca sigue. Sin preguntas previas, sin botón y sin
+  nada encima de la tarjeta (normas de Google). El seam de test es
+  `DashboardScreen.solicitarResena`. El día que se comparte el cierre (T-043)
+  no se pide: lo resuelve esa tarjeta.
 - El permiso de notificaciones se pide al elegir la hora del recordatorio, en
   `habito_screen.dart`, con `NotificacionesService` del core: nunca al entrar.
   Al crear desde una plantilla, que trae la hora puesta, se pide al guardar
