@@ -283,8 +283,37 @@ class TarjetaInvitacion extends StatelessWidget {
   static const double anchoPx = 1080;
   static const double altoPx = 1350;
 
-  /// Nori ocupa el 58 % del alto (el encargo pide entre el 55 y el 60 %).
-  static const double tamanoNori = 261;
+  /// Lo que se ve de Nori mide el 57 % del alto (el encargo pide entre el 55
+  /// y el 60 %).
+  static const double altoFiguraNori = 256;
+
+  /// Dónde empieza la figura de Nori: bajo el dato. Acaba a 366, por encima
+  /// del wordmark.
+  static const double arribaFiguraNori = 110;
+
+  /// Cómo cae la figura dentro de la caja de `NoriVestida`, por fase: qué
+  /// parte del alto ocupa y cuánto aire transparente deja encima (para lo
+  /// que lleva en la cabeza). Medido en los dibujos exultantes del core.
+  static const _encuadreNori = {
+    'huevo': (alto: 0.69, aire: 0.139),
+    'cria': (alto: 0.635, aire: 0.13),
+    'adulto': (alto: 0.777, aire: 0.093),
+  };
+
+  /// La caja de `NoriVestida` en [fase], mayor que la figura. Su aire
+  /// transparente se monta sobre las bandas del dato y del wordmark, que no
+  /// tapa.
+  static double tamanoNori(String fase) =>
+      altoFiguraNori /
+      (_encuadreNori[fase] ?? _encuadreNori[faseNoriPorDefecto]!).alto;
+
+  static double _arribaCajaNori(String fase) =>
+      arribaFiguraNori -
+      (_encuadreNori[fase] ?? _encuadreNori[faseNoriPorDefecto]!).aire *
+          tamanoNori(fase);
+
+  /// El alto de la banda del dato, bajo el margen de arriba: dos líneas.
+  static const double altoBandaDato = 76;
 
   /// La fase de Nori, una de [fasesNori].
   final String fase;
@@ -321,56 +350,57 @@ class TarjetaInvitacion extends StatelessWidget {
           // (`bg`), sobre el que se pinta el dibujo de la identidad.
           ColoredBox(color: t.bg),
           const Positioned.fill(child: FondoIdentidad()),
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              children: [
-                // El dato y el wordmark se reparten lo que deja Nori, a
-                // partes iguales: así Nori queda en el centro con y sin dato.
-                Expanded(
-                  child: Center(
-                    child: dato == null || cargando
-                        ? null
-                        : FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(
-                                maxWidth: ancho - 2 * AppSpacing.lg,
-                              ),
-                              child: Text(
-                                textoDatoNori(l, dato),
-                                textAlign: TextAlign.center,
-                                maxLines: 2,
-                                style: tema.titleLarge?.copyWith(color: t.text),
-                              ),
-                            ),
-                          ),
-                  ),
-                ),
-                SizedBox.square(
-                  dimension: tamanoNori,
-                  child: cargando
-                      ? null
-                      : NoriVestida(
-                          fase: fase,
-                          estado: 'exultante',
-                          tamano: tamanoNori,
-                          prendas: prendasEquipadasNotifier,
-                        ),
-                ),
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: WordmarkIdentidad(
-                      texto: l.appNombre,
-                      color: t.text,
-                      // El tamaño sale de un rol de la escala, no de un
-                      // número: el wordmark va pequeño.
-                      tamano: tema.titleMedium?.fontSize ?? 16,
+          // Nori, antes que los textos: lo que se monta encima es su aire
+          // transparente (o, como mucho, un gorro), y el texto queda delante.
+          // Siempre en el mismo sitio, con dato o sin él.
+          if (!cargando)
+            Positioned(
+              top: _arribaCajaNori(fase),
+              left: (ancho - tamanoNori(fase)) / 2,
+              width: tamanoNori(fase),
+              height: tamanoNori(fase),
+              child: NoriVestida(
+                fase: fase,
+                estado: 'exultante',
+                tamano: tamanoNori(fase),
+                prendas: prendasEquipadasNotifier,
+              ),
+            ),
+          if (dato != null && !cargando)
+            Positioned(
+              top: AppSpacing.lg,
+              left: AppSpacing.lg,
+              right: AppSpacing.lg,
+              height: altoBandaDato,
+              child: Center(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: ancho - 2 * AppSpacing.lg,
+                    ),
+                    child: Text(
+                      textoDatoNori(l, dato),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      style: tema.headlineSmall?.copyWith(color: t.text),
                     ),
                   ),
                 ),
-              ],
+              ),
+            ),
+          Positioned(
+            left: AppSpacing.lg,
+            right: AppSpacing.lg,
+            bottom: AppSpacing.lg,
+            child: Center(
+              child: WordmarkIdentidad(
+                texto: l.appNombre,
+                color: t.text,
+                // El tamaño sale de un rol de la escala, no de un número: el
+                // wordmark va pequeño.
+                tamano: tema.titleMedium?.fontSize ?? 16,
+              ),
             ),
           ),
         ],

@@ -203,9 +203,33 @@ void main() {
       tester.widget<NoriVestida>(nori).prendas,
       same(prendasEquipadasNotifier),
     );
-    final altoTarjeta = tester.getSize(find.byType(TarjetaInvitacion)).height;
-    final altoNori = tester.getSize(nori).height;
-    expect(altoNori / altoTarjeta, inInclusiveRange(0.55, 0.60));
+    // La caja de NoriVestida es mayor que la figura (el dibujo deja aire
+    // alrededor); lo que se mide es lo que se ve.
+    expect(
+      tester.widget<NoriVestida>(nori).tamano,
+      TarjetaInvitacion.tamanoNori('cria'),
+    );
+    expect(
+      TarjetaInvitacion.altoFiguraNori / TarjetaInvitacion.alto,
+      inInclusiveRange(0.55, 0.60),
+    );
+    // Y la figura cabe entre el dato y el wordmark (en puntos de la
+    // tarjeta: en pantalla va escalada).
+    final tarjeta = tester.getRect(find.byType(TarjetaInvitacion));
+    double enPuntos(double y) =>
+        (y - tarjeta.top) / tarjeta.height * TarjetaInvitacion.alto;
+    final dato = tester.getRect(
+      enTarjeta(find.text('Pipo ya es cría · nivel 7')),
+    );
+    final wordmark = tester.getRect(enTarjeta(find.byType(WordmarkIdentidad)));
+    expect(
+      TarjetaInvitacion.arribaFiguraNori,
+      greaterThan(enPuntos(dato.bottom)),
+    );
+    expect(
+      TarjetaInvitacion.arribaFiguraNori + TarjetaInvitacion.altoFiguraNori,
+      lessThan(enPuntos(wordmark.top)),
+    );
   });
 
   for (final codigo in [
