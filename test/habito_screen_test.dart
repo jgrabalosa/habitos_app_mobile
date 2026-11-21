@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:habitos_app_mobile/l10n/app_localizations.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:habitos_app_mobile/models/habito.dart';
+import 'package:habitos_app_mobile/models/iconos_habito.dart';
 import 'package:habitos_app_mobile/models/objetivo_programado.dart';
 import 'package:habitos_app_mobile/models/plantilla_habito.dart';
 import 'package:habitos_app_mobile/screens/habito_screen.dart';
@@ -126,6 +127,7 @@ void main() {
           String? recordatorioHora,
           String? unidad,
           int? minutosObjetivo,
+          String? icono,
         }) async {
           llamadas++;
           return <String>[];
@@ -158,6 +160,7 @@ void main() {
             String? recordatorioHora,
             String? unidad,
             int? minutosObjetivo,
+            String? icono,
           }) async {
             throw Exception('fallo de prueba');
           };
@@ -191,6 +194,7 @@ void main() {
           String? recordatorioHora,
           String? unidad,
           int? minutosObjetivo,
+          String? icono,
         }) async {
           llamadas++;
           return <String>[];
@@ -252,6 +256,7 @@ void main() {
             String? recordatorioHora,
             String? unidad,
             int? minutosObjetivo,
+            String? icono,
           }) async {
             creado = {
               'nombre': nombre,
@@ -355,6 +360,7 @@ void main() {
             String? recordatorioHora,
             String? unidad,
             int? minutosObjetivo,
+            String? icono,
           }) {
             llamadas++;
             return crear(
@@ -462,6 +468,7 @@ void main() {
             String? recordatorioHora,
             String? unidad,
             int? minutosObjetivo,
+            String? icono,
           }) async {
             creado = {
               'frecuencia': frecuencia,
@@ -693,6 +700,7 @@ void main() {
             bool recordatorioActivo = true,
             String? recordatorioHora,
             String? unidad,
+            String? icono,
             int? minutosObjetivo,
           }) async {
             guardados.add(minutosObjetivo);
@@ -729,6 +737,7 @@ void main() {
             bool recordatorioActivo = true,
             String? recordatorioHora,
             String? unidad,
+            String? icono,
             int? minutosObjetivo,
           }) async {
             guardados.add(minutosObjetivo);
@@ -814,6 +823,7 @@ void main() {
             String? recordatorioHora,
             String? unidad,
             int? minutosObjetivo,
+            String? icono,
           }) async => DateTime(hoy.year, hoy.month, hoy.day + 1);
 
       final resultado = <bool?>[];
@@ -871,6 +881,206 @@ void main() {
       nav.maybePop();
       await tester.pumpAndSettle();
       expect(resultado, [true]);
+    });
+  });
+
+  group('icono', () {
+    const canal = MethodChannel('flutter.baseflow.com/permissions/methods');
+
+    late List<String?> iconos;
+
+    setUp(() {
+      iconos = [];
+      // Permiso de avisos ya concedido: guardar desde una plantilla no abre
+      // el diálogo.
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(canal, (call) async {
+            if (call.method == 'checkPermissionStatus') return 1;
+            return null;
+          });
+      HabitoScreen.crearHabito =
+          (
+            String nombre,
+            String descripcion,
+            String frecuencia,
+            int meta,
+            int usuarioId,
+            int? categoriaId, {
+            String? diasSemana,
+            bool recordatorioActivo = true,
+            String? recordatorioHora,
+            String? unidad,
+            int? minutosObjetivo,
+            String? icono,
+          }) async {
+            iconos.add(icono);
+            return <String>[];
+          };
+    });
+
+    tearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(canal, null);
+    });
+
+    Future<void> crearDesdePlantilla(WidgetTester tester, String id) async {
+      final l = await AppLocalizations.delegate.load(const Locale('es'));
+      await abrirFormulario(
+        tester,
+        [],
+        plantilla: plantillasHabito.firstWhere((p) => p.id == id),
+      );
+      await guardar(tester, l);
+    }
+
+    testWidgets('uno nuevo desde cero se crea con sparkles', (tester) async {
+      final l = await AppLocalizations.delegate.load(const Locale('es'));
+      await abrirFormulario(tester, []);
+      await rellenar(tester, 'Nadar');
+      await guardar(tester, l);
+      expect(iconos, ['sparkles']);
+    });
+
+    testWidgets('desde «Beber agua» manda droplet', (tester) async {
+      await crearDesdePlantilla(tester, 'beberAgua');
+      expect(iconos, ['droplet']);
+    });
+
+    testWidgets('desde «Leer», de minutos, manda bookOpen', (tester) async {
+      await crearDesdePlantilla(tester, 'leer');
+      expect(iconos, ['bookOpen']);
+    });
+
+    testWidgets('desde «Un día sin alcohol» manda wineOff', (tester) async {
+      await crearDesdePlantilla(tester, 'diaSinAlcohol');
+      expect(iconos, ['wineOff']);
+    });
+
+    testWidgets('la rejilla enseña los 27 iconos con el elegido marcado y '
+        'lo que se toca es lo que se manda', (tester) async {
+      final l = await AppLocalizations.delegate.load(const Locale('es'));
+      await abrirFormulario(tester, []);
+      await rellenar(tester, 'Nadar');
+
+      final fila = find.text(l.habLabelIcono);
+      await tester.ensureVisible(fila);
+      await tester.tap(fila);
+      await tester.pumpAndSettle();
+
+      for (final icono in iconosHabito.values) {
+        expect(find.byIcon(icono), findsWidgets);
+      }
+      // Solo cuentan las celdas de la rejilla (las que llevan el nombre de un
+      // icono): otros widgets de la pantalla también pueden estar «selected».
+      final nombres = iconosHabito.keys
+          .map((c) => nombreIconoHabito(l, c))
+          .toSet();
+      final marcadas = tester
+          .widgetList<Semantics>(find.byType(Semantics))
+          .where(
+            (s) =>
+                s.properties.selected == true &&
+                nombres.contains(s.properties.label),
+          );
+      expect(marcadas.length, 1);
+      expect(
+        marcadas.single.properties.label,
+        nombreIconoHabito(l, 'sparkles'),
+      );
+
+      await tester.tap(find.bySemanticsLabel(nombreIconoHabito(l, 'bike')));
+      await tester.pumpAndSettle();
+      await guardar(tester, l);
+      expect(iconos, ['bike']);
+    });
+
+    testWidgets('al editar sin tocar el icono manda el que tenía', (
+      tester,
+    ) async {
+      final l = await AppLocalizations.delegate.load(const Locale('es'));
+      HabitoScreen.actualizarHabito =
+          (
+            int habitoId,
+            String nombre,
+            String descripcion,
+            String frecuencia,
+            int meta,
+            int usuarioId,
+            int? categoriaId, {
+            String? diasSemana,
+            bool recordatorioActivo = true,
+            String? recordatorioHora,
+            String? unidad,
+            int? minutosObjetivo,
+            String? icono,
+          }) async {
+            iconos.add(icono);
+            return null;
+          };
+      await abrirFormulario(
+        tester,
+        [],
+        habito: Habito(
+          habitoId: 4,
+          nombre: 'Pedalear',
+          frecuencia: 'DIARIO',
+          meta: 1,
+          activo: true,
+          recordatorioActivo: false,
+          codigoIcono: 'bike',
+        ),
+      );
+      final boton = find.widgetWithText(ElevatedButton, l.habBotonActualizar);
+      await tester.ensureVisible(boton);
+      await tester.tap(boton);
+      await tester.pumpAndSettle();
+      expect(iconos, ['bike']);
+    });
+
+    testWidgets('al editar manda el icono que ya tenía el hábito', (
+      tester,
+    ) async {
+      final l = await AppLocalizations.delegate.load(const Locale('es'));
+      final iconos = <String?>[];
+      HabitoScreen.actualizarHabito =
+          (
+            int habitoId,
+            String nombre,
+            String descripcion,
+            String frecuencia,
+            int meta,
+            int usuarioId,
+            int? categoriaId, {
+            String? diasSemana,
+            bool recordatorioActivo = true,
+            String? recordatorioHora,
+            String? unidad,
+            int? minutosObjetivo,
+            String? icono,
+          }) async {
+            iconos.add(icono);
+            return null;
+          };
+      final resultado = <bool?>[];
+      await abrirFormulario(
+        tester,
+        resultado,
+        habito: Habito(
+          habitoId: 4,
+          nombre: 'Pedalear',
+          frecuencia: 'DIARIO',
+          meta: 1,
+          activo: true,
+          recordatorioActivo: false,
+          codigoIcono: 'bike',
+        ),
+      );
+      final boton = find.widgetWithText(ElevatedButton, l.habBotonActualizar);
+      await tester.ensureVisible(boton);
+      await tester.tap(boton);
+      await tester.pumpAndSettle();
+      expect(resultado, [true]);
+      expect(iconos, ['bike']);
     });
   });
 }

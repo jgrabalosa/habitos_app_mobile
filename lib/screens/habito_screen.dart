@@ -10,8 +10,10 @@ import '../services/analytics_service.dart';
 import '../l10n/catalogos.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/habito.dart';
+import '../models/iconos_habito.dart';
 import '../models/plantilla_habito.dart';
 import '../widgets/hoja_meta_minutos.dart';
+import '../widgets/selector_icono_habito.dart';
 
 class HabitoScreen extends StatefulWidget {
   final int usuarioId;
@@ -52,6 +54,7 @@ class HabitoScreen extends StatefulWidget {
     String? recordatorioHora,
     String? unidad,
     int? minutosObjetivo,
+    String? icono,
   })
   crearHabito = ApiServiceHabitos.crearHabito;
 
@@ -70,6 +73,7 @@ class HabitoScreen extends StatefulWidget {
     String? recordatorioHora,
     String? unidad,
     int? minutosObjetivo,
+    String? icono,
   })
   actualizarHabito = ApiServiceHabitos.actualizarHabito;
 
@@ -126,6 +130,12 @@ class _HabitoScreenState extends State<HabitoScreen> {
   /// Si la meta no es una de las rápidas (viene de las ruedas o de un hábito
   /// que ya la tenía): marca el chip «Otra…».
   bool _minutosLibre = false;
+
+  /// El código del icono que se manda al guardar: el del hábito que se edita,
+  /// el de la idea de la que sale o, en uno nuevo desde cero, `sparkles`.
+  /// Null solo al editar un hábito que nunca tuvo icono y no se toca: el campo
+  /// no sale y el backend conserva lo que hubiera.
+  String? _codigoIcono = codigoIconoPorDefecto;
 
   /// El cambio de objetivo que todavía no vale, si lo hay.
   ObjetivoProgramado? _programado;
@@ -192,6 +202,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
       _recordatorioActivo = widget.habito!.recordatorioActivo;
       _recordatorioHora = widget.habito!.recordatorioHoraTimeOfDay;
       _unidad = widget.habito!.unidad;
+      _codigoIcono = widget.habito!.codigoIcono;
       final minutos = widget.habito!.minutosObjetivo;
       if (minutos != null) _fijarMinutos(minutos);
       _programado = widget.objetivoProgramado;
@@ -208,6 +219,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
           : {};
       _codigoCategoriaPendiente = plantilla.categoriaCodigo;
       _unidad = plantilla.unidad;
+      _codigoIcono = plantilla.codigoIcono;
       // La plantilla trae su hora de aviso: quien crea su primer hábito puede
       // guardar sin abrir el selector. El permiso, entonces, se pide al
       // guardar (ver _guardar).
@@ -469,6 +481,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
           recordatorioHora: recordatorioHora,
           unidad: unidad,
           minutosObjetivo: minutos,
+          icono: _codigoIcono,
         );
         if (!mounted) return;
         // Si el cambio no vale hasta otro día, se dice antes de cerrar. El
@@ -507,6 +520,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
           recordatorioHora: recordatorioHora,
           unidad: unidad,
           minutosObjetivo: minutos,
+          icono: _codigoIcono,
         );
         await AnalyticsHabitos.habitoCreado(
           _frecuencia,
@@ -962,7 +976,12 @@ class _HabitoScreenState extends State<HabitoScreen> {
                             _categoriaId = v;
                           }),
                         ),
-                  const SizedBox(height: AppSpacing.md),
+                  const SizedBox(height: AppSpacing.sm),
+                  FilaIconoHabito(
+                    codigo: _codigoIcono,
+                    alElegir: (c) => setState(() => _codigoIcono = c),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
                   _selectorUnidad(l, t),
                   const SizedBox(height: AppSpacing.md),
                   // El título va fuera del recuadro, como «Días de la semana», y

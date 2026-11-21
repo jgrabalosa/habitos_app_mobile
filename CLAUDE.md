@@ -51,6 +51,13 @@ completa, en el `CLAUDE.md` del paquete.
   `habito_screen.dart`, con `NotificacionesService` del core: nunca al entrar.
   Al crear desde una plantilla, que trae la hora puesta, se pide al guardar
   si no se ha preguntado ya en ese formulario.
+- El icono del hábito: `habito_screen.dart` manda el `codigoIcono` de la
+  plantilla al crear desde ella y el que ya tenía el hábito al editar; desde
+  cero, `sparkles`. La fila «Icono» abre la rejilla
+  (`widgets/selector_icono_habito.dart`, con la forma de la identidad). El
+  icono se ve en Hoy (20), en la lista de hábitos y en el detalle (24), en
+  `textMuted`, y no cambia al completarse. El porqué, en
+  `docs/decisiones/0001-catalogo-iconos-habito.md`.
 - `services/` — `ApiServiceHabitos`, `AnalyticsHabitos`,
   `CrashlyticsService`, la pista de Hoy tras el primer hábito
   (`recorrido_onboarding.dart`, y `anclas_recorrido.dart`, que hoy tiene una
@@ -77,7 +84,11 @@ completa, en el `CLAUDE.md` del paquete.
   `PanelMinutos.enfoqueDisponible = false` (salida A, 15-nov). Se enciende
   cuando Focus sea visible en Producción; los tests de «Empezar sesión» lo
   encienden en `setUp`.
-- `models/` — `habito.dart` (con `UnidadHabito`: veces o minutos), `hoy.dart`
+- `models/` — `iconos_habito.dart` (el catálogo de 27 iconos de hábito, código
+  → `LucideIcons`; `iconoDeHabito(codigo)` da `sparkles` si el código es nulo
+  o desconocido, y `nombreIconoHabito` el nombre traducido para el lector de
+  pantalla, claves `iconoHabito…` de los ARB), `habito.dart` (con
+  `UnidadHabito`: veces o minutos, y `codigoIcono` / getter `icono`), `hoy.dart`
   (lo que manda `/hoy`: filas, secciones, tira y tendencia del ritmo),
   `minutos.dart` (las reglas de los hábitos de minutos, sin widgets ni red:
   límites 1–600, metas y sumas rápidas, lo que envía «Completar»),
@@ -294,7 +305,11 @@ código crudo.
   formulario trae puesta) y `nombresAntiguos` (los que tuvieron, para seguir
   ocultando la idea). Meditar (15 min), Caminar (30 min), Tocar un
   instrumento (20 min) y Leer (30 min) son de minutos; las demás, de veces.
-  Los `id` no cambian nunca: van a Analytics.
+  Los `id` no cambian nunca: van a Analytics. Cada plantilla guarda el
+  `codigoIcono` del catálogo (`models/iconos_habito.dart`) y `icono` es un
+  getter que lo busca: una sola fuente para el icono de la idea y el del
+  hábito. Una plantilla nueva trae un código que ya esté en el catálogo (un
+  test lo comprueba).
 
 ## Tocar el paquete
 

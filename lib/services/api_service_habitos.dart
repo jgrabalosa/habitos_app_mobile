@@ -283,6 +283,7 @@ class ApiServiceHabitos {
     String? recordatorioHora,
     String? unidad,
     int? minutosObjetivo,
+    String? icono,
   }) {
     final body = {
       'nombre': nombre,
@@ -295,6 +296,8 @@ class ApiServiceHabitos {
       'recordatorioHora': recordatorioHora,
       'unidad': ?unidad,
       'minutosObjetivo': ?minutosObjetivo,
+      // Sin icono el campo no sale y el backend conserva el que hubiera.
+      'icono': ?icono,
     };
     if (categoriaId != null) {
       body['categoriaId'] = categoriaId;
@@ -368,6 +371,7 @@ class ApiServiceHabitos {
     String? recordatorioHora,
     String? unidad,
     int? minutosObjetivo,
+    String? icono,
   }) async {
     final headers = await ApiServiceCore.getHeaders();
     final body = cuerpoHabito(
@@ -382,6 +386,7 @@ class ApiServiceHabitos {
       recordatorioHora: recordatorioHora,
       unidad: unidad,
       minutosObjetivo: minutosObjetivo,
+      icono: icono,
     );
     final response = await ApiServiceCore.enviar(
       () => ApiServiceCore.cliente.post(
@@ -414,6 +419,7 @@ class ApiServiceHabitos {
     String? recordatorioHora,
     String? unidad,
     int? minutosObjetivo,
+    String? icono,
   }) async {
     final headers = await ApiServiceCore.getHeaders();
     final body = cuerpoHabito(
@@ -428,6 +434,7 @@ class ApiServiceHabitos {
       recordatorioHora: recordatorioHora,
       unidad: unidad,
       minutosObjetivo: minutosObjetivo,
+      icono: icono,
     );
     final response = await ApiServiceCore.enviar(
       () => ApiServiceCore.cliente.put(

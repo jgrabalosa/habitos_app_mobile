@@ -334,6 +334,15 @@ class _HabitosScreenState extends State<HabitosScreen> {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
+            // Como en Hoy: color secundario y el mismo tamaño en las tres
+            // identidades; se atenúa con el resto si el hábito está en pausa.
+            Opacity(
+              opacity: habito.activo ? 1.0 : 0.5,
+              child: ExcludeSemantics(
+                child: Icon(habito.icono, size: 24, color: t.textMuted),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.ms),
             Expanded(
               // Atenuado solo los textos: el botón «Reanudar» tiene que verse
               // a color, si no parece desactivado.
