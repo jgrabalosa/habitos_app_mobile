@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../l10n/app_localizations.dart';
 import '../l10n/textos_minutos.dart';
 import 'habito.dart';
+import 'iconos_habito.dart';
 
 /// Una idea de hábito para empezar: un punto de partida que se puede cambiar
 /// entero en el formulario.
@@ -13,7 +13,10 @@ import 'habito.dart';
 /// traducido o cambiar, el código no.
 class PlantillaHabito {
   final String id;
-  final IconData icono;
+
+  /// El código del icono en el catálogo ([iconosHabito]). Es lo que se guarda
+  /// en el hábito que sale de la plantilla.
+  final String codigoIcono;
   final String frecuencia;
   final int meta;
 
@@ -38,7 +41,7 @@ class PlantillaHabito {
 
   const PlantillaHabito({
     required this.id,
-    required this.icono,
+    required this.codigoIcono,
     required this.frecuencia,
     required this.meta,
     this.dias,
@@ -48,6 +51,9 @@ class PlantillaHabito {
     required this.horaAviso,
     this.nombresAntiguos = const [],
   });
+
+  /// El dibujo de [codigoIcono], buscado en el catálogo: una sola fuente.
+  IconData get icono => iconoDeHabito(codigoIcono);
 }
 
 /// Las ideas que se ofrecen, en el orden del día (por la hora del aviso). Son
@@ -62,7 +68,7 @@ class PlantillaHabito {
 const List<PlantillaHabito> plantillasHabito = [
   PlantillaHabito(
     id: 'meditar',
-    icono: LucideIcons.flower2,
+    codigoIcono: 'flower2',
     frecuencia: 'DIARIO',
     meta: 1,
     categoriaCodigo: 'CAT_MENTE',
@@ -72,7 +78,7 @@ const List<PlantillaHabito> plantillasHabito = [
   ),
   PlantillaHabito(
     id: 'planificarDia',
-    icono: LucideIcons.listChecks,
+    codigoIcono: 'listChecks',
     frecuencia: 'DIARIO',
     meta: 1,
     categoriaCodigo: 'CAT_TRABAJO',
@@ -80,7 +86,7 @@ const List<PlantillaHabito> plantillasHabito = [
   ),
   PlantillaHabito(
     id: 'beberAgua',
-    icono: LucideIcons.droplet,
+    codigoIcono: 'droplet',
     frecuencia: 'DIARIO',
     meta: 4,
     categoriaCodigo: 'CAT_SALUD',
@@ -88,7 +94,7 @@ const List<PlantillaHabito> plantillasHabito = [
   ),
   PlantillaHabito(
     id: 'comerFrutaVerdura',
-    icono: LucideIcons.apple,
+    codigoIcono: 'apple',
     frecuencia: 'DIARIO',
     meta: 3,
     categoriaCodigo: 'CAT_ALIMENTACION',
@@ -96,7 +102,7 @@ const List<PlantillaHabito> plantillasHabito = [
   ),
   PlantillaHabito(
     id: 'caminar',
-    icono: LucideIcons.footprints,
+    codigoIcono: 'footprints',
     frecuencia: 'DIARIO',
     meta: 1,
     categoriaCodigo: 'CAT_SALUD',
@@ -106,7 +112,7 @@ const List<PlantillaHabito> plantillasHabito = [
   ),
   PlantillaHabito(
     id: 'tocarInstrumento',
-    icono: LucideIcons.music,
+    codigoIcono: 'music',
     frecuencia: 'DIARIO',
     meta: 1,
     categoriaCodigo: 'CAT_CREATIVIDAD',
@@ -116,7 +122,7 @@ const List<PlantillaHabito> plantillasHabito = [
   ),
   PlantillaHabito(
     id: 'ejercicio',
-    icono: LucideIcons.dumbbell,
+    codigoIcono: 'dumbbell',
     frecuencia: 'SEMANAL',
     meta: 3,
     dias: '2,4,6',
@@ -125,7 +131,7 @@ const List<PlantillaHabito> plantillasHabito = [
   ),
   PlantillaHabito(
     id: 'llamarQuerido',
-    icono: LucideIcons.phone,
+    codigoIcono: 'phone',
     frecuencia: 'SEMANAL',
     meta: 2,
     categoriaCodigo: 'CAT_SOCIAL',
@@ -133,7 +139,7 @@ const List<PlantillaHabito> plantillasHabito = [
   ),
   PlantillaHabito(
     id: 'apuntarGastos',
-    icono: LucideIcons.piggyBank,
+    codigoIcono: 'piggyBank',
     frecuencia: 'DIARIO',
     meta: 1,
     categoriaCodigo: 'CAT_FINANZAS',
@@ -141,7 +147,7 @@ const List<PlantillaHabito> plantillasHabito = [
   ),
   PlantillaHabito(
     id: 'escribirDiario',
-    icono: LucideIcons.notebookPen,
+    codigoIcono: 'notebookPen',
     frecuencia: 'DIARIO',
     meta: 1,
     categoriaCodigo: 'CAT_MENTE',
@@ -150,7 +156,7 @@ const List<PlantillaHabito> plantillasHabito = [
   ),
   PlantillaHabito(
     id: 'leer',
-    icono: LucideIcons.bookOpen,
+    codigoIcono: 'bookOpen',
     frecuencia: 'DIARIO',
     meta: 1,
     categoriaCodigo: 'CAT_ESTUDIO',
@@ -160,7 +166,7 @@ const List<PlantillaHabito> plantillasHabito = [
   ),
   PlantillaHabito(
     id: 'diaSinAlcohol',
-    icono: LucideIcons.wineOff,
+    codigoIcono: 'wineOff',
     frecuencia: 'DIARIO',
     meta: 1,
     categoriaCodigo: 'CAT_SALUD',
@@ -168,7 +174,7 @@ const List<PlantillaHabito> plantillasHabito = [
   ),
   PlantillaHabito(
     id: 'dejarMovil',
-    icono: LucideIcons.phoneOff,
+    codigoIcono: 'phoneOff',
     frecuencia: 'DIARIO',
     meta: 1,
     categoriaCodigo: 'CAT_SUENO',
@@ -176,7 +182,7 @@ const List<PlantillaHabito> plantillasHabito = [
   ),
   PlantillaHabito(
     id: 'dormir8h',
-    icono: LucideIcons.moon,
+    codigoIcono: 'moon',
     frecuencia: 'DIARIO',
     meta: 1,
     categoriaCodigo: 'CAT_SUENO',
