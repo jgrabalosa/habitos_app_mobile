@@ -51,6 +51,10 @@ completa, en el `CLAUDE.md` del paquete.
   `habito_screen.dart`, con `NotificacionesService` del core: nunca al entrar.
   Al crear desde una plantilla, que trae la hora puesta, se pide al guardar
   si no se ha preguntado ya en ese formulario.
+- El icono del hábito: `habito_screen.dart` manda el `codigoIcono` de la
+  plantilla al crear desde ella y el que ya tenía el hábito al editar; desde
+  cero, ninguno (la rejilla de elección llega en T-011c). El porqué, en
+  `docs/decisiones/0001-catalogo-iconos-habito.md`.
 - `services/` — `ApiServiceHabitos`, `AnalyticsHabitos`,
   `CrashlyticsService`, la pista de Hoy tras el primer hábito
   (`recorrido_onboarding.dart`, y `anclas_recorrido.dart`, que hoy tiene una
