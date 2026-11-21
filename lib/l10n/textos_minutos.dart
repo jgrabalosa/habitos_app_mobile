@@ -88,11 +88,11 @@ String etiquetaDeshacer(
   );
 }
 
-/// La etiqueta de la cifra propia en el formulario, con la unidad y los
-/// límites: «Otra cifra, en minutos (1–600)». Las cifras salen de
-/// [minutosMinimo] y [minutosMaximo].
-String textoMinutosOtra(AppLocalizations l) =>
-    l.habMinutosOtra(minutosMinimo, minutosMaximo);
+/// El chip de la cifra propia en el formulario: «Otra…» y, con una cifra ya
+/// elegida con las ruedas, «Otra: 1 h 30 min».
+String textoMinutosOtra(AppLocalizations l, {int? minutos}) => minutos == null
+    ? l.habMinutosOtra
+    : l.habMinutosOtraCifra(duracionLegible(l, minutos));
 
 /// El error del formulario con una cifra fuera de los límites: «Elige entre
 /// 1 y 600 minutos (10 h) por día.».

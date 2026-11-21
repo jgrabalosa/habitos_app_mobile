@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/textos_minutos.dart';
@@ -13,6 +12,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/habito.dart';
 import '../models/iconos_habito.dart';
 import '../models/plantilla_habito.dart';
+import '../widgets/hoja_meta_minutos.dart';
 import '../widgets/selector_icono_habito.dart';
 
 class HabitoScreen extends StatefulWidget {
@@ -124,12 +124,12 @@ class _HabitoScreenState extends State<HabitoScreen> {
   /// En qué se mide. Un hábito nuevo empieza en veces, como siempre.
   UnidadHabito _unidad = UnidadHabito.veces;
 
-  /// Los minutos por día elegidos con las metas rápidas.
+  /// Los minutos por día elegidos, con las metas rápidas o con las ruedas.
   int _minutosObjetivo = 30;
 
-  /// Si se escribe una cifra propia en vez de una meta rápida.
+  /// Si la meta no es una de las rápidas (viene de las ruedas o de un hábito
+  /// que ya la tenía): marca el chip «Otra…».
   bool _minutosLibre = false;
-  final _minutosController = TextEditingController();
 
   /// El código del icono que se manda al guardar: el del hábito que se edita,
   /// el de la idea de la que sale o, en uno nuevo desde cero, `sparkles`.
@@ -171,11 +171,23 @@ class _HabitoScreenState extends State<HabitoScreen> {
   bool get _sinVueltaAVeces =>
       _esEdicion && widget.habito!.unidad == UnidadHabito.minutos;
 
-  /// Los minutos por día que se guardarían, o null si la cifra propia no es
-  /// un número.
-  int? get _minutosElegidos => _minutosLibre
-      ? int.tryParse(_minutosController.text.trim())
-      : _minutosObjetivo;
+  /// Los minutos por día que se guardarían.
+  int get _minutosElegidos => _minutosObjetivo;
+
+  /// Elige una meta de minutos: si es una rápida, se marca su chip.
+  void _fijarMinutos(int minutos) {
+    _minutosObjetivo = minutos;
+    _minutosLibre = !metasRapidasMinutos.contains(minutos);
+    _error = null;
+  }
+
+  Future<void> _abrirRuedasMinutos() async {
+    final elegido = await mostrarHojaMetaMinutos(
+      context,
+      inicial: _minutosObjetivo,
+    );
+    if (elegido != null && mounted) setState(() => _fijarMinutos(elegido));
+  }
 
   @override
   void initState() {
@@ -192,14 +204,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
       _unidad = widget.habito!.unidad;
       _codigoIcono = widget.habito!.codigoIcono;
       final minutos = widget.habito!.minutosObjetivo;
-      if (minutos != null) {
-        _minutosLibre = !metasRapidasMinutos.contains(minutos);
-        if (_minutosLibre) {
-          _minutosController.text = '$minutos';
-        } else {
-          _minutosObjetivo = minutos;
-        }
-      }
+      if (minutos != null) _fijarMinutos(minutos);
       _programado = widget.objetivoProgramado;
       if (_programado == null) _cargarProgramado();
     }
@@ -222,12 +227,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
       _recordatorioHora = plantilla.horaAviso;
       final minutos = plantilla.minutos;
       if (_unidad == UnidadHabito.minutos && minutos != null) {
-        _minutosLibre = !metasRapidasMinutos.contains(minutos);
-        if (_minutosLibre) {
-          _minutosController.text = '$minutos';
-        } else {
-          _minutosObjetivo = minutos;
-        }
+        _fijarMinutos(minutos);
       }
     }
     if (widget.categoriasIniciales != null) {
@@ -266,7 +266,6 @@ class _HabitoScreenState extends State<HabitoScreen> {
   void dispose() {
     _nombreController.dispose();
     _descripcionController.dispose();
-    _minutosController.dispose();
     super.dispose();
   }
 
@@ -790,44 +789,25 @@ class _HabitoScreenState extends State<HabitoScreen> {
               ChoiceChip(
                 label: Text(duracionLegible(l, n)),
                 selected: !_minutosLibre && _minutosObjetivo == n,
-                onSelected: (_) => setState(() {
-                  _minutosLibre = false;
-                  _minutosObjetivo = n;
-                  _error = null;
-                }),
+                materialTapTargetSize: MaterialTapTargetSize.padded,
+                onSelected: (_) => setState(() => _fijarMinutos(n)),
               ),
             ChoiceChip(
-              label: Text(textoMinutosOtra(l)),
+              label: Text(
+                textoMinutosOtra(l, minutos: _minutosLibre ? minutos : null),
+              ),
               selected: _minutosLibre,
-              onSelected: (_) => setState(() {
-                _minutosLibre = true;
-                _error = null;
-              }),
+              materialTapTargetSize: MaterialTapTargetSize.padded,
+              onSelected: (_) => _abrirRuedasMinutos(),
             ),
           ],
         ),
-        if (_minutosLibre) ...[
-          const SizedBox(height: AppSpacing.ms),
-          TextField(
-            controller: _minutosController,
-            keyboardType: TextInputType.number,
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(3),
-            ],
-            onChanged: (_) => setState(() {}),
-            decoration: InputDecoration(
-              labelText: textoMinutosOtra(l),
-              border: const OutlineInputBorder(),
-            ),
-          ),
-        ],
         if (objetivoMinutosValido(minutos)) ...[
           const SizedBox(height: AppSpacing.sm),
           Text(
             etiquetaObjetivoMinutos(
               l,
-              minutos!,
+              minutos,
               diario: _frecuencia == 'DIARIO',
             ),
             style: Theme.of(
