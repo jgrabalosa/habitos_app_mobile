@@ -131,6 +131,7 @@
   "habLabelNombre": "Habit name",
   "habLabelDescripcion": "Description (optional)",
   "habLabelCategoria": "Category (optional)",
+  "habLabelIcono": "Icon",
   "habSinCategoria": "No category",
   "habErrorCategorias": "Couldn't load your categories.",
   "habLabelFrecuencia": "Frequency",

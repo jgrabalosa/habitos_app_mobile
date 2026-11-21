@@ -1056,6 +1056,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           nombre: habito.nombre,
           descripcion: habito.descripcion,
           fechaInicio: habito.fechaInicio,
+          codigoIcono: habito.codigoIcono,
         ),
       ),
     );
@@ -1183,6 +1184,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 nombre: h.nombre,
                 descripcion: h.descripcion,
                 fechaInicio: h.fechaInicio,
+                codigoIcono: h.codigoIcono,
               ),
             ),
           );
@@ -1198,6 +1200,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                   children: [
                     Row(
                       children: [
+                        // El icono del hábito, en el color secundario y a 20
+                        // en las tres identidades. No cambia al completarse:
+                        // lo hace la fila entera (la opacidad).
+                        ExcludeSemantics(
+                          child: Icon(h.icono, size: 20, color: t.textMuted),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
                         Flexible(
                           child: Hero(
                             tag: 'habito-nombre-${h.habitoId}',

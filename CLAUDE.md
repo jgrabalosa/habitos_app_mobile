@@ -53,7 +53,10 @@ completa, en el `CLAUDE.md` del paquete.
   si no se ha preguntado ya en ese formulario.
 - El icono del hábito: `habito_screen.dart` manda el `codigoIcono` de la
   plantilla al crear desde ella y el que ya tenía el hábito al editar; desde
-  cero, ninguno (la rejilla de elección llega en T-011c). El porqué, en
+  cero, `sparkles`. La fila «Icono» abre la rejilla
+  (`widgets/selector_icono_habito.dart`, con la forma de la identidad). El
+  icono se ve en Hoy (20), en la lista de hábitos y en el detalle (24), en
+  `textMuted`, y no cambia al completarse. El porqué, en
   `docs/decisiones/0001-catalogo-iconos-habito.md`.
 - `services/` — `ApiServiceHabitos`, `AnalyticsHabitos`,
   `CrashlyticsService`, la pista de Hoy tras el primer hábito

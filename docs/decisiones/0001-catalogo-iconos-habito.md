@@ -46,5 +46,10 @@ con una idea» ya tenían cada una su `IconData` de Lucide, escrito a mano en
 - Un código no se renombra nunca: está guardado en el backend. Si
   `lucide_icons_flutter` renombra un icono, se cambia el `LucideIcons.*` de la
   derecha, no la clave.
-- Un hábito nuevo desde cero se crea sin icono hasta que llegue la rejilla de
-  elección (T-011c).
+- Un hábito nuevo desde cero se crea con `sparkles` (T-011c): el formulario
+  tiene la fila «Icono» con la rejilla de elección
+  (`widgets/selector_icono_habito.dart`). Al editar un hábito que nunca tuvo
+  icono, si no se toca, se manda nulo y el backend conserva lo que hubiera.
+- El icono sale en Hoy (20, a la izquierda del nombre), en la lista de
+  hábitos (24) y en la cabecera del detalle (24), siempre en `textMuted` de
+  la identidad y sin cambiar al completarse.
