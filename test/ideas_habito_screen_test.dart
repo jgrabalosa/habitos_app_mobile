@@ -145,6 +145,7 @@ void main() {
           String? recordatorioHora,
           String? unidad,
           int? minutosObjetivo,
+          String? icono,
         }) async {
           creado = {
             'nombre': nombre,
@@ -152,6 +153,7 @@ void main() {
             'meta': meta,
             'unidad': unidad,
             'minutosObjetivo': minutosObjetivo,
+            'icono': icono,
           };
           return <String>[];
         };
@@ -185,6 +187,8 @@ void main() {
       'meta': 1,
       'unidad': 'MINUTOS',
       'minutosObjetivo': 30,
+      // El hábito guarda el mismo icono que enseña la idea.
+      'icono': 'bookOpen',
     });
   });
 

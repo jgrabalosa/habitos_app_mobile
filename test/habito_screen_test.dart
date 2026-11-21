@@ -126,6 +126,7 @@ void main() {
           String? recordatorioHora,
           String? unidad,
           int? minutosObjetivo,
+          String? icono,
         }) async {
           llamadas++;
           return <String>[];
@@ -158,6 +159,7 @@ void main() {
             String? recordatorioHora,
             String? unidad,
             int? minutosObjetivo,
+            String? icono,
           }) async {
             throw Exception('fallo de prueba');
           };
@@ -191,6 +193,7 @@ void main() {
           String? recordatorioHora,
           String? unidad,
           int? minutosObjetivo,
+          String? icono,
         }) async {
           llamadas++;
           return <String>[];
@@ -252,6 +255,7 @@ void main() {
             String? recordatorioHora,
             String? unidad,
             int? minutosObjetivo,
+            String? icono,
           }) async {
             creado = {
               'nombre': nombre,
@@ -355,6 +359,7 @@ void main() {
             String? recordatorioHora,
             String? unidad,
             int? minutosObjetivo,
+            String? icono,
           }) {
             llamadas++;
             return crear(
@@ -462,6 +467,7 @@ void main() {
             String? recordatorioHora,
             String? unidad,
             int? minutosObjetivo,
+            String? icono,
           }) async {
             creado = {
               'frecuencia': frecuencia,
@@ -641,6 +647,7 @@ void main() {
             String? recordatorioHora,
             String? unidad,
             int? minutosObjetivo,
+            String? icono,
           }) async => DateTime(hoy.year, hoy.month, hoy.day + 1);
 
       final resultado = <bool?>[];
@@ -698,6 +705,81 @@ void main() {
       nav.maybePop();
       await tester.pumpAndSettle();
       expect(resultado, [true]);
+    });
+  });
+
+  group('icono', () {
+    testWidgets('uno nuevo desde cero se crea sin icono', (tester) async {
+      final l = await AppLocalizations.delegate.load(const Locale('es'));
+      final iconos = <String?>[];
+      HabitoScreen.crearHabito =
+          (
+            String nombre,
+            String descripcion,
+            String frecuencia,
+            int meta,
+            int usuarioId,
+            int? categoriaId, {
+            String? diasSemana,
+            bool recordatorioActivo = true,
+            String? recordatorioHora,
+            String? unidad,
+            int? minutosObjetivo,
+            String? icono,
+          }) async {
+            iconos.add(icono);
+            return <String>[];
+          };
+      await abrirFormulario(tester, []);
+      await rellenar(tester, 'Nadar');
+      await guardar(tester, l);
+      expect(iconos, [null]);
+    });
+
+    testWidgets('al editar manda el icono que ya tenía el hábito', (
+      tester,
+    ) async {
+      final l = await AppLocalizations.delegate.load(const Locale('es'));
+      final iconos = <String?>[];
+      HabitoScreen.actualizarHabito =
+          (
+            int habitoId,
+            String nombre,
+            String descripcion,
+            String frecuencia,
+            int meta,
+            int usuarioId,
+            int? categoriaId, {
+            String? diasSemana,
+            bool recordatorioActivo = true,
+            String? recordatorioHora,
+            String? unidad,
+            int? minutosObjetivo,
+            String? icono,
+          }) async {
+            iconos.add(icono);
+            return null;
+          };
+      final resultado = <bool?>[];
+      await abrirFormulario(
+        tester,
+        resultado,
+        habito: Habito(
+          habitoId: 4,
+          nombre: 'Pedalear',
+          frecuencia: 'DIARIO',
+          meta: 1,
+          activo: true,
+          recordatorioActivo: false,
+          codigoIcono: 'bike',
+        ),
+      );
+      final boton = find.widgetWithText(ElevatedButton, l.habBotonActualizar);
+      await tester.ensureVisible(boton);
+      await tester.tap(boton);
+      await tester.pumpAndSettle();
+      expect(resultado, [true]);
+      expect(iconos, ['bike']);
     });
   });
 }

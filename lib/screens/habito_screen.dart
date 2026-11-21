@@ -52,6 +52,7 @@ class HabitoScreen extends StatefulWidget {
     String? recordatorioHora,
     String? unidad,
     int? minutosObjetivo,
+    String? icono,
   })
   crearHabito = ApiServiceHabitos.crearHabito;
 
@@ -70,6 +71,7 @@ class HabitoScreen extends StatefulWidget {
     String? recordatorioHora,
     String? unidad,
     int? minutosObjetivo,
+    String? icono,
   })
   actualizarHabito = ApiServiceHabitos.actualizarHabito;
 
@@ -127,6 +129,12 @@ class _HabitoScreenState extends State<HabitoScreen> {
   bool _minutosLibre = false;
   final _minutosController = TextEditingController();
 
+  /// El código del icono que se manda al guardar: el del hábito que se edita
+  /// o el de la idea de la que sale. Null en uno nuevo desde cero (sin
+  /// icono; el backend lo deja nulo) o en uno que nunca lo tuvo (el campo no
+  /// sale y el backend conserva lo que hubiera).
+  String? _codigoIcono;
+
   /// El cambio de objetivo que todavía no vale, si lo hay.
   ObjetivoProgramado? _programado;
 
@@ -180,6 +188,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
       _recordatorioActivo = widget.habito!.recordatorioActivo;
       _recordatorioHora = widget.habito!.recordatorioHoraTimeOfDay;
       _unidad = widget.habito!.unidad;
+      _codigoIcono = widget.habito!.codigoIcono;
       final minutos = widget.habito!.minutosObjetivo;
       if (minutos != null) {
         _minutosLibre = !metasRapidasMinutos.contains(minutos);
@@ -203,6 +212,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
           : {};
       _codigoCategoriaPendiente = plantilla.categoriaCodigo;
       _unidad = plantilla.unidad;
+      _codigoIcono = plantilla.codigoIcono;
       // La plantilla trae su hora de aviso: quien crea su primer hábito puede
       // guardar sin abrir el selector. El permiso, entonces, se pide al
       // guardar (ver _guardar).
@@ -470,6 +480,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
           recordatorioHora: recordatorioHora,
           unidad: unidad,
           minutosObjetivo: minutos,
+          icono: _codigoIcono,
         );
         if (!mounted) return;
         // Si el cambio no vale hasta otro día, se dice antes de cerrar. El
@@ -508,6 +519,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
           recordatorioHora: recordatorioHora,
           unidad: unidad,
           minutosObjetivo: minutos,
+          icono: _codigoIcono,
         );
         await AnalyticsHabitos.habitoCreado(
           _frecuencia,
