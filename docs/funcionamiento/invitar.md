@@ -1,7 +1,7 @@
 # Invitar a un amigo
 
 `lib/screens/invitar_screen.dart`. Se abre desde el menú de `HomeShell`.
-Por qué es así: [0001](../decisiones/0001-postal-invitacion.md).
+Por qué es así: [0002](../decisiones/0002-postal-invitacion.md).
 
 ## Qué hace
 

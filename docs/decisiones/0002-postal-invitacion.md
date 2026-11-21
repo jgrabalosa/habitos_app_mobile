@@ -1,4 +1,4 @@
-# 0001 — La invitación, una postal de Nori en 4:5 con un dato que se puede quitar
+# 0002 — La invitación, una postal de Nori en 4:5 con un dato que se puede quitar
 
 Fecha: 21-nov-2026 (decisión de Quim del 20-nov, tarea T-034).
 

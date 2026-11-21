@@ -105,9 +105,9 @@ Estado: no se publicó sola; va dentro de la 1.3.0.
 
 Para anunciar: a decidir.
 
-## 1.3.0 (11) — enviada a Google
+## 1.3.0 (11) — 2026-11-21
 
-Estado: enviada a revisión de Google el 20-nov-2026, con la publicación gestionada (sale cuando se publique, tras el backend y el arte de producción). Con el core 0.59.1: Nori vestida, invierno y Navidad 2026, el letrero del día de Neotokyo+ y el ramo de Dulce en su sitio de Hoy, el check amarillo de Profundidad y los sonidos más bajos.
+Estado: publicada en Producción el 2026-11-21 (enviada a Google el 20-nov, con la publicación gestionada; se publicó tras desplegar el backend y el arte de producción). Con el core 0.59.1: Nori vestida, invierno y Navidad 2026, el letrero del día de Neotokyo+ y el ramo de Dulce en su sitio de Hoy, el check amarillo de Profundidad y los sonidos más bajos.
 
 ### Novedades
 
@@ -141,8 +141,21 @@ Estado: enviada a revisión de Google el 20-nov-2026, con la publicación gestio
 
 ## Sin publicar
 
+Con el core 0.60.0.
+
+### Novedades
+
+- Cada hábito tiene su icono: se elige al crearlo o editarlo, y se ve en Hoy, en la lista y en el detalle. Las ideas para empezar ya traen el suyo.
+- La meta de un hábito de minutos se puede poner en horas: chips de 1 h, 1 h 30 min y 2 h, y unas ruedas de horas y minutos para cualquier otra.
+- «Invitar a un amigo» es ahora una postal de Nori en 4:5, con su fase y un dato suyo que se puede quitar antes de compartir.
+- El check vivo: de vez en cuando, algo da una vuelta al aro de un hábito sin hacer (un cohete en Profundidad, un destello de neón en Neotokyo+, una punta de lápiz en Dulce).
+- Tu Nori, con su fase y lo que lleva puesto, es tu avatar en Colección y en Mi cuenta.
+
 ### Mejoras
 
 - La invitación a valorar la app en Google Play ya no sale a mitad del día: se pide justo después de la ceremonia del cierre del día, tras el tercer, el decimoquinto y el trigésimo día de uso. Google tiene su propia cuota y puede no enseñarla.
+- En Neotokyo+, el sol de «La ola» sube un poco y ya no toca la cresta.
+- En Colección, el nombre y el botón de cada identidad van en la misma fila.
+- Fuera del AndroidManifest unos meta-data que ya no se usaban.
 
 Para anunciar: nada.
