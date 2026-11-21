@@ -82,8 +82,22 @@ class DashboardScreen extends StatefulWidget {
   static Future<Map<String, dynamic>> Function(int usuarioId, {String? fecha})
   cargarHoy = ApiServiceHabitos.getHoy;
 
+  /// Seam de test: lo que pide la reseña de Play. Por defecto, In-App Review.
+  @visibleForTesting
+  static Future<void> Function() solicitarResena = _resenaConInAppReview;
+
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+Future<void> _resenaConInAppReview() async {
+  final InAppReview inAppReview = InAppReview.instance;
+  if (await inAppReview.isAvailable()) {
+    // `requestReview()` no dice si se mostró el diálogo ni si el usuario
+    // valoró —Google aplica su propia cuota y calla—, así que los reintentos
+    // de los hitos siguientes van a ciegas a propósito.
+    await inAppReview.requestReview();
+  }
 }
 
 class _DashboardScreenState extends State<DashboardScreen>
@@ -127,6 +141,10 @@ class _DashboardScreenState extends State<DashboardScreen>
   /// Días de uso en los que se pide la reseña. En el último se acaba: si a
   /// la tercera no la ha dejado, insistir sólo molesta.
   static const List<int> _hitosResena = [3, 15, 30];
+
+  /// La marca de que un hito dejó la reseña por pedir: se pide tras la
+  /// ceremonia del siguiente cierre del día.
+  static const String _clavePendienteResena = 'resena_pendiente';
 
   /// El último día en que se cerró el día, en `AAAA-MM-DD`: una sola vez al
   /// día aunque se desmarque y se vuelva a marcar. Va por usuario, así que
@@ -625,9 +643,11 @@ class _DashboardScreenState extends State<DashboardScreen>
       }
     }
 
-    if (diaCompleto) await _cerrarDia();
+    // El día de uso se cuenta antes del cierre: si hoy es un hito y además se
+    // cierra el día, la reseña sale en este mismo cierre.
+    await _registrarDiaDeUso();
 
-    _registrarDiaDeUso();
+    if (diaCompleto) await _cerrarDia();
   }
 
   /// El cierre del día, al final de toda la secuencia del último check: el
@@ -660,6 +680,8 @@ class _DashboardScreenState extends State<DashboardScreen>
           titulo: l.dashTodoHecho,
           despedida: l.dashDisfruta,
         );
+        // Justo después de la ceremonia, si un hito dejó la reseña pendiente.
+        await _pedirResenaPendiente();
       }
     }
     _cierrePendiente = false;
@@ -758,21 +780,33 @@ class _DashboardScreenState extends State<DashboardScreen>
         });
       }
 
-      if (_hitosResena.contains(dias)) await _solicitarResena();
+      // En un hito no se pide en el acto: se apunta, y se pide al cerrarse la
+      // ceremonia del siguiente cierre del día. La marca vive en el
+      // dispositivo, así que sobrevive a cerrar la app.
+      if (_hitosResena.contains(dias)) {
+        await prefs.setBool(_clavePendienteResena, true);
+      }
     } catch (_) {
       // Contar días no es crítico: si falla, no se molesta al usuario.
     }
   }
 
+  /// Pide la reseña si hay una marca pendiente, y la borra. Se llama solo
+  /// tras la ceremonia del cierre del día.
+  Future<void> _pedirResenaPendiente() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.getBool(_clavePendienteResena) != true) return;
+      await prefs.remove(_clavePendienteResena);
+      await _solicitarResena();
+    } catch (_) {
+      // Si no se puede leer o borrar la marca, no se pide ni se molesta.
+    }
+  }
+
   Future<void> _solicitarResena() async {
     try {
-      final InAppReview inAppReview = InAppReview.instance;
-      if (await inAppReview.isAvailable()) {
-        // `requestReview()` no dice si se mostró el diálogo ni si el usuario
-        // valoró —Google aplica su propia cuota y calla—, así que los
-        // reintentos de los hitos siguientes van a ciegas a propósito.
-        await inAppReview.requestReview();
-      }
+      await DashboardScreen.solicitarResena();
     } catch (e) {
       // Si falla, no bloqueamos nada
     }
@@ -1056,6 +1090,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           nombre: habito.nombre,
           descripcion: habito.descripcion,
           fechaInicio: habito.fechaInicio,
+          codigoIcono: habito.codigoIcono,
         ),
       ),
     );
@@ -1183,6 +1218,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 nombre: h.nombre,
                 descripcion: h.descripcion,
                 fechaInicio: h.fechaInicio,
+                codigoIcono: h.codigoIcono,
               ),
             ),
           );
@@ -1198,6 +1234,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                   children: [
                     Row(
                       children: [
+                        // El icono del hábito, en el color secundario y a 20
+                        // en las tres identidades. No cambia al completarse:
+                        // lo hace la fila entera (la opacidad).
+                        ExcludeSemantics(
+                          child: Icon(h.icono, size: 20, color: t.textMuted),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
                         Flexible(
                           child: Hero(
                             tag: 'habito-nombre-${h.habitoId}',

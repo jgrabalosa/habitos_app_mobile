@@ -79,6 +79,24 @@ void main() {
       );
     });
 
+    test('con icono lo manda; sin icono el campo no sale', () {
+      Map<String, dynamic> cuerpo({String? icono}) =>
+          jsonDecode(
+                ApiServiceHabitos.cuerpoHabito(
+                  'Leer',
+                  '',
+                  'DIARIO',
+                  1,
+                  7,
+                  null,
+                  icono: icono,
+                ),
+              )
+              as Map<String, dynamic>;
+      expect(cuerpo(icono: 'bookOpen')['icono'], 'bookOpen');
+      expect(cuerpo().containsKey('icono'), isFalse);
+    });
+
     test('uno de minutos añade unidad y minutosObjetivo', () {
       final body =
           jsonDecode(

@@ -60,6 +60,33 @@
   "plantillaApuntarGastos": "Apuntar los gastos",
   "plantillaDiaSinAlcohol": "Un día sin alcohol",
   "plantillaDejarMovil": "Dejar el móvil antes de dormir",
+  "iconoHabitoFlower2": "Flor",
+  "iconoHabitoListChecks": "Lista de tareas",
+  "iconoHabitoDroplet": "Gota",
+  "iconoHabitoApple": "Manzana",
+  "iconoHabitoFootprints": "Huellas",
+  "iconoHabitoMusic": "Música",
+  "iconoHabitoDumbbell": "Pesa",
+  "iconoHabitoPhone": "Teléfono",
+  "iconoHabitoPiggyBank": "Hucha",
+  "iconoHabitoNotebookPen": "Cuaderno",
+  "iconoHabitoBookOpen": "Libro abierto",
+  "iconoHabitoWineOff": "Sin alcohol",
+  "iconoHabitoPhoneOff": "Móvil apagado",
+  "iconoHabitoMoon": "Luna",
+  "iconoHabitoSalad": "Ensalada",
+  "iconoHabitoCoffee": "Café",
+  "iconoHabitoPill": "Pastilla",
+  "iconoHabitoBike": "Bicicleta",
+  "iconoHabitoHeartPulse": "Pulso",
+  "iconoHabitoBrain": "Cerebro",
+  "iconoHabitoPalette": "Paleta",
+  "iconoHabitoLanguages": "Idiomas",
+  "iconoHabitoGraduationCap": "Birrete",
+  "iconoHabitoBriefcase": "Maletín",
+  "iconoHabitoSun": "Sol",
+  "iconoHabitoSmile": "Sonrisa",
+  "iconoHabitoSparkles": "Destellos",
   "frecDiario": "Diario",
   "frecSemanal": "Semanal",
   "habTituloNuevo": "Nuevo hábito",
@@ -104,6 +131,7 @@
   "habLabelNombre": "Nombre del hábito",
   "habLabelDescripcion": "Descripción (opcional)",
   "habLabelCategoria": "Categoría (opcional)",
+  "habLabelIcono": "Icono",
   "habSinCategoria": "Sin categoría",
   "habErrorCategorias": "No se pudieron cargar las categorías.",
   "habLabelFrecuencia": "Frecuencia",
@@ -700,14 +728,33 @@
   "habAyudaUnidad": "Veces: lo marcas al hacerlo. Minutos: sumas el tiempo que le dedicas, y el día cuenta al llegar a tu objetivo.",
   "habUnidadSinVuelta": "Un hábito de minutos no puede volver a contarse en veces.",
   "habMinutosPorDia": "Minutos por día",
-  "habMinutosOtra": "Otra cifra, en minutos ({minimo}–{maximo})",
-  "@habMinutosOtra": {
-    "description": "Etiqueta de la cifra propia en el formulario; minimo y maximo salen de minutosMinimo y minutosMaximo",
+  "habMinutosOtra": "Otra…",
+  "habMinutosOtraCifra": "Otra: {duracion}",
+  "@habMinutosOtraCifra": {
     "placeholders": {
-      "minimo": {
+      "duracion": {
+        "type": "String"
+      }
+    }
+  },
+  "habMetaTitulo": "Tiempo por día",
+  "habMetaListo": "Listo",
+  "habMetaUnidadHoras": "h",
+  "habMetaUnidadMinutos": "min",
+  "habMetaRuedaHoras": "{n, plural, =1{1 hora} other{{n} horas}}",
+  "@habMetaRuedaHoras": {
+    "description": "Lector de pantalla: una posición de la rueda de horas",
+    "placeholders": {
+      "n": {
         "type": "int"
-      },
-      "maximo": {
+      }
+    }
+  },
+  "habMetaRuedaMinutos": "{n, plural, =1{1 minuto} other{{n} minutos}}",
+  "@habMetaRuedaMinutos": {
+    "description": "Lector de pantalla: una posición de la rueda de minutos",
+    "placeholders": {
+      "n": {
         "type": "int"
       }
     }

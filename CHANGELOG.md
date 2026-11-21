@@ -138,3 +138,11 @@ Estado: enviada a revisión de Google el 20-nov-2026, con la publicación gestio
 
 - La app ya no se cierra al arrastrar a Nori en pantallas pequeñas.
 - En «Empieza con una idea», la última idea ya no queda debajo de la barra de navegación de Android.
+
+## Sin publicar
+
+### Mejoras
+
+- La invitación a valorar la app en Google Play ya no sale a mitad del día: se pide justo después de la ceremonia del cierre del día, tras el tercer, el decimoquinto y el trigésimo día de uso. Google tiene su propia cuota y puede no enseñarla.
+
+Para anunciar: nada.
