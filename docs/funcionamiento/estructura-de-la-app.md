@@ -12,19 +12,44 @@ párrafo de este fichero.
   alta/edición (`habito_screen.dart`) y las ideas para empezar
   (`ideas_habito_screen.dart`: «Empieza con una idea», con las plantillas;
   `abrirAltaHabito` va al formulario vacío si no queda ninguna idea) e
-  «Invitar a un amigo» (`invitar_screen.dart`: `TarjetaInvitacion`, 9:16 con
-  Nori y `norday.app/invitar`, que se comparte como PNG de 1080 × 1920 con
-  `share_plus`; sin nada personal). El panel del menú es la función suelta
+  «Invitar a un amigo» (`invitar_screen.dart`: `TarjetaInvitacion`, una
+  postal 4:5 que se comparte como PNG de 1080 × 1350 con `share_plus`: el
+  fondo de la identidad sin panel, Nori grande y vestida con `NoriVestida`,
+  que el core no exporta en su barrel, y, arriba, un dato de quien invita
+  sacado de `getMascota`, «Pipo ya es cría · nivel 7». El dato se puede
+  quitar con un interruptor, encendido por defecto; sin red, la postal sale
+  sin él. El enlace no se dibuja: va en su línea del texto que acompaña.
+  `invitar_compartido` lleva `con_dato`. Para ver la postal sin móvil:
+  `test/postal_exportar_test.dart`, que solo corre con
+  `--dart-define=EXPORTAR_POSTAL=true` y deja los PNG en `build/postal/`). El panel del menú es la función suelta
   `mostrarMenuShell`, para poder probar sus entradas sin montar las
   pestañas. El alta
   nueva arranca en `HomeShell`: la bienvenida de una
   tarjeta (`widgets/bienvenida.dart`), el formulario real del primer hábito y,
   si se guarda, una pista sobre su círculo en Hoy. Nada de esto sale a quien
   no es alta nueva.
+- **La reseña de Play (In-App Review)** se pide justo después de la ceremonia
+  del cierre del día, nunca a mitad del día. `DashboardScreen` cuenta los días
+  de uso (distintos días en que se completa un hábito; `resena_dias_uso` y
+  `resena_ultima_fecha`) antes de `_cerrarDia`; al llegar a un hito de
+  `_hitosResena` (`[3, 15, 30]`, como mucho tres veces en la vida) solo guarda
+  `resena_pendiente`, y `_cerrarDia` la pide y la borra tras
+  `mostrarCierreDelDia`. Si no hay ceremonia (día ya cerrado, pista de Hoy
+  abierta) no se pide y la marca sigue. Sin preguntas previas, sin botón y sin
+  nada encima de la tarjeta (normas de Google). El seam de test es
+  `DashboardScreen.solicitarResena`. El día que se comparte el cierre (T-043)
+  no se pide: lo resuelve esa tarjeta.
 - El permiso de notificaciones se pide al elegir la hora del recordatorio, en
   `habito_screen.dart`, con `NotificacionesService` del core: nunca al entrar.
   Al crear desde una plantilla, que trae la hora puesta, se pide al guardar
   si no se ha preguntado ya en ese formulario.
+- El icono del hábito: `habito_screen.dart` manda el `codigoIcono` de la
+  plantilla al crear desde ella y el que ya tenía el hábito al editar; desde
+  cero, `sparkles`. La fila «Icono» abre la rejilla
+  (`widgets/selector_icono_habito.dart`, con la forma de la identidad). El
+  icono se ve en Hoy (20), en la lista de hábitos y en el detalle (24), en
+  `textMuted`, y no cambia al completarse. El porqué, en
+  `docs/decisiones/0001-catalogo-iconos-habito.md`.
 - `services/` — `ApiServiceHabitos`, `AnalyticsHabitos`,
   `CrashlyticsService`, la pista de Hoy tras el primer hábito
   (`recorrido_onboarding.dart`, y `anclas_recorrido.dart`, que hoy tiene una
@@ -51,7 +76,11 @@ párrafo de este fichero.
   `PanelMinutos.enfoqueDisponible = false` (salida A, 15-nov). Se enciende
   cuando Focus sea visible en Producción; los tests de «Empezar sesión» lo
   encienden en `setUp`.
-- `models/` — `habito.dart` (con `UnidadHabito`: veces o minutos), `hoy.dart`
+- `models/` — `iconos_habito.dart` (el catálogo de 27 iconos de hábito, código
+  → `LucideIcons`; `iconoDeHabito(codigo)` da `sparkles` si el código es nulo
+  o desconocido, y `nombreIconoHabito` el nombre traducido para el lector de
+  pantalla, claves `iconoHabito…` de los ARB), `habito.dart` (con
+  `UnidadHabito`: veces o minutos, y `codigoIcono` / getter `icono`), `hoy.dart`
   (lo que manda `/hoy`: filas, secciones, tira y tendencia del ritmo),
   `minutos.dart` (las reglas de los hábitos de minutos, sin widgets ni red:
   límites 1–600, metas y sumas rápidas, lo que envía «Completar»),

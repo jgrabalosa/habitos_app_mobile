@@ -60,6 +60,33 @@
   "plantillaApuntarGastos": "Apuntar los gastos",
   "plantillaDiaSinAlcohol": "Un día sin alcohol",
   "plantillaDejarMovil": "Dejar el móvil antes de dormir",
+  "iconoHabitoFlower2": "Flor",
+  "iconoHabitoListChecks": "Lista de tareas",
+  "iconoHabitoDroplet": "Gota",
+  "iconoHabitoApple": "Manzana",
+  "iconoHabitoFootprints": "Huellas",
+  "iconoHabitoMusic": "Música",
+  "iconoHabitoDumbbell": "Pesa",
+  "iconoHabitoPhone": "Teléfono",
+  "iconoHabitoPiggyBank": "Hucha",
+  "iconoHabitoNotebookPen": "Cuaderno",
+  "iconoHabitoBookOpen": "Libro abierto",
+  "iconoHabitoWineOff": "Sin alcohol",
+  "iconoHabitoPhoneOff": "Móvil apagado",
+  "iconoHabitoMoon": "Luna",
+  "iconoHabitoSalad": "Ensalada",
+  "iconoHabitoCoffee": "Café",
+  "iconoHabitoPill": "Pastilla",
+  "iconoHabitoBike": "Bicicleta",
+  "iconoHabitoHeartPulse": "Pulso",
+  "iconoHabitoBrain": "Cerebro",
+  "iconoHabitoPalette": "Paleta",
+  "iconoHabitoLanguages": "Idiomas",
+  "iconoHabitoGraduationCap": "Birrete",
+  "iconoHabitoBriefcase": "Maletín",
+  "iconoHabitoSun": "Sol",
+  "iconoHabitoSmile": "Sonrisa",
+  "iconoHabitoSparkles": "Destellos",
   "frecDiario": "Diario",
   "frecSemanal": "Semanal",
   "habTituloNuevo": "Nuevo hábito",
@@ -104,6 +131,7 @@
   "habLabelNombre": "Nombre del hábito",
   "habLabelDescripcion": "Descripción (opcional)",
   "habLabelCategoria": "Categoría (opcional)",
+  "habLabelIcono": "Icono",
   "habSinCategoria": "Sin categoría",
   "habErrorCategorias": "No se pudieron cargar las categorías.",
   "habLabelFrecuencia": "Frecuencia",
@@ -700,14 +728,33 @@
   "habAyudaUnidad": "Veces: lo marcas al hacerlo. Minutos: sumas el tiempo que le dedicas, y el día cuenta al llegar a tu objetivo.",
   "habUnidadSinVuelta": "Un hábito de minutos no puede volver a contarse en veces.",
   "habMinutosPorDia": "Minutos por día",
-  "habMinutosOtra": "Otra cifra, en minutos ({minimo}–{maximo})",
-  "@habMinutosOtra": {
-    "description": "Etiqueta de la cifra propia en el formulario; minimo y maximo salen de minutosMinimo y minutosMaximo",
+  "habMinutosOtra": "Otra…",
+  "habMinutosOtraCifra": "Otra: {duracion}",
+  "@habMinutosOtraCifra": {
     "placeholders": {
-      "minimo": {
+      "duracion": {
+        "type": "String"
+      }
+    }
+  },
+  "habMetaTitulo": "Tiempo por día",
+  "habMetaListo": "Listo",
+  "habMetaUnidadHoras": "h",
+  "habMetaUnidadMinutos": "min",
+  "habMetaRuedaHoras": "{n, plural, =1{1 hora} other{{n} horas}}",
+  "@habMetaRuedaHoras": {
+    "description": "Lector de pantalla: una posición de la rueda de horas",
+    "placeholders": {
+      "n": {
         "type": "int"
-      },
-      "maximo": {
+      }
+    }
+  },
+  "habMetaRuedaMinutos": "{n, plural, =1{1 minuto} other{{n} minutos}}",
+  "@habMetaRuedaMinutos": {
+    "description": "Lector de pantalla: una posición de la rueda de minutos",
+    "placeholders": {
+      "n": {
         "type": "int"
       }
     }
@@ -867,21 +914,32 @@
   "@invitarMenu": {
     "description": "Entrada del menú y título de la pantalla que comparte la tarjeta de invitación"
   },
-  "invitarTitular": "Constancia, no perfección",
-  "@invitarTitular": {
-    "description": "Tarjeta de invitación: titular bajo Nori"
+  "invitarDato": "{sujeto} {fase, select, huevo{aún es un huevo} cria{ya es cría} other{ya ha crecido}} · nivel {nivel}",
+  "@invitarDato": {
+    "description": "Postal de invitación: el dato de quien invita, arriba. {sujeto} es el nombre de Nori o invitarMiNori; {fase}, huevo, cria o adulto",
+    "placeholders": {
+      "sujeto": {
+        "type": "String"
+      },
+      "fase": {
+        "type": "String"
+      },
+      "nivel": {
+        "type": "int"
+      }
+    }
   },
-  "invitarFrase": "Yo cuido de mi Nori marcando hábitos. Sin rachas que se rompen.",
-  "@invitarFrase": {
-    "description": "Tarjeta de invitación: frase bajo el titular, en primera persona de quien comparte"
+  "invitarMiNori": "Mi Nori",
+  "@invitarMiNori": {
+    "description": "Postal de invitación: sujeto del dato cuando Nori no tiene nombre"
   },
-  "invitarPie": "Gratis y sin anuncios · Android",
-  "@invitarPie": {
-    "description": "Tarjeta de invitación: línea pequeña bajo el enlace"
+  "invitarIncluirDato": "Incluir el nombre y el nivel de Nori",
+  "@invitarIncluirDato": {
+    "description": "Interruptor bajo la postal: si se apaga, la postal sale sin el dato"
   },
-  "invitarTextoCompartir": "Estoy usando Norday Habits para mis hábitos, sin rachas que se rompen. Pruébala: {enlace}",
+  "invitarTextoCompartir": "Mira cómo va mi Nori: crece cada vez que marco un hábito, y si un día fallo no pasa nada. ¿Te haces uno? Es gratis y sin anuncios.\n{enlace}",
   "@invitarTextoCompartir": {
-    "description": "Texto que acompaña a la imagen al compartir. El enlace es el mismo en todos los idiomas",
+    "description": "Texto que acompaña a la postal al compartir, en primera persona. El enlace va en su propia línea y es el mismo en todos los idiomas. Sin premios ni promesas",
     "placeholders": {
       "enlace": {
         "type": "String"

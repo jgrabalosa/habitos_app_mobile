@@ -109,7 +109,7 @@ el resto, en `docs/funcionamiento/textos.md`.
 
 ## Tocar el paquete y compilar
 
-- **Core fijado por `v0.59.1`** (`resolved-ref` en el `pubspec.lock`, que se
+- **Core fijado por `v0.60.0`** (`resolved-ref` en el `pubspec.lock`, que se
   versiona). Cambiarlo es un procedimiento de varios pasos:
   `docs/procedimientos/tocar-el-paquete.md`. `pubspec_overrides.yaml` (rama
   del core sin tag) no se commitea.
@@ -196,3 +196,5 @@ paquetes, dispositivo y método de trabajo están en `docs/lecciones/`.
   `panel_minutos.dart`. «Empieza con una idea» se quedó sin ninguna de las
   dos (20-nov-2026). Se prueba con `tester.view.padding`
   (`ideas_habito_screen_test.dart`).
+- **La caja de `NoriVestida` no es Nori** (deja aire, distinto en cada fase;
+  T-034): su tamaño se mide en el PNG de `test/postal_exportar_test.dart`.

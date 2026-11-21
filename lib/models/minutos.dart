@@ -11,7 +11,47 @@ const int minutosMinimo = 1;
 const int minutosMaximo = 600;
 
 /// Las metas de un toque al crear o editar un hábito de minutos.
-const List<int> metasRapidasMinutos = [10, 15, 30, 60];
+const List<int> metasRapidasMinutos = [10, 15, 30, 60, 120];
+
+/// Las horas que ofrece la rueda de la meta: de 0 a 10 (10 h = 600 min).
+const int horasMaximasRueda = minutosMaximo ~/ 60;
+
+/// El paso de la rueda de minutos de la meta.
+const int pasoMinutosRueda = 5;
+
+/// Lo que ofrece la rueda de minutos de la meta con [horas] elegidas, en orden.
+///
+/// De 5 en 5, con estos límites (los de [minutosMinimo] y [minutosMaximo]):
+/// con 10 h solo el 0, y con 0 h no hay 0 (nunca 0 h 0 min). Si [existente] —la
+/// meta que ya tenía el hábito— cae en esas [horas] y no es múltiplo de 5 (o
+/// es menor de 5), se incluye tal cual, para no redondearla sin que el
+/// usuario toque nada.
+List<int> minutosDeRueda(int horas, {int? existente}) {
+  if (horas >= horasMaximasRueda) return const [0];
+  final lista = <int>[
+    for (var m = 0; m < 60; m += pasoMinutosRueda)
+      if (horas > 0 || m > 0) m,
+  ];
+  if (existente != null &&
+      existente ~/ 60 == horas &&
+      !lista.contains(existente % 60) &&
+      objetivoMinutosValido(existente)) {
+    lista
+      ..add(existente % 60)
+      ..sort();
+  }
+  return lista;
+}
+
+/// El minuto de [opciones] más cercano a [minuto] (el menor si empatan): lo
+/// que queda elegido en la rueda de minutos al cambiar de horas.
+int minutoMasCercano(List<int> opciones, int minuto) {
+  var mejor = opciones.first;
+  for (final o in opciones) {
+    if ((o - minuto).abs() < (mejor - minuto).abs()) mejor = o;
+  }
+  return mejor;
+}
 
 /// Los botones de suma rápida del panel de minutos.
 const List<int> sumasRapidasMinutos = [5, 15, 30];

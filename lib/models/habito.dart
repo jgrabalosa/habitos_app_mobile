@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'iconos_habito.dart';
+
 /// En qué se mide un hábito. `veces` es lo de siempre: se marca y cuenta uno.
 /// `minutos` suma los minutos de cada registro del día, y el día está hecho al
 /// llegar a [Habito.minutosObjetivo].
@@ -45,6 +47,10 @@ class Habito {
   /// minutos; null en los de veces o si el backend no lo manda.
   final int? minutosObjetivo;
 
+  /// Código del icono en el catálogo ([iconosHabito]). Null si el hábito no
+  /// tiene o el backend no lo manda; para dibujarlo, [icono].
+  final String? codigoIcono;
+
   Habito({
     required this.habitoId,
     required this.nombre,
@@ -61,9 +67,14 @@ class Habito {
     this.fechaInicio,
     this.unidad = UnidadHabito.veces,
     this.minutosObjetivo,
+    this.codigoIcono,
   });
 
   bool get esMinutos => unidad == UnidadHabito.minutos;
+
+  /// El icono que se dibuja: el del catálogo, o `sparkles` si no hay código o
+  /// esta versión no lo conoce.
+  IconData get icono => iconoDeHabito(codigoIcono);
 
   /// «AAAA-MM-DD» a fecha sin hora. Cualquier otra cosa es null.
   static DateTime? _fechaSinHora(Object? valor) {
@@ -89,6 +100,7 @@ class Habito {
       fechaInicio: _fechaSinHora(json['fechaInicio']),
       unidad: unidadDe(json['unidad']),
       minutosObjetivo: (json['minutosObjetivo'] as num?)?.toInt(),
+      codigoIcono: json['icono'] as String?,
     );
   }
 

@@ -105,13 +105,24 @@ class AnalyticsHabitos {
     }
   }
 
+  /// Los parámetros de `invitar_compartido`. `con_dato` va como texto
+  /// (`true`/`false`): Analytics no admite booleanos.
+  static Map<String, Object> parametrosInvitarCompartido(
+    String resultado, {
+    required bool conDato,
+  }) => {'resultado': resultado, 'con_dato': conDato ? 'true' : 'false'};
+
   /// Lo que devolvió el menú de compartir: `compartido`, `cancelado` o
-  /// `no_disponible`.
-  static Future<void> invitarCompartido(String resultado) async {
+  /// `no_disponible`. [conDato], si la postal llevaba el nombre y el nivel
+  /// de Nori. Sin el nombre: nada personal.
+  static Future<void> invitarCompartido(
+    String resultado, {
+    required bool conDato,
+  }) async {
     try {
       await AnalyticsCore.analytics.logEvent(
         name: 'invitar_compartido',
-        parameters: {'resultado': resultado},
+        parameters: parametrosInvitarCompartido(resultado, conDato: conDato),
       );
     } catch (e) {
       debugPrint('Analytics: no se registró invitar_compartido: $e');
