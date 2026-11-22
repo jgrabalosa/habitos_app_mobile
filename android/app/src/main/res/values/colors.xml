@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#0A1628</color>
+    <!-- El acento de las notificaciones: Verde Esmeralda. -->
+    <color name="notificacion_acento">#27C76F</color>
 </resources>

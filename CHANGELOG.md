@@ -164,5 +164,6 @@ Con el core 0.60.0.
 - Fuera del AndroidManifest unos meta-data que ya no se usaban.
 - En Dulce, cada flor nueva del ramo entra con su fundido, no solo la primera.
 - La ayuda de la tienda menciona la ropa de Nori.
+- Las notificaciones llevan la brújula de Norday en verde, en vez de un cuadrado vacío.
 
 Para anunciar: nada.
