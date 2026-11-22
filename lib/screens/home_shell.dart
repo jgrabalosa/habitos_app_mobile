@@ -10,6 +10,7 @@ import '../services/anclas_recorrido.dart';
 import '../services/crashlytics_service.dart';
 import '../services/recorrido_onboarding.dart';
 import '../widgets/bienvenida.dart';
+import '../widgets/permiso_avisos.dart';
 import '../widgets/regalo_gorro.dart';
 import 'ideas_habito_screen.dart';
 import '../services/habitos_refresh.dart';
@@ -68,6 +69,12 @@ class HomeShell extends StatefulWidget {
   final bool mostrarOnboarding;
   const HomeShell({super.key, this.mostrarOnboarding = false});
 
+  /// La llamada al aviso de actualización del core. Seam para los tests: el
+  /// real habla con Google Play.
+  @visibleForTesting
+  static Future<void> Function(BuildContext context) comprobarActualizacion =
+      AvisoActualizacion.comprobar;
+
   @override
   State<HomeShell> createState() => _HomeShellState();
 }
@@ -102,7 +109,28 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   /// hace falta repintar: las anclas se enganchan mientras el recorrido está
   /// activo, y la pista de Hoy tiene que aparecer en cuanto empieza.
   void _alCambiarPaso() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    setState(() {});
+    // La pista del primer hábito ha terminado: ahora toca el permiso de avisos.
+    if (_permisoTrasAlta && !_recorrido.activo) {
+      _permisoTrasAlta = false;
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => unawaited(_ofrecerPermisoTrasAlta()),
+      );
+    }
+  }
+
+  /// True entre que arranca la pista del primer hábito y que termina: al
+  /// terminar, sale la tarjeta del permiso de avisos.
+  bool _permisoTrasAlta = false;
+
+  Future<void> _ofrecerPermisoTrasAlta() async {
+    if (!mounted) return;
+    await PermisoAvisos.mostrarSiToca(
+      context,
+      usuarioId: _usuarioId,
+      origen: OrigenPermisoAvisos.alta,
+    );
   }
 
   /// La pista de Hoy tras guardar el primer hábito: una sola, sobre el círculo
@@ -203,18 +231,42 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     if (widget.mostrarOnboarding) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _empezarAltaNueva());
     } else {
-      // El regalo del gorro: decide él si toca (oferta vigente, sin el gorro,
-      // sin recorrido activo). En un alta nueva, a la siguiente apertura.
+      // Primero el regalo del gorro (decide él si toca: oferta vigente, sin el
+      // gorro, sin recorrido activo); después, y nunca a la vez, el aviso de
+      // versión nueva. En un alta nueva, ninguno de los dos.
       WidgetsBinding.instance.addPostFrameCallback(
-        (_) => unawaited(
-          RegaloGorro.mostrarSiToca(
-            context,
-            usuarioId: _usuarioId,
-            altaNueva: widget.mostrarOnboarding,
-          ),
-        ),
+        (_) => unawaited(_alEntrar()),
       );
     }
+  }
+
+  /// Lo que puede salir al entrar, de uno en uno: la tarjeta del gorro; si no
+  /// ha salido, la del permiso de avisos (como mucho una tarjeta por
+  /// apertura); y, cuando se cierra (o si no sale ninguna), el aviso de versión
+  /// nueva.
+  Future<void> _alEntrar() async {
+    if (!mounted) return;
+    final salioGorro = await RegaloGorro.mostrarSiToca(
+      context,
+      usuarioId: _usuarioId,
+      altaNueva: widget.mostrarOnboarding,
+    );
+    if (!salioGorro && mounted && !_recorrido.activo) {
+      await PermisoAvisos.mostrarSiToca(
+        context,
+        usuarioId: _usuarioId,
+        origen: OrigenPermisoAvisos.apertura,
+      );
+    }
+    _avisarDeActualizacion();
+  }
+
+  /// Avisa de que hay versión nueva en Play (el core limita a una vez al día).
+  /// Nunca en un alta nueva ni con el recorrido guiado abierto, y sin esperar:
+  /// no retrasa Hoy.
+  void _avisarDeActualizacion() {
+    if (!mounted || widget.mostrarOnboarding || _recorrido.activo) return;
+    unawaited(HomeShell.comprobarActualizacion(context));
   }
 
   /// El alta nueva: la bienvenida, el formulario real del primer hábito y,
@@ -233,6 +285,11 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     notificarHabitosCambiados();
     _irAPestana(0);
     _iniciarPista();
+    if (_recorrido.activo) {
+      _permisoTrasAlta = true;
+    } else {
+      unawaited(_ofrecerPermisoTrasAlta());
+    }
   }
 
   Future<void> _logout() async {
@@ -559,6 +616,9 @@ void mostrarMenuShell(
                       (_) => PerfilScreen(
                         usuarioId: usuarioId,
                         destinoTrasLogin: destinoTrasLogin,
+                        // Los avisos de la app (la vuelta y el momento débil)
+                        // son de Habits: solo esta app enseña su interruptor.
+                        mostrarAvisosApp: true,
                       ),
                     ),
                   ),

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
@@ -13,6 +15,7 @@ import '../models/habito.dart';
 import '../models/iconos_habito.dart';
 import '../models/plantilla_habito.dart';
 import '../widgets/hoja_meta_minutos.dart';
+import '../widgets/permiso_avisos.dart';
 import '../widgets/selector_icono_habito.dart';
 
 class HabitoScreen extends StatefulWidget {
@@ -624,6 +627,8 @@ class _HabitoScreenState extends State<HabitoScreen> {
       return;
     }
     if (!mounted) return;
+    // Ya se le pregunta: la tarjeta de Nori no vuelve a hacerlo en este móvil.
+    unawaited(PermisoAvisos.marcarOfrecido());
     final permitir = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(

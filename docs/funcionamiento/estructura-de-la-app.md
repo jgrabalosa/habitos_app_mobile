@@ -70,13 +70,39 @@ párrafo de este fichero.
   `resena_pendiente`, y `_cerrarDia` la pide y la borra tras
   `mostrarCierreDelDia`. Si no hay ceremonia (día ya cerrado, pista de Hoy
   abierta) no se pide y la marca sigue. Sin preguntas previas, sin botón y sin
-  nada encima de la tarjeta (normas de Google). El seam de test es
-  `DashboardScreen.solicitarResena`. El día que se comparte el cierre (T-043)
-  no se pide y `resena_pendiente` se queda para el siguiente cierre.
-- El permiso de notificaciones se pide al elegir la hora del recordatorio, en
-  `habito_screen.dart`, con `NotificacionesService` del core: nunca al entrar.
-  Al crear desde una plantilla, que trae la hora puesta, se pide al guardar
-  si no se ha preguntado ya en ese formulario.
+  nada encima de la tarjeta (normas de Google). Justo antes de pedirla se
+  registra el evento `resena_pedida` (`AnalyticsHabitos.resenaPedida`) con
+  `hito` (3, 15 o 30): el último de `_hitosResena` que no pasa de los días de
+  uso, porque puede pedirse días después de llegar al hito. Solo dice que se
+  pidió: Google no cuenta si enseñó el diálogo ni si el usuario puntuó. Los
+  seams de test son `DashboardScreen.solicitarResena` y
+  `DashboardScreen.registrarResenaPedida`. El día que se comparte el cierre (T-043)
+  no se pide (ni se registra el evento) y `resena_pendiente` se queda para el
+  siguiente cierre.
+- **El permiso de notificaciones** (`NotificacionesService` del core) se pide
+  en tres sitios; en ninguno sin que el usuario sepa por qué:
+  1. Al elegir la hora del recordatorio, en `habito_screen.dart`
+     (`_asegurarPermisoNotificaciones`, con su diálogo propio). Al crear desde
+     una plantilla, que trae la hora puesta, se pide al guardar si no se ha
+     preguntado ya en ese formulario.
+  2. **Tras el alta nueva** (T-060, `widgets/permiso_avisos.dart`): una tarjeta
+     de Nori («¿Te aviso para no olvidarlo?», «Activar» / «Ahora no»; atrás
+     cuenta como «Ahora no») que `HomeShell` ofrece cuando la pista del primer
+     hábito deja de estar activa (`_alCambiarPaso` vigila `RecorridoOnboarding`).
+  3. **En una apertura normal** de quien ya usaba la app: la misma tarjeta, una
+     sola vez por móvil, desde `HomeShell._alEntrar` y solo si no ha salido la
+     del gorro (`RegaloGorro.mostrarSiToca` devuelve si la enseñó): como mucho
+     una tarjeta por apertura. El aviso de versión nueva espera a que se cierre.
+
+  La tarjeta no sale con permiso (`concedido()`), con el permiso bloqueado en
+  los ajustes (`bloqueadoEnAjustes()`) ni si el móvil ya tiene la marca
+  `permiso_avisos_ofrecido` (`SharedPreferences`). La marca se pone al
+  enseñarla —«Ahora no» no vuelve— y también cuando el diálogo del formulario
+  (1) llega a enseñarse: ya se le ha preguntado. Es por móvil, no por cuenta.
+  Eventos: `permiso_avisos_ofrecido` (`origen`: `alta` o `apertura`) y, si pulsa
+  «Activar», `permiso_avisos` con la respuesta del sistema. Seams de test:
+  `PermisoAvisos.concedido`, `bloqueadoEnAjustes`, `pedirYRegistrar` y
+  `preferencias`.
 - El icono del hábito: `habito_screen.dart` manda el `codigoIcono` de la
   plantilla al crear desde ella y el que ya tenía el hábito al editar; desde
   cero, `sparkles`. La fila «Icono» abre la rejilla

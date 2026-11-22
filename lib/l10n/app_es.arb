@@ -538,6 +538,10 @@
   "permisoAhoraNo": "Ahora no",
   "permisoBloqueado": "Las notificaciones están desactivadas. Actívalas en los ajustes del móvil para recibir el recordatorio.",
   "permisoAjustes": "Ajustes",
+  "permisoAvisosTitulo": "¿Te aviso para no olvidarlo?",
+  "permisoAvisosCuerpo": "Activa las notificaciones y Nori te avisará a la hora de tus recordatorios. Sin agobios: como mucho dos avisos más a la semana.",
+  "permisoAvisosActivar": "Activar",
+  "permisoAvisosAhoraNo": "Ahora no",
   "durMinutos": "{m} min",
   "@durMinutos": {
     "placeholders": {

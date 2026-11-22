@@ -109,7 +109,7 @@ el resto, en `docs/funcionamiento/textos.md`.
 
 ## Tocar el paquete y compilar
 
-- **Core fijado por `v0.60.0`** (`resolved-ref` en el `pubspec.lock`, que se
+- **Core fijado por `v0.61.0`** (`resolved-ref` en el `pubspec.lock`, que se
   versiona). Cambiarlo es un procedimiento de varios pasos:
   `docs/procedimientos/tocar-el-paquete.md`. `pubspec_overrides.yaml` (rama
   del core sin tag) no se commitea.

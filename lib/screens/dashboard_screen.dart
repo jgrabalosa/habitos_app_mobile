@@ -93,6 +93,12 @@ class DashboardScreen extends StatefulWidget {
   @visibleForTesting
   static Future<void> Function() solicitarResena = _resenaConInAppReview;
 
+  /// Seam de test: el evento `resena_pedida` con su hito. Por defecto,
+  /// Analytics.
+  @visibleForTesting
+  static Future<void> Function(int hito) registrarResenaPedida =
+      AnalyticsHabitos.resenaPedida;
+
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
@@ -825,6 +831,12 @@ class _DashboardScreenState extends State<DashboardScreen>
       final prefs = await SharedPreferences.getInstance();
       if (prefs.getBool(_clavePendienteResena) != true) return;
       await prefs.remove(_clavePendienteResena);
+      // Puede pedirse días después de llegar al hito: vale el último que no
+      // pasa de los días de uso.
+      final hitos = _hitosResena.where((h) => h <= _diasUsoResena);
+      if (hitos.isNotEmpty) {
+        await DashboardScreen.registrarResenaPedida(hitos.last);
+      }
       await _solicitarResena();
     } catch (_) {
       // Si no se puede leer o borrar la marca, no se pide ni se molesta.
