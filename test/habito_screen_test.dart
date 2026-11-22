@@ -18,6 +18,7 @@ void main() {
   final identidadInicial = identidadEquipadaNotifier.value;
   final cargarCategoriasOriginal = HabitoScreen.cargarCategorias;
   final crearOriginal = HabitoScreen.crearHabito;
+  final crearCategoriaOriginal = HabitoScreen.crearCategoria;
   final actualizarOriginal = HabitoScreen.actualizarHabito;
   final cargarProgramadoOriginal = HabitoScreen.cargarObjetivoProgramado;
   final anularOriginal = HabitoScreen.anularObjetivoProgramado;
@@ -208,6 +209,151 @@ void main() {
     expect(llamadas, 0);
     expect(resultado, isEmpty);
     expect(find.text(l.habNombreObligatorio), findsOneWidget);
+  });
+
+  group('+ Nueva categoría', () {
+    late AppLocalizations l;
+
+    setUp(() async {
+      l = await AppLocalizations.delegate.load(const Locale('es'));
+    });
+
+    tearDown(() {
+      HabitoScreen.crearCategoria = crearCategoriaOriginal;
+    });
+
+    Future<void> abrirHoja(WidgetTester tester) async {
+      final desplegable = find.byType(DropdownButtonFormField<int?>);
+      await tester.ensureVisible(desplegable);
+      await tester.tap(desplegable);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l.catNueva));
+      await tester.pumpAndSettle();
+    }
+
+    Finder campoDeLaHoja() => find.descendant(
+      of: find.byType(BottomSheet),
+      matching: find.byType(TextField),
+    );
+
+    Future<void> guardarHoja(WidgetTester tester) async {
+      await tester.tap(find.widgetWithText(ElevatedButton, l.catGuardar));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('crea con el nombre recortado y el emoji, y la deja elegida', (
+      tester,
+    ) async {
+      final creadas = <(String, String?)>[];
+      final creada = {
+        'categoriaId': 9,
+        'codigo': null,
+        'nombre': 'Casa',
+        'icono': '🏠',
+        'esGlobal': false,
+      };
+      HabitoScreen.crearCategoria = (nombre, icono) async {
+        creadas.add((nombre, icono));
+        return creada;
+      };
+      // Tras crearla, el servidor ya la devuelve en la lista.
+      HabitoScreen.cargarCategorias = (_) async => [...categorias, creada];
+      int? categoriaEnviada;
+      HabitoScreen.crearHabito =
+          (
+            String nombre,
+            String descripcion,
+            String frecuencia,
+            int meta,
+            int usuarioId,
+            int? categoriaId, {
+            String? diasSemana,
+            bool recordatorioActivo = true,
+            String? recordatorioHora,
+            String? unidad,
+            int? minutosObjetivo,
+            String? icono,
+          }) async {
+            categoriaEnviada = categoriaId;
+            return <String>[];
+          };
+
+      await abrirFormulario(tester, <bool?>[]);
+      await abrirHoja(tester);
+      await tester.enterText(campoDeLaHoja(), '  Casa  ');
+      await tester.ensureVisible(find.text('🏠'));
+      await tester.tap(find.text('🏠'));
+      await tester.pumpAndSettle();
+      await guardarHoja(tester);
+
+      expect(creadas, [('Casa', '🏠')]);
+      expect(find.byType(BottomSheet), findsNothing);
+      expect(find.text('🏠 Casa'), findsOneWidget);
+
+      await rellenar(tester, 'Meditar');
+      await guardar(tester, l);
+      expect(categoriaEnviada, 9);
+    });
+
+    testWidgets('con un 409 enseña el mensaje y la hoja sigue abierta', (
+      tester,
+    ) async {
+      var llamadas = 0;
+      HabitoScreen.crearCategoria = (nombre, icono) async {
+        llamadas++;
+        throw const ApiException(
+          TipoErrorApi.peticionInvalida,
+          codigoEstado: 409,
+          cuerpo: '{"mensaje":"Ya tienes una categoría con ese nombre"}',
+        );
+      };
+
+      await abrirFormulario(tester, <bool?>[]);
+      await abrirHoja(tester);
+      await tester.enterText(campoDeLaHoja(), 'Casa');
+      await guardarHoja(tester);
+
+      expect(llamadas, 1);
+      expect(
+        find.text('Ya tienes una categoría con ese nombre'),
+        findsOneWidget,
+      );
+      expect(find.byType(BottomSheet), findsOneWidget);
+    });
+
+    testWidgets('con un nombre de una letra no llama a la red', (tester) async {
+      var llamadas = 0;
+      HabitoScreen.crearCategoria = (nombre, icono) async {
+        llamadas++;
+        return <String, dynamic>{};
+      };
+
+      await abrirFormulario(tester, <bool?>[]);
+      await abrirHoja(tester);
+      await tester.enterText(campoDeLaHoja(), ' a ');
+      await guardarHoja(tester);
+
+      expect(llamadas, 0);
+      expect(find.text(l.catNombreLongitud), findsOneWidget);
+    });
+
+    testWidgets('si se cancela, sigue la categoría que había', (tester) async {
+      await abrirFormulario(tester, <bool?>[]);
+      final desplegable = find.byType(DropdownButtonFormField<int?>);
+      await tester.ensureVisible(desplegable);
+      await tester.tap(desplegable);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Estudio').last);
+      await tester.pumpAndSettle();
+
+      await abrirHoja(tester);
+      await tester.tap(find.text(l.cancelar));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(BottomSheet), findsNothing);
+      expect(find.text('Estudio'), findsOneWidget);
+      expect(find.text(l.catNueva), findsNothing);
+    });
   });
 
   group('desde una plantilla', () {

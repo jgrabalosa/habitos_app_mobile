@@ -358,6 +358,91 @@ class ApiServiceHabitos {
     );
   }
 
+  /// El body de crear (POST) y renombrar (PUT) una categoría propia. Sin
+  /// emoji, `icono` sale a null: la categoría queda sin él.
+  @visibleForTesting
+  static String cuerpoCategoria(String nombre, String? icono) =>
+      jsonEncode({'nombre': nombre, 'icono': icono});
+
+  /// Crea una categoría propia y devuelve la creada (con su `categoriaId`).
+  /// Un 409 (nombre repetido o tope de 20) llega como [ApiException]: su texto
+  /// sale con [mensajeDelServidor].
+  static Future<Map<String, dynamic>> crearCategoria(
+    String nombre,
+    String? icono,
+  ) async {
+    final headers = await ApiServiceCore.getHeaders();
+    final response = await ApiServiceCore.enviar(
+      () => ApiServiceCore.cliente.post(
+        Uri.parse('$_baseUrl/categorias'),
+        headers: headers,
+        body: cuerpoCategoria(nombre, icono),
+      ),
+    );
+    ApiServiceCore.verificar(response, ok: const [200, 201]);
+    return ApiServiceCore.parsear(
+      () => jsonDecode(response.body) as Map<String, dynamic>,
+    );
+  }
+
+  /// Cambia el nombre y el emoji de una categoría propia.
+  static Future<Map<String, dynamic>> actualizarCategoria(
+    int categoriaId,
+    String nombre,
+    String? icono,
+  ) async {
+    final headers = await ApiServiceCore.getHeaders();
+    final response = await ApiServiceCore.enviar(
+      () => ApiServiceCore.cliente.put(
+        Uri.parse('$_baseUrl/categorias/$categoriaId'),
+        headers: headers,
+        body: cuerpoCategoria(nombre, icono),
+      ),
+    );
+    ApiServiceCore.verificar(response);
+    return ApiServiceCore.parsear(
+      () => jsonDecode(response.body) as Map<String, dynamic>,
+    );
+  }
+
+  /// Borra una categoría propia. Sus hábitos no se borran: el backend los deja
+  /// sin categoría.
+  static Future<void> borrarCategoria(int categoriaId) async {
+    final headers = await ApiServiceCore.getHeaders();
+    final response = await ApiServiceCore.enviar(
+      () => ApiServiceCore.cliente.delete(
+        Uri.parse('$_baseUrl/categorias/$categoriaId'),
+        headers: headers,
+      ),
+    );
+    ApiServiceCore.verificar(response, ok: const [200, 204]);
+  }
+
+  /// El mensaje que manda el servidor en un 409 de categorías, o null si [e]
+  /// no es un 409 o no trae texto. Acepta un JSON con `mensaje`, `message` o
+  /// `error`, o un texto plano. Es la única excepción a «el texto crudo del
+  /// backend no se enseña»: explica un nombre repetido o el tope de 20, que la
+  /// app no puede saber de antemano.
+  static String? mensajeDelServidor(Object e) {
+    if (e is! ApiException || e.codigoEstado != 409) return null;
+    final cuerpo = e.cuerpo?.trim();
+    if (cuerpo == null || cuerpo.isEmpty) return null;
+    try {
+      final data = jsonDecode(cuerpo);
+      if (data is Map) {
+        for (final clave in const ['mensaje', 'message', 'error']) {
+          final v = data[clave];
+          if (v is String && v.trim().isNotEmpty) return v.trim();
+        }
+        return null;
+      }
+      if (data is String && data.trim().isNotEmpty) return data.trim();
+      return null;
+    } catch (_) {
+      return cuerpo;
+    }
+  }
+
   // ── Alta / edición / baja ──────────────────────────────
   static Future<List<String>> crearHabito(
     String nombre,

@@ -443,5 +443,19 @@
   "invitarError": "Couldn't share the invite. Please try again.",
   "cierreCompartir": "Share",
   "cierreTextoCompartir": "Today I closed the day with Norday Habits.\n{enlace}",
-  "cierrePostalHabitos": "{n, plural, =1{1 habit done} other{{n} habits done}}"
+  "cierrePostalHabitos": "{n, plural, =1{1 habit done} other{{n} habits done}}",
+  "catNueva": "+ New category",
+  "catNuevaEtiqueta": "New category",
+  "catCambiar": "Change name or emoji",
+  "catLabelNombre": "Name",
+  "catLabelEmoji": "Emoji",
+  "catSinEmoji": "No emoji",
+  "catNombreLongitud": "The name must be 2 to 30 characters long.",
+  "catGuardar": "Save",
+  "catErrorGuardar": "Couldn't save the category",
+  "catBorrar": "Delete",
+  "catBorrarTitulo": "Delete “{nombre}”?",
+  "catBorrarCuerpo": "Its habits are left without a category. No habit is deleted.",
+  "catErrorBorrar": "Couldn't delete the category",
+  "catPistaMantener": "Press and hold to rename or delete it"
 }
