@@ -7,6 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:habitos_app_mobile/l10n/app_localizations.dart';
 import 'package:habitos_app_mobile/screens/invitar_screen.dart';
+import 'package:habitos_app_mobile/services/postal_cierre.dart';
+import 'package:habitos_app_mobile/widgets/tarjeta_cierre_dia.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -45,6 +47,49 @@ void main() {
       const DatoNori(fase: 'adulto', nombre: 'Pipo', nivel: 12),
     ),
   ];
+
+  // La postal del cierre del día (T-043), a `/tmp/postal-T-043/`.
+  for (final (codigo, nombre) in [
+    ('TEMA_PROFUNDIDAD', 'profundidad'),
+    ('TEMA_NEOTOKYO_PLUS', 'neotokyo'),
+    ('TEMA_DULCE', 'dulce'),
+  ]) {
+    testWidgets('exporta la postal del cierre en $nombre', skip: !exportar, (
+      tester,
+    ) async {
+      aplicarIdentidadEquipada(codigo);
+      final clave = GlobalKey();
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.deTema(temaEquipadoNotifier.value),
+          locale: const Locale('es'),
+          localizationsDelegates: [
+            ...AppLocalizations.localizationsDelegates,
+            ...NordayCoreLocalizations.localizationsDelegates,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Center(
+            child: RepaintBoundary(
+              key: clave,
+              child: TarjetaCierreDia(total: 5, fecha: DateTime(2026, 11, 22)),
+            ),
+          ),
+        ),
+      );
+      for (var i = 0; i < 5; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 200)),
+        );
+        await tester.pump(const Duration(milliseconds: 200));
+      }
+      await tester.runAsync(() async {
+        final png = await PostalCierre.capturarPostal(clave);
+        final fichero = File('/tmp/postal-T-043/postal-$nombre.png');
+        await fichero.create(recursive: true);
+        await fichero.writeAsBytes(png);
+      });
+    });
+  }
 
   for (final (codigo, sufijo, dato) in variantes) {
     final nombre = '${codigo.toLowerCase()}_$sufijo';

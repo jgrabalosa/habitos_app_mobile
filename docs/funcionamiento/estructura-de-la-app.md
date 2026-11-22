@@ -47,6 +47,21 @@ párrafo de este fichero.
   `obtenerInventario`, `comprar`, `equipar` y `ahora`. Importa
   `precio_tienda.dart` y `nori_vestida.dart` del core directamente, porque su
   barrel no los exporta.
+- **Compartir el cierre del día** (T-043): `_cerrarDia` pasa
+  `textoCompartir` (`cierreCompartir`) a `mostrarCierreDelDia`; si devuelve
+  `ResultadoCierreDelDia.compartir`, `PostalCierre.compartir`
+  (`services/postal_cierre.dart`) monta `TarjetaCierreDia`
+  (`widgets/tarjeta_cierre_dia.dart`, 360 × 450 puntos → PNG de 1080 × 1350)
+  en una entrada del `Overlay` fuera de la pantalla, la captura y abre el menú
+  de `share_plus` con el texto `cierreTextoCompartir` (la frase, y el enlace de
+  invitar en su propia línea). La postal lleva el fondo de la identidad,
+  arriba el nombre de la figura (`nombreConstelacion`, `nombreRamo` o
+  `nombreLetrero`, según la identidad) y la fecha, `FiguraDelDia` del core
+  grande, «N hábitos hechos» y el wordmark. **Nunca los nombres de los
+  hábitos.** No pide nada al backend: se comparte igual sin red. Evento
+  `cierre_compartido` (`identidad` y `total_habitos`), salvo que se cancele el
+  menú. Seams de test: `PostalCierre.menu` y `PostalCierre.medir`. Ese día no
+  se pide la reseña (ver abajo).
 - **La reseña de Play (In-App Review)** se pide justo después de la ceremonia
   del cierre del día, nunca a mitad del día. `DashboardScreen` cuenta los días
   de uso (distintos días en que se completa un hábito; `resena_dias_uso` y
@@ -57,7 +72,7 @@ párrafo de este fichero.
   abierta) no se pide y la marca sigue. Sin preguntas previas, sin botón y sin
   nada encima de la tarjeta (normas de Google). El seam de test es
   `DashboardScreen.solicitarResena`. El día que se comparte el cierre (T-043)
-  no se pide: lo resuelve esa tarjeta.
+  no se pide y `resena_pendiente` se queda para el siguiente cierre.
 - El permiso de notificaciones se pide al elegir la hora del recordatorio, en
   `habito_screen.dart`, con `NotificacionesService` del core: nunca al entrar.
   Al crear desde una plantilla, que trae la hora puesta, se pide al guardar

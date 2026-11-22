@@ -150,6 +150,7 @@ Con el core 0.60.0.
 - «Invitar a un amigo» es ahora una postal de Nori en 4:5, con su fase y un dato suyo que se puede quitar antes de compartir.
 - El check vivo: de vez en cuando, algo da una vuelta al aro de un hábito sin hacer (un cohete en Profundidad, un destello de neón en Neotokyo+, una punta de lápiz en Dulce).
 - Tu Nori, con su fase y lo que lleva puesto, es tu avatar en Colección y en Mi cuenta.
+- Al cerrar el día, un botón «Compartir» al final de la ceremonia: una postal con la figura de tu día (constelación, letrero o ramo), la fecha y cuántos hábitos hiciste. Nunca lleva los nombres de tus hábitos.
 - Al entrar en la app, una tarjeta te regala el gorro de Papá Noel (gratis y tuyo para siempre) hasta el 7 de enero, si aún no lo tienes. Si no llevas nada en la cabeza, Nori se lo pone al momento.
 
 ### Mejoras
