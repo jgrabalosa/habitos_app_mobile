@@ -67,6 +67,12 @@ class HomeShell extends StatefulWidget {
   final bool mostrarOnboarding;
   const HomeShell({super.key, this.mostrarOnboarding = false});
 
+  /// La llamada al aviso de actualización del core. Seam para los tests: el
+  /// real habla con Google Play.
+  @visibleForTesting
+  static Future<void> Function(BuildContext context) comprobarActualizacion =
+      AvisoActualizacion.comprobar;
+
   @override
   State<HomeShell> createState() => _HomeShellState();
 }
@@ -201,7 +207,17 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
 
     if (widget.mostrarOnboarding) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _empezarAltaNueva());
+    } else {
+      _avisarDeActualizacion();
     }
+  }
+
+  /// Avisa de que hay versión nueva en Play (el core limita a una vez al día).
+  /// Nunca en un alta nueva ni con el recorrido guiado abierto, y sin esperar:
+  /// no retrasa Hoy.
+  void _avisarDeActualizacion() {
+    if (!mounted || widget.mostrarOnboarding || _recorrido.activo) return;
+    unawaited(HomeShell.comprobarActualizacion(context));
   }
 
   /// El alta nueva: la bienvenida, el formulario real del primer hábito y,

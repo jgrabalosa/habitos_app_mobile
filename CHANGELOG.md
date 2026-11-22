@@ -150,6 +150,7 @@ Con el core 0.60.0.
 - «Invitar a un amigo» es ahora una postal de Nori en 4:5, con su fase y un dato suyo que se puede quitar antes de compartir.
 - El check vivo: de vez en cuando, algo da una vuelta al aro de un hábito sin hacer (un cohete en Profundidad, un destello de neón en Neotokyo+, una punta de lápiz en Dulce).
 - Tu Nori, con su fase y lo que lleva puesto, es tu avatar en Colección y en Mi cuenta.
+- Si hay una versión nueva en Google Play, la app te lo ofrece al abrirla (como mucho una vez al día): se descarga mientras la usas y, al acabar, un aviso te deja reiniciar. Nunca te obliga.
 
 ### Mejoras
 

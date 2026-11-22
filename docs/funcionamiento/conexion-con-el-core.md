@@ -61,3 +61,13 @@ puntos:
     los textos de actualización obligatoria y de borrado de cuenta, que viven
     en los `app_*.arb`. Sin eso el core dice «Norday» y frases neutras.
     `onGenerateTitle` usa `appNombre` de la app, no `appTitulo` del core.
+11. **El aviso de actualización** — `HomeShell` llama a
+    `AvisoActualizacion.comprobar(context)` (core, T-058a) al final de
+    `_cargarUsuario`, sin esperarlo (`unawaited`): no retrasa Hoy. Solo si no
+    es un alta nueva (`mostrarOnboarding`) y el recorrido guiado no está
+    activo. Avisa, nunca obliga (modo flexible de Google Play; obligar es la
+    versión mínima del backend) y el core lo limita a una vez al día. Solo
+    Habits lo llama. Nunca a la vez que otra tarjeta: cuando entre la del
+    gorro (T-057), la llamada irá después de que esa se cierre. El seam
+    `HomeShell.comprobarActualizacion` (`@visibleForTesting`) lo sustituye en
+    los tests (`test/home_shell_actualizacion_test.dart`).
