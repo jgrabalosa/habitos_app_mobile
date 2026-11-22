@@ -34,6 +34,16 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- El icono pequeño de las notificaciones (FCM: recordatorios, avisos
+             de la app y campañas): blanco sobre transparente, porque Android
+             lo pinta solo con su transparencia; con el de la app salía un
+             cuadrado. Lo genera tool/icono_notificacion.py. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_stat_norday" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/notificacion_acento" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

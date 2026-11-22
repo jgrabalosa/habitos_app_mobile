@@ -103,6 +103,13 @@ párrafo de este fichero.
   «Activar», `permiso_avisos` con la respuesta del sistema. Seams de test:
   `PermisoAvisos.concedido`, `bloqueadoEnAjustes`, `pedirYRegistrar` y
   `preferencias`.
+- **El icono pequeño de las notificaciones** es `ic_stat_norday` (la brújula sin
+  las marcas del aro, blanca sobre transparente), declarado en el
+  `AndroidManifest.xml` como `default_notification_icon` de FCM, con
+  `notificacion_acento` (Verde Esmeralda) de color. Android lo pinta solo con
+  su transparencia: sin él salía un cuadrado. Se regenera con
+  `python3 tool/icono_notificacion.py` (Pillow); lo vigila
+  `test/android_manifest_test.dart`.
 - El icono del hábito: `habito_screen.dart` manda el `codigoIcono` de la
   plantilla al crear desde ella y el que ya tenía el hábito al editar; desde
   cero, `sparkles`. La fila «Icono» abre la rejilla
