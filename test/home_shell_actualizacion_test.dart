@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:habitos_app_mobile/l10n/app_localizations.dart';
 import 'package:habitos_app_mobile/screens/home_shell.dart';
+import 'package:habitos_app_mobile/widgets/permiso_avisos.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -25,9 +26,14 @@ void main() {
     HomeShell.comprobarActualizacion = (_) async {
       llamadas++;
     };
+    // Con permiso, la tarjeta de avisos (T-060) no sale ni retrasa el aviso.
+    PermisoAvisos.concedido = () async => true;
   });
 
-  tearDown(() => HomeShell.comprobarActualizacion = llamadaOriginal);
+  tearDown(() {
+    HomeShell.comprobarActualizacion = llamadaOriginal;
+    PermisoAvisos.reiniciarParaTest();
+  });
 
   Future<void> montar(WidgetTester tester, {required bool onboarding}) async {
     await tester.pumpWidget(

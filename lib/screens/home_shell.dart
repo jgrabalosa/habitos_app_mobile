@@ -10,6 +10,7 @@ import '../services/anclas_recorrido.dart';
 import '../services/crashlytics_service.dart';
 import '../services/recorrido_onboarding.dart';
 import '../widgets/bienvenida.dart';
+import '../widgets/permiso_avisos.dart';
 import '../widgets/regalo_gorro.dart';
 import 'ideas_habito_screen.dart';
 import '../services/habitos_refresh.dart';
@@ -108,7 +109,28 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   /// hace falta repintar: las anclas se enganchan mientras el recorrido está
   /// activo, y la pista de Hoy tiene que aparecer en cuanto empieza.
   void _alCambiarPaso() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    setState(() {});
+    // La pista del primer hábito ha terminado: ahora toca el permiso de avisos.
+    if (_permisoTrasAlta && !_recorrido.activo) {
+      _permisoTrasAlta = false;
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => unawaited(_ofrecerPermisoTrasAlta()),
+      );
+    }
+  }
+
+  /// True entre que arranca la pista del primer hábito y que termina: al
+  /// terminar, sale la tarjeta del permiso de avisos.
+  bool _permisoTrasAlta = false;
+
+  Future<void> _ofrecerPermisoTrasAlta() async {
+    if (!mounted) return;
+    await PermisoAvisos.mostrarSiToca(
+      context,
+      usuarioId: _usuarioId,
+      origen: OrigenPermisoAvisos.alta,
+    );
   }
 
   /// La pista de Hoy tras guardar el primer hábito: una sola, sobre el círculo
@@ -218,15 +240,24 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     }
   }
 
-  /// Lo que puede salir al entrar, de uno en uno: la tarjeta del gorro y,
-  /// cuando se cierra (o si no sale), el aviso de versión nueva.
+  /// Lo que puede salir al entrar, de uno en uno: la tarjeta del gorro; si no
+  /// ha salido, la del permiso de avisos (como mucho una tarjeta por
+  /// apertura); y, cuando se cierra (o si no sale ninguna), el aviso de versión
+  /// nueva.
   Future<void> _alEntrar() async {
     if (!mounted) return;
-    await RegaloGorro.mostrarSiToca(
+    final salioGorro = await RegaloGorro.mostrarSiToca(
       context,
       usuarioId: _usuarioId,
       altaNueva: widget.mostrarOnboarding,
     );
+    if (!salioGorro && mounted && !_recorrido.activo) {
+      await PermisoAvisos.mostrarSiToca(
+        context,
+        usuarioId: _usuarioId,
+        origen: OrigenPermisoAvisos.apertura,
+      );
+    }
     _avisarDeActualizacion();
   }
 
@@ -254,6 +285,11 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     notificarHabitosCambiados();
     _irAPestana(0);
     _iniciarPista();
+    if (_recorrido.activo) {
+      _permisoTrasAlta = true;
+    } else {
+      unawaited(_ofrecerPermisoTrasAlta());
+    }
   }
 
   Future<void> _logout() async {
