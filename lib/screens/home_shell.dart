@@ -10,6 +10,7 @@ import '../services/anclas_recorrido.dart';
 import '../services/crashlytics_service.dart';
 import '../services/recorrido_onboarding.dart';
 import '../widgets/bienvenida.dart';
+import '../widgets/regalo_gorro.dart';
 import 'ideas_habito_screen.dart';
 import '../services/habitos_refresh.dart';
 import '../services/al_volver.dart';
@@ -66,6 +67,12 @@ Widget destinoConIdentidad(
 class HomeShell extends StatefulWidget {
   final bool mostrarOnboarding;
   const HomeShell({super.key, this.mostrarOnboarding = false});
+
+  /// La llamada al aviso de actualización del core. Seam para los tests: el
+  /// real habla con Google Play.
+  @visibleForTesting
+  static Future<void> Function(BuildContext context) comprobarActualizacion =
+      AvisoActualizacion.comprobar;
 
   @override
   State<HomeShell> createState() => _HomeShellState();
@@ -201,7 +208,34 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
 
     if (widget.mostrarOnboarding) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _empezarAltaNueva());
+    } else {
+      // Primero el regalo del gorro (decide él si toca: oferta vigente, sin el
+      // gorro, sin recorrido activo); después, y nunca a la vez, el aviso de
+      // versión nueva. En un alta nueva, ninguno de los dos.
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => unawaited(_alEntrar()),
+      );
     }
+  }
+
+  /// Lo que puede salir al entrar, de uno en uno: la tarjeta del gorro y,
+  /// cuando se cierra (o si no sale), el aviso de versión nueva.
+  Future<void> _alEntrar() async {
+    if (!mounted) return;
+    await RegaloGorro.mostrarSiToca(
+      context,
+      usuarioId: _usuarioId,
+      altaNueva: widget.mostrarOnboarding,
+    );
+    _avisarDeActualizacion();
+  }
+
+  /// Avisa de que hay versión nueva en Play (el core limita a una vez al día).
+  /// Nunca en un alta nueva ni con el recorrido guiado abierto, y sin esperar:
+  /// no retrasa Hoy.
+  void _avisarDeActualizacion() {
+    if (!mounted || widget.mostrarOnboarding || _recorrido.activo) return;
+    unawaited(HomeShell.comprobarActualizacion(context));
   }
 
   /// El alta nueva: la bienvenida, el formulario real del primer hábito y,
@@ -546,6 +580,9 @@ void mostrarMenuShell(
                       (_) => PerfilScreen(
                         usuarioId: usuarioId,
                         destinoTrasLogin: destinoTrasLogin,
+                        // Los avisos de la app (la vuelta y el momento débil)
+                        // son de Habits: solo esta app enseña su interruptor.
+                        mostrarAvisosApp: true,
                       ),
                     ),
                   ),

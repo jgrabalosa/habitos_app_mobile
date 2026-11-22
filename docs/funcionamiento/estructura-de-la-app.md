@@ -28,6 +28,25 @@ párrafo de este fichero.
   tarjeta (`widgets/bienvenida.dart`), el formulario real del primer hábito y,
   si se guarda, una pista sobre su círculo en Hoy. Nada de esto sale a quien
   no es alta nueva.
+- **El regalo del gorro de Papá Noel** (T-057, `widgets/regalo_gorro.dart`) es
+  lo otro que puede salir al entrar: una tarjeta como la bienvenida (sin
+  «Ahora no», sin cerrar tocando fuera ni con atrás) con Nori con el gorro y un
+  solo botón. `HomeShell` llama a `RegaloGorro.mostrarSiToca` tras
+  `_cargarUsuario`, y sale solo si **no** es un alta nueva (esa la ve en la
+  siguiente apertura), el recorrido guiado no está activo, el catálogo trae
+  `PRENDA_GORRO_NOEL` con `precioEnTienda` gratis hoy (fecha del móvil) y el
+  usuario no lo tiene en el inventario. Si el catálogo o el inventario fallan,
+  no sale. **No se guarda nada en el móvil**: deja de salir sola al acabar la
+  oferta (7-ene-2027) o en cuanto lo tiene. El botón compra
+  (`ApiServiceCore.comprarProducto`; un 409 cuenta como hecho) y, si el
+  inventario no tenía ninguna prenda equipada de `Cabeza`, lo equipa con
+  `Equipamiento.equiparPrenda`; si la compra falla, la tarjeta se cierra igual
+  sin mensaje y vuelve a salir en la siguiente apertura. Eventos:
+  `regalo_gorro_visto` y `regalo_gorro_cogido` (`resultado`: `ok`,
+  `ya_lo_tenia`, `fallo`). Seams de test: `RegaloGorro.obtenerCatalogo`,
+  `obtenerInventario`, `comprar`, `equipar` y `ahora`. Importa
+  `precio_tienda.dart` y `nori_vestida.dart` del core directamente, porque su
+  barrel no los exporta.
 - **La reseña de Play (In-App Review)** se pide justo después de la ceremonia
   del cierre del día, nunca a mitad del día. `DashboardScreen` cuenta los días
   de uso (distintos días en que se completa un hábito; `resena_dias_uso` y

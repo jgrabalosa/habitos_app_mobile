@@ -150,6 +150,9 @@ Con el core 0.60.0.
 - «Invitar a un amigo» es ahora una postal de Nori en 4:5, con su fase y un dato suyo que se puede quitar antes de compartir.
 - El check vivo: de vez en cuando, algo da una vuelta al aro de un hábito sin hacer (un cohete en Profundidad, un destello de neón en Neotokyo+, una punta de lápiz en Dulce).
 - Tu Nori, con su fase y lo que lleva puesto, es tu avatar en Colección y en Mi cuenta.
+- Al entrar en la app, una tarjeta te regala el gorro de Papá Noel (gratis y tuyo para siempre) hasta el 7 de enero, si aún no lo tienes. Si no llevas nada en la cabeza, Nori se lo pone al momento.
+- En Perfil, un interruptor «Avisos de Norday» para apagar los avisos de la app (como mucho dos a la semana: cuando llevas días sin pasar o una semana se queda a medias). Tus recordatorios no cambian.
+- Si hay una versión nueva en Google Play, la app te lo ofrece al abrirla (como mucho una vez al día): se descarga mientras la usas y, al acabar, un aviso te deja reiniciar. Nunca te obliga.
 
 ### Mejoras
 
@@ -157,5 +160,7 @@ Con el core 0.60.0.
 - En Neotokyo+, el sol de «La ola» sube un poco y ya no toca la cresta.
 - En Colección, el nombre y el botón de cada identidad van en la misma fila.
 - Fuera del AndroidManifest unos meta-data que ya no se usaban.
+- En Dulce, cada flor nueva del ramo entra con su fundido, no solo la primera.
+- La ayuda de la tienda menciona la ropa de Nori.
 
 Para anunciar: nada.

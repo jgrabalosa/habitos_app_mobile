@@ -110,6 +110,28 @@ class AnalyticsHabitos {
     }
   }
 
+  /// La tarjeta que regala el gorro de Papá Noel se enseña.
+  static Future<void> regaloGorroVisto() async {
+    try {
+      await AnalyticsCore.analytics.logEvent(name: 'regalo_gorro_visto');
+    } catch (e) {
+      debugPrint('Analytics: no se registró regalo_gorro_visto: $e');
+    }
+  }
+
+  /// Lo que pasó al tocar el botón de la tarjeta del gorro: `ok`,
+  /// `ya_lo_tenia` (409 de la compra) o `fallo`.
+  static Future<void> regaloGorroCogido(String resultado) async {
+    try {
+      await AnalyticsCore.analytics.logEvent(
+        name: 'regalo_gorro_cogido',
+        parameters: {'resultado': resultado},
+      );
+    } catch (e) {
+      debugPrint('Analytics: no se registró regalo_gorro_cogido: $e');
+    }
+  }
+
   /// Se abre «Invitar a un amigo».
   static Future<void> invitarAbierto() async {
     try {
