@@ -10,6 +10,7 @@ import '../services/anclas_recorrido.dart';
 import '../services/crashlytics_service.dart';
 import '../services/recorrido_onboarding.dart';
 import '../widgets/bienvenida.dart';
+import '../widgets/regalo_gorro.dart';
 import 'ideas_habito_screen.dart';
 import '../services/habitos_refresh.dart';
 import '../services/al_volver.dart';
@@ -201,6 +202,18 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
 
     if (widget.mostrarOnboarding) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _empezarAltaNueva());
+    } else {
+      // El regalo del gorro: decide él si toca (oferta vigente, sin el gorro,
+      // sin recorrido activo). En un alta nueva, a la siguiente apertura.
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => unawaited(
+          RegaloGorro.mostrarSiToca(
+            context,
+            usuarioId: _usuarioId,
+            altaNueva: widget.mostrarOnboarding,
+          ),
+        ),
+      );
     }
   }
 
