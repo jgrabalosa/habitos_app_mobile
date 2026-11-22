@@ -50,6 +50,20 @@ class AnalyticsHabitos {
     }
   }
 
+  /// Se enseña la tarjeta de Nori que pide el permiso de avisos. [origen]:
+  /// `alta` (tras el primer hábito) o `apertura` (quien ya usaba la app). El
+  /// resultado lo mide `permiso_avisos`.
+  static Future<void> permisoAvisosOfrecido(String origen) async {
+    try {
+      await AnalyticsCore.analytics.logEvent(
+        name: 'permiso_avisos_ofrecido',
+        parameters: {'origen': origen},
+      );
+    } catch (e) {
+      debugPrint('Analytics: no se registró permiso_avisos_ofrecido: $e');
+    }
+  }
+
   /// El valor de `resultado` de `enfoque_abierto`. `faltaPrueba` solo existe
   /// en el flavor de prueba, que no abrió nada: cuenta como `nada`.
   static String resultadoEnfoque(AperturaEnfoque apertura) =>

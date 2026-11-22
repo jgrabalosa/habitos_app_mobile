@@ -54,13 +54,15 @@ class RegaloGorro {
   /// Enseña la tarjeta si toca; si no, o si algo falla, no pasa nada.
   ///
   /// [altaNueva]: quien se acaba de registrar la ve en la siguiente apertura.
-  /// Se completa al cerrarse la tarjeta (o enseguida si no sale).
-  static Future<void> mostrarSiToca(
+  /// Se completa al cerrarse la tarjeta (o enseguida si no sale) y devuelve si
+  /// la enseñó: `HomeShell` lo usa para no poner otra tarjeta en la misma
+  /// apertura.
+  static Future<bool> mostrarSiToca(
     BuildContext context, {
     required int usuarioId,
     required bool altaNueva,
   }) async {
-    if (altaNueva || RecorridoOnboarding.instancia.activo) return;
+    if (altaNueva || RecorridoOnboarding.instancia.activo) return false;
 
     final int productoId;
     final bool llevaCabeza;
@@ -71,11 +73,11 @@ class RegaloGorro {
       final gorro = catalogo.whereType<Map>().where(
         (p) => p['codigo'] == codigoGorro,
       );
-      if (gorro.isEmpty) return;
+      if (gorro.isEmpty) return false;
       final precio = precioEnTienda(gorro.first, ahora());
-      if (precio == null || !precio.gratis) return;
+      if (precio == null || !precio.gratis) return false;
       final id = gorro.first['productoId'];
-      if (id is! int) return;
+      if (id is! int) return false;
 
       var loTiene = false;
       var cabeza = false;
@@ -88,13 +90,13 @@ class RegaloGorro {
           cabeza = true;
         }
       }
-      if (loTiene) return;
+      if (loTiene) return false;
       productoId = id;
       llevaCabeza = cabeza;
     } catch (_) {
-      return;
+      return false;
     }
-    if (!context.mounted) return;
+    if (!context.mounted) return false;
 
     unawaited(AnalyticsHabitos.regaloGorroVisto());
     await showGeneralDialog<void>(
@@ -115,6 +117,7 @@ class RegaloGorro {
         );
       },
     );
+    return true;
   }
 }
 
