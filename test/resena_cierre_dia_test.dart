@@ -56,10 +56,12 @@ void main() {
   final usuarioOriginal = DashboardScreen.cargarUsuario;
   final hoyOriginal = DashboardScreen.cargarHoy;
   final resenaOriginal = DashboardScreen.solicitarResena;
+  final eventoOriginal = DashboardScreen.registrarResenaPedida;
   final completarOriginal = PanelMinutos.completar;
   final registrosOriginal = PanelMinutos.registros;
 
   late int peticionesResena;
+  late List<int> hitosRegistrados;
   late int minutosEnviados;
   late AppLocalizations l;
 
@@ -106,6 +108,10 @@ void main() {
     DashboardScreen.solicitarResena = () async {
       peticionesResena++;
     };
+    hitosRegistrados = [];
+    DashboardScreen.registrarResenaPedida = (hito) async {
+      hitosRegistrados.add(hito);
+    };
     PanelMinutos.registros = (_) async => const [];
     PanelMinutos.completar =
         (
@@ -124,6 +130,7 @@ void main() {
     DashboardScreen.cargarUsuario = usuarioOriginal;
     DashboardScreen.cargarHoy = hoyOriginal;
     DashboardScreen.solicitarResena = resenaOriginal;
+    DashboardScreen.registrarResenaPedida = eventoOriginal;
     PanelMinutos.completar = completarOriginal;
     PanelMinutos.registros = registrosOriginal;
   });
@@ -213,6 +220,29 @@ void main() {
     await completarElDia(tester);
 
     expect(peticionesResena, 0);
+    expect(hitosRegistrados, isEmpty);
+  });
+
+  testWidgets('cerrar el día con una pendiente: un evento con su hito', (
+    tester,
+  ) async {
+    prefs(diasUso: 14, pendiente: true);
+    await montar(tester);
+    await completarElDia(tester);
+
+    expect(peticionesResena, 1);
+    expect(hitosRegistrados, [15]);
+  });
+
+  testWidgets('pedida con 4 días de uso (el hito 3 llegó un día sin cerrar): '
+      'hito 3', (tester) async {
+    prefs(diasUso: 3, pendiente: true);
+    await montar(tester);
+    await completarElDia(tester);
+
+    final sp = await SharedPreferences.getInstance();
+    expect(sp.getInt('resena_dias_uso'), 4);
+    expect(hitosRegistrados, [3]);
   });
 
   testWidgets('la marca sigue después de volver a montar la pantalla', (

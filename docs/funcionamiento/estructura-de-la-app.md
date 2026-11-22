@@ -55,8 +55,13 @@ párrafo de este fichero.
   `resena_pendiente`, y `_cerrarDia` la pide y la borra tras
   `mostrarCierreDelDia`. Si no hay ceremonia (día ya cerrado, pista de Hoy
   abierta) no se pide y la marca sigue. Sin preguntas previas, sin botón y sin
-  nada encima de la tarjeta (normas de Google). El seam de test es
-  `DashboardScreen.solicitarResena`. El día que se comparte el cierre (T-043)
+  nada encima de la tarjeta (normas de Google). Justo antes de pedirla se
+  registra el evento `resena_pedida` (`AnalyticsHabitos.resenaPedida`) con
+  `hito` (3, 15 o 30): el último de `_hitosResena` que no pasa de los días de
+  uso, porque puede pedirse días después de llegar al hito. Solo dice que se
+  pidió: Google no cuenta si enseñó el diálogo ni si el usuario puntuó. Los
+  seams de test son `DashboardScreen.solicitarResena` y
+  `DashboardScreen.registrarResenaPedida`. El día que se comparte el cierre (T-043)
   no se pide: lo resuelve esa tarjeta.
 - El permiso de notificaciones se pide al elegir la hora del recordatorio, en
   `habito_screen.dart`, con `NotificacionesService` del core: nunca al entrar.
