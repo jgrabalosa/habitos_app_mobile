@@ -559,6 +559,9 @@ void mostrarMenuShell(
                       (_) => PerfilScreen(
                         usuarioId: usuarioId,
                         destinoTrasLogin: destinoTrasLogin,
+                        // Los avisos de la app (la vuelta y el momento débil)
+                        // son de Habits: solo esta app enseña su interruptor.
+                        mostrarAvisosApp: true,
                       ),
                     ),
                   ),
