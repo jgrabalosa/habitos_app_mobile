@@ -1,6 +1,6 @@
 # Ficha de Google Play: español
 
-_Copiada de Play Console («Ficha de Play Store predeterminada») el 22-nov-2026, tal como está publicada. Es la fuente única: si cambia aquí, se pega en Play Console, y al revés. Las traducciones (`en-US.md`, `pt-PT.md`) siguen esta misma estructura (T-062)._
+_Copiada de Play Console («Ficha de Play Store predeterminada») el 22-nov-2026, tal como está publicada, con Nori en masculino (D-9; corregido el 22-nov: Play Console aún dice «compañera», «adulta» y «aliméntala»). Es la fuente única: si cambia aquí, se pega en Play Console, y al revés. Las traducciones (`en-US.md`, `pt-PT.md`) siguen esta misma estructura (T-062)._
 
 ## Nombre
 
@@ -20,8 +20,8 @@ Muchas apps de hábitos cuentan rachas: fallas un día y vuelves a cero. Norday 
 🌱 Hábitos y rutinas a tu medida
 Crea todos los hábitos que quieras y organízalos por categorías. Elige cómo encajan en tu rutina diaria: cada día, unas veces por semana o los días concretos que tú decidas. ¿No sabes por dónde empezar? Te proponemos siete ideas. Márcalos con un toque y mira cómo avanzan tu día y tu semana.
 
-🐣 Nori, tu compañera de hábitos
-Cada hábito que cumples hace crecer a Nori, que evoluciona de huevo a cría y a adulta. Aliméntala con tus puntos para que gane experiencia.
+🐣 Nori, tu compañero de hábitos
+Cada hábito que cumples hace crecer a Nori, que evoluciona de huevo a cría y a adulto. Aliméntalo con tus puntos para que gane experiencia.
 
 ✨ Una app a tu manera
 Tres identidades visuales cambian los colores, la letra, las formas y el fondo de toda la app: Profundidad, un viaje entre constelaciones; Neotokyo+, neón sobre negro; y Dulce, dibujada a lápiz. Al empezar eliges una; las demás se consiguen con puntos en la tienda. Cuando completas el día, en Profundidad se ilumina una constelación y en Dulce se completa un ramo de flores.
