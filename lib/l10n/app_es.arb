@@ -478,6 +478,10 @@
       }
     }
   },
+  "pistaEstaSemana": "Tus semanales, para cuando te venga bien antes del domingo.",
+  "pistaSemanaCerrada": "Ha acabado la semana: tu ritmo se ha puesto al día.",
+  "pistaExtraSemana": "¡Semana completa! Un 20 % más de puntos.",
+  "pistaCerrar": "Cerrar la nota",
   "pausaProducto": "Pausa",
   "pausaProductoDesc": "Pausa un hábito sin perder su ritmo: no sale en Hoy ni te avisa hasta que lo reanudes. Se usa con «Pausar», en Hábitos o en el detalle de un hábito.",
   "pausaProductoUso": "Se usa con «Pausar», en Hábitos o en el detalle de un hábito.",

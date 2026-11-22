@@ -14,8 +14,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/habito.dart';
 import '../models/hoy.dart';
 import '../services/anclas_recorrido.dart';
+import '../services/pistas_nori.dart';
 import '../services/recorrido_onboarding.dart';
 import '../widgets/estados_hoy.dart';
+import '../widgets/nota_pista.dart';
 import '../widgets/identidad_ui.dart';
 import '../widgets/panel_ritmo.dart';
 import '../widgets/cabecera_otro_dia.dart';
@@ -176,6 +178,14 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   String get _claveCierre => 'cierre_dia_fecha_$_usuarioId';
 
+  /// La pista de Nori «la primera vez» que está en pantalla (ver
+  /// `PistasNori`), o null. Se cierra tocándola.
+  String? _pistaAbierta;
+
+  /// Para `extra_semana`: el hábito cuya tarjeta lleva la nota debajo, el que
+  /// el usuario acaba de completar y por eso tiene a la vista.
+  int? _pistaHabitoId;
+
   /// Si la última carga falló. Un SnackBar solo se iba y dejaba una lista
   /// vacía detrás, que se lee igual que "no tienes hábitos".
   bool _errorCarga = false;
@@ -238,7 +248,83 @@ class _DashboardScreenState extends State<DashboardScreen>
     habitosCambiadosNotifier.removeListener(_alCambiarHabitos);
     appRefreshNotifier.removeListener(_alRefrescoApp);
     _ctrlTransito?.dispose();
+    final pista = _pistaAbierta;
+    if (pista != null) PistasNori.cerrar(pista);
     super.dispose();
+  }
+
+  /// Pide enseñar una pista. Si puede salir, queda abierta hasta que se toque.
+  /// [habitoId] solo lo usa `extra_semana`, para ponerla junto a su tarjeta.
+  Future<void> _ofrecerPista(String id, {int? habitoId}) async {
+    if (_pistaAbierta != null) return;
+    if (!await PistasNori.intentar(id, usuarioId: _usuarioId)) return;
+    if (!mounted) {
+      PistasNori.cerrar(id);
+      return;
+    }
+    setState(() {
+      _pistaAbierta = id;
+      _pistaHabitoId = habitoId;
+    });
+  }
+
+  void _cerrarPista() {
+    final id = _pistaAbierta;
+    if (id == null) return;
+    PistasNori.cerrar(id);
+    setState(() {
+      _pistaAbierta = null;
+      _pistaHabitoId = null;
+    });
+  }
+
+  /// La nota de la pista [id] si es la que está abierta; si no, nada.
+  Widget _notaDePista(AppLocalizations l, String id) {
+    if (_pistaAbierta != id) return const SizedBox.shrink();
+    final texto = switch (id) {
+      PistasNori.estaSemana => l.pistaEstaSemana,
+      PistasNori.semanaCerrada => l.pistaSemanaCerrada,
+      PistasNori.extraSemana => l.pistaExtraSemana,
+      _ => '',
+    };
+    if (texto.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 8),
+      child: NotaPista(
+        key: ValueKey('nota_pista_$id'),
+        texto: texto,
+        onCerrar: _cerrarPista,
+        etiquetaCerrar: l.pistaCerrar,
+      ),
+    );
+  }
+
+  /// Apunta la semana en curso y dice si es la primera vez que se abre en
+  /// ella habiendo abierto la app en una anterior: hay una semana ya cerrada.
+  /// Sin semana anterior apuntada (primera apertura con esta versión) no hay
+  /// nada que decir.
+  Future<bool> _estrenaSemana(String lunes) =>
+      PistasNori.estrenaSemana(_usuarioId, lunes);
+
+  /// Las pistas que dependen de lo que trae `/hoy`: `esta_semana` si Hoy
+  /// enseña esa sección y `semana_cerrada` en la primera apertura de una
+  /// semana nueva. Solo mirando hoy y con la pestaña a la vista: una nota en
+  /// una pestaña oculta se gastaría sin verse. `PistasNori` impone el resto
+  /// (una al día, nunca con el alta ni otra nota abierta).
+  Future<void> _evaluarPistas(HoyLeido hoy) async {
+    if (!widget.activa || !hoy.viendoHoy || _usuarioId == 0) return;
+    final lunes = _iso(lunesDeLaSemanaDe(DateTime.parse(hoy.hoy)));
+    final estrena = await _estrenaSemana(lunes);
+    if (!mounted) return;
+    final haySemanal =
+        hoy.deLaSemana.habitos.isNotEmpty ||
+        hoy.delDia.habitos.any((f) => f.esSemanal);
+    if (hoy.deLaSemana.habitos.isNotEmpty && !_semanaPlegada) {
+      await _ofrecerPista(PistasNori.estaSemana);
+    }
+    if (estrena && haySemanal && hoy.ritmoNivel != null) {
+      await _ofrecerPista(PistasNori.semanaCerrada);
+    }
   }
 
   /// Los hábitos han cambiado en otra pestaña: dar de alta uno cambia las
@@ -286,6 +372,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       if (hoy.logrosOtorgados.isNotEmpty) {
         CelebracionService.mostrar(hoy.logrosOtorgados);
       }
+      _evaluarPistas(hoy);
     } catch (e) {
       if (!mounted || carga != _cargaEnCurso) return;
       // El aviso efímero dice QUÉ ha fallado. El panel de error sólo sale si
@@ -638,6 +725,9 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
         ),
       );
+      // La primera vez, la nota que lo explica, bajo la tarjeta que acaba de
+      // completar el usuario.
+      await _ofrecerPista(PistasNori.extraSemana, habitoId: habitoId);
     }
 
     if (mostrarValoracion && registroId != null && mounted) {
@@ -982,6 +1072,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       const SizedBox(height: 12),
       if (hoy.ritmoNivel != null) ...[
         _tarjetaRitmo(l, t, hoy.ritmoNivel!),
+        _notaDePista(l, PistasNori.semanaCerrada),
         const SizedBox(height: 4),
       ],
       if (sinNada)
@@ -1060,6 +1151,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
           acento: t.streakText,
         ),
+        _notaDePista(l, PistasNori.estaSemana),
         const SizedBox(height: 8),
         if (!_semanaPlegada)
           ...filasSemana.asMap().entries.map(
@@ -1222,6 +1314,31 @@ class _DashboardScreenState extends State<DashboardScreen>
     required bool habilitado,
     bool primera = false,
     bool anclaPista = false,
+  }) {
+    final tarjeta = _tarjetaHabito(
+      l,
+      f,
+      t,
+      habilitado: habilitado,
+      primera: primera,
+      anclaPista: anclaPista,
+    );
+    // La nota de `extra_semana` va justo debajo de la tarjeta que acaba de
+    // completarse.
+    if (_pistaAbierta != PistasNori.extraSemana ||
+        _pistaHabitoId != f.habito.habitoId) {
+      return tarjeta;
+    }
+    return Column(children: [tarjeta, _notaDePista(l, PistasNori.extraSemana)]);
+  }
+
+  Widget _tarjetaHabito(
+    AppLocalizations l,
+    FilaHoy f,
+    TokensContextuales t, {
+    required bool habilitado,
+    required bool primera,
+    required bool anclaPista,
   }) {
     final Habito h = f.habito;
     final bool hecho = f.hecho;
