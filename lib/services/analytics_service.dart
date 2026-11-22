@@ -96,6 +96,20 @@ class AnalyticsHabitos {
     }
   }
 
+  /// La app pidió la reseña de Play. [hito] es el de los días de uso al que
+  /// corresponde (3, 15 o 30). Solo dice que se pidió: Google no cuenta si
+  /// enseñó el diálogo ni si el usuario puntuó.
+  static Future<void> resenaPedida(int hito) async {
+    try {
+      await AnalyticsCore.analytics.logEvent(
+        name: 'resena_pedida',
+        parameters: {'hito': hito},
+      );
+    } catch (e) {
+      debugPrint('Analytics: no se registró resena_pedida: $e');
+    }
+  }
+
   /// Se abre «Invitar a un amigo».
   static Future<void> invitarAbierto() async {
     try {
