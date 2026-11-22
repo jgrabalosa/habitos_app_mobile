@@ -440,5 +440,8 @@
   "invitarIncluirDato": "Incluir o nome e o nível do Nori",
   "invitarTextoCompartir": "Vê como está o meu Nori: cresce sempre que marco um hábito e, se um dia falho, não faz mal. Também queres um? É grátis e sem anúncios.\n{enlace}",
   "invitarCompartir": "Partilhar",
-  "invitarError": "Não foi possível partilhar o convite. Tenta outra vez."
+  "invitarError": "Não foi possível partilhar o convite. Tenta outra vez.",
+  "cierreCompartir": "Partilhar",
+  "cierreTextoCompartir": "Hoje fechei o dia com o Norday Habits.\n{enlace}",
+  "cierrePostalHabitos": "{n, plural, =1{1 hábito feito} other{{n} hábitos feitos}}"
 }

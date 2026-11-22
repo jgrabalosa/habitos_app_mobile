@@ -178,4 +178,30 @@ class AnalyticsHabitos {
       debugPrint('Analytics: no se registró invitar_compartido: $e');
     }
   }
+
+  /// Los parámetros de `cierre_compartido`: la identidad (su código) y cuántos
+  /// hábitos. Nunca cuáles.
+  static Map<String, Object> parametrosCierreCompartido({
+    required String identidad,
+    required int total,
+  }) => {'identidad': identidad, 'total_habitos': total};
+
+  /// Se abrió el menú de compartir con la postal del cierre del día y no se
+  /// canceló.
+  static Future<void> cierreCompartido({
+    required String identidad,
+    required int total,
+  }) async {
+    try {
+      await AnalyticsCore.analytics.logEvent(
+        name: 'cierre_compartido',
+        parameters: parametrosCierreCompartido(
+          identidad: identidad,
+          total: total,
+        ),
+      );
+    } catch (e) {
+      debugPrint('Analytics: no se registró cierre_compartido: $e');
+    }
+  }
 }

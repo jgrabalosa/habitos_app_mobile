@@ -960,5 +960,27 @@
   "invitarError": "No se ha podido compartir la invitación. Inténtalo de nuevo.",
   "@invitarError": {
     "description": "SnackBar si falla la captura de la tarjeta o el envío"
+  },
+  "cierreCompartir": "Compartir",
+  "@cierreCompartir": {
+    "description": "Botón al final de la ceremonia del cierre del día: abre el menú de compartir con la postal del día"
+  },
+  "cierreTextoCompartir": "Hoy he cerrado el día con Norday Habits.\n{enlace}",
+  "@cierreTextoCompartir": {
+    "description": "Texto que acompaña a la postal del cierre del día, en primera persona. El enlace va en su propia línea y es el mismo que el de invitar. Sin premios ni promesas",
+    "placeholders": {
+      "enlace": {
+        "type": "String"
+      }
+    }
+  },
+  "cierrePostalHabitos": "{n, plural, =1{1 hábito hecho} other{{n} hábitos hechos}}",
+  "@cierrePostalHabitos": {
+    "description": "Bajo la figura de la postal del cierre del día: cuántos hábitos se hicieron. Nunca sus nombres",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   }
 }

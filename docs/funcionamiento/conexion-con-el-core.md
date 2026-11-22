@@ -46,7 +46,10 @@ puntos:
    `DashboardScreen` llama a `mostrarCierreDelDia` al completar lo último del
    día. Sale una vez al día por usuario (fecha guardada en el dispositivo,
    `cierre_dia_fecha_<usuarioId>`) y nunca mientras la pista de Hoy está
-   abierta.
+   abierta. Con `textoCompartir` (core v0.60.0) la ceremonia acaba en un botón
+   «Compartir» y devuelve `ResultadoCierreDelDia`; con `compartir`, la app
+   genera la postal del día (ver «Compartir el cierre del día» en
+   `estructura-de-la-app.md`).
    Las páginas y la barra van envueltas en `OcultoAlLectorDuranteCierre`
    (core v0.39.0) para que el lector de pantalla no llegue a lo de debajo
    durante la ceremonia.

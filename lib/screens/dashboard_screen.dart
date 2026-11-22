@@ -5,6 +5,7 @@ import '../l10n/textos_minutos.dart';
 import '../services/api_service_habitos.dart';
 import '../services/analytics_service.dart';
 import '../services/habitos_refresh.dart';
+import '../services/postal_cierre.dart';
 import '../services/app_refresh.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -693,12 +694,27 @@ class _DashboardScreenState extends State<DashboardScreen>
       // debajo.
       if (mounted) {
         final l = AppLocalizations.of(context)!;
-        await mostrarCierreDelDia(
+        final resultado = await mostrarCierreDelDia(
           titulo: l.dashTodoHecho,
           despedida: l.dashDisfruta,
+          textoCompartir: l.cierreCompartir,
         );
-        // Justo después de la ceremonia, si un hito dejó la reseña pendiente.
-        await _pedirResenaPendiente();
+        if (resultado == ResultadoCierreDelDia.compartir) {
+          // El día que se comparte no se pide la reseña: la marca pendiente
+          // se queda para el siguiente cierre.
+          if (mounted) {
+            final progreso = progresoDiaNotifier.value;
+            await PostalCierre.compartir(
+              context,
+              total: progreso.total,
+              fecha: progreso.fecha ?? DateTime.now(),
+            );
+          }
+        } else {
+          // Justo después de la ceremonia, si un hito dejó la reseña
+          // pendiente.
+          await _pedirResenaPendiente();
+        }
       }
     }
     _cierrePendiente = false;
