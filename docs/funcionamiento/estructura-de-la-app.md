@@ -28,6 +28,16 @@ párrafo de este fichero.
   tarjeta (`widgets/bienvenida.dart`), el formulario real del primer hábito y,
   si se guarda, una pista sobre su círculo en Hoy. Nada de esto sale a quien
   no es alta nueva.
+- **«Cómo funciona»** (T-053, `screens/como_funciona_screen.dart`): entrada del
+  Menú entre «Mi cuenta» y «Cerrar sesión» (icono `circleQuestionMark`). Nori
+  pequeño arriba y seis apartados (`ApartadoComoFunciona`) que se despliegan de
+  uno en uno; `abierto` arranca con uno desplegado. «Ver otra vez la pista»
+  solo sale si `mostrarMenuShell` recibe `alVerPista` (`HomeShell` lo pasa: va
+  a Hoy y llama a `_iniciarPista`) y el usuario tiene hábitos
+  (`getResumenHabitos` no vacío; si falla, sin botón). La pantalla se cierra y
+  llama al callback tras el siguiente frame. Medición:
+  `AnalyticsCore.ayudaAbierta('como_funciona_<id>')`. Seams: `cargarHayHabitos`
+  y `medir`.
 - **El regalo del gorro de Papá Noel** (T-057, `widgets/regalo_gorro.dart`) es
   lo otro que puede salir al entrar: una tarjeta como la bienvenida (sin
   «Ahora no», sin cerrar tocando fuera ni con atrás) con Nori con el gorro y un

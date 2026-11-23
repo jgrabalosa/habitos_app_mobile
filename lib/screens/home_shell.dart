@@ -16,6 +16,7 @@ import 'ideas_habito_screen.dart';
 import '../services/habitos_refresh.dart';
 import '../services/al_volver.dart';
 import '../services/analytics_service.dart';
+import 'como_funciona_screen.dart';
 import 'dashboard_screen.dart';
 import 'habitos_screen.dart';
 import 'invitar_screen.dart';
@@ -307,8 +308,19 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     }
   }
 
-  void _abrirMenu() =>
-      mostrarMenuShell(context, usuarioId: _usuarioId, alCerrarSesion: _logout);
+  /// «Ver otra vez la pista» de «Cómo funciona»: Hoy y la pista del alta.
+  void _verOtraVezLaPista() {
+    if (!mounted) return;
+    _irAPestana(0);
+    _iniciarPista();
+  }
+
+  void _abrirMenu() => mostrarMenuShell(
+    context,
+    usuarioId: _usuarioId,
+    alCerrarSesion: _logout,
+    alVerPista: _verOtraVezLaPista,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -502,6 +514,7 @@ void mostrarMenuShell(
   BuildContext context, {
   required int usuarioId,
   required VoidCallback alCerrarSesion,
+  VoidCallback? alVerPista,
 }) {
   final l = AppLocalizations.of(context)!;
   final t = tokens(context);
@@ -619,6 +632,16 @@ void mostrarMenuShell(
                         // Los avisos de la app (la vuelta y el momento débil)
                         // son de Habits: solo esta app enseña su interruptor.
                         mostrarAvisosApp: true,
+                      ),
+                    ),
+                  ),
+                  entrada(
+                    LucideIcons.circleQuestionMark,
+                    l.comoFuncionaTitulo,
+                    () => abrir(
+                      (_) => ComoFuncionaScreen(
+                        usuarioId: usuarioId,
+                        alVerPista: alVerPista,
                       ),
                     ),
                   ),
