@@ -299,10 +299,10 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  /// Apunta la semana en curso y dice si es la primera vez que se abre en
-  /// ella habiendo abierto la app en una anterior: hay una semana ya cerrada.
-  /// Sin semana anterior apuntada (primera apertura con esta versión) no hay
-  /// nada que decir.
+  /// Dice si hay una semana cerrada por contar (la apuntada es anterior a la
+  /// en curso). No la apunta: `_evaluarPistas` lo hace cuando la pista sale o
+  /// cuando no le toca. Sin semana anterior apuntada (primera apertura con
+  /// esta versión) no hay nada que decir.
   Future<bool> _estrenaSemana(String lunes) =>
       PistasNori.estrenaSemana(_usuarioId, lunes);
 
@@ -322,8 +322,18 @@ class _DashboardScreenState extends State<DashboardScreen>
     if (hoy.deLaSemana.habitos.isNotEmpty && !_semanaPlegada) {
       await _ofrecerPista(PistasNori.estaSemana);
     }
-    if (estrena && haySemanal && hoy.ritmoNivel != null) {
-      await _ofrecerPista(PistasNori.semanaCerrada);
+    if (estrena) {
+      if (haySemanal && hoy.ritmoNivel != null) {
+        await _ofrecerPista(PistasNori.semanaCerrada);
+        // Solo si ha salido: si otra pista se le adelantó, se reintenta en la
+        // siguiente carga (otro día, por la regla de una al día).
+        if (_pistaAbierta == PistasNori.semanaCerrada) {
+          await PistasNori.apuntarSemana(_usuarioId, lunes);
+        }
+      } else {
+        // Sin semanales o sin ritmo no hay nada que contar de esta semana.
+        await PistasNori.apuntarSemana(_usuarioId, lunes);
+      }
     }
   }
 

@@ -230,6 +230,22 @@ void main() {
     expect(vistas, ['esta_semana']);
   });
 
+  testWidgets('semana_cerrada que no pudo salir por otra pista sale otro día '
+      'de la misma semana', (tester) async {
+    // El lunes sale ESTA SEMANA y tapa a la de la semana cerrada.
+    prefs({'pista_semana_vista_7': '2026-11-09'});
+    await abrirHoy(tester);
+    expect(vistas, ['esta_semana']);
+    await tester.tap(find.text(textoEsta));
+    await tester.pump(const Duration(milliseconds: 500));
+
+    // El martes, la de la semana cerrada no se ha perdido.
+    PistasNori.ahora = () => DateTime(2026, 11, 17, 9);
+    await reabrirHoy(tester);
+    expect(find.text(textoCerrada), findsOneWidget);
+    expect(vistas, ['esta_semana', 'semana_cerrada']);
+  });
+
   testWidgets('una pista que ya salió hoy impide otra, aunque esté cerrada', (
     tester,
   ) async {

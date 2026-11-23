@@ -99,21 +99,34 @@ class PistasNori {
     return true;
   }
 
-  /// Apunta la semana en curso ([lunes], `AAAA-MM-DD`) y dice si es la primera
-  /// apertura en ella habiendo abierto la app en una anterior, que es cuando
-  /// hay una semana ya cerrada. Sin semana anterior apuntada (la primera vez
-  /// que se abre con esta versión) devuelve false. Nunca lanza.
+  static String _claveSemana(int usuarioId) => 'pista_semana_vista_$usuarioId';
+
+  /// Dice si hay una semana cerrada por contar: la apuntada es anterior a la
+  /// en curso ([lunes], `AAAA-MM-DD`). **No la apunta**: eso lo hace
+  /// [apuntarSemana] cuando la pista sale o cuando no le toca, para que una
+  /// pista tapada por otra (como mucho una al día) se reintente otro día.
+  /// Sin semana apuntada (la primera vez que se abre con esta versión) apunta
+  /// la en curso y devuelve false. Nunca lanza.
   static Future<bool> estrenaSemana(int usuarioId, String lunes) async {
     try {
       final prefs = await preferencias();
-      final clave = 'pista_semana_vista_$usuarioId';
-      final anterior = prefs.getString(clave);
-      if (anterior == lunes) return false;
-      await prefs.setString(clave, lunes);
-      return anterior != null;
+      final anterior = prefs.getString(_claveSemana(usuarioId));
+      if (anterior == null) {
+        await prefs.setString(_claveSemana(usuarioId), lunes);
+        return false;
+      }
+      return anterior != lunes;
     } catch (_) {
       return false;
     }
+  }
+
+  /// Apunta la semana en curso: la semana cerrada ya está contada. Nunca lanza.
+  static Future<void> apuntarSemana(int usuarioId, String lunes) async {
+    try {
+      final prefs = await preferencias();
+      await prefs.setString(_claveSemana(usuarioId), lunes);
+    } catch (_) {}
   }
 
   /// La nota se ha cerrado (o su pantalla ya no está): otra puede salir otro
