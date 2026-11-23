@@ -30,9 +30,12 @@ const int nombreCategoriaMinimo = 2;
 const int nombreCategoriaMaximo = 30;
 
 /// Si [nombre], ya recortado, tiene una longitud que el servidor admite.
-bool nombreCategoriaValido(String nombre) =>
-    nombre.length >= nombreCategoriaMinimo &&
-    nombre.length <= nombreCategoriaMaximo;
+/// Se cuenta en code points (`runes`), como el servidor: `length` cuenta
+/// unidades UTF-16 y un emoji como «👪» mide 2.
+bool nombreCategoriaValido(String nombre) {
+  final largo = nombre.runes.length;
+  return largo >= nombreCategoriaMinimo && largo <= nombreCategoriaMaximo;
+}
 
 /// Abre la hoja para crear una categoría propia o, con [categoria], para
 /// cambiarle el nombre y el emoji.

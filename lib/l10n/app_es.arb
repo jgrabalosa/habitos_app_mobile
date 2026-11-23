@@ -1003,5 +1003,5 @@
   },
   "catBorrarCuerpo": "Sus hábitos se quedan sin categoría. No se borra ningún hábito.",
   "catErrorBorrar": "No se ha podido borrar la categoría",
-  "catPistaMantener": "Mantén pulsado para cambiar el nombre o borrarla"
+  "catPistaMantener": "cambiar el nombre o borrarla"
 }

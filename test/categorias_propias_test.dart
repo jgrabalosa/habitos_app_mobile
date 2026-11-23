@@ -207,6 +207,39 @@ void main() {
     });
   });
 
+  group('Pista del lector de pantalla', () {
+    // TalkBack ya antepone «Toca dos veces y mantén pulsado para…»: la pista
+    // es solo la acción, o se leería «…para Mantén pulsado para…».
+    for (final (idioma, gesto) in [
+      ('es', 'pulsad'),
+      ('en', 'hold'),
+      ('pt', 'premid'),
+    ]) {
+      test('en $idioma no repite el gesto', () {
+        final pista = lookupAppLocalizations(Locale(idioma)).catPistaMantener;
+        expect(pista.toLowerCase(), isNot(contains(gesto)));
+      });
+    }
+  });
+
+  group('Longitud del nombre', () {
+    // Como el servidor (CategoriaService): en code points, no en unidades
+    // UTF-16. «👪» mide 2 en Dart y 1 en el servidor.
+    test('un solo emoji astral es demasiado corto, como en el servidor', () {
+      expect(nombreCategoriaValido('👪'), isFalse);
+    });
+
+    test('30 code points con un emoji astral valen', () {
+      final nombre = '👪${'a' * 29}';
+      expect(nombre.length, 31);
+      expect(nombreCategoriaValido(nombre), isTrue);
+    });
+
+    test('31 code points no valen', () {
+      expect(nombreCategoriaValido('a' * 31), isFalse);
+    });
+  });
+
   group('Mensaje del servidor', () {
     ApiException e(int codigo, String? cuerpo) => ApiException(
       TipoErrorApi.peticionInvalida,

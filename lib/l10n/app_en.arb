@@ -457,5 +457,5 @@
   "catBorrarTitulo": "Delete “{nombre}”?",
   "catBorrarCuerpo": "Its habits are left without a category. No habit is deleted.",
   "catErrorBorrar": "Couldn't delete the category",
-  "catPistaMantener": "Press and hold to rename or delete it"
+  "catPistaMantener": "rename or delete it"
 }

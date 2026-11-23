@@ -457,5 +457,5 @@
   "catBorrarTitulo": "Apagar «{nombre}»?",
   "catBorrarCuerpo": "Os teus hábitos ficam sem categoria. Nenhum hábito é apagado.",
   "catErrorBorrar": "Não foi possível apagar a categoria",
-  "catPistaMantener": "Mantém premido para mudar o nome ou apagar"
+  "catPistaMantener": "mudar o nome ou apagar"
 }
