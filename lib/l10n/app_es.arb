@@ -957,6 +957,26 @@
   "@minErrorAbrirEnfoque": {
     "description": "Panel de minutos: no se pudo abrir ni Norday Focus ni su ficha de Google Play"
   },
+  "comoFuncionaTitulo": "Cómo funciona",
+  "@comoFuncionaTitulo": {
+    "description": "Entrada del menú y título de la pantalla que explica las reglas de Norday"
+  },
+  "comoFuncionaHoyTitulo": "Hoy",
+  "comoFuncionaHoyCuerpo": "Aquí están los hábitos que tocan hoy. Toca el círculo para marcar uno. Al marcarlos todos, el día se cierra y tu figura del día se completa.",
+  "comoFuncionaDiariosTitulo": "Diarios y semanales",
+  "comoFuncionaDiariosCuerpo": "Un diario toca cada día. Un semanal, unas veces por semana, de lunes a domingo. Si le marcas días, sale esos días en Hoy; si no, va en \"Esta semana\", y lo haces cuando quieras. Lo que cuenta es llegar al objetivo de la semana.",
+  "comoFuncionaRitmoTitulo": "El ritmo",
+  "comoFuncionaRitmoCuerpo": "Tu ritmo dice cómo de constante eres, de \"Retomando\" a \"Imparable\". Se pone al día al acabar cada día (cada semana, en los semanales). Sube deprisa cuando cumples y baja despacio si fallas: un mal día no borra lo que llevas.",
+  "comoFuncionaPuntosTitulo": "Puntos",
+  "comoFuncionaPuntosCuerpo": "Ganas 25 por cada hábito cumplido, un 20 % más si completas la semana de un semanal, y premios al llevar 3, 7, 30, 100 y 365 días hechos con un hábito. Se gastan en la tienda.",
+  "comoFuncionaNoriTitulo": "Nori",
+  "comoFuncionaNoriCuerpo": "Nori crece con tu experiencia: 5 por cada hábito cumplido y 15 por cada comida. Es cría en el nivel 3 y adulto en el 11. Está contento cuando avanzas y te espera si llevas días sin pasar.",
+  "comoFuncionaTiendaTitulo": "La tienda",
+  "comoFuncionaTiendaCuerpo": "Comida para Nori, pausas, temas y ropa. Una pausa para un hábito sin perder su ritmo: no sale en Hoy ni te avisa hasta que lo reanudes.",
+  "comoFuncionaVerPista": "Ver otra vez la pista",
+  "@comoFuncionaVerPista": {
+    "description": "Cómo funciona: vuelve a Hoy y lanza la pista del primer hábito. No sale sin hábitos"
+  },
   "invitarMenu": "Invitar a un amigo",
   "@invitarMenu": {
     "description": "Entrada del menú y título de la pantalla que comparte la tarjeta de invitación"

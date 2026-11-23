@@ -157,6 +157,17 @@ los tres `app_*.arb` (`pista…`); en el sitio donde se da el momento,
 pista: sale la primera vez y no la segunda (`test/pistas_nori_test.dart`).
 Las tres de hoy están en `DashboardScreen` (`_evaluarPistas`, `_ofrecerPista`).
 
+## «Cómo funciona»
+
+`screens/como_funciona_screen.dart`, abierta desde el Menú
+(`mostrarMenuShell`). **Las cifras de sus textos (`comoFunciona…` en los
+`app_*.arb`) salen del backend** (`ParametrosPremio`, `MascotaService`): si
+cambian allí, se cambian aquí, en los tres idiomas. Los apartados son el enum
+`ApartadoComoFunciona` (su `id` se mide como `como_funciona_<id>` con
+`AnalyticsCore.ayudaAbierta`); se abre con uno desplegado pasando `abierto`
+(lo usará «Saber más», T-049). «Escríbenos» no está todavía: lo añade T-049 (`escribirANorday`, ya en el
+core v0.62.0).
+
 ## Tarjeta «Así fue tu semana» (T-056)
 
 `widgets/tarjeta_semana.dart` (`TarjetaSemana.mostrarSiToca`), desde
