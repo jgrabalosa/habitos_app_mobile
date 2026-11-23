@@ -24,7 +24,7 @@ void main() {
           '+20 % de puntos. No hace falta para terminar el día.',
       xp:
           'La experiencia de Nori. Sube 5 por cada hábito que cumples y 15 '
-          'por cada comida. Nori es cría en el nivel 3 y adulta en el 11.',
+          'por cada comida. Nori es cría en el nivel 3 y adulto en el 11.',
       frecuencia:
           'Diario: cada día. Semanal: unas veces por semana, de lunes a '
           'domingo, los días que mejor te vengan.',
