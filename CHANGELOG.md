@@ -141,7 +141,7 @@ Estado: publicada en Producción el 2026-11-21 (enviada a Google el 20-nov, con 
 
 ## 1.4.0 (12) — 2026-11-23
 
-Estado: en preparación (la primera mini, D-49). Con el core 0.62.0. Al publicarla, la versión mínima sube a 12: la actualización es obligatoria.
+Estado: publicada en Producción el 23-nov-2026 a las 12:24, al 100 % (la primera mini, D-49), con el backend `97c7270` (V31 a V33) desplegado a las 12:19. Con el core 0.62.0. La versión mínima sube a 12 cuando Play la ofrezca a todos: la actualización es obligatoria.
 
 ### Novedades
 
