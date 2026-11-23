@@ -145,8 +145,9 @@ pista es un `id`; el servicio no sabe qué dice ni de qué trata.
   momento.
 - **Va en la lista, junto a lo que explica, y empuja el resto**: nunca flota
   encima. Se cierra tocándola. Con «reducir movimiento», sin animación.
-- **Se mide** con `AnalyticsHabitos.pistaVista(id)` (`pista_vista`). Cuando el
-  core traiga `AnalyticsCore.pistaVista`, cambiar la llamada.
+- **Se mide** con `AnalyticsHabitos.pistaVista(id)` (`pista_vista`, parámetro
+  `pista`, como el core). Cuando el core traiga `AnalyticsCore.pistaVista`,
+  cambiar la llamada.
 
 **Añadir una pista:** `static const` con su `id` en `PistasNori`; su texto en
 los tres `app_*.arb` (`pista…`); en el sitio donde se da el momento,

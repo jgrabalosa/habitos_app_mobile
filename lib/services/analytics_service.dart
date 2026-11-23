@@ -146,6 +146,11 @@ class AnalyticsHabitos {
     }
   }
 
+  /// Los parámetros de `pista_vista`: la pista en `pista`, el mismo parámetro
+  /// que `AnalyticsCore.pistaVista` (T-052), para que las de Habits y las del
+  /// core salgan en la misma serie.
+  static Map<String, Object> parametrosPistaVista(String id) => {'pista': id};
+
   /// Se enseña una pista de Nori «la primera vez» (T-054). [id] es el de la
   /// pista (`esta_semana`, `semana_cerrada`, `extra_semana`). El core aún no
   /// tiene `AnalyticsCore.pistaVista` (v0.61.0), así que el evento vive aquí
@@ -154,7 +159,7 @@ class AnalyticsHabitos {
     try {
       await AnalyticsCore.analytics.logEvent(
         name: 'pista_vista',
-        parameters: {'id': id},
+        parameters: parametrosPistaVista(id),
       );
     } catch (e) {
       debugPrint('Analytics: no se registró pista_vista: $e');

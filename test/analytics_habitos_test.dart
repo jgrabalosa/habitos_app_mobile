@@ -83,4 +83,10 @@ void main() {
       {'resultado': 'cancelado', 'con_dato': 'false'},
     );
   });
+
+  test('pista_vista lleva la pista en «pista», como AnalyticsCore (T-052)', () {
+    expect(AnalyticsHabitos.parametrosPistaVista('esta_semana'), {
+      'pista': 'esta_semana',
+    });
+  });
 }
