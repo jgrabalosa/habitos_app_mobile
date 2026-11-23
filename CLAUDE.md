@@ -24,6 +24,12 @@ esa parte, léelo.
   lee `docs/funcionamiento/habitos-de-minutos.md`.
 - Antes de tocar `l10n/`, un `.arb` o los catálogos del backend (categorías,
   logros, productos), lee `docs/funcionamiento/textos.md`.
+- Antes de tocar las pistas de Nori (`lib/services/pistas_nori.dart`,
+  `widgets/nota_pista.dart` o una pista nueva), lee
+  `docs/funcionamiento/pistas-nori.md`.
+- Antes de tocar «Cómo funciona» (`screens/como_funciona_screen.dart`) o la
+  tarjeta «Así fue tu semana» (`widgets/tarjeta_semana.dart`), lee
+  `docs/funcionamiento/estructura-de-la-app.md`.
 - Antes de tocar el idioma, la zona horaria o sus selectores (dos
   preferencias independientes), lee `docs/funcionamiento/idioma-y-zona.md`.
 - Antes de tocar la identidad equipada (la manda el backend, no el
@@ -36,6 +42,8 @@ esa parte, léelo.
   `docs/procedimientos/variantes-y-entornos.md`.
 - Antes de subir una dependencia o probar permisos y Google Sign-In en un
   móvil, lee `docs/lecciones/paquetes-y-dispositivo.md`.
+- Antes de escribir un test o tocar animaciones, `l10n`, Crashlytics o la
+  pantalla de borde a borde, lee `docs/lecciones/flutter-y-tests.md`.
 - Antes de dar cifras, verificar, o escribir scripts de PowerShell, lee
   `docs/lecciones/metodo-de-trabajo.md`.
 
@@ -129,61 +137,6 @@ el resto, en `docs/funcionamiento/textos.md`.
   Producción hasta que Focus sea visible en Producción. Ver
   `docs/funcionamiento/habitos-de-minutos.md`.
 
-## Pistas de Nori «la primera vez»
-
-Mecanismo genérico en `lib/services/pistas_nori.dart` (`PistasNori`) y
-`widgets/nota_pista.dart` (`NotaPista`, sobre `BurbujaContexto` del core). Una
-pista es un `id`; el servicio no sabe qué dice ni de qué trata.
-
-- **Una vez por cuenta y móvil**: `pista_vista_<usuarioId>_<id>` en
-  `SharedPreferences`. Se marca al enseñarla, no al cerrarla.
-- **Como mucho una al día** (fecha del móvil, `pista_ultima_fecha_<usuarioId>`):
-  si hoy ya salió una, aunque esté cerrada, las demás esperan. La pista que se
-  pierde así no se apunta como vista.
-- **Nunca con la pista del alta** (`RecorridoOnboarding.activo`) **ni con otra
-  nota abierta**. Nada sale por abrir la app sin más: cada una, cuando se da su
-  momento.
-- **Va en la lista, junto a lo que explica, y empuja el resto**: nunca flota
-  encima. Se cierra tocándola. Con «reducir movimiento», sin animación.
-- **Se mide** con `AnalyticsHabitos.pistaVista(id)` (`pista_vista`, parámetro
-  `pista`, como el core). Cuando el core traiga `AnalyticsCore.pistaVista`,
-  cambiar la llamada.
-
-**Añadir una pista:** `static const` con su `id` en `PistasNori`; su texto en
-los tres `app_*.arb` (`pista…`); en el sitio donde se da el momento,
-`await PistasNori.intentar(id, usuarioId: …)` y, si devuelve true, pintar
-`NotaPista` donde corresponda hasta que se toque, y llamar a
-`PistasNori.cerrar(id)` al cerrarla o al salir de la pantalla. Un test por
-pista: sale la primera vez y no la segunda (`test/pistas_nori_test.dart`).
-Las tres de hoy están en `DashboardScreen` (`_evaluarPistas`, `_ofrecerPista`).
-
-## «Cómo funciona»
-
-`screens/como_funciona_screen.dart`, abierta desde el Menú
-(`mostrarMenuShell`). **Las cifras de sus textos (`comoFunciona…` en los
-`app_*.arb`) salen del backend** (`ParametrosPremio`, `MascotaService`): si
-cambian allí, se cambian aquí, en los tres idiomas. Los apartados son el enum
-`ApartadoComoFunciona` (su `id` se mide como `como_funciona_<id>` con
-`AnalyticsCore.ayudaAbierta`); se abre con uno desplegado pasando `abierto`
-(lo usará «Saber más», T-049). «Escríbenos» no está todavía: lo añade T-049 (`escribirANorday`, ya en el
-core v0.62.0).
-
-## Tarjeta «Así fue tu semana» (T-056)
-
-`widgets/tarjeta_semana.dart` (`TarjetaSemana.mostrarSiToca`), desde
-`HomeShell._alEntrar`, **después del gorro y del permiso y solo si no ha salido
-ninguna de las dos** (una tarjeta por apertura; el aviso de versión sigue al
-final). Sale el primer día de la semana que se abre la app: si
-`semana_vista_<usuarioId>` (`SharedPreferences`, con el lunes de la semana del
-móvil) no es el lunes de hoy y `/semana-pasada` trae `hayActividad`. Se marca al
-enseñarla, o al saber que no hubo actividad; **no** se marca con error de red,
-con la pista del alta abierta ni si otra tarjeta ocupó la apertura. Si el
-servidor manda una semana que para el móvil no está cerrada (zona distinta), no
-sale. **Nunca nombra lo que faltó** (D-70): solo hechos, días completos
-(pintados solo llenos), semanales logrados y ritmo; lo vigila
-`test/tarjeta_semana_test.dart`. Evento `semana_vista`. Detalle en
-`docs/funcionamiento/estructura-de-la-app.md`.
-
 ## Formato del código
 
 Todo el código Dart va formateado con `dart format`. Antes de cada commit que
@@ -218,43 +171,8 @@ toque un `.dart`, desde la raíz: `dart format lib test`.
 ## Lecciones aprendidas
 
 Errores que ya se cometieron una vez. No se vuelven a cometer. Las de
-paquetes, dispositivo y método de trabajo están en `docs/lecciones/`.
+paquetes, dispositivo y método de trabajo están en `docs/lecciones/`. Las de
+Flutter y tests, en `docs/lecciones/flutter-y-tests.md`.
 
-### Flutter y tests
-
-- **En `flutter test` Firebase no está inicializado**: acceder a
-  `FirebaseAnalytics.instance` lanza `[core/no-app]`. Sirve para probar que un
-  servicio no deja escapar el fallo.
-- **`MaterialApp` interpola el tema con `AnimatedTheme`** y `TextStyle.lerp` no
-  mezcla familias: en tests que cambian de identidad, `pumpAndSettle`, no
-  `pump`.
-- **El ticker de una animación toma la hora de inicio en su primer tic**: en
-  tests de duración, un `pump()` sin duración antes de medir.
-- **`containsSemantics` está deprecado desde Flutter 3.40** en favor de
-  `isSemantics`, que tiene los mismos parámetros y también sólo comprueba lo
-  indicado.
-- **Tras editar un ARB, `flutter analyze` no regenera las traducciones**:
-  `flutter gen-l10n` antes.
-- **`setCrashlyticsCollectionEnabled` vale para todas las builds.** Combinar
-  con `kReleaseMode`, nunca pasar un flag «de debug» tal cual.
-- **El analizador de Dart promociona a no nulo a través de un `bool`
-  intermedio.** Si `final bool b = x != null && ...`, dentro de `if (b)` la
-  variable `x` ya es no nula: añadir `&& x != null` ahí dispara
-  `unnecessary_null_comparison`.
 - **Test en rojo antes del arreglo.** Si el test nuevo pasa contra el código
   sin arreglar, no demuestra nada: parar.
-- **Android 15 dibuja la app de borde a borde** (`targetSdk` 36): la barra de
-  navegación del sistema va encima de lo que la pantalla no aparte. Una
-  pantalla que se abre encima (con su `Scaffold`) aparta abajo con
-  `SafeArea` o, si la lista debe pasar por detrás, sumando
-  `MediaQuery.paddingOf(context).bottom` a su `padding`; las hojas, como
-  `panel_minutos.dart`. «Empieza con una idea» se quedó sin ninguna de las
-  dos (20-nov-2026). Se prueba con `tester.view.padding`
-  (`ideas_habito_screen_test.dart`).
-- **Una pantalla que crea más de un `AnimationController` en su vida usa
-  `TickerProviderStateMixin`, no `SingleTickerProviderStateMixin`.** El
-  segundo ticker lanza un `assert` que solo salta en depuración: Hoy lo tuvo
-  desde el 15-sep y cortaba `_trasCompletar` en el segundo check (T-045,
-  `test/hoy_varios_checks_test.dart`).
-- **La caja de `NoriVestida` no es Nori** (deja aire, distinto en cada fase;
-  T-034): su tamaño se mide en el PNG de `test/postal_exportar_test.dart`.
