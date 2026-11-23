@@ -16,6 +16,26 @@ import 'abrir_enfoque.dart';
 /// depende del core por tag, y no debe hacer falta publicar uno para que
 /// medir sea seguro.
 class AnalyticsHabitos {
+  /// Por dónde sale `pista_cerrada`. Los tests lo cambian: sin Firebase
+  /// inicializado, `logEvent` falla y no se podría ver qué se registra.
+  @visibleForTesting
+  static Future<void> Function(String nombre, Map<String, Object> parametros)
+  enviarEvento = (nombre, parametros) =>
+      AnalyticsCore.analytics.logEvent(name: nombre, parameters: parametros);
+
+  /// Se cierra la pista del alta. [completa]: se llegó al final con
+  /// «Entendido»; `false` si se abandonó. Va como texto (`true`/`false`):
+  /// Analytics no admite booleanos.
+  static Future<void> pistaCerrada({required bool completa}) async {
+    try {
+      await enviarEvento('pista_cerrada', {
+        'completa': completa ? 'true' : 'false',
+      });
+    } catch (e) {
+      debugPrint('Analytics: no se registró pista_cerrada: $e');
+    }
+  }
+
   /// Solo al crear. [plantilla] es el `id` de la `PlantillaHabito` usada o
   /// `ninguna`; [unidad], `veces` o `minutos`.
   static Future<void> habitoCreado(

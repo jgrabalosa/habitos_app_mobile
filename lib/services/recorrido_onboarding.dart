@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 
+import 'analytics_service.dart';
+
 /// Un paso del recorrido: hoy, la pista de Hoy tras el primer hábito.
 class PasoRecorrido {
   /// Qué se señala. Null vela la pantalla entera, sin hueco.
@@ -85,7 +87,7 @@ class RecorridoOnboarding extends ChangeNotifier {
     if (!activo) return;
     _indice++;
     if (_indice >= _pasos.length) {
-      terminar();
+      terminar(completa: true);
       return;
     }
     notifyListeners();
@@ -95,8 +97,13 @@ class RecorridoOnboarding extends ChangeNotifier {
   /// Termina el recorrido, se haya completado o abandonado. En los dos casos
   /// se marca como hecho: quien lo salta no quiere que le vuelva a saltar
   /// solo en el siguiente arranque. No vuelve a salir.
-  void terminar() {
+  ///
+  /// [completa] solo cuenta para Analytics (`pista_cerrada`): `true` cuando
+  /// [avanzar] pasa el último paso; `false` (por defecto) cuando se abandona
+  /// con el botón de saltar.
+  void terminar({bool completa = false}) {
     if (!activo) return;
+    AnalyticsHabitos.pistaCerrada(completa: completa);
     _entrada!.remove();
     _entrada = null;
     _pasos = const [];
@@ -183,7 +190,7 @@ class RecorridoOnboarding extends ChangeNotifier {
       textoBoton: textoBoton,
       onBoton: textoBoton == null ? null : avanzar,
       textoSaltar: _textoSaltar,
-      onSaltar: terminar,
+      onSaltar: () => terminar(),
     );
   }
 }

@@ -145,6 +145,7 @@ Con el core 0.60.0.
 
 ### Novedades
 
+- Los «?» cuentan ahora lo que pasa de verdad: el ritmo se pone al día al acabar el día (o la semana, en los semanales) y no al marcar; «Esta semana» avisa del plazo hasta el domingo, del +20 % de puntos y de que no hace falta para terminar el día; la experiencia de Nori dice cuánto sube (5 por hábito, 15 por comida) y cuándo crece (cría en el nivel 3, adulta en el 11); y la frecuencia dice que la semana va de lunes a domingo.
 - Cada hábito tiene su icono: se elige al crearlo o editarlo, y se ve en Hoy, en la lista y en el detalle. Las ideas para empezar ya traen el suyo.
 - La meta de un hábito de minutos se puede poner en horas: chips de 1 h, 1 h 30 min y 2 h, y unas ruedas de horas y minutos para cualquier otra.
 - «Invitar a un amigo» es ahora una postal de Nori en 4:5, con su fase y un dato suyo que se puede quitar antes de compartir.
