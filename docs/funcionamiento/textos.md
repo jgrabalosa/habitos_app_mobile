@@ -24,6 +24,13 @@ versionan. (En el paquete sí se versionan los suyos — ver su CLAUDE.md.)
 Los catálogos llegan del backend con `codigo`. Categorías de hábito con
 `Catalogos.categoria`; productos, niveles y logros con `CatalogosCore`.
 **Caída obligatoria**: si el código no está traducido o viene a `null` —caso
-de las categorías que crea el usuario, que el backend admite aunque la app
-hoy no permita crearlas— se muestra el nombre que manda el backend. Nunca un
-código crudo.
+de las categorías que crea el usuario (T-031b: se crean desde el formulario
+del hábito y desde «Mis hábitos»)— se muestra el nombre que manda el backend
+tal cual, sin traducir. Nunca un código crudo.
+
+Una excepción a «el texto crudo del backend no se enseña al usuario»: el 409 de
+crear o renombrar una categoría (nombre repetido, tope de 20) se enseña con el
+texto del servidor debajo del campo de la hoja
+(`ApiServiceHabitos.mensajeDelServidor`), porque la app no puede saber de
+antemano cuál de los dos es. Cualquier otro fallo de esa hoja o del borrado
+usa los textos de la app (`catErrorGuardar`, `catErrorBorrar`).
