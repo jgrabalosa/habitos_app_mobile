@@ -542,6 +542,46 @@
   "permisoAvisosCuerpo": "Activa las notificaciones y Nori te avisará a la hora de tus recordatorios. Sin agobios: como mucho dos avisos más a la semana.",
   "permisoAvisosActivar": "Activar",
   "permisoAvisosAhoraNo": "Ahora no",
+  "semanaTitulo": "Así fue tu semana",
+  "semanaFechas": "{desde} – {hasta}",
+  "@semanaFechas": {
+    "placeholders": {
+      "desde": { "type": "String" },
+      "hasta": { "type": "String" }
+    }
+  },
+  "semanaHiciste": "Hiciste {hechos} de {total}",
+  "@semanaHiciste": {
+    "placeholders": {
+      "hechos": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "semanaDiasCompletos": "{n, plural, =1{1 día completo} other{{n} días completos}}",
+  "@semanaDiasCompletos": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "semanaSemanalesTitulo": "Objetivos de la semana logrados",
+  "semanaRitmo": "Tu ritmo: {palabra}",
+  "@semanaRitmo": {
+    "placeholders": {
+      "palabra": { "type": "String" }
+    }
+  },
+  "semanaSube": "Va subiendo",
+  "semanaIgual": "Se mantiene",
+  "semanaBaja": "Un paso y vuelve a subir",
+  "semanaMasSube": "Lo que más ha subido: {nombre}, de {antes} a {ahora}",
+  "@semanaMasSube": {
+    "placeholders": {
+      "nombre": { "type": "String" },
+      "antes": { "type": "String" },
+      "ahora": { "type": "String" }
+    }
+  },
+  "semanaBoton": "Empezar la semana",
   "durMinutos": "{m} min",
   "@durMinutos": {
     "placeholders": {

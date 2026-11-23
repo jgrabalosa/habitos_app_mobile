@@ -157,6 +157,22 @@ los tres `app_*.arb` (`pista…`); en el sitio donde se da el momento,
 pista: sale la primera vez y no la segunda (`test/pistas_nori_test.dart`).
 Las tres de hoy están en `DashboardScreen` (`_evaluarPistas`, `_ofrecerPista`).
 
+## Tarjeta «Así fue tu semana» (T-056)
+
+`widgets/tarjeta_semana.dart` (`TarjetaSemana.mostrarSiToca`), desde
+`HomeShell._alEntrar`, **después del gorro y del permiso y solo si no ha salido
+ninguna de las dos** (una tarjeta por apertura; el aviso de versión sigue al
+final). Sale el primer día de la semana que se abre la app: si
+`semana_vista_<usuarioId>` (`SharedPreferences`, con el lunes de la semana del
+móvil) no es el lunes de hoy y `/semana-pasada` trae `hayActividad`. Se marca al
+enseñarla, o al saber que no hubo actividad; **no** se marca con error de red,
+con la pista del alta abierta ni si otra tarjeta ocupó la apertura. Si el
+servidor manda una semana que para el móvil no está cerrada (zona distinta), no
+sale. **Nunca nombra lo que faltó** (D-70): solo hechos, días completos
+(pintados solo llenos), semanales logrados y ritmo; lo vigila
+`test/tarjeta_semana_test.dart`. Evento `semana_vista`. Detalle en
+`docs/funcionamiento/estructura-de-la-app.md`.
+
 ## Formato del código
 
 Todo el código Dart va formateado con `dart format`. Antes de cada commit que

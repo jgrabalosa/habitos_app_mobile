@@ -166,6 +166,16 @@ class AnalyticsHabitos {
     }
   }
 
+  /// Se enseña la tarjeta «Así fue tu semana» (T-056). Sin parámetros: no
+  /// lleva ni nombres de hábitos ni cifras de la persona.
+  static Future<void> semanaVista() async {
+    try {
+      await AnalyticsCore.analytics.logEvent(name: 'semana_vista');
+    } catch (e) {
+      debugPrint('Analytics: no se registró semana_vista: $e');
+    }
+  }
+
   /// Los parámetros de `pista_vista`: la pista en `pista`, el mismo parámetro
   /// que `AnalyticsCore.pistaVista` (T-052), para que las de Habits y las del
   /// core salgan en la misma serie.

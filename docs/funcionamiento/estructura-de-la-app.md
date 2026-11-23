@@ -47,6 +47,24 @@ párrafo de este fichero.
   `obtenerInventario`, `comprar`, `equipar` y `ahora`. Importa
   `precio_tienda.dart` y `nori_vestida.dart` del core directamente, porque su
   barrel no los exporta.
+- **«Así fue tu semana»** (T-056, `widgets/tarjeta_semana.dart`, modelo en
+  `models/semana_pasada.dart`, llamada `ApiServiceHabitos.getSemanaPasada`):
+  la tercera tarjeta que puede salir al entrar, la última en la fila. `_alEntrar`
+  la llama solo si no han salido ni el gorro ni el permiso de avisos y el
+  recorrido no está activo. «Primer día de la semana» = la semana ISO del móvil:
+  `semana_vista_<usuarioId>` guarda el lunes de la última semana atendida y la
+  tarjeta se intenta mientras no sea el de esta semana. La marca se pone al
+  enseñarla y también cuando el servidor dice que no hubo actividad (esa semana
+  no cambia); no se pone con error de red, con la pista del alta abierta ni
+  cuando otra tarjeta ocupó la apertura, y se reintenta en la siguiente. Si la
+  semana que devuelve el servidor no termina antes del lunes del móvil (la zona
+  del usuario va por detrás), no sale ni se marca. Cuenta solo lo hecho (D-70):
+  «Hiciste N de M», los días completos como celdas llenas (`celdaHeatmap`, sin
+  huecos: el backend manda cuántos, no cuáles), los semanales con `completo`
+  (con su icono), el ritmo (`palabraRitmo`, `IndicadorNivel` y una flecha
+  Lucide, sin color de alarma si baja) y el hábito que más sube. Sin «Compartir»
+  por ahora. Evento `semana_vista` sin parámetros. Seams de test:
+  `TarjetaSemana.obtener`, `preferencias`, `ahora` y `medir`.
 - **Compartir el cierre del día** (T-043): `_cerrarDia` pasa
   `textoCompartir` (`cierreCompartir`) a `mostrarCierreDelDia`; si devuelve
   `ResultadoCierreDelDia.compartir`, `PostalCierre.compartir`

@@ -12,6 +12,7 @@ import '../services/recorrido_onboarding.dart';
 import '../widgets/bienvenida.dart';
 import '../widgets/permiso_avisos.dart';
 import '../widgets/regalo_gorro.dart';
+import '../widgets/tarjeta_semana.dart';
 import 'ideas_habito_screen.dart';
 import '../services/habitos_refresh.dart';
 import '../services/al_volver.dart';
@@ -251,12 +252,18 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
       usuarioId: _usuarioId,
       altaNueva: widget.mostrarOnboarding,
     );
+    var salioPermiso = false;
     if (!salioGorro && mounted && !_recorrido.activo) {
-      await PermisoAvisos.mostrarSiToca(
+      salioPermiso = await PermisoAvisos.mostrarSiToca(
         context,
         usuarioId: _usuarioId,
         origen: OrigenPermisoAvisos.apertura,
       );
+    }
+    // «Así fue tu semana» (T-056): solo si no ha salido ninguna de las dos.
+    // Si no sale por eso, no se marca y se intenta en la siguiente apertura.
+    if (!salioGorro && !salioPermiso && mounted && !_recorrido.activo) {
+      await TarjetaSemana.mostrarSiToca(context, usuarioId: _usuarioId);
     }
     _avisarDeActualizacion();
   }
