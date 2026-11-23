@@ -247,4 +247,17 @@ void main() {
         Theme.of(tester.element(scaffold)).scaffoldBackgroundColor;
     expect(fondo, temaEquipadoNotifier.value.bg);
   });
+
+  testWidgets('cada apartado es una tarjeta de la identidad', (tester) async {
+    // A mano, en Dulce eran cajas blancas sin el filo a lápiz: tapaban las
+    // burbujas y parecían un corte. SuperficieIdentidad pone el lenguaje de
+    // cada identidad (en Dulce, el filo rosa y la sombra a rayas).
+    aplicarIdentidadEquipada('TEMA_DULCE');
+    await pantalla(tester);
+
+    expect(
+      find.byType(SuperficieIdentidad),
+      findsNWidgets(ApartadoComoFunciona.values.length),
+    );
+  });
 }

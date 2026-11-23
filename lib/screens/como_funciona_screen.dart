@@ -195,37 +195,45 @@ class _Apartado extends StatelessWidget {
     final tema = Theme.of(context).textTheme;
     final reducir = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
 
-    return Material(
-      color: t.surface,
-      borderRadius: BorderRadius.circular(id.radioSecundario),
-      clipBehavior: Clip.antiAlias,
+    // La tarjeta de la identidad, no una caja a mano: en Dulce una caja
+    // blanca sin el filo a lápiz tapaba las burbujas y parecía un corte. El
+    // toque es solo de la cabecera, así que el InkWell va dentro, sobre un
+    // Material transparente y con la forma de la tarjeta.
+    return SuperficieIdentidad(
+      relleno: EdgeInsets.zero,
       child: Semantics(
         container: true,
         expanded: abierto,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            InkWell(
-              onTap: alPulsar,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.md,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        apartado.titulo(l),
-                        style: tema.titleMedium?.copyWith(color: t.text),
+            Material(
+              type: MaterialType.transparency,
+              child: InkWell(
+                onTap: alPulsar,
+                customBorder: formaIdentidad(id, radio: id.radioSecundario),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.md,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          apartado.titulo(l),
+                          style: tema.titleMedium?.copyWith(color: t.text),
+                        ),
                       ),
-                    ),
-                    Icon(
-                      abierto ? LucideIcons.chevronUp : LucideIcons.chevronDown,
-                      size: 20,
-                      color: t.points,
-                    ),
-                  ],
+                      Icon(
+                        abierto
+                            ? LucideIcons.chevronUp
+                            : LucideIcons.chevronDown,
+                        size: 20,
+                        color: t.points,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
