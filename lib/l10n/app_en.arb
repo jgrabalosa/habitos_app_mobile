@@ -368,6 +368,46 @@
   "permisoAvisosCuerpo": "Turn on notifications and Nori will let you know at your reminder times. No pressure: at most two extra nudges a week.",
   "permisoAvisosActivar": "Turn on",
   "permisoAvisosAhoraNo": "Not now",
+  "semanaTitulo": "How your week went",
+  "semanaFechas": "{desde} – {hasta}",
+  "@semanaFechas": {
+    "placeholders": {
+      "desde": { "type": "String" },
+      "hasta": { "type": "String" }
+    }
+  },
+  "semanaHiciste": "You did {hechos} of {total}",
+  "@semanaHiciste": {
+    "placeholders": {
+      "hechos": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "semanaDiasCompletos": "{n, plural, =1{1 complete day} other{{n} complete days}}",
+  "@semanaDiasCompletos": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "semanaSemanalesTitulo": "Weekly goals reached",
+  "semanaRitmo": "Your rhythm: {palabra}",
+  "@semanaRitmo": {
+    "placeholders": {
+      "palabra": { "type": "String" }
+    }
+  },
+  "semanaSube": "On the rise",
+  "semanaIgual": "Holding steady",
+  "semanaBaja": "One step and it climbs again",
+  "semanaMasSube": "Biggest climb: {nombre}, from {antes} to {ahora}",
+  "@semanaMasSube": {
+    "placeholders": {
+      "nombre": { "type": "String" },
+      "antes": { "type": "String" },
+      "ahora": { "type": "String" }
+    }
+  },
+  "semanaBoton": "Start the week",
   "durMinutos": "{m} min",
   "durHoras": "{h} h",
   "durHorasMinutos": "{h} h {m} min",

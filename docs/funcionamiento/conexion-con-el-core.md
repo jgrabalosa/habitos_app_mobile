@@ -70,7 +70,7 @@ puntos:
     es un alta nueva (`mostrarOnboarding`) y el recorrido guiado no está
     activo. Avisa, nunca obliga (modo flexible de Google Play; obligar es la
     versión mínima del backend) y el core lo limita a una vez al día. Solo
-    Habits lo llama. Nunca a la vez que otra tarjeta: cuando entre la del
-    gorro (T-057), la llamada irá después de que esa se cierre. El seam
+    Habits lo llama. Nunca a la vez que otra tarjeta: va después de que se
+    cierre la que salga (gorro, permiso de avisos o «Así fue tu semana»). El seam
     `HomeShell.comprobarActualizacion` (`@visibleForTesting`) lo sustituye en
     los tests (`test/home_shell_actualizacion_test.dart`).

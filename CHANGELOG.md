@@ -158,6 +158,7 @@ Con el core 0.62.0.
 - En Perfil, un interruptor «Avisos de Norday» para apagar los avisos de la app (como mucho dos a la semana: cuando llevas días sin pasar o una semana se queda a medias). Tus recordatorios no cambian.
 - Nori te pide permiso para avisarte: al acabar de crear tu primer hábito, o una sola vez al abrir la app si ya la usabas y no tienes las notificaciones activadas. Con «Ahora no» no vuelve a preguntar. Nunca sale si ya hay permiso ni si lo desactivaste en los ajustes del móvil.
 - Si hay una versión nueva en Google Play, la app te lo ofrece al abrirla (como mucho una vez al día): se descarga mientras la usas y, al acabar, un aviso te deja reiniciar. Nunca te obliga.
+- «Así fue tu semana»: el primer día de la semana que abres la app, una tarjeta de Nori te cuenta lo que hiciste la semana pasada (hábitos hechos, días completos, objetivos semanales logrados y tu ritmo). Solo lo hecho, nunca lo que faltó, y solo si hubo actividad.
 - Puedes crear tus propias categorías.
 - Si Google Play no te ha ofrecido la versión nueva, una tarjeta de Nori te la recomienda, una sola vez por versión. Nunca obliga.
 - La primera vez que abres la tienda, una nota te cuenta para qué son tus puntos.

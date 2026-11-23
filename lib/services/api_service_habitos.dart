@@ -130,6 +130,22 @@ class ApiServiceHabitos {
     );
   }
 
+  /// La semana pasada (`GET /habitos/usuario/{id}/semana-pasada`, T-055): lo
+  /// que se hizo de lunes a domingo. Mismo 403/404 que `/hoy`.
+  static Future<Map<String, dynamic>> getSemanaPasada(int usuarioId) async {
+    final headers = await ApiServiceCore.getHeaders();
+    final response = await ApiServiceCore.enviar(
+      () => ApiServiceCore.cliente.get(
+        Uri.parse('$_baseUrl/habitos/usuario/$usuarioId/semana-pasada'),
+        headers: headers,
+      ),
+    );
+    ApiServiceCore.verificar(response);
+    return ApiServiceCore.parsear(
+      () => jsonDecode(response.body) as Map<String, dynamic>,
+    );
+  }
+
   static Future<Map<String, dynamic>> getHabitoDetalle(
     int habitoId, {
     String? mes,
