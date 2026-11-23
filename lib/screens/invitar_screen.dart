@@ -201,8 +201,9 @@ class _InvitarScreenState extends State<InvitarScreen> {
     final t = tokens(context);
     final dato = _dato;
 
+    // Sin backgroundColor: el papel de Dulce lo pone el Scaffold, porque su
+    // fondo solo dibuja las burbujas. Transparente, se veía negro.
     return Scaffold(
-      backgroundColor: Colors.transparent,
       appBar: AppBar(title: Text(l.invitarMenu)),
       body: Stack(
         fit: StackFit.expand,
