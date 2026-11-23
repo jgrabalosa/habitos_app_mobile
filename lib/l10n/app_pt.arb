@@ -368,7 +368,7 @@
   "permisoAvisosCuerpo": "Ativa as notificações e o Nori avisa-te à hora dos teus lembretes. Sem stress: no máximo dois avisos extra por semana.",
   "permisoAvisosActivar": "Ativar",
   "permisoAvisosAhoraNo": "Agora não",
-  "semanaTitulo": "Como foi a sua semana",
+  "semanaTitulo": "Como foi a tua semana",
   "semanaFechas": "{desde} – {hasta}",
   "@semanaFechas": {
     "placeholders": {
@@ -376,7 +376,7 @@
       "hasta": { "type": "String" }
     }
   },
-  "semanaHiciste": "Você fez {hechos} de {total}",
+  "semanaHiciste": "Fizeste {hechos} de {total}",
   "@semanaHiciste": {
     "placeholders": {
       "hechos": { "type": "int" },
@@ -390,7 +390,7 @@
     }
   },
   "semanaSemanalesTitulo": "Objetivos da semana alcançados",
-  "semanaRitmo": "Seu ritmo: {palabra}",
+  "semanaRitmo": "O teu ritmo: {palabra}",
   "@semanaRitmo": {
     "placeholders": {
       "palabra": { "type": "String" }
