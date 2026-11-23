@@ -141,11 +141,11 @@ Estado: publicada en Producción el 2026-11-21 (enviada a Google el 20-nov, con 
 
 ## Sin publicar
 
-Con el core 0.60.0.
+Con el core 0.62.0.
 
 ### Novedades
 
-- Los «?» cuentan ahora lo que pasa de verdad: el ritmo se pone al día al acabar el día (o la semana, en los semanales) y no al marcar; «Esta semana» avisa del plazo hasta el domingo, del +20 % de puntos y de que no hace falta para terminar el día; la experiencia de Nori dice cuánto sube (5 por hábito, 15 por comida) y cuándo crece (cría en el nivel 3, adulta en el 11); y la frecuencia dice que la semana va de lunes a domingo.
+- Los «?» cuentan ahora lo que pasa de verdad: el ritmo se pone al día al acabar el día (o la semana, en los semanales) y no al marcar; «Esta semana» avisa del plazo hasta el domingo, del +20 % de puntos y de que no hace falta para terminar el día; la experiencia de Nori dice cuánto sube (5 por hábito, 15 por comida) y cuándo crece (cría en el nivel 3, adulto en el 11); y la frecuencia dice que la semana va de lunes a domingo.
 - Cada hábito tiene su icono: se elige al crearlo o editarlo, y se ve en Hoy, en la lista y en el detalle. Las ideas para empezar ya traen el suyo.
 - La meta de un hábito de minutos se puede poner en horas: chips de 1 h, 1 h 30 min y 2 h, y unas ruedas de horas y minutos para cualquier otra.
 - «Invitar a un amigo» es ahora una postal de Nori en 4:5, con su fase y un dato suyo que se puede quitar antes de compartir.
@@ -158,6 +158,9 @@ Con el core 0.60.0.
 - Nori te pide permiso para avisarte: al acabar de crear tu primer hábito, o una sola vez al abrir la app si ya la usabas y no tienes las notificaciones activadas. Con «Ahora no» no vuelve a preguntar. Nunca sale si ya hay permiso ni si lo desactivaste en los ajustes del móvil.
 - Si hay una versión nueva en Google Play, la app te lo ofrece al abrirla (como mucho una vez al día): se descarga mientras la usas y, al acabar, un aviso te deja reiniciar. Nunca te obliga.
 - Puedes crear tus propias categorías.
+- Si Google Play no te ha ofrecido la versión nueva, una tarjeta de Nori te la recomienda, una sola vez por versión. Nunca obliga.
+- La primera vez que abres la tienda, una nota te cuenta para qué son tus puntos.
+- Nori reacciona cuando le das de comer.
 
 ### Mejoras
 
@@ -168,5 +171,6 @@ Con el core 0.60.0.
 - En Dulce, cada flor nueva del ramo entra con su fundido, no solo la primera.
 - La ayuda de la tienda menciona la ropa de Nori.
 - Las notificaciones llevan la brújula de Norday en verde, en vez de un cuadrado vacío.
+- En la pantalla de Nori, «Alimentar» y «Tienda» van justo debajo de él: ya no hay que bajar para darle de comer.
 
 Para anunciar: nada.
