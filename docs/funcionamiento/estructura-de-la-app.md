@@ -103,6 +103,17 @@ párrafo de este fichero.
   «Activar», `permiso_avisos` con la respuesta del sistema. Seams de test:
   `PermisoAvisos.concedido`, `bloqueadoEnAjustes`, `pedirYRegistrar` y
   `preferencias`.
+- **Las pistas de Nori «la primera vez»** (T-054, `services/pistas_nori.dart` y
+  `widgets/nota_pista.dart`): notas cortas que explican una regla cuando
+  aparece por primera vez. `PistasNori.intentar(id, usuarioId:)` decide si sale
+  y la deja apuntada; `NotaPista` es un `BurbujaContexto` que se cierra
+  tocándolo y entra con fundido (sin él con «reducir movimiento»). Van **en la
+  lista de Hoy, empujando lo de debajo, nunca encima**: `esta_semana` bajo el
+  título «ESTA SEMANA», `semana_cerrada` bajo la tarjeta del ritmo y
+  `extra_semana` bajo la tarjeta del hábito que acaba de completarse. Reglas, en
+  el `CLAUDE.md`. Evento `pista_vista` (parámetro `pista`, como el core) en `AnalyticsHabitos`: el core
+  v0.61.0 no tiene `AnalyticsCore.pistaVista`. Seams de test:
+  `PistasNori.preferencias`, `ahora` y `registrarVista`.
 - **El icono pequeño de las notificaciones** es `ic_stat_norday` (la brújula sin
   las marcas del aro, blanca sobre transparente), declarado en el
   `AndroidManifest.xml` como `default_notification_icon` de FCM, con
