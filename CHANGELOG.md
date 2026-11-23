@@ -152,10 +152,12 @@ Con el core 0.60.0.
 - El check vivo: de vez en cuando, algo da una vuelta al aro de un hábito sin hacer (un cohete en Profundidad, un destello de neón en Neotokyo+, una punta de lápiz en Dulce).
 - Tu Nori, con su fase y lo que lleva puesto, es tu avatar en Colección y en Mi cuenta.
 - Al cerrar el día, un botón «Compartir» al final de la ceremonia: una postal con la figura de tu día (constelación, letrero o ramo), la fecha y cuántos hábitos hiciste. Nunca lleva los nombres de tus hábitos.
+- Nori te explica cada regla semanal la primera vez que aparece: «Esta semana», la semana que se cierra y el extra por semana completa. Una nota corta junto a lo que explica, que se cierra tocándola, una sola vez y como mucho una al día.
 - Al entrar en la app, una tarjeta te regala el gorro de Papá Noel (gratis y tuyo para siempre) hasta el 7 de enero, si aún no lo tienes. Si no llevas nada en la cabeza, Nori se lo pone al momento.
 - En Perfil, un interruptor «Avisos de Norday» para apagar los avisos de la app (como mucho dos a la semana: cuando llevas días sin pasar o una semana se queda a medias). Tus recordatorios no cambian.
 - Nori te pide permiso para avisarte: al acabar de crear tu primer hábito, o una sola vez al abrir la app si ya la usabas y no tienes las notificaciones activadas. Con «Ahora no» no vuelve a preguntar. Nunca sale si ya hay permiso ni si lo desactivaste en los ajustes del móvil.
 - Si hay una versión nueva en Google Play, la app te lo ofrece al abrirla (como mucho una vez al día): se descarga mientras la usas y, al acabar, un aviso te deja reiniciar. Nunca te obliga.
+- Puedes crear tus propias categorías.
 
 ### Mejoras
 

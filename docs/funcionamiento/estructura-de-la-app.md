@@ -103,6 +103,17 @@ párrafo de este fichero.
   «Activar», `permiso_avisos` con la respuesta del sistema. Seams de test:
   `PermisoAvisos.concedido`, `bloqueadoEnAjustes`, `pedirYRegistrar` y
   `preferencias`.
+- **Las pistas de Nori «la primera vez»** (T-054, `services/pistas_nori.dart` y
+  `widgets/nota_pista.dart`): notas cortas que explican una regla cuando
+  aparece por primera vez. `PistasNori.intentar(id, usuarioId:)` decide si sale
+  y la deja apuntada; `NotaPista` es un `BurbujaContexto` que se cierra
+  tocándolo y entra con fundido (sin él con «reducir movimiento»). Van **en la
+  lista de Hoy, empujando lo de debajo, nunca encima**: `esta_semana` bajo el
+  título «ESTA SEMANA», `semana_cerrada` bajo la tarjeta del ritmo y
+  `extra_semana` bajo la tarjeta del hábito que acaba de completarse. Reglas, en
+  el `CLAUDE.md`. Evento `pista_vista` (parámetro `pista`, como el core) en `AnalyticsHabitos`: el core
+  v0.61.0 no tiene `AnalyticsCore.pistaVista`. Seams de test:
+  `PistasNori.preferencias`, `ahora` y `registrarVista`.
 - **El icono pequeño de las notificaciones** es `ic_stat_norday` (la brújula sin
   las marcas del aro, blanca sobre transparente), declarado en el
   `AndroidManifest.xml` como `default_notification_icon` de FCM, con
@@ -110,6 +121,26 @@ párrafo de este fichero.
   su transparencia: sin él salía un cuadrado. Se regenera con
   `python3 tool/icono_notificacion.py` (Pillow); lo vigila
   `test/android_manifest_test.dart`.
+- **Categorías propias** (T-031b): se crean, renombran (nombre y emoji) y
+  borran desde la app. La hoja de crear y cambiar es una sola
+  (`widgets/hoja_categoria.dart`, `mostrarHojaCategoria`): nombre de 2 a 30
+  caracteres, recortado, y una rejilla de 16 emojis (`emojisCategoria`) más «sin
+  emoji», con la forma de la identidad como la rejilla de iconos. Recibe la
+  llamada a la red como parámetro y, si lanza, se queda abierta con el error
+  debajo del campo. Se abre desde dos sitios: la última opción del desplegable de
+  `habito_screen.dart` («+ Nueva categoría»; al crearla se recargan las
+  categorías y queda elegida, y si se cancela sigue la que había) y, en
+  `habitos_screen.dart`, el chip «+» al final de la fila de filtros. Mantener
+  pulsada una categoría propia (`esGlobal` falso; las globales no responden)
+  abre «Cambiar nombre o emoji» / «Borrar»; borrar confirma, recarga categorías
+  y hábitos y devuelve el filtro a «Todas» si estaba en ella. Los hábitos de
+  una categoría borrada pasan a «sin categoría» (lo hace el backend). El chip
+  propio anuncia su pista de mantener pulsado (`MergeSemantics`: sin él, el
+  `ChoiceChip` hace su propio nodo y la acción quedaba aparte). Seams de test:
+  `HabitoScreen.crearCategoria` y, en `HabitosScreen`, `cargarResumen`,
+  `cargarCategorias`, `crearCategoria`, `actualizarCategoria` y
+  `borrarCategoria`. Las categorías llevan emoji, no icono de Lucide (esos son
+  de los hábitos), y la app no enseña su color.
 - El icono del hábito: `habito_screen.dart` manda el `codigoIcono` de la
   plantilla al crear desde ella y el que ya tenía el hábito al editar; desde
   cero, `sparkles`. La fila «Icono» abre la rejilla

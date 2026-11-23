@@ -7,6 +7,7 @@ import '../services/app_refresh.dart';
 import '../l10n/catalogos.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/habito.dart';
+import '../widgets/hoja_categoria.dart';
 import '../widgets/identidad_ui.dart';
 import '../widgets/pausa_habito.dart';
 import 'habito_screen.dart';
@@ -14,9 +15,37 @@ import 'ideas_habito_screen.dart';
 
 enum _Orden { recientes, masCumplidos }
 
+enum _AccionCategoria { cambiar, borrar }
+
 class HabitosScreen extends StatefulWidget {
   final int usuarioId;
   const HabitosScreen({super.key, required this.usuarioId});
+
+  /// Seams de test: de dónde sale lo que se enseña y qué llamadas gestionan
+  /// las categorías propias. En producción, la red.
+  @visibleForTesting
+  static Future<List<Map<String, dynamic>>> Function(int usuarioId)
+  cargarResumen = ApiServiceHabitos.getResumenHabitos;
+
+  @visibleForTesting
+  static Future<List<dynamic>> Function(int usuarioId) cargarCategorias =
+      ApiServiceHabitos.getCategoriasUsuario;
+
+  @visibleForTesting
+  static Future<Map<String, dynamic>> Function(String nombre, String? icono)
+  crearCategoria = ApiServiceHabitos.crearCategoria;
+
+  @visibleForTesting
+  static Future<Map<String, dynamic>> Function(
+    int categoriaId,
+    String nombre,
+    String? icono,
+  )
+  actualizarCategoria = ApiServiceHabitos.actualizarCategoria;
+
+  @visibleForTesting
+  static Future<void> Function(int categoriaId) borrarCategoria =
+      ApiServiceHabitos.borrarCategoria;
 
   @override
   State<HabitosScreen> createState() => _HabitosScreenState();
@@ -57,8 +86,8 @@ class _HabitosScreenState extends State<HabitosScreen> {
     setState(() => _loading = true);
     try {
       final resultados = await Future.wait([
-        ApiServiceHabitos.getResumenHabitos(widget.usuarioId),
-        ApiServiceHabitos.getCategoriasUsuario(widget.usuarioId),
+        HabitosScreen.cargarResumen(widget.usuarioId),
+        HabitosScreen.cargarCategorias(widget.usuarioId),
       ]);
       if (!mounted) return;
       setState(() {
@@ -235,17 +264,168 @@ class _HabitosScreenState extends State<HabitosScreen> {
           for (final c in _categorias)
             Padding(
               padding: const EdgeInsets.only(left: 8),
-              child: _chip(
-                '${c['icono'] ?? ''} ${Catalogos.categoria(context, c['codigo'], c['nombre'])}'
-                    .trim(),
-                _filtroCategoriaId == c['categoriaId'],
-                () => setState(() => _filtroCategoriaId = c['categoriaId']),
-                t,
-              ),
+              child: _chipCategoria(l, t, c),
             ),
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: _chipNueva(l, t),
+          ),
         ],
       ),
     );
+  }
+
+  Widget _chipCategoria(AppLocalizations l, TokensContextuales t, dynamic c) {
+    final chip = _chip(
+      '${c['icono'] ?? ''} ${Catalogos.categoria(context, c['codigo'], c['nombre'])}'
+          .trim(),
+      _filtroCategoriaId == c['categoriaId'],
+      () => setState(() => _filtroCategoriaId = c['categoriaId']),
+      t,
+    );
+    // Las globales no responden al mantener pulsado.
+    if (c['esGlobal'] != false) return chip;
+    // El ChoiceChip no gasta el mantener pulsado, así que le llega al detector.
+    return GestureDetector(
+      onLongPress: () => _gestionarCategoria(c),
+      // MergeSemantics: el chip hace su propio nodo y, sin fundirlos, la acción
+      // y su pista quedarían en otro nodo aparte, que el lector no anuncia.
+      child: MergeSemantics(
+        child: Semantics(
+          onLongPress: () => _gestionarCategoria(c),
+          onLongPressHint: l.catPistaMantener,
+          child: chip,
+        ),
+      ),
+    );
+  }
+
+  /// El «+» al final de la fila: abre la hoja de categoría nueva.
+  Widget _chipNueva(AppLocalizations l, TokensContextuales t) {
+    final id = identidad(context);
+    return Semantics(
+      button: true,
+      label: l.catNuevaEtiqueta,
+      excludeSemantics: true,
+      onTap: _crearCategoria,
+      child: ActionChip(
+        label: Icon(LucideIcons.plus, size: 18, color: t.textMuted),
+        onPressed: _crearCategoria,
+        tooltip: l.catNuevaEtiqueta,
+        shape:
+            formaIdentidad(
+                  id,
+                  radio: 999,
+                  lado: BorderSide(color: t.textMuted.withValues(alpha: 0.35)),
+                )
+                as OutlinedBorder,
+      ),
+    );
+  }
+
+  Future<void> _crearCategoria() async {
+    final creada = await mostrarHojaCategoria(
+      context,
+      guardar: HabitosScreen.crearCategoria,
+    );
+    if (creada != null && mounted) _cargarDatos();
+  }
+
+  /// Mantener pulsada una categoría propia: cambiarle el nombre o el emoji, o
+  /// borrarla.
+  Future<void> _gestionarCategoria(dynamic c) async {
+    final l = AppLocalizations.of(context)!;
+    final t = tokens(context);
+    final accion = await showModalBottomSheet<_AccionCategoria>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(LucideIcons.pencil, color: t.text),
+              title: Text(l.catCambiar),
+              onTap: () => Navigator.pop(ctx, _AccionCategoria.cambiar),
+            ),
+            ListTile(
+              leading: Icon(LucideIcons.trash2, color: tonoError(ctx).texto),
+              title: Text(
+                l.catBorrar,
+                style: TextStyle(color: tonoError(ctx).texto),
+              ),
+              onTap: () => Navigator.pop(ctx, _AccionCategoria.borrar),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || accion == null) return;
+    switch (accion) {
+      case _AccionCategoria.cambiar:
+        await _cambiarCategoria(c);
+      case _AccionCategoria.borrar:
+        await _borrarCategoria(c);
+    }
+  }
+
+  Future<void> _cambiarCategoria(dynamic c) async {
+    final actualizada = await mostrarHojaCategoria(
+      context,
+      categoria: Map<String, dynamic>.from(c as Map),
+      guardar: (nombre, icono) =>
+          HabitosScreen.actualizarCategoria(c['categoriaId'], nombre, icono),
+    );
+    // Los hábitos de la categoría enseñan su nombre: Hoy también se entera.
+    if (actualizada != null && mounted) notificarHabitosCambiados();
+  }
+
+  Future<void> _borrarCategoria(dynamic c) async {
+    final l = AppLocalizations.of(context)!;
+    final nombre = Catalogos.categoria(context, c['codigo'], c['nombre']);
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: formaIdentidad(identidad(ctx), radio: identidad(ctx).radioHero),
+        title: Text(l.catBorrarTitulo(nombre)),
+        content: Text(l.catBorrarCuerpo),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l.cancelar),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              l.catBorrar,
+              style: TextStyle(color: tonoError(ctx).texto),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmar != true || !mounted) return;
+    try {
+      await HabitosScreen.borrarCategoria(c['categoriaId']);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            MensajesError.de(context, e, generico: l.catErrorBorrar),
+          ),
+        ),
+      );
+      return;
+    }
+    if (!mounted) return;
+    // Sus hábitos pasan a «sin categoría»: se recargan categorías y hábitos
+    // (esta pantalla y Hoy, por el aviso) y, si el filtro estaba en ella, vuelve
+    // a «Todas».
+    if (_filtroCategoriaId == c['categoriaId']) {
+      setState(() => _filtroCategoriaId = null);
+    }
+    notificarHabitosCambiados();
   }
 
   /// Sigue siendo un `ChoiceChip` de Material —el filtrado no se toca— pero con
