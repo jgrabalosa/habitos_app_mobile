@@ -1,9 +1,10 @@
 # habitos_app_mobile — Norday Habits
 
 App Android de **Norday Habits**, la app de hábitos del ecosistema **Norday**.
-Publicada: 1.1.0 (5), en Producción en Google Play (`com.norday.habitos`)
-desde el 22-oct-2026. En desarrollo: 1.3.0 (11), con el core v0.59.1. Sale
-sin «Empezar sesión», que llegará cuando Norday Focus esté en Producción.
+En Producción en Google Play (`com.norday.habitos`) desde el 22-oct-2026; la
+última publicada, 1.3.0 (11), el 21-nov-2026. En desarrollo: 1.4.0 (12), con
+el core v0.62.0. Sale sin «Empezar sesión», que llegará cuando Norday Focus
+esté en Producción.
 
 ## Qué hace
 

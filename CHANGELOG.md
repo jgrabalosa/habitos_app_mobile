@@ -139,9 +139,9 @@ Estado: publicada en Producción el 2026-11-21 (enviada a Google el 20-nov, con 
 - La app ya no se cierra al arrastrar a Nori en pantallas pequeñas.
 - En «Empieza con una idea», la última idea ya no queda debajo de la barra de navegación de Android.
 
-## Sin publicar
+## 1.4.0 (12) — 2026-11-23
 
-Con el core 0.62.0.
+Estado: en preparación (la primera mini, D-49). Con el core 0.62.0. Al publicarla, la versión mínima sube a 12: la actualización es obligatoria.
 
 ### Novedades
 
@@ -174,5 +174,9 @@ Con el core 0.62.0.
 - La ayuda de la tienda menciona la ropa de Nori.
 - Las notificaciones llevan la brújula de Norday en verde, en vez de un cuadrado vacío.
 - En la pantalla de Nori, «Alimentar» y «Tienda» van justo debajo de él: ya no hay que bajar para darle de comer.
+
+### Arreglos
+
+- En Dulce, «Invitar a un amigo» ya no sale con el fondo negro: lleva el papel de la identidad.
 
 Para anunciar: nada.
