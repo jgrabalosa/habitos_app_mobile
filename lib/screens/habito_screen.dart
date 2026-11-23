@@ -14,6 +14,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/habito.dart';
 import '../models/iconos_habito.dart';
 import '../models/plantilla_habito.dart';
+import '../widgets/hoja_categoria.dart';
 import '../widgets/hoja_meta_minutos.dart';
 import '../widgets/permiso_avisos.dart';
 import '../widgets/selector_icono_habito.dart';
@@ -42,6 +43,12 @@ class HabitoScreen extends StatefulWidget {
   @visibleForTesting
   static Future<List<dynamic>> Function(int usuarioId) cargarCategorias =
       ApiServiceHabitos.getCategoriasUsuario;
+
+  /// Seam de test: la llamada que crea una categoría propia desde la hoja de
+  /// «+ Nueva categoría». En producción, la red.
+  @visibleForTesting
+  static Future<Map<String, dynamic>> Function(String nombre, String? icono)
+  crearCategoria = ApiServiceHabitos.crearCategoria;
 
   /// Seam de test: la llamada que crea el hábito. En producción, la red.
   @visibleForTesting
@@ -339,6 +346,47 @@ class _HabitoScreenState extends State<HabitoScreen> {
         });
       }
     }
+  }
+
+  /// El valor de la última opción del desplegable, «+ Nueva categoría». No es
+  /// un `categoriaId` (esos son positivos) ni null (que es «Sin categoría»).
+  static const int _valorNuevaCategoria = -1;
+
+  /// Cambia la clave del desplegable para que vuelva a enseñar `_categoriaId`:
+  /// al elegir «+ Nueva categoría» él mismo se queda mostrándola, y si se
+  /// cancela hay que devolverlo a la categoría de antes.
+  int _versionDesplegable = 0;
+
+  /// Abre la hoja, crea la categoría y la deja elegida. Si se cancela, sigue la
+  /// que había.
+  Future<void> _crearCategoria() async {
+    final creada = await mostrarHojaCategoria(
+      context,
+      guardar: HabitoScreen.crearCategoria,
+    );
+    if (!mounted) return;
+    if (creada == null) {
+      setState(() => _versionDesplegable++);
+      return;
+    }
+    List<dynamic> categorias;
+    try {
+      categorias = await HabitoScreen.cargarCategorias(widget.usuarioId);
+    } catch (_) {
+      // Ya está creada: sin poder recargar, se añade a mano a las de antes.
+      categorias = _categorias;
+    }
+    if (!mounted) return;
+    final id = creada['categoriaId'];
+    if (!categorias.any((c) => c['categoriaId'] == id)) {
+      categorias = [...categorias, creada];
+    }
+    setState(() {
+      _categorias = categorias;
+      _categoriaId = id;
+      _categoriaElegidaPorUsuario = true;
+      _versionDesplegable++;
+    });
   }
 
   void _reintentarCategorias() {
@@ -956,6 +1004,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
                       : _categoriasError
                       ? _filaErrorCategorias(l)
                       : DropdownButtonFormField<int?>(
+                          key: ValueKey('categoria-$_versionDesplegable'),
                           initialValue: _categoriaId,
                           decoration: InputDecoration(
                             labelText: l.habLabelCategoria,
@@ -975,11 +1024,21 @@ class _HabitoScreenState extends State<HabitoScreen> {
                                 ),
                               ),
                             ),
+                            DropdownMenuItem<int?>(
+                              value: _valorNuevaCategoria,
+                              child: Text(l.catNueva),
+                            ),
                           ],
-                          onChanged: (v) => setState(() {
-                            _categoriaElegidaPorUsuario = true;
-                            _categoriaId = v;
-                          }),
+                          onChanged: (v) {
+                            if (v == _valorNuevaCategoria) {
+                              _crearCategoria();
+                              return;
+                            }
+                            setState(() {
+                              _categoriaElegidaPorUsuario = true;
+                              _categoriaId = v;
+                            });
+                          },
                         ),
                   const SizedBox(height: AppSpacing.sm),
                   FilaIconoHabito(

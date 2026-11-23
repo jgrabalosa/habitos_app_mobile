@@ -986,5 +986,26 @@
         "type": "int"
       }
     }
-  }
+  },
+  "catNueva": "+ Nueva categoría",
+  "catNuevaEtiqueta": "Nueva categoría",
+  "catCambiar": "Cambiar nombre o emoji",
+  "catLabelNombre": "Nombre",
+  "catLabelEmoji": "Emoji",
+  "catSinEmoji": "Sin emoji",
+  "catNombreLongitud": "El nombre tiene de 2 a 30 caracteres.",
+  "catGuardar": "Guardar",
+  "catErrorGuardar": "No se ha podido guardar la categoría",
+  "catBorrar": "Borrar",
+  "catBorrarTitulo": "¿Borrar «{nombre}»?",
+  "@catBorrarTitulo": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "catBorrarCuerpo": "Sus hábitos se quedan sin categoría. No se borra ningún hábito.",
+  "catErrorBorrar": "No se ha podido borrar la categoría",
+  "catPistaMantener": "cambiar el nombre o borrarla"
 }

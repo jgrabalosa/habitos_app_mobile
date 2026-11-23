@@ -447,5 +447,19 @@
   "invitarError": "Não foi possível partilhar o convite. Tenta outra vez.",
   "cierreCompartir": "Partilhar",
   "cierreTextoCompartir": "Hoje fechei o dia com o Norday Habits.\n{enlace}",
-  "cierrePostalHabitos": "{n, plural, =1{1 hábito feito} other{{n} hábitos feitos}}"
+  "cierrePostalHabitos": "{n, plural, =1{1 hábito feito} other{{n} hábitos feitos}}",
+  "catNueva": "+ Nova categoria",
+  "catNuevaEtiqueta": "Nova categoria",
+  "catCambiar": "Mudar o nome ou o emoji",
+  "catLabelNombre": "Nome",
+  "catLabelEmoji": "Emoji",
+  "catSinEmoji": "Sem emoji",
+  "catNombreLongitud": "O nome tem de ter entre 2 e 30 caracteres.",
+  "catGuardar": "Guardar",
+  "catErrorGuardar": "Não foi possível guardar a categoria",
+  "catBorrar": "Apagar",
+  "catBorrarTitulo": "Apagar «{nombre}»?",
+  "catBorrarCuerpo": "Os teus hábitos ficam sem categoria. Nenhum hábito é apagado.",
+  "catErrorBorrar": "Não foi possível apagar a categoria",
+  "catPistaMantener": "mudar o nome ou apagar"
 }
