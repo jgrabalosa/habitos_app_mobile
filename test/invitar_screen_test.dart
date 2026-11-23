@@ -415,4 +415,19 @@ void main() {
       expect(datos.lengthInBytes, greaterThan(0), reason: fase);
     }
   });
+
+  testWidgets('en Dulce, el fondo es el papel de la identidad, no negro', (
+    tester,
+  ) async {
+    // El fondo de Dulce solo dibuja las burbujas: el papel lo pone el
+    // Scaffold. Transparente, debajo de la ruta no queda nada y se ve negro.
+    aplicarIdentidadEquipada('TEMA_DULCE');
+    await montar(tester);
+
+    final scaffold = find.byType(Scaffold).first;
+    final fondo =
+        tester.widget<Scaffold>(scaffold).backgroundColor ??
+        Theme.of(tester.element(scaffold)).scaffoldBackgroundColor;
+    expect(fondo, temaEquipadoNotifier.value.bg);
+  });
 }

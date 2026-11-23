@@ -126,8 +126,9 @@ class _ComoFuncionaScreenState extends State<ComoFuncionaScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
 
+    // Sin backgroundColor: el papel de Dulce lo pone el Scaffold, porque su
+    // fondo solo dibuja las burbujas. Transparente, se veía negro.
     return Scaffold(
-      backgroundColor: Colors.transparent,
       appBar: AppBar(title: Text(l.comoFuncionaTitulo)),
       body: Stack(
         fit: StackFit.expand,

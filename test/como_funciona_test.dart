@@ -13,7 +13,10 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   GoogleFonts.config.allowRuntimeFetching = false;
 
+  final identidadInicial = identidadEquipadaNotifier.value;
+
   setUp(() => SharedPreferences.setMockInitialValues({}));
+  tearDown(() => aplicarIdentidadEquipada(identidadInicial.codigo));
 
   Widget app(Widget home, {Locale locale = const Locale('es')}) => MaterialApp(
     theme: AppTheme.deTema(temaEquipadoNotifier.value),
@@ -228,5 +231,20 @@ void main() {
       expect(find.byType(ComoFuncionaScreen), findsNothing);
       expect(lanzada, 1);
     });
+  });
+
+  testWidgets('en Dulce, el fondo es el papel de la identidad, no negro', (
+    tester,
+  ) async {
+    // El fondo de Dulce solo dibuja las burbujas: el papel lo pone el
+    // Scaffold. Transparente, debajo de la ruta no queda nada y se ve negro.
+    aplicarIdentidadEquipada('TEMA_DULCE');
+    await pantalla(tester);
+
+    final scaffold = find.byType(Scaffold).first;
+    final fondo =
+        tester.widget<Scaffold>(scaffold).backgroundColor ??
+        Theme.of(tester.element(scaffold)).scaffoldBackgroundColor;
+    expect(fondo, temaEquipadoNotifier.value.bg);
   });
 }
