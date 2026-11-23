@@ -9,6 +9,6 @@ resuelto. Antes de probar, comprobar el `resolved-ref` del `pubspec.lock`.
 Para probar una rama del core sin tag, `pubspec_overrides.yaml` con
 `path: ../norday_flutter_core`, que no se commitea (está en `.gitignore`).
 
-**Core fijado por `v0.61.0`** (22-nov-2026, para la primera mini: el aviso de versión nueva de Play, el interruptor «Avisos de Norday» en Perfil, los datos del widget de Nori, las ayudas con rastro y el fundido del ramo): `resolved-ref` `6aba27e9f70c4d19d77c151c79fd4e6e32591c77`. Trae `home_widget` (transitiva). La 1.3.0+11 de Play salió con `v0.59.1` (`c9cd3a5`). El `pubspec.lock` se versiona;
+**Core fijado por `v0.62.0`** (23-nov-2026, para la primera mini: la versión recomendada, «Alimentar» arriba y Nori reacciona al comer, «Saber más», `escribirANorday`, la pista de la tienda y `AnalyticsCore.pistaVista`): `resolved-ref` `e8f8994774c91ae8e28dde574d37b4c04e7c0670`. Antes, `v0.61.0` (`6aba27e`): el aviso de versión nueva de Play, el interruptor «Avisos de Norday», los datos del widget de Nori, las ayudas con rastro y el fundido del ramo. Trae `home_widget` (transitiva). La 1.3.0+11 de Play salió con `v0.59.1` (`c9cd3a5`). El `pubspec.lock` se versiona;
 al cambiar de tag, comprobar que dice `source: git`, el `ref:` nuevo y el
 `resolved-ref` que da `git rev-parse <tag>^{commit}` en el core.
