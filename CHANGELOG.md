@@ -180,3 +180,9 @@ Estado: publicada en Producción el 23-nov-2026 a las 12:24, al 100 % (la primer
 - En Dulce, «Invitar a un amigo» ya no sale con el fondo negro: lleva el papel de la identidad.
 
 Para anunciar: nada.
+
+## Sin publicar
+
+### Mejoras
+
+- Los «?» de la app enlazan con «Cómo funciona» mediante «Saber más» (frecuencia, meta, «esta semana», ritmo, ánimo y XP), y «Cómo funciona» termina con «Escríbenos», que abre el correo a hola@norday.app.

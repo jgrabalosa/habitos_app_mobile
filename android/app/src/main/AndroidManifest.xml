@@ -60,6 +60,12 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- «Escríbenos» (escribirANorday del core): abre la app de correo con
+             un mailto:. En Android 11+ sin esto puede no encontrarla. -->
+        <intent>
+            <action android:name="android.intent.action.SENDTO"/>
+            <data android:scheme="mailto"/>
+        </intent>
         <!-- Norday Focus (la app Enfoque): «Empezar sesión» del panel de
              minutos la abre con el enlace del hábito, fijando su paquete
              (MainActivity.kt). La visibilidad limitada de Android 11+ «also

@@ -139,8 +139,8 @@ párrafo de este fichero.
   lista de Hoy, empujando lo de debajo, nunca encima**: `esta_semana` bajo el
   título «ESTA SEMANA», `semana_cerrada` bajo la tarjeta del ritmo y
   `extra_semana` bajo la tarjeta del hábito que acaba de completarse. Reglas, en
-  el `CLAUDE.md`. Evento `pista_vista` (parámetro `pista`, como el core) en `AnalyticsHabitos`: el core
-  v0.61.0 no tiene `AnalyticsCore.pistaVista`. Seams de test:
+  el `CLAUDE.md`. Evento `pista_vista` (parámetro `pista`) con
+  `AnalyticsCore.pistaVista`, del core. Seams de test:
   `PistasNori.preferencias`, `ahora` y `registrarVista`.
 - **El icono pequeño de las notificaciones** es `ic_stat_norday` (la brújula sin
   las marcas del aro, blanca sobre transparente), declarado en el
@@ -251,8 +251,13 @@ añadir una pieza nueva a Hoy, seguirlo en vez de escribir números sueltos.
 cambian allí, se cambian aquí, en los tres idiomas. Los apartados son el enum
 `ApartadoComoFunciona` (su `id` se mide como `como_funciona_<id>` con
 `AnalyticsCore.ayudaAbierta`); se abre con uno desplegado pasando `abierto`
-(lo usará «Saber más», T-049). «Escríbenos» no está todavía: lo añade T-049 (`escribirANorday`, ya en el
-core v0.62.0).
+(es lo que hace `abrirComoFunciona(context, apartado)`, el «Saber más» de los
+«?»: frecuencia, meta, «esta semana» → `diarios`; ritmo → `ritmo`; ánimo y XP →
+`nori`). Al final, «Escríbenos»: `escribirANorday` del core con
+`hola@norday.app` y el asunto «Norday Habits»; si devuelve `false`, un aviso con
+la dirección. El `AndroidManifest.xml` declara el `mailto` en `<queries>`.
+**Todo `AyudaCampo` de `lib/` lleva `id`** (lo comprueba
+`test/ayudas_id_test.dart`); las variantes de la meta comparten `id`.
 
 ## Tarjeta «Así fue tu semana» (T-056)
 

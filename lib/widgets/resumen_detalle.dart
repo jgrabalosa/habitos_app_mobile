@@ -44,6 +44,7 @@ class ResumenDetalle extends StatelessWidget {
               texto: l.detAyudaTiempoTotal,
               etiquetaSemantica: l.detAyudaTiempoTotalEtiqueta,
               superindice: true,
+              id: 'tiempo_total',
             ),
           )
         else
@@ -57,6 +58,7 @@ class ResumenDetalle extends StatelessWidget {
               texto: l.detAyudaLoQueLlevas,
               etiquetaSemantica: l.detAyudaLoQueLlevasEtiqueta,
               superindice: true,
+              id: 'lo_que_llevas',
             ),
           ),
         const SizedBox(width: 8),
@@ -70,6 +72,7 @@ class ResumenDetalle extends StatelessWidget {
             texto: l.detAyudaDiasMes,
             etiquetaSemantica: l.detAyudaDiasMesEtiqueta,
             superindice: true,
+            id: 'dias_mes',
           ),
         ),
       ],

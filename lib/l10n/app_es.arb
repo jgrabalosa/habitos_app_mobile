@@ -977,6 +977,21 @@
   "@comoFuncionaVerPista": {
     "description": "Cómo funciona: vuelve a Hoy y lanza la pista del primer hábito. No sale sin hábitos"
   },
+  "comoFuncionaEscribenos": "Escríbenos",
+  "@comoFuncionaEscribenos": {
+    "description": "Cómo funciona: abre la app de correo para escribir a Norday"
+  },
+  "comoFuncionaEscribenosAsunto": "Norday Habits",
+  "@comoFuncionaEscribenosAsunto": {
+    "description": "Asunto del correo de «Escríbenos»"
+  },
+  "comoFuncionaEscribenosSinCorreo": "No se pudo abrir el correo. Escríbenos a {direccion}.",
+  "@comoFuncionaEscribenosSinCorreo": {
+    "description": "Aviso si no hay app de correo",
+    "placeholders": {
+      "direccion": {"type": "String"}
+    }
+  },
   "invitarMenu": "Invitar a un amigo",
   "@invitarMenu": {
     "description": "Entrada del menú y título de la pantalla que comparte la tarjeta de invitación"

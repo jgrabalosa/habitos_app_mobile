@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'analytics_service.dart';
+import 'package:norday_flutter_core/norday_flutter_core.dart';
 import 'recorrido_onboarding.dart';
 
 /// Las pistas de Nori «la primera vez» (T-054): una nota corta que explica una
@@ -47,7 +47,7 @@ class PistasNori {
   /// Seam de test: la medida de que una pista se ha visto.
   @visibleForTesting
   static Future<void> Function(String id) registrarVista =
-      AnalyticsHabitos.pistaVista;
+      AnalyticsCore.pistaVista;
 
   /// La pista que está en pantalla (o reservada mientras se decide).
   static String? _abierta;

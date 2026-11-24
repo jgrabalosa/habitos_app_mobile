@@ -8,6 +8,7 @@ import '../l10n/textos_objetivo.dart';
 import '../models/minutos.dart';
 import '../models/objetivo_programado.dart';
 import '../services/api_service_habitos.dart';
+import 'como_funciona_screen.dart';
 import '../services/analytics_service.dart';
 import '../l10n/catalogos.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -783,6 +784,7 @@ class _HabitoScreenState extends State<HabitoScreen> {
               texto: l.habAyudaUnidad,
               etiquetaSemantica: l.habAyudaUnidadEtiqueta,
               superindice: true,
+              id: 'unidad',
             ),
           ],
         ),
@@ -1060,6 +1062,11 @@ class _HabitoScreenState extends State<HabitoScreen> {
                         texto: l.habAyudaFrecuencia,
                         etiquetaSemantica: l.habAyudaFrecuenciaEtiqueta,
                         superindice: true,
+                        id: 'frecuencia',
+                        alSaberMas: () => abrirComoFunciona(
+                          context,
+                          ApartadoComoFunciona.diarios,
+                        ),
                       ),
                     ],
                   ),
@@ -1101,6 +1108,11 @@ class _HabitoScreenState extends State<HabitoScreen> {
                           texto: l.habAyudaMetaDias,
                           etiquetaSemantica: l.habAyudaMetaEtiqueta,
                           superindice: true,
+                          id: 'meta',
+                          alSaberMas: () => abrirComoFunciona(
+                            context,
+                            ApartadoComoFunciona.diarios,
+                          ),
                         ),
                         // «3 días por semana»: si no cabe, baja de línea.
                         Flexible(
@@ -1130,6 +1142,11 @@ class _HabitoScreenState extends State<HabitoScreen> {
                               : l.habAyudaMetaSemanal,
                           etiquetaSemantica: l.habAyudaMetaEtiqueta,
                           superindice: true,
+                          id: 'meta',
+                          alSaberMas: () => abrirComoFunciona(
+                            context,
+                            ApartadoComoFunciona.diarios,
+                          ),
                         ),
                         IconButton(
                           icon: const Icon(LucideIcons.minus),
