@@ -186,3 +186,4 @@ Para anunciar: nada.
 ### Mejoras
 
 - Los «?» de la app enlazan con «Cómo funciona» mediante «Saber más» (frecuencia, meta, «esta semana», ritmo, ánimo y XP), y «Cómo funciona» termina con «Escríbenos», que abre el correo a hola@norday.app.
+- En inglés, «Cómo funciona» habla de Nori como «he», igual que el resto de la app y la ficha de Play.
