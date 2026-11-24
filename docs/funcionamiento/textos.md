@@ -34,3 +34,7 @@ texto del servidor debajo del campo de la hoja
 (`ApiServiceHabitos.mensajeDelServidor`), porque la app no puede saber de
 antemano cuál de los dos es. Cualquier otro fallo de esa hoja o del borrado
 usa los textos de la app (`catErrorGuardar`, `catErrorBorrar`).
+
+**Nori es chico en los tres idiomas** (D-9): «contento» y «adulto» en
+español, «o Nori» en portugués y «he/him» en inglés, nunca «it» (Quim,
+24-nov-2026; así también la ficha de Play en `store/ficha-play/` y Focus).
