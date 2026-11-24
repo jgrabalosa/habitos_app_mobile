@@ -180,3 +180,9 @@ Estado: publicada en Producción el 23-nov-2026 a las 12:24, al 100 % (la primer
 - En Dulce, «Invitar a un amigo» ya no sale con el fondo negro: lleva el papel de la identidad.
 
 Para anunciar: nada.
+
+## Sin publicar
+
+### Novedades
+
+- Desde la pantalla de Nori se puede compartir una postal de Nori vestido en su terrario, con un texto y el enlace de invitación.

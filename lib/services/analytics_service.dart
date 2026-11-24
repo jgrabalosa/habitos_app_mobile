@@ -254,4 +254,26 @@ class AnalyticsHabitos {
       debugPrint('Analytics: no se registró cierre_compartido: $e');
     }
   }
+
+  /// Los parámetros de `nori_compartido`: la identidad (su código) y la fase de
+  /// Nori que se compartió. Nunca el nombre de Nori.
+  static Map<String, Object> parametrosNoriCompartido({
+    required String identidad,
+    required String fase,
+  }) => {'identidad': identidad, 'fase': fase};
+
+  /// Se abrió el menú de compartir con la postal de Nori y no se canceló.
+  static Future<void> noriCompartido({
+    required String identidad,
+    required String fase,
+  }) async {
+    try {
+      await AnalyticsCore.analytics.logEvent(
+        name: 'nori_compartido',
+        parameters: parametrosNoriCompartido(identidad: identidad, fase: fase),
+      );
+    } catch (e) {
+      debugPrint('Analytics: no se registró nori_compartido: $e');
+    }
+  }
 }

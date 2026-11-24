@@ -497,6 +497,7 @@
   "invitarError": "Couldn't share the invite. Please try again.",
   "cierreCompartir": "Share",
   "cierreTextoCompartir": "Today I closed the day with Norday Habits.\n{enlace}",
+  "noriTextoCompartir": "This is my Nori in Norday Habits. Want to join? {enlace}",
   "cierrePostalHabitos": "{n, plural, =1{1 habit done} other{{n} habits done}}",
   "catNueva": "+ New category",
   "catNuevaEtiqueta": "New category",

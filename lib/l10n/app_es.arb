@@ -1034,6 +1034,15 @@
       }
     }
   },
+  "noriTextoCompartir": "Este es mi Nori en Norday Habits. ¿Te animas? {enlace}",
+  "@noriTextoCompartir": {
+    "description": "Texto que acompaña a la postal de Nori al compartirla desde la pantalla de Nori, en primera persona. El enlace va al final y es el mismo que el de invitar. Sin premios ni promesas",
+    "placeholders": {
+      "enlace": {
+        "type": "String"
+      }
+    }
+  },
   "cierrePostalHabitos": "{n, plural, =1{1 hábito hecho} other{{n} hábitos hechos}}",
   "@cierrePostalHabitos": {
     "description": "Bajo la figura de la postal del cierre del día: cuántos hábitos se hicieron. Nunca sus nombres",
