@@ -6,6 +6,7 @@ import 'package:habitos_app_mobile/screens/como_funciona_screen.dart';
 import 'package:habitos_app_mobile/screens/home_shell.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
+import 'package:norday_flutter_core/services/escribir_a_norday.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// «Cómo funciona»: la entrada del menú y la pantalla de seis apartados.
@@ -259,5 +260,91 @@ void main() {
       find.byType(SuperficieIdentidad),
       findsNWidgets(ApartadoComoFunciona.values.length),
     );
+  });
+
+  group('«Saber más» de un «?»', () {
+    testWidgets('el del ritmo abre «Cómo funciona» con «El ritmo» desplegado', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        app(
+          Builder(
+            builder: (context) => Scaffold(
+              body: Center(
+                child: AyudaCampo(
+                  texto: 'Texto de la ayuda',
+                  etiquetaSemantica: 'Ayuda sobre el ritmo',
+                  id: 'ritmo_habito',
+                  alSaberMas: () =>
+                      abrirComoFunciona(context, ApartadoComoFunciona.ritmo),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.byIcon(LucideIcons.circleQuestionMark));
+      await tester.pumpAndSettle();
+      expect(find.byType(ComoFuncionaScreen), findsNothing);
+
+      final l = lookupAppLocalizations(const Locale('es'));
+      await tester.tap(
+        find.text(
+          NordayCoreLocalizations.of(
+            tester.element(find.byType(Scaffold)),
+          )!.ayudaSaberMas,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ComoFuncionaScreen), findsOneWidget);
+      expect(find.text(ApartadoComoFunciona.ritmo.cuerpo(l)), findsOneWidget);
+      expect(find.text(ApartadoComoFunciona.hoy.cuerpo(l)), findsNothing);
+    });
+  });
+
+  group('«Escríbenos»', () {
+    tearDown(reiniciarEscribirANordayParaTest);
+
+    Future<void> pulsar(
+      WidgetTester tester,
+      List<Uri> lanzados,
+      bool res,
+    ) async {
+      infoAppCorreo = () async => (app: 'Norday Habits', version: '1.0.0+1');
+      sistemaCorreo = () => 'test';
+      lanzarCorreo = (uri) async {
+        lanzados.add(uri);
+        return res;
+      };
+      await pantalla(tester);
+      final boton = find.text('Escríbenos');
+      await tester.ensureVisible(boton);
+      await tester.pumpAndSettle();
+      await tester.tap(boton);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('llama a escribirANorday con la dirección y el asunto', (
+      tester,
+    ) async {
+      final lanzados = <Uri>[];
+      await pulsar(tester, lanzados, true);
+
+      expect(lanzados, hasLength(1));
+      expect(lanzados.single.scheme, 'mailto');
+      expect(lanzados.single.path, 'hola@norday.app');
+      expect(lanzados.single.query, contains('subject=Norday%20Habits'));
+      expect(find.byType(SnackBar), findsNothing);
+    });
+
+    testWidgets('si no hay app de correo, enseña la dirección', (tester) async {
+      final lanzados = <Uri>[];
+      await pulsar(tester, lanzados, false);
+
+      expect(lanzados, hasLength(1));
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(find.textContaining('hola@norday.app'), findsOneWidget);
+    });
   });
 }

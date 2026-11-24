@@ -355,11 +355,17 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
           texto: l.mascotaAyudaAnimo,
           etiquetaSemantica: l.mascotaAyudaAnimoEtiqueta,
           superindice: true,
+          id: 'animo',
+          alSaberMas: () =>
+              abrirComoFunciona(context, ApartadoComoFunciona.nori),
         ),
         ayudaXp: AyudaCampo(
           texto: l.mascotaAyudaXp,
           etiquetaSemantica: l.mascotaAyudaXpEtiqueta,
           superindice: true,
+          id: 'xp',
+          alSaberMas: () =>
+              abrirComoFunciona(context, ApartadoComoFunciona.nori),
         ),
       ),
       HabitosScreen(usuarioId: _usuarioId),

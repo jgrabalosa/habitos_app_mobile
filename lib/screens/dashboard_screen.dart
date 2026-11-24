@@ -26,6 +26,7 @@ import '../widgets/transito_fila.dart';
 import '../services/descubrimiento_detalle.dart';
 import '../widgets/chevron_detalle.dart';
 import '../widgets/panel_minutos.dart';
+import 'como_funciona_screen.dart';
 import 'dashboard_logica.dart';
 import 'habito_detalle_screen.dart';
 
@@ -1158,6 +1159,9 @@ class _DashboardScreenState extends State<DashboardScreen>
             texto: l.dashAyudaFlexibles,
             etiquetaSemantica: l.dashAyudaFlexiblesEtiqueta,
             superindice: true,
+            id: 'esta_semana',
+            alSaberMas: () =>
+                abrirComoFunciona(context, ApartadoComoFunciona.diarios),
           ),
           acento: t.streakText,
         ),

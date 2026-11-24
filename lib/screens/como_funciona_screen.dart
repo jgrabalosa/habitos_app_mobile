@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
+import 'package:norday_flutter_core/services/escribir_a_norday.dart';
 import 'package:norday_flutter_core/widgets/nori_vestida.dart';
 
 import '../l10n/app_localizations.dart';
 import '../services/api_service_habitos.dart';
+
+/// A dónde llega «Escríbenos».
+const String direccionNorday = 'hola@norday.app';
 
 /// Los apartados de «Cómo funciona». [id] es lo que se mide
 /// (`como_funciona_<id>` en `ayuda_abierta`) y lo que usará «Saber más» de los
@@ -51,6 +55,17 @@ Future<bool> _hayHabitosEnBackend(int usuarioId) async =>
 
 Future<void> _medirApartado(String id) => AnalyticsCore.ayudaAbierta(id);
 
+/// El «Saber más» de los «?»: abre «Cómo funciona» con [apartado] ya
+/// desplegado. Sin `alVerPista`, así que no necesita saber quién es el
+/// usuario. El apartado abierto así no se mide: `ayuda_abierta` ya contó el
+/// «?».
+Future<void> abrirComoFunciona(
+  BuildContext context,
+  ApartadoComoFunciona apartado,
+) => Navigator.of(context).push<void>(
+  MaterialPageRoute(builder: (_) => ComoFuncionaScreen(abierto: apartado)),
+);
+
 /// «Cómo funciona»: las reglas de Norday en seis apartados que se despliegan
 /// (uno abierto a la vez), y, abajo, «Ver otra vez la pista».
 ///
@@ -58,6 +73,7 @@ Future<void> _medirApartado(String id) => AnalyticsCore.ayudaAbierta(id);
 /// `MascotaService`): si cambian allí, se cambian en los `comoFunciona…` de
 /// los `app_*.arb`.
 class ComoFuncionaScreen extends StatefulWidget {
+  /// Solo lo usa «Ver otra vez la pista» (con [alVerPista]); sin ella basta 0.
   final int usuarioId;
 
   /// El apartado que arranca desplegado, o `null` para ninguno.
@@ -74,7 +90,7 @@ class ComoFuncionaScreen extends StatefulWidget {
 
   const ComoFuncionaScreen({
     super.key,
-    required this.usuarioId,
+    this.usuarioId = 0,
     this.abierto,
     this.alVerPista,
     this.cargarHayHabitos = _hayHabitosEnBackend,
@@ -111,6 +127,16 @@ class _ComoFuncionaScreenState extends State<ComoFuncionaScreen> {
     final abre = _abierto != a;
     setState(() => _abierto = abre ? a : null);
     if (abre) widget.medir(a.idMedicion);
+  }
+
+  Future<void> _escribir(AppLocalizations l) async {
+    final mensajes = ScaffoldMessenger.of(context);
+    final aviso = l.comoFuncionaEscribenosSinCorreo(direccionNorday);
+    final abierto = await escribirANorday(
+      direccion: direccionNorday,
+      asunto: l.comoFuncionaEscribenosAsunto,
+    );
+    if (!abierto) mensajes.showSnackBar(SnackBar(content: Text(aviso)));
   }
 
   void _verPista() {
@@ -167,6 +193,15 @@ class _ComoFuncionaScreenState extends State<ComoFuncionaScreen> {
                     ),
                   ),
                 ],
+                const SizedBox(height: AppSpacing.md),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _escribir(l),
+                    icon: const Icon(LucideIcons.mail),
+                    label: Text(l.comoFuncionaEscribenos),
+                  ),
+                ),
               ],
             ),
           ),

@@ -18,6 +18,7 @@ import '../widgets/estrellas_registro.dart';
 import '../widgets/panel_ritmo.dart';
 import '../widgets/identidad_ui.dart';
 import '../widgets/resumen_detalle.dart';
+import 'como_funciona_screen.dart';
 import 'habito_screen.dart';
 
 class HabitoDetalleScreen extends StatefulWidget {
@@ -442,6 +443,9 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                     texto: l.ritmoExplicacionHabito,
                     etiquetaSemantica: l.detAyudaRitmoEtiqueta,
                     superindice: true,
+                    id: 'ritmo_habito',
+                    alSaberMas: () =>
+                        abrirComoFunciona(context, ApartadoComoFunciona.ritmo),
                   ),
                 ],
               ),
@@ -520,6 +524,7 @@ class _HabitoDetalleScreenState extends State<HabitoDetalleScreen> {
                 texto: l.detAyudaSatisfaccion,
                 etiquetaSemantica: l.detAyudaSatisfaccionEtiqueta,
                 superindice: true,
+                id: 'satisfaccion',
               ),
             ],
           ),
