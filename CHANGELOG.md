@@ -193,3 +193,4 @@ Para anunciar: nada.
 - En inglés, «Cómo funciona» habla de Nori como «he», igual que el resto de la app y la ficha de Play.
 - En Hoy, la mini Nori se mueve por toda la altura de la pantalla (antes, solo por la mitad de abajo) y su franja de la derecha es más estrecha: puedes dejarla junto a los checks sin taparlos. Se queda donde la sueltes, también tras actualizar.
 - En Hoy, la vuelta de los checks sin hacer es más rápida (1 s cada 4 s), más gruesa y más visible; en Dulce, en rosa.
+- Fuera código del Hoy de antes del rediseño que ya no se usaba (no cambia nada para ti).

@@ -3,14 +3,6 @@ import 'package:habitos_app_mobile/models/habito.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import 'package:habitos_app_mobile/screens/dashboard_logica.dart';
 
-Habito habito(String frecuencia, {int meta = 1}) => Habito(
-  habitoId: 1,
-  nombre: 'Leer',
-  frecuencia: frecuencia,
-  meta: meta,
-  activo: true,
-);
-
 Map<String, dynamic> habitoJson(int id) => {
   'habitoId': id,
   'nombre': 'Hábito $id',
@@ -40,92 +32,6 @@ const semanaAnterior = [
 ];
 
 void main() {
-  group('fraseProgreso', () {
-    test('sin nada hecho es la del primero, también con cero hábitos', () {
-      expect(fraseProgreso(0, 4), FraseProgreso.primero);
-      expect(fraseProgreso(0, 0), FraseProgreso.primero);
-    });
-
-    test('todo hecho es perfecto', () {
-      expect(fraseProgreso(4, 4), FraseProgreso.perfecto);
-    });
-
-    test('la mitad justa ya es casi', () {
-      expect(fraseProgreso(2, 4), FraseProgreso.casi);
-      expect(fraseProgreso(3, 4), FraseProgreso.casi);
-    });
-
-    test('por debajo de la mitad es buen ritmo', () {
-      expect(fraseProgreso(1, 3), FraseProgreso.buenRitmo);
-    });
-  });
-
-  group('estaHecho', () {
-    test('sin progreso no está hecho', () {
-      expect(estaHecho(habito('DIARIO'), null), isFalse);
-    });
-
-    test('un diario por debajo de la meta no está hecho', () {
-      expect(
-        estaHecho(habito('DIARIO', meta: 2), {
-          'completadoHoy': true,
-          'completadosPeriodo': 1,
-          'meta': 2,
-        }),
-        isFalse,
-      );
-    });
-
-    test('un diario que llega a la meta está hecho', () {
-      expect(
-        estaHecho(habito('DIARIO', meta: 2), {
-          'completadoHoy': true,
-          'completadosPeriodo': 2,
-          'meta': 2,
-        }),
-        isTrue,
-      );
-    });
-
-    test('un semanal completado hoy está hecho aunque no llegue a la meta', () {
-      expect(
-        estaHecho(habito('SEMANAL', meta: 3), {
-          'completadoHoy': true,
-          'completadosPeriodo': 1,
-          'meta': 3,
-        }),
-        isTrue,
-      );
-    });
-
-    test('un semanal no completado hoy y bajo la meta no está hecho', () {
-      expect(
-        estaHecho(habito('SEMANAL', meta: 3), {
-          'completadoHoy': false,
-          'completadosPeriodo': 2,
-          'meta': 3,
-        }),
-        isFalse,
-      );
-    });
-
-    test('sin datos de periodo ni meta, cuenta 0 sobre 1', () {
-      expect(estaHecho(habito('DIARIO'), {'completadoHoy': false}), isFalse);
-      expect(estaHecho(habito('DIARIO'), {'completadosPeriodo': 1}), isTrue);
-    });
-  });
-
-  group('indiceDeHoy', () {
-    test('hoy en la semana da su posición', () {
-      expect(indiceDeHoy(semana, '2026-09-17'), 3);
-    });
-
-    test('hoy fuera de la semana o desconocido da -1, no el lunes', () {
-      expect(indiceDeHoy(semanaAnterior, '2026-09-17'), -1);
-      expect(indiceDeHoy(semana, null), -1);
-    });
-  });
-
   group('diaASeleccionar', () {
     test('en el arranque, sin semana anterior, va a hoy', () {
       expect(

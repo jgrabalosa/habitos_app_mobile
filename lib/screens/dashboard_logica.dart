@@ -8,37 +8,6 @@ import '../models/minutos.dart';
 /// sacadas de `_DashboardScreenState` para poder probarlas. La pantalla las
 /// llama tal cual: aquí no hay estado.
 
-/// Qué frase de progreso toca. La pantalla la traduce.
-///
-/// Sin uso desde el F2c del rediseño de rachas: «Buen ritmo» y «¡Día perfecto!»
-/// salen de la app. Se retira con sus tests en el bloque G.
-enum FraseProgreso { primero, perfecto, casi, buenRitmo }
-
-FraseProgreso fraseProgreso(int hechos, int total) {
-  if (hechos == 0) return FraseProgreso.primero;
-  if (hechos == total) return FraseProgreso.perfecto;
-  if (hechos / total >= 0.5) return FraseProgreso.casi;
-  return FraseProgreso.buenRitmo;
-}
-
-/// Si [habito] cuenta como hecho hoy, según su [progreso] del dashboard
-/// (`completadoHoy`, `completadosPeriodo`, `meta`). Sin progreso, no.
-/// Semanal: si ya se completó hoy, está hecho por hoy (Hoy es el resumen
-/// del día). Si no, cuenta llegar a la meta del periodo.
-bool estaHecho(Habito habito, Map<String, dynamic>? progreso) {
-  if (progreso == null) return false;
-  if (habito.frecuencia == 'SEMANAL' && progreso['completadoHoy'] == true) {
-    return true;
-  }
-  return (progreso['completadosPeriodo'] ?? 0) >= (progreso['meta'] ?? 1);
-}
-
-/// Índice de [hoyIso] dentro de [fechas], o -1 si hoy no está en esta
-/// semana o aún no se conoce. -1 hay que distinguirlo de "hoy es el lunes":
-/// con un 0, el lunes de otra semana se comportaba como hoy.
-int indiceDeHoy(List<String> fechas, String? hoyIso) =>
-    hoyIso == null ? -1 : fechas.indexOf(hoyIso);
-
 /// Qué día dejar seleccionado al llegar una semana nueva. Se decide por
 /// fecha y no por índice: completar o deshacer un día pasado recarga la
 /// semana, y reposicionar en hoy hacía saltar la tira bajo el dedo.
