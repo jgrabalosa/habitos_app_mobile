@@ -500,6 +500,7 @@
   "invitarError": "Não foi possível partilhar o convite. Tenta outra vez.",
   "cierreCompartir": "Partilhar",
   "cierreTextoCompartir": "Hoje fechei o dia com o Norday Habits.\n{enlace}",
+  "noriTextoCompartir": "Este é o meu Nori no Norday Habits. Vens experimentar? {enlace}",
   "cierrePostalHabitos": "{n, plural, =1{1 hábito feito} other{{n} hábitos feitos}}",
   "catNueva": "+ Nova categoria",
   "catNuevaEtiqueta": "Nova categoria",
