@@ -90,6 +90,18 @@ párrafo de este fichero.
   `cierre_compartido` (`identidad` y `total_habitos`), salvo que se cancele el
   menú. Seams de test: `PostalCierre.menu` y `PostalCierre.medir`. Ese día no
   se pide la reseña (ver abajo).
+- **Compartir mi Nori** (T-063b): `home_shell.dart` pasa
+  `alCompartir: (datos) => PostalNori.compartir(context, datos)` a
+  `MascotaScreen`. `PostalNori` (`services/postal_nori.dart`) sigue el modelo
+  de `PostalCierre` con `TarjetaNori.de` del core (marca «Norday Habits»,
+  nieve de `manifiestoArteNotifier.value.nieveActiva`), PNG
+  `norday-nori.png` de 1080 × 1350 y texto `noriTextoCompartir`. **Espera a
+  las imágenes**: antes de montar, pide el manifiesto y baja los ficheros de
+  las prendas puestas (mismas reglas que `NoriVestida`); ya montada, repite
+  fotograma a fotograma hasta que están sus capas `prenda_*` y ninguna
+  `RenderImage` tiene `image == null`, con plazo de 6 s (pasado, captura con
+  lo que haya). Evento `nori_compartido` (`identidad` y `fase`), salvo menú
+  cancelado. Seams: `PostalNori.menu` y `PostalNori.medir`.
 - **La reseña de Play (In-App Review)** se pide justo después de la ceremonia
   del cierre del día, nunca a mitad del día. `DashboardScreen` cuenta los días
   de uso (distintos días en que se completa un hábito; `resena_dias_uso` y

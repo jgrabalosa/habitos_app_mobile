@@ -665,11 +665,11 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "v0.62.0"
-      resolved-ref: e8f8994774c91ae8e28dde574d37b4c04e7c0670
+      ref: "v0.63.0"
+      resolved-ref: f5f0e97e13bd6bd7f116ba40cfc75c164f4066ae
       url: "https://github.com/jgrabalosa/norday_flutter_core.git"
     source: git
-    version: "0.62.0"
+    version: "0.63.0"
   objective_c:
     dependency: transitive
     description:

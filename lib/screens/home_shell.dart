@@ -8,6 +8,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../widgets/identidad_ui.dart';
 import '../services/anclas_recorrido.dart';
 import '../services/crashlytics_service.dart';
+import '../services/postal_nori.dart';
 import '../services/recorrido_onboarding.dart';
 import '../widgets/bienvenida.dart';
 import '../widgets/permiso_avisos.dart';
@@ -350,6 +351,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
         usuarioId: _usuarioId,
         embebida: true,
         activa: _tabIndex == 1,
+        alCompartir: (datos) => PostalNori.compartir(context, datos),
         // Los textos los pone la app: el core no puede nombrar hábitos.
         ayudaAnimo: AyudaCampo(
           texto: l.mascotaAyudaAnimo,

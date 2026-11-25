@@ -183,7 +183,13 @@ Para anunciar: nada.
 
 ## Sin publicar
 
+### Novedades
+
+- Desde la pantalla de Nori se puede compartir una postal de Nori vestido en su terrario, con un texto y el enlace de invitación.
+
 ### Mejoras
 
 - Los «?» de la app enlazan con «Cómo funciona» mediante «Saber más» (frecuencia, meta, «esta semana», ritmo, ánimo y XP), y «Cómo funciona» termina con «Escríbenos», que abre el correo a hola@norday.app.
 - En inglés, «Cómo funciona» habla de Nori como «he», igual que el resto de la app y la ficha de Play.
+- En Hoy, la mini Nori se mueve por toda la altura de la pantalla (antes, solo por la mitad de abajo) y su franja de la derecha es más estrecha: puedes dejarla junto a los checks sin taparlos. Se queda donde la sueltes, también tras actualizar.
+- En Hoy, la vuelta de los checks sin hacer es más rápida (1 s cada 4 s), más gruesa y más visible; en Dulce, en rosa.
