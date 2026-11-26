@@ -76,38 +76,6 @@ class ApiServiceHabitos {
     ApiServiceCore.verificar(response);
   }
 
-  static Future<List<dynamic>> getDashboard(int usuarioId) async {
-    final headers = await ApiServiceCore.getHeaders();
-    final response = await ApiServiceCore.enviar(
-      () => ApiServiceCore.cliente.get(
-        Uri.parse('$_baseUrl/habitos/usuario/$usuarioId/dashboard'),
-        headers: headers,
-      ),
-    );
-    ApiServiceCore.verificar(response);
-    return ApiServiceCore.parsear(
-      () => jsonDecode(response.body) as List<dynamic>,
-    );
-  }
-
-  static Future<Map<String, dynamic>> getSemana(
-    int usuarioId, {
-    String? desde,
-  }) async {
-    final headers = await ApiServiceCore.getHeaders();
-    final desdeParam = desde != null ? '?desde=$desde' : '';
-    final response = await ApiServiceCore.enviar(
-      () => ApiServiceCore.cliente.get(
-        Uri.parse('$_baseUrl/habitos/usuario/$usuarioId/semana$desdeParam'),
-        headers: headers,
-      ),
-    );
-    ApiServiceCore.verificar(response);
-    return ApiServiceCore.parsear(
-      () => jsonDecode(response.body) as Map<String, dynamic>,
-    );
-  }
-
   /// La pantalla de Hoy entera (`GET /habitos/usuario/{id}/hoy`): las dos
   /// secciones, la tira, el avance del día y los niveles de ritmo. Con
   /// [fecha] (`AAAA-MM-DD`) se mira otro día de la tira; sin ella, hoy en la
