@@ -122,7 +122,7 @@ el resto, en `docs/funcionamiento/textos.md`.
   `docs/procedimientos/tocar-el-paquete.md`. `pubspec_overrides.yaml` (rama
   del core sin tag) no se commitea.
 - **`--flavor` siempre.** `produccion` es la de Play (`com.norday.habitos`).
-  `prueba` es `com.norday.habitos.prueba`, se llama «Norday PRUEBA» y va contra
+  `prueba` es `com.norday.habitos.prueba`, se llama «Habits PRUEBA» y va contra
   staging con `--dart-define=NORDAY_API_URL=https://staging-api.norday.app/api`.
   Los comandos están en el README.
 - **`lib/entorno.dart` para la app al arrancar** si el flavor y la URL no

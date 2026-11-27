@@ -137,5 +137,5 @@ Future<AperturaEnfoque> abrirEnfoque({
 /// desarrolla (la Habits de prueba), por eso no se traduce, como
 /// `PantallaEntornoIncorrecto`.
 const String textoFaltaEnfoquePrueba =
-    'Instala Norday Focus PRUEBA: la app de prueba no abre Google Play, '
+    'Instala Focus PRUEBA: la app de prueba no abre Google Play, '
     'que lleva a la de producción.';

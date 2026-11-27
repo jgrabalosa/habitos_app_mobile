@@ -5,7 +5,7 @@ reglas de cada compilación (`--flavor`, `entorno.dart`, nunca instalar
 `produccion` sobre la de Play, la de prueba nunca abre Play).
 
 - **`--flavor` siempre.** `produccion` es la de Play (`com.norday.habitos`).
-  `prueba` es `com.norday.habitos.prueba`, se llama «Norday PRUEBA» y va contra
+  `prueba` es `com.norday.habitos.prueba`, se llama «Habits PRUEBA» y va contra
   staging con `--dart-define=NORDAY_API_URL=https://staging-api.norday.app/api`.
   Los comandos están en el README.
 - **`lib/entorno.dart` para la app al arrancar** si el flavor y la URL no
@@ -16,7 +16,7 @@ reglas de cada compilación (`--flavor`, `entorno.dart`, nunca instalar
   en el `builder` del `MaterialApp`). Sin cinta, es la de producción. Se puso
   el 16-nov-2026: con varias apps de prueba y de Play instaladas, Quim entró
   con una cuenta sin saber si era staging o producción.
-- **La de prueba nunca abre Google Play.** Si falta Norday Focus PRUEBA,
+- **La de prueba nunca abre Google Play.** Si falta Focus PRUEBA,
   «Empezar sesión» avisa (`AperturaEnfoque.faltaPrueba`) en vez de ir a la
   ficha de Play, que lleva a la Focus de producción. Mismo 16-nov.
 - **El nombre visible sale de `manifestPlaceholders["appLabel"]`** en
