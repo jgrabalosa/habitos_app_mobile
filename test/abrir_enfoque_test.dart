@@ -71,6 +71,10 @@ void main() {
     expect(lanzador.pedidos, [(enlace, 'com.norday.enfoque.prueba')]);
   });
 
+  test('el aviso de falta de Enfoque de prueba nombra «Focus PRUEBA»', () {
+    expect(textoFaltaEnfoquePrueba, startsWith('Instala Focus PRUEBA'));
+  });
+
   test('sin Google Play: la ficha en la web', () async {
     final lanzador = LanzadorFalso({web});
     final r = await abrirEnfoque(
