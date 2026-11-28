@@ -24,7 +24,7 @@ void main() {
           '+20 % de puntos. No hace falta para terminar el día.',
       xp:
           'La experiencia de Nori. Sube 5 por cada hábito que cumples y 15 '
-          'por cada comida. Nori es cría en el nivel 3 y adulto en el 11.',
+          'por cada comida, hasta 3 al día. Nori es cría en el nivel 3 y adulto en el 11.',
       frecuencia:
           'Diario: cada día. Semanal: unas veces por semana, de lunes a '
           'domingo, los días que mejor te vengan.',
@@ -43,8 +43,8 @@ void main() {
           "there, +20% points. You don't need them to finish the day.",
       xp:
           "Nori's experience. It goes up 5 for each habit you complete and 15 "
-          'for each meal. Nori is a hatchling at level 3 and an adult at '
-          'level 11.',
+          'for each meal, up to 3 a day. Nori is a hatchling at level 3 and '
+          'an adult at level 11.',
       frecuencia:
           'Daily: every day. Weekly: a few times a week, Monday to Sunday, on '
           'whichever days suit you.',
@@ -63,7 +63,7 @@ void main() {
           '+20 % de pontos. Não é preciso para terminar o dia.',
       xp:
           'A experiência do Nori. Sobe 5 por cada hábito que cumpres e 15 por '
-          'cada refeição. O Nori é cria no nível 3 e adulto no 11.',
+          'cada refeição, até 3 por dia. O Nori é cria no nível 3 e adulto no 11.',
       frecuencia:
           'Diário: todos os dias. Semanal: algumas vezes por semana, de '
           'segunda a domingo, nos dias que te derem mais jeito.',
@@ -73,6 +73,15 @@ void main() {
   test(
     'los textos de las ayudas cuentan lo que pasa, en los tres idiomas',
     () async {
+      const topes = {
+        'es': 'hasta 3 al día',
+        'en': 'up to 3 a day',
+        'pt': 'até 3 por dia',
+      };
+      for (final MapEntry(key: idioma, value: tope) in topes.entries) {
+        final l = await AppLocalizations.delegate.load(Locale(idioma));
+        expect(l.comoFuncionaNoriCuerpo, contains(tope), reason: idioma);
+      }
       for (final MapEntry(key: idioma, value: t) in textos.entries) {
         final l = await AppLocalizations.delegate.load(Locale(idioma));
         expect(l.ritmoExplicacion, t.ritmo, reason: idioma);
